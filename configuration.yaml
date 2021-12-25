@@ -1,0 +1,50 @@
+
+# Configure a default setup of Home Assistant (frontend, api, etc)
+default_config:
+
+http:
+  ssl_certificate: /ssl/fullchain.pem
+  ssl_key: /ssl/privkey.pem
+
+# Text to speech
+tts:
+  - platform: google_translate
+    service_name: google_say
+
+group: !include groups.yaml
+automation: !include automations.yaml
+script: !include scripts.yaml
+scene: !include scenes.yaml
+
+recorder:
+  db_url: !secret MYSQL_URL
+
+# Discover some devices automatically
+discovery:
+
+# Write Python scripts that are exposed as services in Home Assistant
+python_script:
+
+
+# Enables the ability to send magic packets to Wake on LAN capable devices to turn them on
+wake_on_lan:
+
+sensor:
+  - platform: systemmonitor
+    resources:
+      - type: processor_use
+      - type: processor_temperature
+      - type: last_boot
+      - type: disk_use_percent
+      - type: disk_use
+      - type: memory_use_percent
+      - type: swap_use_percent
+      - type: load_1m
+      - type: network_in
+        arg: eth0
+      - type: network_out
+        arg: eth0
+      - type: packets_in
+        arg: eth0
+      - type: packets_out
+        arg: eth0

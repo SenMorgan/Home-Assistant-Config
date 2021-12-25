@@ -1,0 +1,29 @@
+# Ensure that everything will be ignored
+*
+
+# Whitelist
+!*.yaml
+!.gitignore
+!*.md
+
+# Ignore folders
+.storage
+.ssh
+.cloud
+.google.token
+.vscode
+custom_components
+image
+tts
+zigbee2mqtt
+www
+
+# Ignore files
+.HA_VERSION
+google_project_id.json
+ip_bans.yaml
+secrets.yaml
+known_devices.yaml
+*.log*
+*.xml
+*.db*
