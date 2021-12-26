@@ -881,6 +881,23 @@
       entity_id: input_boolean.presentation_switch
 
 ###############################################
+##  Christmass Lights
+###############################################
+
+- id: Switch on Christmas Lights After Sunset
+  alias: Switch on Christmas Lights After Sunset
+  trigger:
+    - platform: sun
+      event: sunset
+  condition:
+    - condition: state
+      entity_id: binary_sensor.people_home
+      state: "on"
+  action:
+    - service: switch.turn_on
+      entity_id: switch.bar_light
+
+###############################################
 ##  Automatic Scenning
 ###############################################
 
