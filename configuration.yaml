@@ -44,15 +44,15 @@ camera:
     name: Parking
     still_image_url: !secret PARKING_IMAGE_URL
     mjpeg_url: !secret PARKING_MJPEG_URL
-#  - platform: xiaomi_cloud_map_extractor
-#    host: !secret XIAOMI_VACUUM_HOST
-#    token: !secret XIAOMI_VACUUM_TOKEN
-#    username: !secret XIAOMI_CLOUD_USERNAME
-#    password: !secret XIAOMI_CLOUD_PASSWORD
-#    country: "de"
-#    draw: ["all"]
-#    attributes:
-#      - calibration_points
+  - platform: xiaomi_cloud_map_extractor
+    host: !secret XIAOMI_VACUUM_HOST
+    token: !secret XIAOMI_VACUUM_TOKEN
+    username: !secret XIAOMI_CLOUD_USERNAME
+    password: !secret XIAOMI_CLOUD_PASSWORD
+    country: "de"
+    draw: ["all"]
+    attributes:
+      - calibration_points
 
 climate:
   - platform: mqtt
@@ -722,11 +722,11 @@ sensor:
       front_door_last_triggered:
         friendly_name: "Front Door Last Triggered"
         value_template: >
-          {{ as_timestamp(states.binary_sensor.aqara_door_sensor_1_contact.last_changed) | timestamp_custom('%d.%m.%Y %H:%M:%S',0) }}
+          {{ as_timestamp(states.binary_sensor.aqara_hall_door_sensor_contact.last_changed) | timestamp_custom('%d.%m.%Y %H:%M:%S',0) }}
       bedroom_window_last_triggered:
         friendly_name: "Bedroom Window Last Triggered"
         value_template: >
-          {{ as_timestamp(states.binary_sensor.aqara_window_sensor_1_contact.last_changed) | timestamp_custom('%d.%m.%Y %H:%M:%S',0) }}
+          {{ as_timestamp(states.binary_sensor.aqara_bedroom_window_sensor_contact.last_changed) | timestamp_custom('%d.%m.%Y %H:%M:%S',0) }}
       raven_last_message_received:
         friendly_name: "Raven Last Message Received"
         value_template: >
