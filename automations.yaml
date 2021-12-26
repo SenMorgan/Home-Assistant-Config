@@ -11,10 +11,10 @@
   action:
     - service: scene.turn_on
       entity_id: scene.daytime_lights_enabled
-    - wait_template: "{{ states('binary_sensor.aqara_door_sensor_1_contact') == 'on' }}"
+    - wait_template: "{{ states('binary_sensor.aqara_hall_door_sensor_contact') == 'on' }}"
       timeout: 00:10:00
       continue_on_timeout: false
-    - wait_template: "{{ states('binary_sensor.aqara_door_sensor_1_contact') == 'off' }}"
+    - wait_template: "{{ states('binary_sensor.aqara_hall_door_sensor_contact') == 'off' }}"
       timeout: 00:10:00
     - service: tts.google_say
       data:
@@ -33,10 +33,10 @@
       after: "6:00:00"
       before: "22:00:00"
   action:
-    - wait_template: "{{ states('binary_sensor.aqara_door_sensor_1_contact') == 'on' }}"
+    - wait_template: "{{ states('binary_sensor.aqara_hall_door_sensor_contact') == 'on' }}"
       timeout: 00:10:00
       continue_on_timeout: false
-    - wait_template: "{{ states('binary_sensor.aqara_door_sensor_1_contact') == 'off' }}"
+    - wait_template: "{{ states('binary_sensor.aqara_hall_door_sensor_contact') == 'off' }}"
       timeout: 00:10:00
     - service: scene.turn_on
       entity_id: scene.daytime_lights_enabled
@@ -50,7 +50,7 @@
   alias: Switch Off Lights
   trigger:
     - platform: state
-      entity_id: binary_sensor.aqara_door_sensor_1_contact
+      entity_id: binary_sensor.aqara_hall_door_sensor_contact
       from: "on"
       to: "off"
   condition:
@@ -86,7 +86,7 @@
   alias: Goodbye Daytime Lights
   trigger:
     - platform: state
-      entity_id: binary_sensor.aqara_door_sensor_1_contact
+      entity_id: binary_sensor.aqara_hall_door_sensor_contact
       from: "on"
       to: "off"
   condition:
@@ -197,7 +197,7 @@
       entity_id: cover.bedroom
       state: open
     - condition: state
-      entity_id: binary_sensor.aqara_window_sensor_1_contact
+      entity_id: binary_sensor.aqara_bedroom_window_sensor_contact
       state: "off"
   action:
     - service: cover.close_cover
@@ -369,7 +369,7 @@
   alias: Close Blinds and Lights After Kris away
   trigger:
     - platform: state
-      entity_id: binary_sensor.aqara_door_sensor_1_contact
+      entity_id: binary_sensor.aqara_hall_door_sensor_contact
       from: "on"
       to: "off"
   condition:
@@ -842,7 +842,7 @@
   alias: Welcome Hall Light
   trigger:
     platform: state
-    entity_id: binary_sensor.aqara_door_sensor_1_contact
+    entity_id: binary_sensor.aqara_hall_door_sensor_contact
     to: "on"
   action:
     service: light.turn_on
@@ -1020,7 +1020,7 @@
       data:
         title: "{{ 'ℹ️' }} Системное уведомление"
         message: Прожектор включился в {{ states('sensor.time') }}
-    - wait_template: "{{ states('binary_sensor.aqara_door_sensor_1_contact') == 'on' }}"
+    - wait_template: "{{ states('binary_sensor.aqara_hall_door_sensor_contact') == 'on' }}"
       timeout: 00:10:00
     - service: switch.turn_off
       entity_id: switch.backyard_light
@@ -1034,11 +1034,11 @@
   mode: restart
   trigger:
     - platform: state
-      entity_id: binary_sensor.aqara_window_sensor_1_contact
+      entity_id: binary_sensor.aqara_bedroom_window_sensor_contact
       to: "on"
       for: "00:00:05"
     - platform: state
-      entity_id: binary_sensor.aqara_window_sensor_1_contact
+      entity_id: binary_sensor.aqara_bedroom_window_sensor_contact
       to: "off"
       for: "00:00:05"
   condition:
