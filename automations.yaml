@@ -9,13 +9,13 @@
       after: "6:00:00"
       before: "22:00:00"
   action:
-    - service: scene.turn_on
-      entity_id: scene.daytime_lights_enabled
     - wait_template: "{{ states('binary_sensor.aqara_hall_door_sensor_contact') == 'on' }}"
       timeout: 00:10:00
       continue_on_timeout: false
     - wait_template: "{{ states('binary_sensor.aqara_hall_door_sensor_contact') == 'off' }}"
-      timeout: 00:10:00
+      timeout: 00:10:00      
+    - service: switch.turn_on
+      entity_id: switch.string_lights
     - service: tts.google_say
       data:
         entity_id: media_player.kitchen
@@ -38,8 +38,8 @@
       continue_on_timeout: false
     - wait_template: "{{ states('binary_sensor.aqara_hall_door_sensor_contact') == 'off' }}"
       timeout: 00:10:00
-    - service: scene.turn_on
-      entity_id: scene.daytime_lights_enabled
+    - service: switch.turn_on
+      entity_id: switch.string_lights
     - service: tts.google_say
       data:
         entity_id: media_player.kitchen
@@ -684,8 +684,6 @@
       entity_id: input_boolean.cube_1_control
       state: "on"
   action:
-    - service: scene.turn_on
-      entity_id: scene.daytime_lights_enabled
     - service: tts.google_say
       data:
         entity_id: media_player.kitchen
