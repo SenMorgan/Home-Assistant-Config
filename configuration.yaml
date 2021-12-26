@@ -41,6 +41,13 @@ webostv:
   customize:
     sources:
       - YouTube
+      - AirPlay
+      - Live TV
+      - HDMI 1
+      - HDMI 2
+      - HDMI 3
+      - AV
+      - Компонентный вход
       
 camera:
   - platform: mjpeg
