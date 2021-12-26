@@ -82,27 +82,6 @@
         title: "{{ 'ℹ️' }} Системное уведомление"
         message: Весь свет был погашен в {{ states('sensor.time') }}
 
-- id: Goodbye Daytime Lights
-  alias: Goodbye Daytime Lights
-  trigger:
-    - platform: state
-      entity_id: binary_sensor.aqara_hall_door_sensor_contact
-      from: "on"
-      to: "off"
-  condition:
-    - condition: state
-      entity_id: binary_sensor.tradfri_motion_sensor_occupancy
-      state: "on"
-    - condition: state
-      entity_id: person.sen
-      state: "home"
-  action:
-    - wait_template: "{{ states('person.sen') != 'home' }}"
-      timeout: "00:15:00"
-      continue_on_timeout: false
-    - service: scene.turn_on
-      entity_id: scene.daytime_lights_disabled
-
 - id: Synchronize Desk and Floor Lamps Switching OFF
   alias: Synchronize Desk and Floor Lamps
   trigger:
