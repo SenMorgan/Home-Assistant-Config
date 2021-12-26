@@ -1,0 +1,55 @@
+- name: Welcome Home Lights
+  entities:
+    light.hall_lights: on
+    light.gyver_lamp: on
+    light.kitchen_spotlights: on
+    switch.string_lights: on
+    cover.bedroom: open
+    light.shelf_lighting:
+      state: on
+      brightness: 255
+    light.floor_lamp:
+      state: on
+      brightness: 255
+
+- name: Movies
+  entities:
+    light.gyver_lamp: on
+    light.hall_lights: off
+    media_player.tv: on
+    light.kitchen_spotlights: off
+    switch.bar_light: on
+    switch.string_lights: off
+    light.desk_lamp: off
+    light.shelf_lighting:
+      state: off
+    light.floor_lamp: off
+
+
+- name: Good Night
+  entities:
+    media_player.tv: off
+    switch.bar_light: off
+    switch.string_lights: off
+    cover.bedroom: closed
+
+- name: Lighting
+  entities:
+    light.shelf_lighting:
+      state: on
+      brightness: 255
+      effect: "Lightning"
+      intensity: 255
+      rgb_color: [255,255,255]
+      speed: 255
+    light.pc_backlight:
+      state: on
+      brightness: 255
+      effect: "Lightning"
+      intensity: 255
+      rgb_color: [255,255,255]
+      speed: 255
+    light.gyver_lamp:    
+      state: on
+      brightness: 255
+      effect: "Гроза в банке"
