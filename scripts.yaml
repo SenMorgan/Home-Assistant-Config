@@ -1,0 +1,318 @@
+switch_on_backyard_light:
+  alias: Switch On Backyard Light
+  sequence:
+    - service: switch.turn_off
+      target:
+        entity_id: switch.backyard_light
+    - delay:
+        seconds: 15
+    - repeat:
+        while:
+          - condition: state
+            entity_id: switch.backyard_light
+            state: "off"
+          # Don't do it too many times
+          - condition: template
+            value_template: "{{ repeat.index <= 10 }}"
+        sequence:
+          - service: switch.turn_on
+            target:
+              entity_id: switch.backyard_light
+          - delay:
+              seconds: 1
+
+cover_correct_up:
+  alias: Cover Correct Zero Pozition Up
+  sequence:
+    service: mqtt.publish
+    data:
+      topic: /blinds/set
+      payload: "CORRECT_UP"
+
+cover_correct_down:
+  alias: Cover Correct Zero Pozition Down
+  sequence:
+    service: mqtt.publish
+    data:
+      topic: /blinds/set
+      payload: "CORRECT_DOWN"
+
+flash_lights:
+  alias: Flash Lights
+  sequence:
+    - alias: "Repeat the sequence AS LONG AS the conditions are true"
+      repeat:
+        while:
+          - condition: state
+            entity_id: input_boolean.blink_switch
+            state: "on"
+          # Don't do it too many times
+          - condition: template
+            value_template: "{{ repeat.index <= 3 }}"
+        # *****************************SEQUENCE START*************************************
+        sequence:
+          - alias: "Switch ON light 1"
+            service: light.turn_on
+            target:
+              entity_id: light.kitchen_spotlights
+          - delay:
+              seconds: 0.5
+
+          - alias: "Switch ON light 2"
+            service: light.turn_on
+            target:
+              entity_id: light.retro_lampa
+          - delay:
+              seconds: 0.5
+
+          - alias: "Switch ON light 3"
+            service: light.turn_on
+            target:
+              entity_id: light.shelf_lighting_master
+          - delay:
+              seconds: 0.5
+
+          - alias: "Switch ON light 4"
+            service: light.turn_on
+            target:
+              entity_id: light.floor_lamp
+          - delay:
+              seconds: 0.5
+
+          - alias: "Switch OFF light 1"
+            service: light.turn_off
+            target:
+              entity_id: light.kitchen_spotlights
+          - delay:
+              seconds: 0.5
+
+          - alias: "Switch OFF light 2"
+            service: light.turn_off
+            target:
+              entity_id: light.retro_lampa
+          - delay:
+              seconds: 0.5
+
+          - alias: "Switch OFF light 3"
+            service: light.turn_off
+            target:
+              entity_id: light.shelf_lighting_master
+          - delay:
+              seconds: 0.5
+
+          - alias: "Switch OFF light 4"
+            service: light.turn_off
+            target:
+              entity_id: light.floor_lamp
+          - delay:
+              seconds: 0.5
+
+presentation:
+  alias: Presentation
+  sequence:
+    # *****************************SEQUENCE START*************************************
+    # Switch OFF all lights and TV
+    #   - service: media_player.turn_off
+    #     entity_id: media_player.tv
+    - service: light.turn_off
+      entity_id: all
+    - delay:
+        seconds: 4
+
+    # Switch ON light in Hall
+    - service: light.turn_on
+      entity_id: light.tradfri_bulb
+    - delay:
+        seconds: 2
+
+    # Switch OFF light in Hall
+    - service: light.turn_off
+      entity_id: light.tradfri_bulb
+    - delay:
+        seconds: 2
+
+    # Switch ON Kitchen Spotlighs
+    - service: light.turn_on
+      entity_id: light.kitchen_spotlights
+    - delay:
+        seconds: 2
+
+    # Switch OFF Kitchen Spotlighs
+    - service: light.turn_off
+      entity_id: light.kitchen_spotlights
+    - delay:
+        seconds: 2
+
+    # Close Cover
+    - service: cover.close_cover
+      entity_id: cover.bedroom
+    - delay:
+        seconds: 5
+
+    # Stop Cover
+    - service: cover.stop_cover
+      entity_id: cover.bedroom
+    - delay:
+        seconds: 5
+
+    # Switch ON Retro Lamp
+    - service: light.turn_on
+      entity_id: light.retro_lampa
+    - delay:
+        seconds: 5
+
+    # Switch OFF Retro Lamp
+    - service: light.turn_off
+      entity_id: light.retro_lampa
+    - delay:
+        seconds: 3
+
+    # Switch ON Bar Light
+    - service: light.turn_on
+      entity_id: light.bar_light
+    - delay:
+        seconds: 2
+
+    # Switch ON TV
+    - service: media_player.turn_on
+      entity_id: media_player.tv
+    - delay:
+        seconds: 5
+
+    # Switch OFF Bar Light and TV
+    - service: media_player.turn_off
+      entity_id: media_player.tv
+    - service: light.turn_off
+      entity_id: light.bar_light
+    - delay:
+        seconds: 2
+
+    # Switch ON Floor Lamp Half Brightness
+    - service: light.turn_on
+      target:
+        entity_id: light.floor_lamp
+      data:
+        brightness: 50
+    - delay:
+        seconds: 2
+
+    # Switch ON Floor Lamp FULL Brightness
+    - service: light.turn_on
+      target:
+        entity_id: light.floor_lamp
+      data:
+        brightness: 255
+    - delay:
+        seconds: 2
+
+    # Switch OFF Floor Lamp
+    - service: light.turn_off
+      entity_id: light.floor_lamp
+    - delay:
+        seconds: 2
+
+    # Switch ON Desk Lamp FULL Brightness with COLD White
+    - service: light.turn_on
+      target:
+        entity_id: light.desk_lamp
+      data:
+        brightness: 255
+        color_temp: 200
+    - delay:
+        seconds: 2
+
+    # Switch ON Desk Lamp FULL Brightness with WARM White
+    - service: light.turn_on
+      target:
+        entity_id: light.desk_lamp
+      data:
+        brightness: 255
+        color_temp: 385
+    - delay:
+        seconds: 2
+
+    # Switch OFF Desk Lamp
+    - service: light.turn_off
+      entity_id: light.desk_lamp
+    - delay:
+        seconds: 3
+
+    # Flash ON Shelf Lighting with GREEN Color
+    - service: light.turn_on
+      target:
+        entity_id: light.shelf_lighting
+      data:
+        brightness: 255
+        effect: "Solid"
+        rgb_color: [0, 255, 0]
+    - delay:
+        seconds: 0.5
+    - service: light.turn_off
+      entity_id: light.shelf_lighting
+    - delay:
+        seconds: 1
+
+    # Flash ON PC Backlight with RED Color
+    - service: light.turn_on
+      target:
+        entity_id: light.pc_backlight
+      data:
+        brightness: 255
+        effect: "Solid"
+        rgb_color: [255, 0, 0]
+    - delay:
+        seconds: 0.5
+    - service: light.turn_off
+      entity_id: light.pc_backlight
+    - delay:
+        seconds: 5
+
+    # Switch ON Lightning Scene
+    - service: light.turn_on
+      target:
+        entity_id:
+          - light.shelf_lighting
+          - light.pc_backlight
+      data:
+        rgb_color: [255, 255, 255]
+    - service: wled.effect
+      target:
+        entity_id:
+          - light.shelf_lighting
+          - light.pc_backlight
+      data:
+        effect: "Strobe Mega"
+        palette: "Default"
+        intensity: 255
+        speed: 255
+    - delay:
+        seconds: 5
+
+    # Switch OFF All Lights for a while
+    - service: light.turn_off
+      entity_id: all
+    - delay:
+        seconds: 3
+
+    # Switch ON Shelf Lighting and PC Backlight with ORANGE Color
+    - service: light.turn_on
+      target:
+        entity_id:
+          - light.shelf_lighting
+          - light.pc_backlight
+      data:
+        brightness: 150
+        effect: "Solid"
+        rgb_color: [255, 159, 0]
+
+    # Delay before changing back to normal
+    - delay:
+        seconds: 30
+
+    # Show road cameras "Ну и чисто по-приколу я подключился к дорожным камерам, дабы следить за траффиком"
+
+    # Switch ON Daytime Lights Scene and Open Cover
+    - service: scene.turn_on
+      entity_id: scene.daytime_lights_enabled
+    - service: cover.open_cover
+      entity_id: cover.bedroom

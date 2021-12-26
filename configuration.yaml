@@ -25,11 +25,453 @@ discovery:
 # Write Python scripts that are exposed as services in Home Assistant
 python_script:
 
-
 # Enables the ability to send magic packets to Wake on LAN capable devices to turn them on
 wake_on_lan:
 
+webostv:
+  host: !secret TV_LOCAL_IP
+  name: TV
+  turn_on_action:
+    service: wake_on_lan.send_magic_packet
+    data:
+      mac: !secret TV_MAC
+  customize:
+    sources:
+      - YouTube
+      
+camera:
+  - platform: mjpeg
+    name: Parking
+    still_image_url: !secret PARKING_IMAGE_URL
+    mjpeg_url: !secret PARKING_MJPEG_URL
+#  - platform: xiaomi_cloud_map_extractor
+#    host: !secret XIAOMI_VACUUM_HOST
+#    token: !secret XIAOMI_VACUUM_TOKEN
+#    username: !secret XIAOMI_CLOUD_USERNAME
+#    password: !secret XIAOMI_CLOUD_PASSWORD
+#    country: "de"
+#    draw: ["all"]
+#    attributes:
+#      - calibration_points
+
+climate:
+  - platform: mqtt
+    name: Thermostat
+    action_topic: "kitchen/thermostat/properties"
+    action_template: "{{value_json.state}}"
+    temperature_command_topic: "kitchen/thermostat/set/targetTemperature"
+    temperature_state_topic: "kitchen/thermostat/properties"
+    temperature_state_template: "{{value_json.targetTemperature}}"
+    current_temperature_topic: "kitchen/thermostat/properties"
+    current_temperature_template: "{{value_json.temperature}}"
+    mode_command_topic: "kitchen/thermostat/set/schedulesMode"
+    mode_state_topic: "kitchen/thermostat/properties"
+    mode_state_template: "{{value_json.schedulesMode}}"
+    payload_on: true
+    payload_off: false
+    modes: ["heat", "auto", "off"] # mode off means ECO mode, not switching OFF device
+    min_temp: 15
+    max_temp: 30
+    temp_step: 1
+    precision: 1
+
+
+google_assistant:
+  project_id: !secret GOOGLE_ASSISTANT_PROJ_ID
+  service_account: !include google_project_id.json
+  report_state: true
+  exposed_domains:
+    - switch
+    - light
+    - cover
+    - media_player
+    - climate
+    - sensor
+    - scene
+    - vacuum
+    - input_boolean
+  entity_config:
+    light.kitchen_spotlights:
+      name: Kitchen spotlights
+      room: Kitchen
+    light.shelf_lighting:
+      name: Shelf Lighting
+      room: Kitchen
+    light.floor_lamp:
+      name: Floor Lamp
+      room: Kitchen
+    light.hall_lights:
+      name: Hall lights
+      room: Hall
+    switch.bar_light:
+      room: Living room
+      aliases:
+        - STRING LIGHTS
+        - STRIP LIGHTS
+        - CHRISTMAS LIGHTS
+    switch.string_lights:
+      name: String Lights
+      room: Kitchen
+    switch.backyard_socket:
+      name: Backyard Socket
+      room: Backyard
+    cover.bedroom:
+      name: Cover in bedroom
+      room: Bedroom
+      aliases:
+        - COVER
+        - BLIND
+        - BLINDS
+    media_player.tv:
+      room: Living room
+    media_player.lg_webos_tv_551e:
+      room: Living room
+    switch.raven_engine:
+      name: Engine
+      room: Backyard
+      aliases:
+        - PASSAT
+        - CAR
+        - ENGINE
+        - MOTOR
+        - VOLKSWAGEN
+        - RAVEN
+    switch.raven_update_sensors:
+      name: Update Ravens Sensors
+      room: Backyard
+      aliases:
+        - UPDATE_SENSORS
+        - UPDATE_PASSAT
+        - UPDATE_RAVEN
+    lock.raven_locks:
+      name: Raven Doors
+      room: Backyard
+      aliases:
+        - PASSAT
+        - CAR
+        - RAVEN
+        - PASSAT_LOCKS
+        - PASSAT_DOORS
+        - RAVEN_LOCKS
+        - RAVEN_DOORS
+        - CAR_LOCKS
+        - CAR_DOORS
+    switch.asus_pc:
+      name: PC
+      room: Kitchen
+    climate.thermostat:
+      room: Kitchen
+    sensor.aqara_door_sensor_1_temperature:
+      name: Hall Door Sensor Temperature
+      room: Hall
+    sensor.aqara_window_sensor_1_temperature:
+      name: Bedroom Window Sensor Temperature
+      room: Bedroom
+    vacuum.johnny:
+      room: Bedroom
+      
+    ######################## UNEXPOSED ENTITIES ########################
+    light.pc_backlight:
+      name: PC Backlight
+      room: Kitchen
+      expose: false
+    switch.backyard_light:
+      room: Backyard
+      expose: false
+    input_boolean.presentation_switch:
+      name: Presentation
+      room: Kitchen
+      expose: false
+    sensor.shelf_lighting_estimated_current:
+      expose: false
+    switch.shelf_lighting_nightlight:
+      expose: false
+    switch.shelf_lighting_sync_receive:
+      expose: false
+    switch.shelf_lighting_sync_send:
+      expose: false
+    sensor.floor_lamp_estimated_current:
+      expose: false
+    switch.floor_lamp_nightlight:
+      expose: false
+    switch.floor_lamp_sync_receive:
+      expose: false
+    switch.floor_lamp_sync_send:
+      expose: false
+    sensor.pc_backlight_estimated_current:
+      expose: false
+    switch.pc_backlight_nightlight:
+      expose: false
+    switch.pc_backlight_sync_receive:
+      expose: false
+    switch.pc_backlight_sync_send:
+      expose: false
+    input_boolean.blink_switch:
+      expose: false
+    input_boolean.zigbee_permit_join:
+      expose: false
+    input_boolean.cube_1_control:
+      expose: false
+    input_boolean.light_brightness:
+      expose: false
+    binary_sensor.kalorifer:
+      expose: false
+    sensor.kalorifer_water_temperature:
+      expose: false
+    switch.udpate_sensors:
+      expose: false
+
+######################## START OF TIMERS SECTION ########################
+
+timer:
+  zigbee_permit_join:
+    name: Time remaining
+    duration: 600 # Updated this to the number of seconds you wish
+    
+######################## START OF COVER SECTION ########################
+
+cover:
+  - platform: mqtt
+    name: "Bedroom"
+    device_class: shade
+    command_topic: "/blinds/set"
+    position_topic: "/blinds/position"
+    availability:
+      - topic: "/blinds/availability"
+    set_position_topic: "/blinds/set_position"
+    payload_open: "OPEN"
+    payload_close: "CLOSE"
+    payload_stop: "STOP"
+    position_open: 100
+    position_closed: 0
+    optimistic: false
+    position_template: "{{ value }}"
+
+######################## START OF INPUT NUMBER SECTION ########################
+
+input_number:
+  alarm_1_hour:
+    name: Час
+    icon: mdi:timer-outline
+    min: 0
+    max: 23
+    step: 1
+  alarm_1_minutes:
+    name: Минута
+    icon: mdi:timer-outline
+    min: 0
+    max: 59
+    step: 5
+  alarm_2_hour:
+    name: Час
+    icon: mdi:timer-outline
+    min: 0
+    max: 23
+    step: 1
+  alarm_2_minutes:
+    name: Минута
+    icon: mdi:timer-outline
+    min: 0
+    max: 59
+    step: 5
+  alarm_3_hour:
+    name: Час
+    icon: mdi:timer-outline
+    min: 0
+    max: 23
+    step: 1
+  alarm_3_minutes:
+    name: Минута
+    icon: mdi:timer-outline
+    min: 0
+    max: 59
+    step: 5
+  alarm_4_hour:
+    name: Час
+    icon: mdi:timer-outline
+    min: 0
+    max: 23
+    step: 1
+  alarm_4_minutes:
+    name: Минута
+    icon: mdi:timer-outline
+    min: 0
+    max: 59
+    step: 5
+
+######################## START OF INPUT BOOLEAN SECTION ########################
+
+input_boolean:
+  blink_switch:
+    name: Blink Switch
+    icon: mdi:creation
+  zigbee_permit_join:
+    name: Allow devices to join
+    initial: off
+    icon: mdi:cellphone-wireless
+  cube_1_control:
+    name: Cube Control
+    icon: mdi:gesture-double-tap
+  light_brightness:
+    name: light_brightness
+  presentation_switch:
+    name: Presentation
+    icon: mdi:presentation-play
+
+######################## START OF LOCKS SECTION ########################
+
+lock:
+  - platform: mqtt
+    name: "Raven Locks"
+    state_topic: "/Raven/locks"
+    command_topic: "/Raven/set/locks"
+    availability_topic: "/Raven/availability"
+    optimistic: false
+    qos: 1
+    retain: false
+
+######################## START OF LIGHTS SECTION ########################
+
+light:
+  - platform: mqtt
+    name: "Kitchen Spotlights"
+    state_topic: "/Sonoff-Spotlights/Status"
+    command_topic: "/Sonoff-Spotlights/Switch"
+    payload_on: "1"
+    payload_off: "0"
+    availability_topic: "/Sonoff-Spotlights/availability"
+    payload_available: "online"
+    payload_not_available: "offline"
+    optimistic: false
+  - platform: mqtt
+    name: "Hall Lights"
+    state_topic: "/smart-3-lights/state"
+    command_topic: "/smart-3-lights/set"
+    payload_on: "1"
+    payload_off: "0"
+    availability_topic: "/smart-3-lights/availability"
+    payload_available: "online"
+    payload_not_available: "offline"
+    optimistic: false
+    
+######################## START OF SWITCHES SECTION ########################
+
+switch:
+  ###############################################
+  ## Raven Switches
+  ###############################################
+  - platform: mqtt
+    name: "Raven Engine"
+    icon: mdi:engine-outline
+    state_topic: "/Raven/engine/engine_running"
+    state_on: "RUNNING"
+    state_off: "STOPPED"
+    command_topic: "/Raven/set/engine"
+    payload_on: "ON"
+    payload_off: "OFF"
+    availability_topic: "/Raven/availability"
+    payload_available: "online"
+    payload_not_available: "offline"
+    optimistic: false
+  - platform: mqtt
+    name: "Raven Udpate Sensors"
+    icon: mdi:update
+    state_topic: "/Raven/sensors_updating"
+    command_topic: "/Raven/set/update_sensors"
+    payload_on: "1"
+    payload_off: "0"
+    availability_topic: "/Raven/availability"
+    payload_available: "online"
+    payload_not_available: "offline"
+    optimistic: false
+
+  ###############################################
+  ## Other Switches
+  ###############################################
+  - platform: mqtt
+    #name: "Pump"
+    name: "Backyard Socket"
+    #icon: mdi:water-pump
+    state_topic: "/Sonoff-Socket_01/Status"
+    command_topic: "/Sonoff-Socket_01/Switch"
+    payload_on: "1"
+    payload_off: "0"
+    availability_topic: "/Sonoff-Socket_01/availability"
+    payload_available: "online"
+    payload_not_available: "offline"
+    optimistic: false
+
+  - platform: wake_on_lan
+    mac: !secret ASUS_PC_MAC
+    name: ASUS-PC
+    host: !secret ASUS_PC_LOCAL_IP
+    turn_off:
+      service: hassio.addon_stdin
+      data:
+        addon: core_rpc_shutdown
+        input: ASUS-PC
+        
+######################## START OF SENSORS SECTION ########################
+
+binary_sensor:
+  - platform: template
+    sensors:
+      people_home:
+        friendly_name: People Home
+        device_class: presence
+        value_template: >
+          {{ is_state('person.sen', 'home') or
+          is_state('person.kris', 'home') }}
+
+  - platform: mqtt
+    name: Garage Kalorifer
+    device_class: moving
+    state_topic: "/Kalorifer/Status"
+    payload_on: "1"
+    payload_off: "0"
+
+  ###############################################
+  ## Raven Binary Sensors
+  ###############################################
+  - platform: mqtt
+    name: "Raven Alarm"
+    availability_topic: "/Raven/availability"
+    payload_available: "online"
+    payload_not_available: "offline"
+    state_topic: "/Raven/alarm_flag"
+    payload_on: "1"
+    payload_off: "0"
+    device_class: power
+  - platform: mqtt
+    name: "Raven Error"
+    availability_topic: "/Raven/availability"
+    payload_available: "online"
+    payload_not_available: "offline"
+    state_topic: "/Raven/error_flag"
+    payload_on: "1"
+    payload_off: "0"
+    device_class: power
+  - platform: mqtt
+    name: "Raven Sleep Mode"
+    availability_topic: "/Raven/availability"
+    payload_available: "online"
+    payload_not_available: "offline"
+    state_topic: "/Raven/wifi/sleep_mode"
+    payload_on: "1"
+    payload_off: "0"
+    device_class: power
+
 sensor:
+  ###############################################
+  ## 17TRACK Sensor
+  ###############################################
+  - platform: seventeentrack
+    username: !secret SEVENTEENTRACK_EMAIL
+    password: !secret SEVENTEENTRACK_PASSWORD
+    
+  ###############################################
+  ## System Monitor Sensors
+  ###############################################
   - platform: systemmonitor
     resources:
       - type: processor_use
@@ -48,3 +490,244 @@ sensor:
         arg: eth0
       - type: packets_out
         arg: eth0
+        
+  ###############################################
+  ## Other Sensors
+  ###############################################
+  - platform: time_date
+    display_options:
+      - "time"
+      - "date"
+
+  - platform: mqtt
+    name: Zigbee-Bridge state
+    state_topic: "zigbee2mqtt/bridge/state"
+    icon: mdi:router-wireless
+
+  ###############################################
+  ## Raven Binary Sensors
+  ###############################################
+  - platform: mqtt
+    name: "Raven Motor RPM"
+    icon: mdi:gauge-empty
+    availability_topic: "/Raven/availability"
+    payload_available: "online"
+    payload_not_available: "offline"
+    state_topic: "/Raven/engine/RPM"
+    value_template: "{{ value }}"
+    unit_of_measurement: "RPM"
+  - platform: mqtt
+    name: "Raven Motor Coolant Temperature"
+    icon: mdi:oil-temperature
+    availability_topic: "/Raven/availability"
+    payload_available: "online"
+    payload_not_available: "offline"
+    state_topic: "/Raven/engine/coolant"
+    value_template: "{{ value }}"
+    unit_of_measurement: "°C"
+    device_class: temperature
+  - platform: mqtt
+    name: "Raven Selector Position"
+    icon: mdi:cogs
+    availability_topic: "/Raven/availability"
+    payload_available: "online"
+    payload_not_available: "offline"
+    state_topic: "/Raven/engine/selector_position"
+    value_template: "{{ value }}"
+  - platform: mqtt
+    name: "Raven Started by Status"
+    icon: mdi:key-wireless
+    availability_topic: "/Raven/availability"
+    payload_available: "online"
+    payload_not_available: "offline"
+    state_topic: "/Raven/started_by_status"
+    value_template: "{{ value }}"
+  - platform: mqtt
+    name: "Raven Actual Mode"
+    icon: mdi:state-machine
+    availability_topic: "/Raven/availability"
+    payload_available: "online"
+    payload_not_available: "offline"
+    state_topic: "/Raven/actual_mode"
+    value_template: "{{ value }}"
+  - platform: mqtt
+    name: "Raven Fuel Burned"
+    icon: mdi:fuel
+    availability_topic: "/Raven/availability"
+    payload_available: "online"
+    payload_not_available: "offline"
+    state_topic: "/Raven/engine/engine_fuel_burned"
+    value_template: "{{ value }}"
+    unit_of_measurement: "mg"
+  - platform: mqtt
+    name: "Raven Fuel Level"
+    icon: mdi:gas-station
+    availability_topic: "/Raven/availability"
+    payload_available: "online"
+    payload_not_available: "offline"
+    state_topic: "/Raven/engine/engine_fuel_level"
+    value_template: "{{ value }}"
+  - platform: mqtt
+    name: "Raven Signal"
+    icon: mdi:car-connected
+    availability_topic: "/Raven/availability"
+    payload_available: "online"
+    payload_not_available: "offline"
+    state_topic: "/Raven/wifi/signal"
+    unit_of_measurement: "%"
+    value_template: "{{ value }}"
+    device_class: signal_strength
+  - platform: mqtt
+    name: "Raven RSSI"
+    icon: mdi:car-connected
+    availability_topic: "/Raven/availability"
+    payload_available: "online"
+    payload_not_available: "offline"
+    state_topic: "/Raven/wifi/rssi"
+    unit_of_measurement: "dBm"
+    device_class: signal_strength
+  - platform: mqtt
+    name: "Raven SSID"
+    icon: mdi:car-connected
+    availability_topic: "/Raven/availability"
+    payload_available: "online"
+    payload_not_available: "offline"
+    state_topic: "/Raven/wifi/ssid"
+    value_template: "{{ value }}"
+  - platform: mqtt
+    name: "Raven WiFi channel"
+    icon: mdi:car-connected
+    availability_topic: "/Raven/availability"
+    payload_available: "online"
+    payload_not_available: "offline"
+    state_topic: "/Raven/wifi/channel"
+    value_template: "{{ value }}"
+  - platform: mqtt
+    name: "Raven Uptime"
+    icon: mdi:timer-sand
+    availability_topic: "/Raven/availability"
+    payload_available: "online"
+    payload_not_available: "offline"
+    state_topic: "/Raven/uptime"
+    value_template: "{{ value }}"
+  - platform: mqtt
+    name: "Raven Battery Voltage"
+    icon: mdi:car-battery
+    availability_topic: "/Raven/availability"
+    payload_available: "online"
+    payload_not_available: "offline"
+    state_topic: "/Raven/battery_voltage"
+    value_template: "{{ value }}"
+    unit_of_measurement: "V"
+  - platform: mqtt
+    name: "Raven Outside Temperature"
+    icon: mdi:temperature-celsius
+    device_class: temperature
+    availability_topic: "/Raven/availability"
+    payload_available: "online"
+    payload_not_available: "offline"
+    state_topic: "/Raven/out_temp"
+    value_template: "{{ value }}"
+    unit_of_measurement: "°C"
+  - platform: mqtt
+    name: "Raven Roof Temperature"
+    icon: mdi:temperature-celsius
+    device_class: temperature
+    availability_topic: "/Raven/availability"
+    payload_available: "online"
+    payload_not_available: "offline"
+    state_topic: "/Raven/roof_temp"
+    value_template: "{{ value }}"
+    unit_of_measurement: "°C"
+  - platform: mqtt
+    name: "Raven Odometer"
+    icon: mdi:counter
+    availability_topic: "/Raven/availability"
+    payload_available: "online"
+    payload_not_available: "offline"
+    state_topic: "/Raven/odometer"
+    value_template: "{{ value }}"
+    unit_of_measurement: "km"
+  - platform: mqtt
+    name: "Raven Doors Status"
+    icon: mdi:car-door
+    availability_topic: "/Raven/availability"
+    payload_available: "online"
+    payload_not_available: "offline"
+    state_topic: "/Raven/doors"
+    value_template: "{{ value }}"
+
+  ###############################################
+  ## Kalorifer in Garage
+  ###############################################
+  - platform: mqtt
+    name: "Garage Air Temperature"
+    state_topic: "/Kalorifer/Temp"
+    value_template: "{{ value }}"
+    unit_of_measurement: "°C"
+    availability_topic: "/Kalorifer/availability"
+    device_class: temperature
+  - platform: mqtt
+    name: "Garage Air Humidity"
+    state_topic: "/Kalorifer/Hum"
+    value_template: "{{ value }}"
+    unit_of_measurement: "%"
+    availability_topic: "/Kalorifer/availability"
+    device_class: humidity
+  - platform: mqtt
+    name: "Garage Kalorifer Water Temperature"
+    state_topic: "/Kalorifer/WaterTemp"
+    value_template: "{{ value }}"
+    unit_of_measurement: "°C"
+    availability_topic: "/Kalorifer/availability"
+    device_class: temperature
+
+  ###############################################
+  ## Alarms
+  ###############################################
+  - platform: template
+    sensors:
+      alarm_1_time:
+        friendly_name: "Alarm Time"
+        value_template: >-
+          {{ "%0.02d:%0.02d" | format(states("input_number.alarm_1_hour") | int, states("input_number.alarm_1_minutes") | int) }}
+  - platform: template
+    sensors:
+      alarm_2_time:
+        friendly_name: "Alarm Time"
+        value_template: >-
+          {{ "%0.02d:%0.02d" | format(states("input_number.alarm_2_hour") | int, states("input_number.alarm_2_minutes") | int) }}
+  - platform: template
+    sensors:
+      alarm_3_time:
+        friendly_name: "Alarm Time"
+        value_template: >-
+          {{ "%0.02d:%0.02d" | format(states("input_number.alarm_3_hour") | int, states("input_number.alarm_3_minutes") | int) }}
+  - platform: template
+    sensors:
+      alarm_4_time:
+        friendly_name: "Alarm Time"
+        value_template: >-
+          {{ "%0.02d:%0.02d" | format(states("input_number.alarm_4_hour") | int, states("input_number.alarm_4_minutes") | int) }}
+
+  ###############################################
+  ## Last Changed Sensors
+  ###############################################
+  - platform: template
+    sensors:
+      hall_last_motion:
+        friendly_name: "Hall Last Motion"
+        value_template: >
+          {{ as_timestamp(states.binary_sensor.tradfri_motion_sensor_occupancy.last_changed) | timestamp_custom('%d.%m.%Y %H:%M:%S',0) }}
+      front_door_last_triggered:
+        friendly_name: "Front Door Last Triggered"
+        value_template: >
+          {{ as_timestamp(states.binary_sensor.aqara_door_sensor_1_contact.last_changed) | timestamp_custom('%d.%m.%Y %H:%M:%S',0) }}
+      bedroom_window_last_triggered:
+        friendly_name: "Bedroom Window Last Triggered"
+        value_template: >
+          {{ as_timestamp(states.binary_sensor.aqara_window_sensor_1_contact.last_changed) | timestamp_custom('%d.%m.%Y %H:%M:%S',0) }}
+      raven_last_message_received:
+        friendly_name: "Raven Last Message Received"
+        value_template: >
+          {{ as_timestamp(states.sensor.raven_rssi.last_changed) | timestamp_custom('%d.%m.%Y %H:%M:%S',0) }}

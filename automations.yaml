@@ -1,1 +1,1063 @@
-[]
+- id: Welcome Home Mr
+  alias: Welcome Home Mr
+  trigger:
+    - platform: state
+      entity_id: person.sen
+      to: "home"
+  condition:
+    - condition: time
+      after: "6:00:00"
+      before: "22:00:00"
+  action:
+    - service: scene.turn_on
+      entity_id: scene.daytime_lights_enabled
+    - wait_template: "{{ states('binary_sensor.aqara_door_sensor_1_contact') == 'on' }}"
+      timeout: 00:10:00
+      continue_on_timeout: false
+    - wait_template: "{{ states('binary_sensor.aqara_door_sensor_1_contact') == 'off' }}"
+      timeout: 00:10:00
+    - service: tts.google_say
+      data:
+        entity_id: media_player.kitchen
+        message: Welcome home Mr. Morgan
+        language: en
+
+- id: Welcome Home Mrs
+  alias: Welcome Home Mrs
+  trigger:
+    - platform: state
+      entity_id: person.kris
+      to: "home"
+  condition:
+    - condition: time
+      after: "6:00:00"
+      before: "22:00:00"
+  action:
+    - wait_template: "{{ states('binary_sensor.aqara_door_sensor_1_contact') == 'on' }}"
+      timeout: 00:10:00
+      continue_on_timeout: false
+    - wait_template: "{{ states('binary_sensor.aqara_door_sensor_1_contact') == 'off' }}"
+      timeout: 00:10:00
+    - service: scene.turn_on
+      entity_id: scene.daytime_lights_enabled
+    - service: tts.google_say
+      data:
+        entity_id: media_player.kitchen
+        message: Welcome home Mrs. Morgan
+        language: en
+
+- id: Switch Off Lights
+  alias: Switch Off Lights
+  trigger:
+    - platform: state
+      entity_id: binary_sensor.aqara_door_sensor_1_contact
+      from: "on"
+      to: "off"
+  condition:
+    - condition: state
+      entity_id: binary_sensor.tradfri_motion_sensor_occupancy
+      state: "on"
+    - condition: template
+      value_template:
+        "{{ ( as_timestamp(now()) - as_timestamp(state_attr('automation.welcome_home_mr',
+        'last_triggered')) |int(0) ) > 60 }}"
+    - condition: template
+      value_template:
+        "{{ ( as_timestamp(now()) - as_timestamp(state_attr('automation.welcome_home_mrs',
+        'last_triggered')) |int(0) ) > 60 }}"
+    - condition: template
+      value_template:
+        "{{ ( as_timestamp(now()) - as_timestamp(state_attr('automation.welcome_hall_light',
+        'last_triggered')) |int(0) ) > 60 }}"
+  action:
+    - wait_template: "{{ states('binary_sensor.people_home') == 'off' }}"
+      timeout: "00:20:00"
+      continue_on_timeout: false
+    - service: light.turn_off
+      entity_id: all
+    - service: switch.turn_off
+      entity_id: switch.string_lights
+    - service: notify.mobile_app_galaxy_a51
+      data:
+        title: "{{ 'ℹ️' }} Системное уведомление"
+        message: Весь свет был погашен в {{ states('sensor.time') }}
+
+- id: Goodbye Daytime Lights
+  alias: Goodbye Daytime Lights
+  trigger:
+    - platform: state
+      entity_id: binary_sensor.aqara_door_sensor_1_contact
+      from: "on"
+      to: "off"
+  condition:
+    - condition: state
+      entity_id: binary_sensor.tradfri_motion_sensor_occupancy
+      state: "on"
+    - condition: state
+      entity_id: person.sen
+      state: "home"
+  action:
+    - wait_template: "{{ states('person.sen') != 'home' }}"
+      timeout: "00:15:00"
+      continue_on_timeout: false
+    - service: scene.turn_on
+      entity_id: scene.daytime_lights_disabled
+
+- id: Synchronize Desk and Floor Lamps Switching OFF
+  alias: Synchronize Desk and Floor Lamps
+  trigger:
+    - platform: state
+      entity_id: light.desk_lamp
+      to: "off"
+  action:
+    - service: light.turn_off
+      entity_id: light.floor_lamp
+    - service: automation.turn_off
+      entity_id: automation.synchronize_desk_and_floor_lamps_switching_off
+
+- id: Synchronize Desk and Floor Lamps Brightness
+  alias: Synchronize Desk and Floor Lamps Brightness
+  trigger:
+    - platform: state
+      entity_id: light.desk_lamp
+  condition:
+    - condition: state
+      entity_id: light.desk_lamp
+      state: "on"
+  action:
+    - service: light.turn_on
+      data_template:
+        entity_id: light.floor_lamp
+        brightness: "{{ states.light.desk_lamp.attributes.brightness | int + 5}}"
+    - service: automation.turn_on
+      entity_id: automation.synchronize_desk_and_floor_lamps_switching_off
+
+- id: Switch ON Lights with PC
+  alias: Switch ON Lights with PC
+  trigger:
+    - platform: state
+      entity_id: switch.asus_pc
+      from: "off"
+      to: "on"
+  condition:
+    - condition: or
+      conditions:
+        - condition: state
+          entity_id: light.shelf_lighting
+          state: "off"
+        - condition: state
+          entity_id: light.gyver_lamp
+          state: "off"
+    - condition: template
+      value_template:
+        "{{ ( as_timestamp(now()) - as_timestamp(state_attr('automation.switch_on_lights_with_pc',
+        'last_triggered')) |int(0) ) > 7200 }}"
+  action:
+    - service: light.turn_on
+      entity_id:
+        - light.shelf_lighting
+        - light.gyver_lamp
+    #      - light.headlight
+    - service: switch.turn_on
+      entity_id: switch.pc_backlight_sync_send
+
+- id: Start blinking lights
+  alias: Start blinking lights
+  trigger:
+    - platform: state
+      entity_id: input_boolean.blink_switch
+      to: "on"
+  condition:
+    - condition: state
+      entity_id: script.flash_lights
+      state: "off"
+  action:
+    - service: script.turn_on
+      target:
+        entity_id: script.flash_lights
+
+- id: Feedback to blink switch
+  alias: Feedback to blink switch
+  trigger:
+    - platform: state
+      entity_id: script.flash_lights
+      to: "off"
+  action:
+    - service: input_boolean.turn_off
+      entity_id: input_boolean.blink_switch
+
+- id: Close Blinds At Evening
+  alias: Close Blinds At Evening
+  trigger:
+    - platform: sun
+      event: sunset
+      offset: 00:20:00
+  condition:
+    - condition: state
+      entity_id: cover.bedroom
+      state: open
+    - condition: state
+      entity_id: binary_sensor.aqara_window_sensor_1_contact
+      state: "off"
+  action:
+    - service: cover.close_cover
+      entity_id: cover.bedroom
+
+- id: Welcome Home Lights
+  alias: Welcome Home Lights
+  trigger:
+    - platform: state
+      entity_id: binary_sensor.people_home
+      from: "off"
+      to: "on"
+  condition:
+    condition: or
+    conditions:
+      - condition: and
+        conditions:
+          - condition: sun
+            after: sunset
+          - condition: time
+            after: "6:00:00"
+            before: "21:00:00"
+          - condition: time
+            weekday:
+              - mon
+              - tue
+              - wed
+              - thu
+              - fri
+      - condition: and
+        conditions:
+          - condition: sun
+            after: sunset
+          - condition: time
+            weekday:
+              - sun
+              - sat
+  action:
+    - service: scene.turn_on
+      entity_id: scene.welcome_home_lights
+
+- alias: Bar light switch ON
+  id: Bar light switch ON
+  trigger:
+    - platform: sun
+      event: sunset
+      offset: -00:15:00
+  action:
+    - service: light.turn_on
+      entity_id: light.bar_light
+
+- alias: Bar light switch OFF
+  id: Bar light switch OFF
+  trigger:
+    - platform: sun
+      event: sunrise
+      offset: -01:00:00
+  action:
+    - service: light.turn_off
+      entity_id: light.bar_light
+
+- id: Alarm Morgan
+  alias: Alarm Morgan
+  trigger:
+    - platform: time_pattern
+      minutes: /1
+      seconds: 0
+  condition:
+    - condition: time
+      weekday:
+        - mon
+        - tue
+        - wed
+        - thu
+        - fri
+    - condition: template
+      value_template:
+        '{{ now().strftime("%H:%M") == states.sensor.alarm_1_time.state
+        }}'
+    - condition: state
+      entity_id: cover.bedroom
+      state: closed
+    - condition: state
+      entity_id: person.sen
+      state: "home"
+  action:
+    - service: cover.open_cover
+      entity_id: cover.bedroom
+    - service: switch.turn_on
+      entity_id: switch.asus_pc
+- id: Alarm Kris
+  alias: Alarm Kris
+  trigger:
+    - platform: time_pattern
+      minutes: /1
+      seconds: 0
+  condition:
+    - condition: time
+      weekday:
+        - mon
+        - tue
+        - wed
+        - thu
+        - fri
+    - condition: template
+      value_template:
+        '{{ now().strftime("%H:%M") == states.sensor.alarm_2_time.state
+        }}'
+    - condition: state
+      entity_id: cover.bedroom
+      state: closed
+  action:
+    - service: light.turn_on
+      data:
+        entity_id: light.floor_lamp
+        brightness: 50
+- id: Alarm Weekends
+  alias: Alarm Weekends
+  trigger:
+    - platform: time_pattern
+      minutes: /1
+      seconds: 0
+  condition:
+    - condition: time
+      weekday:
+        - sat
+        - sun
+    - condition: template
+      value_template:
+        '{{ now().strftime("%H:%M") == states.sensor.alarm_3_time.state
+        }}'
+    - condition: state
+      entity_id: cover.bedroom
+      state: closed
+  action:
+    - service: cover.set_cover_position
+      data:
+        entity_id: cover.bedroom
+        position: 50
+    - delay: 00:10:00
+    - service: cover.open_cover
+      entity_id: cover.bedroom
+- id: Alarm Weekdays
+  alias: Alarm Weekdays
+  trigger:
+    - platform: time_pattern
+      minutes: /1
+      seconds: 0
+  condition:
+    - condition: time
+      weekday:
+        - mon
+        - tue
+        - wed
+        - thu
+        - fri
+    - condition: template
+      value_template:
+        '{{ now().strftime("%H:%M") == states.sensor.alarm_4_time.state
+        }}'
+    - condition: state
+      entity_id: cover.bedroom
+      state: closed
+  action:
+    - service: cover.open_cover
+      entity_id: cover.bedroom
+
+- id: Close Blinds and Lights After Kris away
+  alias: Close Blinds and Lights After Kris away
+  trigger:
+    - platform: state
+      entity_id: binary_sensor.aqara_door_sensor_1_contact
+      from: "on"
+      to: "off"
+  condition:
+    - condition: state
+      entity_id: binary_sensor.tradfri_motion_sensor_occupancy
+      state: "on"
+    - condition: time
+      after: "4:00"
+      before: "5:00"
+    - condition: state
+      entity_id: automation.alarm_kris
+      state: "on"
+  action:
+    - service: cover.close_cover
+      entity_id: cover.bedroom
+    - service: light.turn_off
+      entity_id: all
+
+- id: Kris Arrived
+  alias: Kris Arrived
+  trigger:
+    - platform: state
+      entity_id: person.kris
+      to: "home"
+  action:
+    - service: notify.mobile_app_galaxy_a51
+      data:
+        title: "{{ 'ℹ️' }} Системное уведомление"
+        message: Кристина пришла домой в {{ states('sensor.time') }}
+
+- id: Kris Leaved
+  alias: Kris Leaved
+  trigger:
+    - platform: state
+      entity_id: person.kris
+      from: "home"
+      to: "not_home"
+  action:
+    - service: notify.mobile_app_galaxy_a51
+      data:
+        title: "{{ 'ℹ️' }} Системное уведомление"
+        message: Кристина ушла в {{ states('sensor.time') }}
+
+- id: Garage Kalorifer Temperature Alarm
+  alias: Garage Kalorifer Temperature Alarm
+  trigger:
+    - platform: numeric_state
+      entity_id: sensor.garage_kalorifer_water_temperature
+      above: 85
+  action:
+    - service: notify.mobile_app_galaxy_a51
+      data_template:
+        title: "{{ '❗️' }} Превышение температуры калорифера!"
+        message:
+          Температура воды в контуре {{ states('sensor.garage_kalorifer_water_temperature')
+          }}°C {% if states.binary_sensor.garage_kalorifer.state == "on" %} Калорифер включен
+          {{ '\ud83d\udd0c' }} {% else %} Калорифер ВЫКЛЮЧЕН {{ '\u203c\ufe0f' }} {%
+          endif %}
+
+###############################################
+## Raven Automations
+###############################################
+
+- id: Raven Connected
+  alias: Raven Connected
+  trigger:
+    - platform: state
+      entity_id: person.Raven
+      to: "home"
+  action:
+    - service: notify.mobile_app_galaxy_a51
+      data:
+        title: "{{ 'ℹ️' }} Сообщение от Raven"
+        message: Raven подключился к серверу
+
+- id: Raven Disconnected
+  alias: Raven Disconnected
+  trigger:
+    - platform: state
+      entity_id: person.Raven
+      to: "not_home"
+  action:
+    - service: notify.mobile_app_galaxy_a51
+      data:
+        title: "{{ 'ℹ️' }} Сообщение от Raven"
+        message: Raven отключился от сервера
+
+- id: Raven Alarm
+  alias: Raven Alarm
+  trigger:
+    - platform: state
+      entity_id: binary_sensor.raven_alarm
+      from: "off"
+      to: "on"
+  action:
+    - service: notify.mobile_app_galaxy_a51
+      data:
+        title: "{{ '❗️' }} Сообщение от Raven"
+        message: Несанкционированный доступ в Raven в {{ states('sensor.time') }}
+
+- id: Raven Low Battery Notification
+  alias: Raven Low Battery Notification
+  trigger:
+    - platform: numeric_state
+      entity_id: sensor.raven_battery_voltage
+      below: 12.2
+      for: "00:00:30"
+  action:
+    - alias: "Set up variables for the actions"
+      variables:
+        # Including an id in the action allows us to identify this script run
+        # and not accidentally trigger for other notification actions
+        action_start_charging: "{{ 'START_CHARGING_' ~ context.id }}"
+    - alias: "Ask to ask to start charging"
+      service: notify.mobile_app_galaxy_a51
+      data:
+        title: "{{ '❗️' }} Сообщение от Raven"
+        message: Низкое бортовое напряжение - {{ states('sensor.raven_battery_voltage') }}V
+        data:
+          actions:
+            - action: "{{ action_start_charging }}"
+              title: "Start Charging"
+            - action: "URI"
+              title: "Open URI"
+              uri: "/lovelace/raven"
+    - alias: "Wait for a response"
+      wait_for_trigger:
+        - platform: event
+          event_type: mobile_app_notification_action
+          event_data:
+            # waiting for the specific action avoids accidentally continuing
+            # for another script/automation's notification action
+            action: "{{ action_start_charging }}"
+    - alias: "Perform the action"
+      choose:
+        - conditions: "{{ wait.trigger.event.data.action == action_start_charging }}"
+          sequence:
+            - service: switch.turn_on
+              target:
+                entity_id: switch.backyard_socket
+
+###############################################
+## Home Assistant Automations
+###############################################
+
+- id: Home Assistant Start Notification
+  alias: Home Assistant Start Notification
+  trigger:
+    - platform: homeassistant
+      event: start
+  action:
+    - service: notify.mobile_app_galaxy_a51
+      data:
+        title: "{{ 'ℹ️' }} Системное уведомление"
+        message: "Cервер запущен {{ '\uD83D\uDC4C' }} в {{ states('sensor.time') }}."
+- id: Home Assistant Stop Notification
+  alias: Home Assistant Stop Notification
+  trigger:
+    - platform: event
+      event_type: homeassistant_stop
+  action:
+    - service: notify.mobile_app_galaxy_a51
+      data:
+        title: "{{ 'ℹ️' }} Системное уведомление"
+        message: "Сервер остановлен {{'\uD83D\uDED1'}} в {{ states('sensor.time') }}"
+
+- id: New Device Connected
+  alias: New Device Connected
+  trigger:
+    - platform: event
+      event_type: device_tracker_new_device
+  action:
+    - service: notify.mobile_app_galaxy_a51
+      data:
+        title: "{{ 'ℹ️' }} Системное уведомление"
+        message:
+          "В сети появилось {{ '\uD83D\uDCE1' }} новое устройство {{ '\uD83D\uDDA5\
+          ' }}"
+    - service: tts.google_say
+      data:
+        entity_id: media_player.kitchen
+        message: New device was connected to WiFi network Mr. Morgan
+        language: en
+
+- id: letsencrypt-renewal
+  initial_state: true
+  alias: Let's Encrypt Renewal
+  trigger:
+    - platform: time
+      at: 00:00:00
+  action:
+    - service: hassio.addon_restart
+      data:
+        addon: core_letsencrypt
+- id: Update Available Notification
+  alias: Update Available Notification
+  trigger:
+    - platform: state
+      entity_id: binary_sensor.updater
+      from: "off"
+      to: "on"
+  action:
+    - service: notify.mobile_app_galaxy_a51
+      data:
+        title: "{{ 'ℹ️' }} Системное уведомление"
+        message: "Update! {{ '\uD83C\uDF0D' }} Доступно новое обновление!"
+
+###############################################
+## Weather Automations
+###############################################
+
+- id: Snow Notification
+  alias: Snow Notification
+  trigger:
+    - platform: numeric_state
+      entity_id: sensor.openweathermap_snow
+      above: 0
+  action:
+    - service: notify.mobile_app_galaxy_a51
+      data_template:
+        title: Уведомление о снеге {{ '\u2744\ufe0f' }}
+        message: Должно выпасть {{ states('sensor.openweathermap_snow') }} мм снега
+
+###############################################
+## ZigBee2MQTT Dongle Automations
+###############################################
+
+- id: enable_zigbee_join
+  alias: Enable Zigbee joining
+  trigger:
+    platform: state
+    entity_id: input_boolean.zigbee_permit_join
+    to: "on"
+  action:
+    - service: mqtt.publish
+      data:
+        topic: zigbee2mqtt/bridge/config/permit_join
+        payload: "true"
+    - service: timer.start
+      data:
+        entity_id: timer.zigbee_permit_join
+- id: disable_zigbee_join
+  alias: Disable Zigbee joining
+  trigger:
+    - entity_id: input_boolean.zigbee_permit_join
+      platform: state
+      to: "off"
+  action:
+    - data:
+        payload: "false"
+        topic: zigbee2mqtt/bridge/config/permit_join
+      service: mqtt.publish
+    - data:
+        entity_id: timer.zigbee_permit_join
+      service: timer.cancel
+- id: disable_zigbee_join_timer
+  alias: Disable Zigbee joining by timer
+  trigger:
+    - platform: event
+      event_type: timer.finished
+      event_data:
+        entity_id: timer.zigbee_permit_join
+  action:
+    - service: mqtt.publish
+      data:
+        topic: zigbee2mqtt/bridge/config/permit_join
+        payload: "false"
+    - service: input_boolean.turn_off
+      data:
+        entity_id: input_boolean.zigbee_permit_join
+
+###############################################
+## Aqara Cube Automations
+###############################################
+
+- id: Cube Flip 90
+  alias: Cube Flip 90
+  trigger:
+    platform: state
+    entity_id: sensor.aqara_cube_1_action
+    to: "flip90"
+  condition:
+    - condition: state
+      entity_id: input_boolean.cube_1_control
+      state: "on"
+  action:
+    - service: light.toggle
+      entity_id: light.kitchen_spotlights
+
+- id: Cube Flip 180
+  alias: Cube Flip 180
+  trigger:
+    platform: state
+    entity_id: sensor.aqara_cube_1_action
+    to: "flip180"
+  condition:
+    - condition: state
+      entity_id: input_boolean.cube_1_control
+      state: "on"
+  action:
+    - service: light.turn_off
+      entity_id: all
+
+- id: Cube Shake
+  alias: Cube Shake
+  trigger:
+    - platform: state
+      entity_id: sensor.aqara_cube_1_action
+      to: "shake"
+  condition:
+    - condition: state
+      entity_id: input_boolean.cube_1_control
+      state: "on"
+  action:
+    - service: scene.turn_on
+      entity_id: scene.daytime_lights_enabled
+    - service: tts.google_say
+      data:
+        entity_id: media_player.kitchen
+        message: Yeah, shake me baby
+        language: en
+    - service: light.toggle
+      entity_id:
+        - light.kitchen_spotlights
+        - light.floor_lamp
+    - delay: 0.8
+    - service: light.toggle
+      entity_id:
+        - light.kitchen_spotlights
+        - light.floor_lamp
+    - delay: 0.8
+    - service: light.toggle
+      entity_id:
+        - light.kitchen_spotlights
+        - light.floor_lamp
+    - delay: 0.8
+    - service: light.toggle
+      entity_id:
+        - light.kitchen_spotlights
+        - light.floor_lamp
+    - delay: 0.8
+
+- id: Cube Tap
+  alias: Cube Tap
+  trigger:
+    platform: state
+    entity_id: sensor.aqara_cube_1_action
+    to: "tap"
+  condition:
+    - condition: state
+      entity_id: input_boolean.cube_1_control
+      state: "on"
+  action:
+    - service: scene.turn_on
+      entity_id: scene.movies
+
+- id: Cube Slide
+  alias: Cube Slide
+  trigger:
+    platform: state
+    entity_id: sensor.aqara_cube_1_action
+    to: "slide"
+  condition:
+    - condition: state
+      entity_id: input_boolean.cube_1_control
+      state: "on"
+  action:
+    - service: light.toggle
+      entity_id: light.desk_lamp
+
+- id: Cube Rotate
+  alias: Cube Rotate
+  trigger:
+    - platform: state
+      entity_id: sensor.aqara_cube_1_action
+      to: "rotate_left"
+    - platform: state
+      entity_id: sensor.aqara_cube_1_action
+      to: "rotate_right"
+  condition:
+    - condition: state
+      entity_id: input_boolean.cube_1_control
+      state: "on"
+  action:
+    - service: light.turn_on
+      entity_id: light.desk_lamp
+      data_template:
+        brightness:
+          "{% set suggested = states.light.desk_lamp.attributes.brightness\
+          \ | int + \n  states.sensor.aqara_cube_1_action.attributes.angle | int + 1\
+          \ %}\n{% if suggested > 0 %} {{ suggested }} {% else %} 1 {% endif %}\n"
+
+###############################################
+## Aqara Switch Automations
+###############################################
+
+- id: Aqara Switch Single
+  alias: Aqara Switch Single
+  trigger:
+    platform: state
+    entity_id: sensor.aqara_switch_1_action
+    to: "single"
+  action:
+    - service: light.turn_off
+      entity_id: all
+    - service: scene.turn_on
+      entity_id: scene.good_night
+
+- id: Aqara Switch Triple
+  alias: Aqara Switch Triple
+  trigger:
+    platform: state
+    entity_id: sensor.aqara_switch_1_action
+    to: "triple"
+  action:
+    - service: switch.turn_off
+      entity_id: switch.asus_pc
+
+- id: Aqara Switch Hold
+  alias: Aqara Switch Hold
+  trigger:
+    platform: state
+    entity_id: sensor.aqara_switch_1_action
+    to: "hold"
+  action:
+    - service: cover.open_cover
+      entity_id: cover.bedroom
+
+###############################################
+##
+###############################################
+
+- id: Switch On Lights in Hall By Motion
+  alias: Switch On Lights in Hall By Motion
+  trigger:
+    platform: state
+    entity_id: binary_sensor.tradfri_motion_sensor_occupancy
+    to: "on"
+  condition:
+    - condition: time
+      after: "6:00"
+      before: "21:00"
+    - condition: time
+      weekday:
+        - mon
+        - tue
+        - wed
+        - thu
+        - fri
+  action:
+    service: light.turn_on
+    entity_id: light.hall_lights
+
+- id: Switch Off Lights in Hall By Motion
+  alias: Switch Off Lights in Hall By Motion
+  trigger:
+    platform: state
+    entity_id: binary_sensor.tradfri_motion_sensor_occupancy
+    to: "off"
+    for: "00:00:10"
+  condition:
+    condition: state
+    entity_id: light.hall_lights
+    state: "on"
+  action:
+    service: light.turn_off
+    entity_id: light.hall_lights
+
+- id: Welcome Hall Light
+  alias: Welcome Hall Light
+  trigger:
+    platform: state
+    entity_id: binary_sensor.aqara_door_sensor_1_contact
+    to: "on"
+  action:
+    service: light.turn_on
+    entity_id: light.hall_lights
+
+- id: Tradfri Switch On
+  alias: Tradfri Switch On
+  trigger:
+    platform: state
+    entity_id: sensor.tradfri_switch_action
+    to: "on"
+  action:
+    - service: light.turn_on
+      entity_id: light.floor_lamp
+
+- id: Tradfri Switch Off
+  alias: Tradfri Switch Off
+  trigger:
+    platform: state
+    entity_id: sensor.tradfri_switch_action
+    to: "off"
+  action:
+    - service: light.turn_off
+      entity_id: light.floor_lamp
+
+###############################################
+## Dim up/down with long press
+###############################################
+
+- id: ikea_controller_brighten_on
+  alias: Ikea Controller - Brighten on
+  trigger:
+    - platform: state
+      entity_id: sensor.tradfri_switch_action
+      to: "brightness_move_up"
+  condition:
+    - condition: state
+      entity_id: light.floor_lamp
+      state: "on"
+  action:
+    - service: input_boolean.turn_on
+      entity_id: input_boolean.light_brightness
+    - service: python_script.change_attribute_light_smoothly
+      data:
+        light_id: light.floor_lamp
+        input_boolean: input_boolean.light_brightness
+        delta: 10
+
+- id: ikea_controller_dim_on
+  alias: Ikea Controller - Dim on
+  trigger:
+    - platform: state
+      entity_id: sensor.tradfri_switch_action
+      to: "brightness_move_down"
+  condition:
+    - condition: state
+      entity_id: light.floor_lamp
+      state: "on"
+  action:
+    - service: input_boolean.turn_on
+      entity_id: input_boolean.light_brightness
+    - service: python_script.change_attribute_light_smoothly
+      data:
+        light_id: light.floor_lamp
+        input_boolean: input_boolean.light_brightness
+        delta: -10
+
+- id: ikea_controller_brighten_dim_off
+  alias: Ikea Controller - Brighten Dim off
+  initial_state: "on"
+  trigger:
+    - platform: state
+      entity_id: sensor.tradfri_switch_action
+      to: brightness_stop
+  condition:
+    condition: and
+    conditions:
+      - condition: state
+        entity_id: input_boolean.light_brightness
+        state: "on"
+      - condition: state
+        entity_id: light.floor_lamp
+        state: "on"
+  action:
+    - service: input_boolean.turn_off
+      entity_id: input_boolean.light_brightness
+
+###############################################
+##  Switch ON Presentation Script
+###############################################
+
+- id: Turn On Presentation Script
+  alias: Turn On Presentation Script
+  trigger:
+    - platform: state
+      entity_id: input_boolean.presentation_switch
+      to: "on"
+  condition:
+    - condition: state
+      entity_id: script.presentation
+      state: "off"
+  action:
+    - service: script.turn_on
+      target:
+        entity_id: script.presentation
+    - service: input_boolean.turn_off
+      entity_id: input_boolean.presentation_switch
+
+###############################################
+##  Automatic Scenning
+###############################################
+
+- id: Movies On by TV
+  alias: Movies On
+  trigger:
+    platform: state
+    entity_id: media_player.tv
+    to: "on"
+    for: "00:00:10"
+  condition:
+    - condition: state
+      entity_id: switch.asus_pc
+      state: "off"
+    - condition: state
+      entity_id: light.kitchen_spotlights
+      state: "off"
+    - condition: time
+      after: "18:00:00"
+    - condition: state
+      entity_id: person.sen
+      state: "home"
+  action:
+    - service: scene.turn_on
+      entity_id: scene.movies
+
+- id: Movies On by Sunset
+  alias: Movies On
+  trigger:
+    - platform: sun
+      event: sunset
+  condition:
+    - condition: state
+      entity_id: media_player.tv
+      state: "on"
+    - condition: state
+      entity_id: switch.asus_pc
+      state: "off"
+    - condition: state
+      entity_id: light.kitchen_spotlights
+      state: "off"
+  action:
+    - service: scene.turn_on
+      entity_id: scene.movies
+
+###############################################
+##  Backyard light automations
+###############################################
+
+- id: Backyard Light Kris Arrived
+  alias: Backyard Light Kris Arrived
+  trigger:
+    - platform: state
+      entity_id: person.kris
+      to: "home"
+      for: "00:00:20"
+  condition:
+    - condition: sun
+      after: sunset
+    - condition: template
+      value_template: !secret IS_KRIS_PHONE_CONNECTED_TO_THE_RADIO
+  action:
+    - service: switch.turn_on
+      entity_id: switch.backyard_light
+    - service: notify.mobile_app_galaxy_a51
+      data:
+        title: "{{ 'ℹ️' }} Системное уведомление"
+        message: Прожектор включился в {{ states('sensor.time') }}
+    - wait_template: "{{ states('binary_sensor.aqara_door_sensor_1_contact') == 'on' }}"
+      timeout: 00:10:00
+    - service: switch.turn_off
+      entity_id: switch.backyard_light
+
+###############################################
+## Thermostat automations
+###############################################
+
+- id: Thermostat Off While Aerating
+  alias: Thermostat Off While Aerating
+  mode: restart
+  trigger:
+    - platform: state
+      entity_id: binary_sensor.aqara_window_sensor_1_contact
+      to: "on"
+      for: "00:00:05"
+    - platform: state
+      entity_id: binary_sensor.aqara_window_sensor_1_contact
+      to: "off"
+      for: "00:00:05"
+  condition:
+    - condition: template
+      value_template: "{{(is_state('climate.thermostat', 'auto')) if trigger.to_state.state == 'on' else (is_state('climate.thermostat', 'off')) }}"
+  action:
+    - service: tts.google_say
+      data:
+        entity_id: media_player.kitchen
+        message: "{{'The thermostat switched off' if trigger.to_state.state == 'on' else 'The thermostat will be switched on again in a half an hour' }}"
+        language: en
+    - delay: "{{'00:00:00' if trigger.to_state.state == 'on' else '00:30:00' }}"
+    - service: climate.set_hvac_mode
+      entity_id: climate.thermostat
+      data:
+        hvac_mode: "{{'off' if trigger.to_state.state == 'on' else 'auto' }}"
+    # Sometimes data need to be sent twice to be received by thermostat
+    - delay: 00:00:05
+    - service: climate.set_hvac_mode
+      entity_id: climate.thermostat
+      data:
+        hvac_mode: "{{'off' if trigger.to_state.state == 'on' else 'auto' }}"
