@@ -218,8 +218,6 @@ google_assistant:
       expose: false
     input_boolean.blink_switch:
       expose: false
-    input_boolean.zigbee_permit_join:
-      expose: false
     input_boolean.cube_1_control:
       expose: false
     input_boolean.light_brightness:
@@ -230,13 +228,6 @@ google_assistant:
       expose: false
     switch.udpate_sensors:
       expose: false
-
-######################## START OF TIMERS SECTION ########################
-
-timer:
-  zigbee_permit_join:
-    name: Time remaining
-    duration: 600 # Updated this to the number of seconds you wish
     
 ######################## START OF COVER SECTION ########################
 
@@ -315,10 +306,6 @@ input_boolean:
   blink_switch:
     name: Blink Switch
     icon: mdi:creation
-  zigbee_permit_join:
-    name: Allow devices to join
-    initial: off
-    icon: mdi:cellphone-wireless
   cube_1_control:
     name: Cube Control
     icon: mdi:gesture-double-tap
