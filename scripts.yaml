@@ -1,15 +1,15 @@
-switch_on_backyard_light:
-  alias: Switch On Backyard Light
+switch_on_parking_light:
+  alias: Switch On Parking Light
   sequence:
     - service: switch.turn_off
       target:
-        entity_id: switch.backyard_light
+        entity_id: switch.parking_light
     - delay:
         seconds: 15
     - repeat:
         while:
           - condition: state
-            entity_id: switch.backyard_light
+            entity_id: switch.parking_light
             state: "off"
           # Don't do it too many times
           - condition: template
@@ -17,7 +17,7 @@ switch_on_backyard_light:
         sequence:
           - service: switch.turn_on
             target:
-              entity_id: switch.backyard_light
+              entity_id: switch.parking_light
           - delay:
               seconds: 1
 
