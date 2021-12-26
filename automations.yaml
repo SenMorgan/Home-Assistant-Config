@@ -13,7 +13,7 @@
       timeout: 00:10:00
       continue_on_timeout: false
     - wait_template: "{{ states('binary_sensor.aqara_hall_door_sensor_contact') == 'off' }}"
-      timeout: 00:10:00      
+      timeout: 00:10:00
     - service: switch.turn_on
       entity_id: switch.string_lights
     - service: tts.google_say
@@ -543,6 +543,7 @@
     - service: hassio.addon_restart
       data:
         addon: core_letsencrypt
+
 - id: Update Available Notification
   alias: Update Available Notification
   trigger:
@@ -555,6 +556,14 @@
       data:
         title: "{{ 'ℹ️' }} Системное уведомление"
         message: "Update! {{ '\uD83C\uDF0D' }} Доступно новое обновление!"
+        data:
+          actions:
+            - action: "URI"
+              title: "Open Config"
+              uri: "/config"
+            - action: "URI"
+              title: "Release Notes"
+              uri: "{{ state_attr('binary_sensor.updater', 'release_notes') }}"
 
 ###############################################
 ## Weather Automations
