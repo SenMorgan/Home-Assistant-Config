@@ -25,6 +25,9 @@ discovery:
 # Write Python scripts that are exposed as services in Home Assistant
 python_script:
 
+# Makes it possible to send notifications to a wide variety of platforms
+notify:
+
 # Enables the ability to send magic packets to Wake on LAN capable devices to turn them on
 wake_on_lan:
 
