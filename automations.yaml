@@ -71,12 +71,14 @@
         'last_triggered')) |int(0) ) > 60 }}"
   action:
     - wait_template: "{{ states('binary_sensor.people_home') == 'off' }}"
-      timeout: "00:20:00"
+      timeout: "00:30:00"
       continue_on_timeout: false
     - service: light.turn_off
       entity_id: all
     - service: switch.turn_off
       entity_id: switch.string_lights
+    - service: switch.turn_off
+      entity_id: switch.bar_light
     - service: notify.mobile_app_sm_a51
       data:
         title: "{{ 'ℹ️' }} Системное уведомление"
