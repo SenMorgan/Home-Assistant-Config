@@ -314,11 +314,6 @@
       entity_id: cover.bedroom
       state: closed
   action:
-    - service: cover.set_cover_position
-      data:
-        entity_id: cover.bedroom
-        position: 50
-    - delay: 00:10:00
     - service: cover.open_cover
       entity_id: cover.bedroom
 - id: Alarm Weekdays
@@ -982,39 +977,3 @@
     - service: switch.turn_off
       entity_id: switch.backyard_light
 
-###############################################
-## Thermostat automations
-###############################################
-
-- id: Thermostat Off While Aerating
-  alias: Thermostat Off While Aerating
-  mode: restart
-  trigger:
-    - platform: state
-      entity_id: binary_sensor.aqara_bedroom_window_sensor_contact
-      to: "on"
-      for: "00:00:05"
-    - platform: state
-      entity_id: binary_sensor.aqara_bedroom_window_sensor_contact
-      to: "off"
-      for: "00:00:05"
-  condition:
-    - condition: template
-      value_template: "{{(is_state('climate.thermostat', 'auto')) if trigger.to_state.state == 'on' else (is_state('climate.thermostat', 'off')) }}"
-  action:
-    - service: tts.google_say
-      data:
-        entity_id: media_player.kitchen
-        message: "{{'The thermostat switched off' if trigger.to_state.state == 'on' else 'The thermostat will be switched on again in a half an hour' }}"
-        language: en
-    - delay: "{{'00:00:00' if trigger.to_state.state == 'on' else '00:30:00' }}"
-    - service: climate.set_hvac_mode
-      entity_id: climate.thermostat
-      data:
-        hvac_mode: "{{'off' if trigger.to_state.state == 'on' else 'auto' }}"
-    # Sometimes data need to be sent twice to be received by thermostat
-    - delay: 00:00:05
-    - service: climate.set_hvac_mode
-      entity_id: climate.thermostat
-      data:
-        hvac_mode: "{{'off' if trigger.to_state.state == 'on' else 'auto' }}"
