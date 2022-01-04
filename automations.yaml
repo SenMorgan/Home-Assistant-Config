@@ -18,7 +18,7 @@
       entity_id: switch.string_lights
     - service: tts.google_say
       data:
-        entity_id: media_player.kitchen
+        entity_id: media_player.kitchen_google_home_mini
         message: Welcome home Mr. Morgan
         language: en
 
@@ -42,7 +42,7 @@
       entity_id: switch.string_lights
     - service: tts.google_say
       data:
-        entity_id: media_player.kitchen
+        entity_id: media_player.kitchen_google_home_mini
         message: Welcome home Mrs. Morgan
         language: en
 
@@ -526,7 +526,7 @@
           ' }}"
     - service: tts.google_say
       data:
-        entity_id: media_player.kitchen
+        entity_id: media_player.kitchen_google_home_mini
         message: New device was connected to WiFi network Mr. Morgan
         language: en
 
@@ -623,7 +623,7 @@
   action:
     - service: tts.google_say
       data:
-        entity_id: media_player.kitchen
+        entity_id: media_player.kitchen_google_home_mini
         message: Yeah, shake me baby
         language: en
     - service: light.toggle
@@ -977,3 +977,78 @@
     - service: switch.turn_off
       entity_id: switch.backyard_light
 
+###############################################
+## Thermostat automations
+###############################################
+
+- id: Thermostat Off While Window Opened
+  alias: Thermostat Off While Window Opened
+  mode: restart
+  trigger:
+    - platform: state
+      entity_id: binary_sensor.aqara_bedroom_window_sensor_contact
+      id: Window Opened
+      to: "on"
+      from: "off"
+      for: "00:00:05"
+    - platform: state
+      entity_id: binary_sensor.aqara_bedroom_window_sensor_contact
+      id: Window Closed
+      from: "on"
+      to: "off"
+      for: "00:00:05"
+  condition:
+    - condition: or
+      conditions:
+        - condition: and
+          conditions:
+            - condition: or
+              conditions:
+                - condition: state
+                  entity_id: climate.thermostat
+                  state: auto
+                - condition: state
+                  entity_id: climate.thermostat
+                  state: heat
+            - condition: trigger
+              id: Window Opened
+        - condition: and
+          conditions:
+            - condition: state
+              entity_id: climate.thermostat
+              state: "off"
+            - condition: trigger
+              id: Window Closed
+  action:
+    - choose:
+        - conditions:
+            - condition: trigger
+              id: Window Opened
+          sequence:
+            - service: tts.google_say
+              target:
+                entity_id: media_player.kitchen_google_home_mini
+              data:
+                message: "The thermostat switched off"
+                language: en
+            - service: climate.set_hvac_mode
+              data:
+                hvac_mode: "off"
+              target:
+                entity_id: climate.thermostat
+        - conditions:
+            - condition: trigger
+              id: Window Closed
+          sequence:
+            - service: tts.google_say
+              target:
+                entity_id: media_player.kitchen_google_home_mini
+              data:
+                message: "The thermostat will be switched on again in a half an hour"
+                language: en
+            - delay: 30:00
+            - service: climate.set_hvac_mode
+              target:
+                entity_id: climate.thermostat
+              data:
+                hvac_mode: "auto"
