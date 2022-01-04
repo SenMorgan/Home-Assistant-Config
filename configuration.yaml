@@ -715,16 +715,16 @@ sensor:
       hall_last_motion:
         friendly_name: "Hall Last Motion"
         value_template: >
-          {{ as_timestamp(states.binary_sensor.tradfri_motion_sensor_occupancy.last_changed) | timestamp_custom('%d.%m.%Y %H:%M:%S',0) }}
+          {{ as_timestamp(states.binary_sensor.tradfri_motion_sensor_occupancy.last_changed) | timestamp_custom('%d.%m.%Y %H:%M:%S',1) }}
       front_door_last_triggered:
         friendly_name: "Front Door Last Triggered"
         value_template: >
-          {{ as_timestamp(states.binary_sensor.aqara_hall_door_sensor_contact.last_changed) | timestamp_custom('%d.%m.%Y %H:%M:%S',0) }}
+          {{ as_timestamp(states.binary_sensor.aqara_hall_door_sensor_contact.last_changed) | timestamp_custom('%d.%m.%Y %H:%M:%S',1) }}
       bedroom_window_last_triggered:
         friendly_name: "Bedroom Window Last Triggered"
         value_template: >
-          {{ as_timestamp(states.binary_sensor.aqara_bedroom_window_sensor_contact.last_changed) | timestamp_custom('%d.%m.%Y %H:%M:%S',0) }}
+          {{ as_timestamp(states.binary_sensor.aqara_bedroom_window_sensor_contact.last_changed) | timestamp_custom('%d.%m.%Y %H:%M:%S',1) }}
       raven_last_message_received:
         friendly_name: "Raven Last Message Received"
         value_template: >
-          {{ as_timestamp(states.sensor.raven_rssi.last_changed) | timestamp_custom('%d.%m.%Y %H:%M:%S',0) }}
+          {{ as_timestamp(states.sensor.raven_rssi.last_changed) | timestamp_custom('%d.%m.%Y %H:%M:%S',1) }}
