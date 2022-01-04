@@ -79,9 +79,9 @@ climate:
     mode_state_template: "{{value_json.schedulesMode}}"
     payload_on: true
     payload_off: false
-    modes: ["heat", "auto", "off"] # mode off means ECO mode, not switching OFF device
-    min_temp: 15
-    max_temp: 30
+    modes: ["auto", "heat", "off"] # mode off means ECO mode (14 degrees), not switching OFF device
+    min_temp: 14
+    max_temp: 28
     temp_step: 1
     precision: 1
 
