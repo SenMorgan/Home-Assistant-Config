@@ -169,7 +169,7 @@ presentation:
 
     # Switch ON Bar Light
     - service: light.turn_on
-      entity_id: light.bar_light
+      entity_id: switch.bar_light
     - delay:
         seconds: 2
 
@@ -183,7 +183,7 @@ presentation:
     - service: media_player.turn_off
       entity_id: media_player.tv
     - service: light.turn_off
-      entity_id: light.bar_light
+      entity_id: switch.bar_light
     - delay:
         seconds: 2
 

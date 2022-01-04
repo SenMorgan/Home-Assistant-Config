@@ -228,7 +228,7 @@
       offset: -00:15:00
   action:
     - service: light.turn_on
-      entity_id: light.bar_light
+      entity_id: switch.bar_light
 
 - alias: Bar light switch OFF
   id: Bar light switch OFF
@@ -238,7 +238,7 @@
       offset: -01:00:00
   action:
     - service: light.turn_off
-      entity_id: light.bar_light
+      entity_id: switch.bar_light
 
 - id: Alarm Morgan
   alias: Alarm Morgan
