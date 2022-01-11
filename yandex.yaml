@@ -1,0 +1,103 @@
+notifier:
+  - oauth_token: !secret YANDEX_OAUTH_TOKEN
+    skill_id: !secret YANDEX_SKILL_ID
+    user_id: !secret YANDEX_USER_ID
+filter:
+  include_entities:
+    - light.floor_lamp
+    - light.gyver_lamp
+    - light.hall_lights
+    - light.kitchen_spotlights
+    - light.mi_desk_lamp
+    - light.pc_backlight
+    - light.shelf_lighting
+    - lock.raven_locks
+    - media_player.bathroom_google_home_mini
+    - media_player.kitchen_google_home_mini
+    - media_player.tv
+    - scene.good_night
+    - scene.movies
+    - scene.welcome_home_lights
+    - switch.asus_pc
+    - switch.bar_light
+    - switch.string_lights
+    - switch.tradrfri_outlet_1
+    - vacuum.johnny
+    - binary_sensor.aqara_bedroom_window_sensor_contact
+    - binary_sensor.aqara_hall_door_sensor_contact
+    - climate.thermostat
+    - cover.bedroom
+entity_config:
+  # type: devices.types.humidifier  # параметр необязательный, вычисляется автоматически!
+  light.floor_lamp:
+    name: Напольная лампа
+    room: Кухня
+  light.gyver_lamp:
+    name: Лампа Гайвера
+    room: Кухня
+  light.hall_lights:
+    name: Свет
+    room: Коридор
+  light.kitchen_spotlights:
+    name: Кухонный свет
+    room: Кухня
+  light.mi_desk_lamp:
+    name: Настольная лампа
+    room: Кухня
+  light.pc_backlight:
+    name: Подсветка монитора
+    room: Кухня
+  light.shelf_lighting:
+    name: Подсветка полки
+    room: Кухня
+  media_player.bathroom_google_home_mini:
+    name: Гугл колонка
+    room: Ванная
+  media_player.kitchen_google_home_mini:
+    name: Гугл колонка
+    room: Кухня
+  media_player.tv:
+    name: Телевизор
+    room: Зал
+  scene.good_night:
+    name: Сцена Доброй Ночи
+    room: Дом
+  scene.movies:
+    name: Сцена Кино
+    room: Дом
+  scene.welcome_home_lights:
+    name: Сцена Добро Пожаловать
+    room: Дом
+  switch.asus_pc:
+    name: Компьютер
+    room: Кухня
+  #  switch.backyard_socket:
+  #    name: Дворовая розетка
+  #    room: Двор
+  switch.bar_light:
+    name: Ёлка
+    room: Зал
+  #  switch.raven_engine:
+  #    name: Двигатель Рэйвэн
+  #    room: Парковка
+  switch.string_lights:
+    name: Лампочки
+    room: Кухня
+  switch.tradrfri_outlet_1:
+    name: Гирлянда
+    room: Кухня
+  vacuum.johnny:
+    name: Джонни
+    room: Спальня
+  binary_sensor.aqara_bedroom_window_sensor_contact:
+    name: Окно
+    room: Спальня
+  binary_sensor.aqara_hall_door_sensor_contact:
+    name: Дверь
+    room: Корридор
+  climate.thermostat:
+    name: Термостат
+    room: Кухня
+  cover.bedroom:
+    name: Штора
+    room: Спальня

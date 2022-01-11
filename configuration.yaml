@@ -1,4 +1,3 @@
-
 # Configure a default setup of Home Assistant (frontend, api, etc)
 default_config:
 
@@ -15,6 +14,7 @@ group: !include groups.yaml
 automation: !include automations.yaml
 script: !include scripts.yaml
 scene: !include scenes.yaml
+yandex_smart_home: !include yandex.yaml
 
 recorder:
   db_url: !secret MYSQL_URL
@@ -48,7 +48,7 @@ webostv:
       - HDMI 3
       - AV
       - Компонентный вход
-      
+
 camera:
   - platform: mjpeg
     name: Parking
@@ -84,7 +84,6 @@ climate:
     max_temp: 28
     temp_step: 1
     precision: 1
-
 
 google_assistant:
   project_id: !secret GOOGLE_ASSISTANT_PROJ_ID
@@ -179,7 +178,7 @@ google_assistant:
       room: Bedroom
     vacuum.johnny:
       room: Bedroom
-      
+
     ######################## UNEXPOSED ENTITIES ########################
     light.pc_backlight:
       name: PC Backlight
@@ -228,7 +227,7 @@ google_assistant:
       expose: false
     switch.udpate_sensors:
       expose: false
-    
+
 ######################## START OF COVER SECTION ########################
 
 cover:
@@ -350,7 +349,7 @@ light:
     payload_available: "online"
     payload_not_available: "offline"
     optimistic: false
-    
+
 ######################## START OF SWITCHES SECTION ########################
 
 switch:
@@ -407,7 +406,7 @@ switch:
       data:
         addon: core_rpc_shutdown
         input: ASUS-PC
-        
+
 ######################## START OF SENSORS SECTION ########################
 
 binary_sensor:
@@ -465,7 +464,7 @@ sensor:
   - platform: seventeentrack
     username: !secret SEVENTEENTRACK_EMAIL
     password: !secret SEVENTEENTRACK_PASSWORD
-    
+
   ###############################################
   ## System Monitor Sensors
   ###############################################
@@ -487,7 +486,7 @@ sensor:
         arg: eth0
       - type: packets_out
         arg: eth0
-        
+
   ###############################################
   ## Other Sensors
   ###############################################
