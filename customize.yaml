@@ -1,0 +1,25 @@
+light.kitchen_spotlights:
+  icon: mdi:spotlight
+switch.bar_light:
+  icon: mdi:led-strip-variant
+switch.string_lights:
+  icon: mdi:string-lights
+switch.tradrfri_outlet_1:
+  icon: mdi:string-lights
+light.floor_lamp:
+  icon: mdi:floor-lamp-dual
+  color_mode: brightness
+  supported_color_modes:
+    - brightness
+  supported_features: 5
+  effect_list:
+    - Breathe
+    - Lightning
+    - Solid
+light.table_lamp:
+  icon: mdi:desk-lamp
+switch.asus_pc:
+  icon: mdi:desktop-tower-monitor
+light.desk_lamp:
+  min_mireds: 200
+  max_mireds: 385
