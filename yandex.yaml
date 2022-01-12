@@ -1,3 +1,5 @@
+# https://github.com/dmitry-k/yandex_smart_home/blob/master/docs/advanced-settings.md
+
 notifier:
   - oauth_token: !secret YANDEX_OAUTH_TOKEN
     skill_id: !secret YANDEX_SKILL_ID
@@ -11,7 +13,6 @@ filter:
     - light.mi_desk_lamp
     - light.pc_backlight
     - light.shelf_lighting
-    - lock.raven_locks
     - media_player.bathroom_google_home_mini
     - media_player.kitchen_google_home_mini
     - media_player.tv
@@ -29,8 +30,23 @@ filter:
     - cover.bedroom
 entity_config:
   # type: devices.types.humidifier  # параметр необязательный, вычисляется автоматически!
+  binary_sensor.aqara_bedroom_window_sensor_contact:
+    name: Окно
+    room: Спальня
+  binary_sensor.aqara_hall_door_sensor_contact:
+    name: Дверь
+    room: Корридор
+  climate.thermostat:
+    name: Термостат
+    room: Кухня
+    turn_on:
+       service: climate.turn_on
+       entity_id: climate.thermostat
+  cover.bedroom:
+    name: Штора
+    room: Спальня
   light.floor_lamp:
-    name: Напольная лампа
+    name: Торшер
     room: Кухня
   light.gyver_lamp:
     name: Лампа Гайвера
@@ -77,27 +93,18 @@ entity_config:
   switch.bar_light:
     name: Ёлка
     room: Зал
+    type: devices.types.light
   #  switch.raven_engine:
   #    name: Двигатель Рэйвэн
   #    room: Парковка
   switch.string_lights:
     name: Лампочки
     room: Кухня
+    type: devices.types.light
   switch.tradrfri_outlet_1:
     name: Гирлянда
     room: Кухня
+    type: devices.types.light
   vacuum.johnny:
     name: Джонни
-    room: Спальня
-  binary_sensor.aqara_bedroom_window_sensor_contact:
-    name: Окно
-    room: Спальня
-  binary_sensor.aqara_hall_door_sensor_contact:
-    name: Дверь
-    room: Корридор
-  climate.thermostat:
-    name: Термостат
-    room: Кухня
-  cover.bedroom:
-    name: Штора
     room: Спальня
