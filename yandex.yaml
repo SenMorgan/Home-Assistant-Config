@@ -52,7 +52,7 @@ entity_config:
     name: Лампа Гайвера
     room: Кухня
   light.hall_lights:
-    name: Свет
+    name: Лампы
     room: Коридор
   light.kitchen_spotlights:
     name: Кухонный свет
@@ -87,6 +87,7 @@ entity_config:
   switch.asus_pc:
     name: Компьютер
     room: Кухня
+    type: devices.types.switch
   #  switch.backyard_socket:
   #    name: Дворовая розетка
   #    room: Двор
