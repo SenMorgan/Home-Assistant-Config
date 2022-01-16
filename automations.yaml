@@ -16,11 +16,11 @@
       timeout: 00:10:00
     - service: switch.turn_on
       entity_id: switch.string_lights
-    - service: tts.google_say
-      data:
-        entity_id: media_player.kitchen_google_home_mini
-        message: Welcome home Mr. Morgan
-        language: en
+    - service: media_player.play_media
+      entity_id: media_player.yandex_station
+      data:        
+        media_content_id: Добро пожаловать домой мистер Морган!
+        media_content_type: text
 
 - id: Welcome Home Mrs
   alias: Welcome Home Mrs
@@ -40,11 +40,11 @@
       timeout: 00:10:00
     - service: switch.turn_on
       entity_id: switch.string_lights
-    - service: tts.google_say
-      data:
-        entity_id: media_player.kitchen_google_home_mini
-        message: Welcome home Mrs. Morgan
-        language: en
+    - service: media_player.play_media
+      entity_id: media_player.yandex_station
+      data:        
+        media_content_id: Добро пожаловать домой миссис Морган!
+        media_content_type: text
 
 - id: Switch Off Lights
   alias: Switch Off Lights
@@ -524,11 +524,11 @@
         message:
           "В сети появилось {{ '\uD83D\uDCE1' }} новое устройство {{ '\uD83D\uDDA5\
           ' }}"
-    - service: tts.google_say
-      data:
-        entity_id: media_player.kitchen_google_home_mini
-        message: New device was connected to WiFi network Mr. Morgan
-        language: en
+    - service: media_player.play_media
+      entity_id: media_player.yandex_station
+      data:        
+        media_content_id: Новое устройство было подключено к локальной сети
+        media_content_type: text
 
 - id: letsencrypt-renewal
   initial_state: true
@@ -621,11 +621,11 @@
       entity_id: input_boolean.cube_1_control
       state: "on"
   action:
-    - service: tts.google_say
-      data:
-        entity_id: media_player.kitchen_google_home_mini
-        message: Yeah, shake me baby
-        language: en
+    - service: media_player.play_media
+      entity_id: media_player.yandex_station
+      data:        
+        media_content_id: О да, встряхни меня, детка!
+        media_content_type: text
     - service: light.toggle
       entity_id:
         - light.kitchen_spotlights
@@ -1025,12 +1025,11 @@
             - condition: trigger
               id: Window Opened
           sequence:
-            - service: tts.google_say
-              target:
-                entity_id: media_player.kitchen_google_home_mini
-              data:
-                message: "The thermostat switched off"
-                language: en
+            - service: media_player.play_media
+              entity_id: media_player.yandex_station
+              data:        
+                media_content_id: Термостат отключен
+                media_content_type: text
             - service: climate.set_hvac_mode
               data:
                 hvac_mode: "off"
@@ -1040,12 +1039,11 @@
             - condition: trigger
               id: Window Closed
           sequence:
-            - service: tts.google_say
-              target:
-                entity_id: media_player.kitchen_google_home_mini
-              data:
-                message: "The thermostat will be switched on again in a half an hour"
-                language: en
+            - service: media_player.play_media
+              entity_id: media_player.yandex_station
+              data:        
+                media_content_id: Термостат будет включен снова через 30 минут
+                media_content_type: text
             - delay: 30:00
             - service: climate.set_hvac_mode
               target:
