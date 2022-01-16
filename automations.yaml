@@ -19,8 +19,9 @@
     - service: media_player.play_media
       entity_id: media_player.yandex_station
       data:        
-        media_content_id: Добро пожаловать домой мистер Морган!
-        media_content_type: text
+        media_content_id: >
+          <speaker audio="alice-sounds-game-powerup-2.opus"> sil <[500]> Добро пожаловать домой мистер Морган!
+        media_content_type: dialog
         extra:
           volume_level: 0.9
 
@@ -45,8 +46,9 @@
     - service: media_player.play_media
       entity_id: media_player.yandex_station
       data:        
-        media_content_id: Добро пожаловать домой миссис Морган!
-        media_content_type: text
+        media_content_id: >
+          <speaker audio="alice-sounds-game-powerup-2.opus"> sil <[500]> Добро пожаловать домой миссис Морган
+        media_content_type: dialog
         extra:
           volume_level: 0.9
 
@@ -554,8 +556,10 @@
     - service: media_player.play_media
       entity_id: media_player.yandex_station
       data:        
-        media_content_id: К локальной сети было подключено новое устройство с именем {{state_attr(entity,'friendly_name')}}
-        media_content_type: text
+        media_content_id: >
+          <speaker audio="alice-sounds-game-powerup-2.opus"> sil <[500]> 
+          К локальной сети было подключено новое устройство с именем {{state_attr(entity,'friendly_name')}}
+        media_content_type: dialog
         extra:
           volume_level: 0.8
 
@@ -654,7 +658,9 @@
       entity_id: media_player.yandex_station
       data:        
         media_content_id: О да, встряхни меня, детка!
-        media_content_type: text
+        media_content_type: dialog
+        extra:
+          volume_level: 0.8
     - service: light.toggle
       entity_id:
         - light.kitchen_spotlights
@@ -1057,8 +1063,11 @@
             - service: media_player.play_media
               entity_id: media_player.yandex_station
               data:        
-                media_content_id: Термостат отключен
-                media_content_type: text
+                media_content_id: >
+                  <speaker audio="alice-sounds-game-powerup-2.opus"> sil <[500]> Термостат отключен
+                media_content_type: dialog
+                extra:
+                  volume_level: 0.8
             - service: climate.set_hvac_mode
               data:
                 hvac_mode: "off"
@@ -1071,8 +1080,11 @@
             - service: media_player.play_media
               entity_id: media_player.yandex_station
               data:        
-                media_content_id: Термостат будет включен снова через 30 минут
-                media_content_type: text
+                media_content_id: >
+                  <speaker audio="alice-sounds-game-powerup-2.opus"> sil <[500]> Термостат будет включен снова через 30 минут
+                media_content_type: dialog
+                extra:
+                  volume_level: 0.8
             - delay: 30:00
             - service: climate.set_hvac_mode
               target:
