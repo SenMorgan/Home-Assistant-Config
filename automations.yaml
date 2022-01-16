@@ -21,6 +21,8 @@
       data:        
         media_content_id: Добро пожаловать домой мистер Морган!
         media_content_type: text
+        extra:
+          volume_level: 0.9
 
 - id: Welcome Home Mrs
   alias: Welcome Home Mrs
@@ -45,6 +47,8 @@
       data:        
         media_content_id: Добро пожаловать домой миссис Морган!
         media_content_type: text
+        extra:
+          volume_level: 0.9
 
 - id: Switch Off Lights
   alias: Switch Off Lights
@@ -514,21 +518,46 @@
 
 - id: New Device Connected
   alias: New Device Connected
+  mode: queued
   trigger:
-    - platform: event
-      event_type: device_tracker_new_device
+    platform: event
+    event_type: entity_registry_updated
+    event_data:
+      action: create
+  condition: >
+    {{trigger.event.data.entity_id.startswith('device_tracker')}}
   action:
+    - variables:
+        entity: >
+          {{trigger.event.data.entity_id}}
+    - service: system_log.write
+      data:
+        message: >
+          New device registrered: {{state_attr(entity,'friendly_name')}}
+        level: warning
+        logger: homeassistant.components.device_tracker
+    - service: persistent_notification.create
+      data:
+        title: >
+          New device registered: {{state_attr(entity,'friendly_name')}}
+        message: >
+          Entity: {{entity}}
+          Host: {{state_attr(entity,'host_name')}}
+          Ip: {{state_attr(entity,'ip')}}
+          Mac-address: {{state_attr(entity,'mac')}}
+          Full data: {{trigger.event.data}}
     - service: notify.mobile_app_sm_a51
       data:
         title: "{{ 'ℹ️' }} Системное уведомление"
         message:
-          "В сети появилось {{ '\uD83D\uDCE1' }} новое устройство {{ '\uD83D\uDDA5\
-          ' }}"
+          "В сети появилось {{ '\uD83D\uDCE1' }} новое устройство {{state_attr(entity,'friendly_name')}}"
     - service: media_player.play_media
       entity_id: media_player.yandex_station
       data:        
-        media_content_id: Новое устройство было подключено к локальной сети
+        media_content_id: К локальной сети было подключено новое устройство с именем {{state_attr(entity,'friendly_name')}}
         media_content_type: text
+        extra:
+          volume_level: 0.8
 
 - id: letsencrypt-renewal
   initial_state: true
