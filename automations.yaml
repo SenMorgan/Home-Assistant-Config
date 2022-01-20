@@ -1,34 +1,13 @@
-- id: Welcome Home Mr
-  alias: Welcome Home Mr
+- id: Welcome Home Mr and Mrs
+  alias: Welcome Home Mr and Mrs
+  mode: queued
   trigger:
     - platform: state
+      id: Sen Come Home
       entity_id: person.sen
       to: "home"
-  condition:
-    - condition: time
-      after: "6:00:00"
-      before: "22:00:00"
-  action:
-    - wait_template: "{{ states('binary_sensor.aqara_hall_door_sensor_contact') == 'on' }}"
-      timeout: 00:10:00
-      continue_on_timeout: false
-    - wait_template: "{{ states('binary_sensor.aqara_hall_door_sensor_contact') == 'off' }}"
-      timeout: 00:10:00
-    - service: switch.turn_on
-      entity_id: switch.string_lights
-    - service: media_player.play_media
-      entity_id: media_player.yandex_station
-      data:        
-        media_content_id: >
-          <speaker audio="alice-sounds-game-powerup-2.opus"> sil <[500]> Добро пожаловать домой мистер Морган!
-        media_content_type: dialog
-        extra:
-          volume_level: 0.9
-
-- id: Welcome Home Mrs
-  alias: Welcome Home Mrs
-  trigger:
     - platform: state
+      id: Kris Come Home
       entity_id: person.kris
       to: "home"
   condition:
@@ -37,20 +16,47 @@
       before: "22:00:00"
   action:
     - wait_template: "{{ states('binary_sensor.aqara_hall_door_sensor_contact') == 'on' }}"
-      timeout: 00:10:00
+      timeout: 00:15:00
       continue_on_timeout: false
     - wait_template: "{{ states('binary_sensor.aqara_hall_door_sensor_contact') == 'off' }}"
       timeout: 00:10:00
-    - service: switch.turn_on
-      entity_id: switch.string_lights
-    - service: media_player.play_media
-      entity_id: media_player.yandex_station
-      data:        
-        media_content_id: >
-          <speaker audio="alice-sounds-game-powerup-2.opus"> sil <[500]> Добро пожаловать домой миссис Морган
-        media_content_type: dialog
-        extra:
-          volume_level: 0.9
+    - choose:
+        - conditions:
+            - condition: trigger
+              id: Sen Come Home
+          sequence:
+            - alias: "Switch on lights and welcome"
+              choose:
+                - conditions:
+                    - condition: sun
+                      after: sunset
+                      before_offset: 00:15:00
+                  sequence:
+                    - service: switch.turn_on
+                      entity_id: switch.string_lights
+            - service: media_player.play_media
+              entity_id: media_player.yandex_station
+              data:
+                media_content_id: >
+                  Добро пожаловать домой мистер Морган!
+                media_content_type: dialog
+                extra:
+                  volume_level: 1.0
+        - conditions:
+            - condition: trigger
+              id: Kris Come Home
+          sequence:
+            - alias: "Only welcome"
+              service: media_player.play_media
+              entity_id: media_player.yandex_station
+              data:
+                media_content_id: >
+                  Добро пожаловать домой миссис Морган
+                media_content_type: dialog
+                extra:
+                  volume_level: 1.0
+
+
 
 - id: Switch Off Lights
   alias: Switch Off Lights
@@ -246,6 +252,7 @@
       entity_id: cover.bedroom
     - service: switch.turn_on
       entity_id: switch.asus_pc
+
 - id: Alarm Kris
   alias: Alarm Kris
   trigger:
@@ -272,6 +279,7 @@
       data:
         entity_id: light.floor_lamp
         brightness: 50
+
 - id: Alarm Weekends
   alias: Alarm Weekends
   trigger:
@@ -522,11 +530,10 @@
     - service: notify.mobile_app_sm_a51
       data:
         title: "{{ 'ℹ️' }} Системное уведомление"
-        message:
-          "В сети появилось {{ '\uD83D\uDCE1' }} новое устройство {{state_attr(entity,'friendly_name')}}"
+        message: "В сети появилось {{ '\uD83D\uDCE1' }} новое устройство {{state_attr(entity,'friendly_name')}}"
     - service: media_player.play_media
       entity_id: media_player.yandex_station
-      data:        
+      data:
         media_content_id: >
           <speaker audio="alice-sounds-game-powerup-2.opus"> sil <[500]> 
           К локальной сети было подключено новое устройство с именем {{state_attr(entity,'friendly_name')}}
@@ -627,7 +634,7 @@
   action:
     - service: media_player.play_media
       entity_id: media_player.yandex_station
-      data:        
+      data:
         media_content_id: О да, встряхни меня, детка!
         media_content_type: dialog
         extra:
@@ -1033,7 +1040,7 @@
           sequence:
             - service: media_player.play_media
               entity_id: media_player.yandex_station
-              data:        
+              data:
                 media_content_id: >
                   <speaker audio="alice-sounds-game-powerup-2.opus"> sil <[500]> Термостат отключен
                 media_content_type: dialog
@@ -1050,7 +1057,7 @@
           sequence:
             - service: media_player.play_media
               entity_id: media_player.yandex_station
-              data:        
+              data:
                 media_content_id: >
                   <speaker audio="alice-sounds-game-powerup-2.opus"> sil <[500]> Термостат будет включен снова через 30 минут
                 media_content_type: dialog
