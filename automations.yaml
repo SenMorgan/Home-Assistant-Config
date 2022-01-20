@@ -105,11 +105,7 @@
       state: "on"
     - condition: template
       value_template:
-        "{{ ( as_timestamp(now()) - as_timestamp(state_attr('automation.welcome_home_mr',
-        'last_triggered')) |int(0) ) > 60 }}"
-    - condition: template
-      value_template:
-        "{{ ( as_timestamp(now()) - as_timestamp(state_attr('automation.welcome_home_mrs',
+        "{{ ( as_timestamp(now()) - as_timestamp(state_attr('automation.welcome_home_mr_and_mrs',
         'last_triggered')) |int(0) ) > 60 }}"
     - condition: template
       value_template:
