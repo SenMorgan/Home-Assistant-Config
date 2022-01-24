@@ -11,6 +11,7 @@
     light.floor_lamp:
       state: on
       brightness: 255
+    switch.tradrfri_outlet_1: on
 
 - name: Movies
   entities:
@@ -24,6 +25,7 @@
     light.shelf_lighting:
       state: off
     light.floor_lamp: off
+    switch.tradrfri_outlet_1: off
 
 
 - name: Good Night
@@ -31,6 +33,7 @@
     media_player.tv: off
     switch.bar_light: off
     switch.string_lights: off
+    switch.tradrfri_outlet_1: off
     cover.bedroom: closed
 
 - name: Lighting
