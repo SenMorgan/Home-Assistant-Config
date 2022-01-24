@@ -41,7 +41,7 @@
                   Добро пожаловать домой мистер Морган!
                 media_content_type: dialog
                 extra:
-                  volume_level: 1.0
+                  volume_level: 0.9
         - conditions:
             - condition: trigger
               id: Kris Come Home
@@ -54,7 +54,7 @@
                   Добро пожаловать домой миссис Морган
                 media_content_type: dialog
                 extra:
-                  volume_level: 1.0
+                  volume_level: 0.9
 
 - id: Welcome Home Lights
   alias: Welcome Home Lights
@@ -599,7 +599,6 @@
       entity_id: media_player.yandex_station
       data:
         media_content_id: >
-          <speaker audio="alice-sounds-game-powerup-2.opus"> sil <[500]> 
           К локальной сети было подключено новое устройство с именем {{state_attr(entity,'friendly_name')}}
         media_content_type: dialog
         extra:
@@ -1038,8 +1037,7 @@
             - service: media_player.play_media
               entity_id: media_player.yandex_station
               data:
-                media_content_id: >
-                  <speaker audio="alice-sounds-game-powerup-2.opus"> sil <[500]> Термостат отключен
+                media_content_id: Термостат отключен
                 media_content_type: dialog
                 extra:
                   volume_level: 0.8
@@ -1055,8 +1053,7 @@
             - service: media_player.play_media
               entity_id: media_player.yandex_station
               data:
-                media_content_id: >
-                  <speaker audio="alice-sounds-game-powerup-2.opus"> sil <[500]> Термостат будет включен снова через 30 минут
+                media_content_id: Термостат будет включен снова через 30 минут
                 media_content_type: dialog
                 extra:
                   volume_level: 0.8
