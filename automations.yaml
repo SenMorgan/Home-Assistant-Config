@@ -221,9 +221,10 @@
       entity_id:
         - light.shelf_lighting
         - light.gyver_lamp
-    #      - light.headlight
     - service: switch.turn_on
-      entity_id: switch.pc_backlight_sync_send
+      entity_id: 
+        - switch.pc_backlight_sync_send
+        - switch.tradrfri_outlet_1
 
 - id: Start blinking lights
   alias: Start blinking lights
