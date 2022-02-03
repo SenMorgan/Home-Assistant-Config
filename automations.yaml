@@ -121,7 +121,7 @@
       entity_id: switch.string_lights
     - service: switch.turn_off
       entity_id: switch.bar_light
-    - service: notify.mobile_app_sm_a51
+    - service: notify.mobile_app_sm_a515f
       data:
         title: "{{ 'ℹ️' }} Системное уведомление"
         message: Весь свет был погашен в {{ states('sensor.time') }}
@@ -421,7 +421,7 @@
       entity_id: person.kris
       to: "home"
   action:
-    - service: notify.mobile_app_sm_a51
+    - service: notify.mobile_app_sm_a515f
       data:
         title: "{{ 'ℹ️' }} Системное уведомление"
         message: Кристина пришла домой в {{ states('sensor.time') }}
@@ -434,7 +434,7 @@
       from: "home"
       to: "not_home"
   action:
-    - service: notify.mobile_app_sm_a51
+    - service: notify.mobile_app_sm_a515f
       data:
         title: "{{ 'ℹ️' }} Системное уведомление"
         message: Кристина ушла в {{ states('sensor.time') }}
@@ -446,7 +446,7 @@
       entity_id: sensor.garage_kalorifer_water_temperature
       above: 85
   action:
-    - service: notify.mobile_app_sm_a51
+    - service: notify.mobile_app_sm_a515f
       data_template:
         title: "{{ '❗️' }} Превышение температуры калорифера!"
         message:
@@ -466,7 +466,7 @@
       entity_id: person.Raven
       to: "home"
   action:
-    - service: notify.mobile_app_sm_a51
+    - service: notify.mobile_app_sm_a515f
       data:
         title: "{{ 'ℹ️' }} Сообщение от Raven"
         message: Raven подключился к серверу
@@ -478,7 +478,7 @@
       entity_id: person.Raven
       to: "not_home"
   action:
-    - service: notify.mobile_app_sm_a51
+    - service: notify.mobile_app_sm_a515f
       data:
         title: "{{ 'ℹ️' }} Сообщение от Raven"
         message: Raven отключился от сервера
@@ -491,7 +491,7 @@
       from: "off"
       to: "on"
   action:
-    - service: notify.mobile_app_sm_a51
+    - service: notify.mobile_app_sm_a515f
       data:
         title: "{{ '❗️' }} Сообщение от Raven"
         message: Несанкционированный доступ в Raven в {{ states('sensor.time') }}
@@ -510,7 +510,7 @@
         # and not accidentally trigger for other notification actions
         action_start_charging: "{{ 'START_CHARGING_' ~ context.id }}"
     - alias: "Ask to ask to start charging"
-      service: notify.mobile_app_sm_a51
+      service: notify.mobile_app_sm_a515f
       data:
         title: "{{ '❗️' }} Сообщение от Raven"
         message: Низкое бортовое напряжение - {{ states('sensor.raven_battery_voltage') }}V
@@ -547,7 +547,7 @@
     - platform: homeassistant
       event: start
   action:
-    - service: notify.mobile_app_sm_a51
+    - service: notify.mobile_app_sm_a515f
       data:
         title: "{{ 'ℹ️' }} Системное уведомление"
         message: "Cервер запущен {{ '\uD83D\uDC4C' }} в {{ states('sensor.time') }}."
@@ -557,7 +557,7 @@
     - platform: event
       event_type: homeassistant_stop
   action:
-    - service: notify.mobile_app_sm_a51
+    - service: notify.mobile_app_sm_a515f
       data:
         title: "{{ 'ℹ️' }} Системное уведомление"
         message: "Сервер остановлен {{'\uD83D\uDED1'}} в {{ states('sensor.time') }}"
@@ -592,7 +592,7 @@
           Ip: {{state_attr(entity,'ip')}}
           Mac-address: {{state_attr(entity,'mac')}}
           Full data: {{trigger.event.data}}
-    - service: notify.mobile_app_sm_a51
+    - service: notify.mobile_app_sm_a515f
       data:
         title: "{{ 'ℹ️' }} Системное уведомление"
         message: "В сети появилось {{ '\uD83D\uDCE1' }} новое устройство {{state_attr(entity,'friendly_name')}}"
@@ -624,7 +624,7 @@
       from: "off"
       to: "on"
   action:
-    - service: notify.mobile_app_sm_a51
+    - service: notify.mobile_app_sm_a515f
       data:
         title: "{{ 'ℹ️' }} Системное уведомление"
         message: "Update! {{ '\uD83C\uDF0D' }} Доступно новое обновление!"
@@ -648,7 +648,7 @@
       entity_id: sensor.openweathermap_snow
       above: 0
   action:
-    - service: notify.mobile_app_sm_a51
+    - service: notify.mobile_app_sm_a515f
       data_template:
         title: Уведомление о снеге {{ '\u2744\ufe0f' }}
         message: Должно выпасть {{ states('sensor.openweathermap_snow') }} мм снега
