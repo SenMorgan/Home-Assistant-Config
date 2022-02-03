@@ -222,7 +222,7 @@
         - light.shelf_lighting
         - light.gyver_lamp
     - service: switch.turn_on
-      entity_id: 
+      entity_id:
         - switch.pc_backlight_sync_send
         - switch.tradrfri_outlet_1
 
@@ -1064,3 +1064,17 @@
                 entity_id: climate.thermostat
               data:
                 hvac_mode: "auto"
+
+###############################################
+##  Media Players Automations
+###############################################
+
+- alias: TV Wake on LAN
+  mode: restart
+  trigger:
+    - platform: webostv.turn_on
+      entity_id: media_player.tv
+  action:
+    - service: wake_on_lan.send_magic_packet
+      data:
+        mac: !secret TV_MAC

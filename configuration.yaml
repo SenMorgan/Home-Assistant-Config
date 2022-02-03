@@ -35,24 +35,6 @@ notify:
 # Enables the ability to send magic packets to Wake on LAN capable devices to turn them on
 wake_on_lan:
 
-webostv:
-  host: !secret TV_LOCAL_IP
-  name: TV
-  turn_on_action:
-    service: wake_on_lan.send_magic_packet
-    data:
-      mac: !secret TV_MAC
-  customize:
-    sources:
-      - YouTube
-      - AirPlay
-      - Live TV
-      - HDMI 1
-      - HDMI 2
-      - HDMI 3
-      - AV
-      - Компонентный вход
-
 camera:
   - platform: mjpeg
     name: Parking
