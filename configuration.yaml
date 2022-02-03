@@ -716,3 +716,12 @@ sensor:
         friendly_name: "Raven Last Message Received"
         value_template: >
           {{ as_timestamp(states.sensor.raven_rssi.last_changed) | timestamp_custom('%d.%m.%Y %H:%M:%S',1) }}
+
+###############################################
+## Last Changed Sensors
+###############################################
+input_button:
+  parking_light:
+    name: Parking Light
+    icon: mdi:spotlight
+    

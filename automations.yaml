@@ -1050,3 +1050,32 @@
     - service: wake_on_lan.send_magic_packet
       data:
         mac: !secret TV_MAC
+
+###############################################
+##  Buttons Automations
+###############################################
+- id: Switch On Parking Light
+  alias: Switch On Parking Light
+  trigger:
+    - platform: state
+      entity_id: input_button.parking_light
+  action:
+    - service: switch.turn_off
+      target:
+        entity_id: switch.parking_light
+    - delay:
+        seconds: 15
+    - repeat:
+        while:
+          - condition: state
+            entity_id: switch.parking_light
+            state: "off"
+          # Don't do it too many times
+          - condition: template
+            value_template: "{{ repeat.index <= 10 }}"
+        sequence:
+          - service: switch.turn_on
+            target:
+              entity_id: switch.parking_light
+          - delay:
+              seconds: 1
