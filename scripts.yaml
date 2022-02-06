@@ -36,77 +36,7 @@ cover_correct_down:
     data:
       topic: /blinds/set
       payload: "CORRECT_DOWN"
-
-flash_lights:
-  alias: Flash Lights
-  sequence:
-    - alias: "Repeat the sequence AS LONG AS the conditions are true"
-      repeat:
-        while:
-          - condition: state
-            entity_id: input_boolean.blink_switch
-            state: "on"
-          # Don't do it too many times
-          - condition: template
-            value_template: "{{ repeat.index <= 3 }}"
-        # *****************************SEQUENCE START*************************************
-        sequence:
-          - alias: "Switch ON light 1"
-            service: light.turn_on
-            target:
-              entity_id: light.kitchen_spotlights
-          - delay:
-              seconds: 0.5
-
-          - alias: "Switch ON light 2"
-            service: light.turn_on
-            target:
-              entity_id: light.retro_lampa
-          - delay:
-              seconds: 0.5
-
-          - alias: "Switch ON light 3"
-            service: light.turn_on
-            target:
-              entity_id: light.shelf_lighting_master
-          - delay:
-              seconds: 0.5
-
-          - alias: "Switch ON light 4"
-            service: light.turn_on
-            target:
-              entity_id: light.floor_lamp
-          - delay:
-              seconds: 0.5
-
-          - alias: "Switch OFF light 1"
-            service: light.turn_off
-            target:
-              entity_id: light.kitchen_spotlights
-          - delay:
-              seconds: 0.5
-
-          - alias: "Switch OFF light 2"
-            service: light.turn_off
-            target:
-              entity_id: light.retro_lampa
-          - delay:
-              seconds: 0.5
-
-          - alias: "Switch OFF light 3"
-            service: light.turn_off
-            target:
-              entity_id: light.shelf_lighting_master
-          - delay:
-              seconds: 0.5
-
-          - alias: "Switch OFF light 4"
-            service: light.turn_off
-            target:
-              entity_id: light.floor_lamp
-          - delay:
-              seconds: 0.5
-
+      
 presentation:
   alias: Presentation
   sequence:

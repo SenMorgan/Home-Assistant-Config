@@ -177,30 +177,6 @@
     entity_id: light.hall_lights
 
 ###############################################
-## Floorlamp Tradfri Button Control
-###############################################
-
-- id: Tradfri Switch On
-  alias: Tradfri Switch On
-  trigger:
-    platform: state
-    entity_id: sensor.tradfri_switch_action
-    to: "on"
-  action:
-    - service: light.turn_on
-      entity_id: light.floor_lamp
-
-- id: Tradfri Switch Off
-  alias: Tradfri Switch Off
-  trigger:
-    platform: state
-    entity_id: sensor.tradfri_switch_action
-    to: "off"
-  action:
-    - service: light.turn_off
-      entity_id: light.floor_lamp
-
-###############################################
 ## Automatic Lights
 ###############################################
 
@@ -253,35 +229,6 @@
   action:
     - service: light.turn_off
       entity_id: switch.bar_light
-
-###############################################
-## Flash Lights
-###############################################
-
-- id: Start blinking lights
-  alias: Start blinking lights
-  trigger:
-    - platform: state
-      entity_id: input_boolean.blink_switch
-      to: "on"
-  condition:
-    - condition: state
-      entity_id: script.flash_lights
-      state: "off"
-  action:
-    - service: script.turn_on
-      target:
-        entity_id: script.flash_lights
-
-- id: Feedback to blink switch
-  alias: Feedback to blink switch
-  trigger:
-    - platform: state
-      entity_id: script.flash_lights
-      to: "off"
-  action:
-    - service: input_boolean.turn_off
-      entity_id: input_boolean.blink_switch
 
 ###############################################
 ## Cover Automations
@@ -412,29 +359,6 @@
     - service: cover.open_cover
       entity_id: cover.bedroom
 
-- id: Close Blinds and Lights After Kris away
-  alias: Close Blinds and Lights After Kris away
-  trigger:
-    - platform: state
-      entity_id: binary_sensor.aqara_hall_door_sensor_contact
-      from: "on"
-      to: "off"
-  condition:
-    - condition: state
-      entity_id: binary_sensor.tradfri_motion_sensor_occupancy
-      state: "on"
-    - condition: time
-      after: "4:00"
-      before: "5:00"
-    - condition: state
-      entity_id: automation.alarm_kris
-      state: "on"
-  action:
-    - service: cover.close_cover
-      entity_id: cover.bedroom
-    - service: light.turn_off
-      entity_id: all
-
 ###############################################
 ## Notifications
 ###############################################
@@ -464,21 +388,17 @@
         title: "{{ 'ℹ️' }} Системное уведомление"
         message: Кристина ушла в {{ states('sensor.time') }}
 
-- id: Garage Kalorifer Temperature Alarm
-  alias: Garage Kalorifer Temperature Alarm
+- id: Snow Notification
+  alias: Snow Notification
   trigger:
     - platform: numeric_state
-      entity_id: sensor.garage_kalorifer_water_temperature
-      above: 85
+      entity_id: sensor.openweathermap_snow
+      above: 0
   action:
     - service: notify.mobile_app_sm_a515f
       data_template:
-        title: "{{ '❗️' }} Превышение температуры калорифера!"
-        message:
-          Температура воды в контуре {{ states('sensor.garage_kalorifer_water_temperature')
-          }}°C {% if states.binary_sensor.garage_kalorifer.state == "on" %} Калорифер включен
-          {{ '\ud83d\udd0c' }} {% else %} Калорифер ВЫКЛЮЧЕН {{ '\u203c\ufe0f' }} {%
-          endif %}
+        title: Уведомление о снеге {{ '\u2744\ufe0f' }}
+        message: Должно выпасть {{ states('sensor.openweathermap_snow') }} мм снега
 
 ###############################################
 ## Raven Automations
@@ -663,22 +583,6 @@
               uri: "{{ state_attr('binary_sensor.updater', 'release_notes') }}"
 
 ###############################################
-## Weather Automations
-###############################################
-
-- id: Snow Notification
-  alias: Snow Notification
-  trigger:
-    - platform: numeric_state
-      entity_id: sensor.openweathermap_snow
-      above: 0
-  action:
-    - service: notify.mobile_app_sm_a515f
-      data_template:
-        title: Уведомление о снеге {{ '\u2744\ufe0f' }}
-        message: Должно выпасть {{ states('sensor.openweathermap_snow') }} мм снега
-
-###############################################
 ## Aqara Cube Automations
 ###############################################
 
@@ -836,8 +740,28 @@
       entity_id: cover.bedroom
 
 ###############################################
-## Dim up/down with long press
+## Floorlamp Tradfri Button Control
 ###############################################
+
+- id: Tradfri Switch On
+  alias: Tradfri Switch On
+  trigger:
+    platform: state
+    entity_id: sensor.tradfri_switch_action
+    to: "on"
+  action:
+    - service: light.turn_on
+      entity_id: light.floor_lamp
+
+- id: Tradfri Switch Off
+  alias: Tradfri Switch Off
+  trigger:
+    platform: state
+    entity_id: sensor.tradfri_switch_action
+    to: "off"
+  action:
+    - service: light.turn_off
+      entity_id: light.floor_lamp
 
 - id: ikea_controller_brighten_on
   alias: Ikea Controller - Brighten on
@@ -898,7 +822,7 @@
       entity_id: input_boolean.light_brightness
 
 ###############################################
-##  Switch ON Presentation Script
+## Switch ON Presentation Script
 ###############################################
 
 - id: Turn On Presentation Script
@@ -919,7 +843,7 @@
       entity_id: input_boolean.presentation_switch
 
 ###############################################
-##  Christmass Lights
+## Christmass Lights
 ###############################################
 
 - id: Switch on Christmas Lights After Sunset
@@ -939,7 +863,7 @@
       entity_id: switch.bar_light
 
 ###############################################
-##  Automatic Scenning
+## Automatic Scenning
 ###############################################
 
 - id: Movies On by TV
@@ -1063,7 +987,7 @@
                 hvac_mode: "auto"
 
 ###############################################
-##  Media Players Automations
+## Media Players Automations
 ###############################################
 
 - alias: TV Wake on LAN
@@ -1077,7 +1001,7 @@
         mac: !secret TV_MAC
 
 ###############################################
-##  Buttons Automations
+## Buttons Automations
 ###############################################
 
 - id: Switch On Parking Light

@@ -204,8 +204,6 @@ google_assistant:
       expose: false
     switch.pc_backlight_sync_send:
       expose: false
-    input_boolean.blink_switch:
-      expose: false
     input_boolean.cube_1_control:
       expose: false
     input_boolean.light_brightness:
@@ -291,9 +289,6 @@ input_number:
 ######################## START OF INPUT BOOLEAN SECTION ########################
 
 input_boolean:
-  blink_switch:
-    name: Blink Switch
-    icon: mdi:creation
   cube_1_control:
     name: Cube Control
     icon: mdi:gesture-double-tap
