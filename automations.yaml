@@ -1,3 +1,7 @@
+###############################################
+## Welcome and Hall Lights Automations
+###############################################
+
 - id: Welcome Home Mr and Mrs
   alias: Welcome Home Mr and Mrs
   mode: queued
@@ -172,6 +176,10 @@
     service: light.turn_on
     entity_id: light.hall_lights
 
+###############################################
+## Floorlamp Tradfri Button Control
+###############################################
+
 - id: Tradfri Switch On
   alias: Tradfri Switch On
   trigger:
@@ -193,7 +201,7 @@
       entity_id: light.floor_lamp
 
 ###############################################
-##
+## Automatic Lights
 ###############################################
 
 - id: Switch ON Lights with PC
@@ -226,6 +234,30 @@
         - switch.pc_backlight_sync_send
         - switch.tradrfri_outlet_1
 
+- alias: Bar light switch ON
+  id: Bar light switch ON
+  trigger:
+    - platform: sun
+      event: sunset
+      offset: -00:15:00
+  action:
+    - service: light.turn_on
+      entity_id: switch.bar_light
+
+- alias: Bar light switch OFF
+  id: Bar light switch OFF
+  trigger:
+    - platform: sun
+      event: sunrise
+      offset: -01:00:00
+  action:
+    - service: light.turn_off
+      entity_id: switch.bar_light
+
+###############################################
+## Flash Lights
+###############################################
+
 - id: Start blinking lights
   alias: Start blinking lights
   trigger:
@@ -251,6 +283,10 @@
     - service: input_boolean.turn_off
       entity_id: input_boolean.blink_switch
 
+###############################################
+## Cover Automations
+###############################################
+
 - id: Close Blinds At Evening
   alias: Close Blinds At Evening
   trigger:
@@ -268,25 +304,9 @@
     - service: cover.close_cover
       entity_id: cover.bedroom
 
-- alias: Bar light switch ON
-  id: Bar light switch ON
-  trigger:
-    - platform: sun
-      event: sunset
-      offset: -00:15:00
-  action:
-    - service: light.turn_on
-      entity_id: switch.bar_light
-
-- alias: Bar light switch OFF
-  id: Bar light switch OFF
-  trigger:
-    - platform: sun
-      event: sunrise
-      offset: -01:00:00
-  action:
-    - service: light.turn_off
-      entity_id: switch.bar_light
+###############################################
+## Alarms
+###############################################
 
 - id: Alarm Morgan
   alias: Alarm Morgan
@@ -366,6 +386,7 @@
   action:
     - service: cover.open_cover
       entity_id: cover.bedroom
+
 - id: Alarm Weekdays
   alias: Alarm Weekdays
   trigger:
@@ -413,6 +434,10 @@
       entity_id: cover.bedroom
     - service: light.turn_off
       entity_id: all
+
+###############################################
+## Notifications
+###############################################
 
 - id: Kris Arrived
   alias: Kris Arrived
@@ -1054,6 +1079,7 @@
 ###############################################
 ##  Buttons Automations
 ###############################################
+
 - id: Switch On Parking Light
   alias: Switch On Parking Light
   trigger:
