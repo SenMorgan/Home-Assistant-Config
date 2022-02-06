@@ -230,6 +230,22 @@
     - service: light.turn_off
       entity_id: switch.bar_light
 
+- id: Switch on Christmas Lights After Sunset
+  alias: Switch on Christmas Lights After Sunset
+  trigger:
+    - platform: sun
+      event: sunset
+  condition:
+    - condition: state
+      entity_id: binary_sensor.people_home
+      state: "on"
+    - condition: state
+      entity_id: media_player.tv
+      state: "on"
+  action:
+    - service: switch.turn_on
+      entity_id: switch.bar_light
+
 ###############################################
 ## Cover Automations
 ###############################################
@@ -496,6 +512,7 @@
       data:
         title: "{{ 'ℹ️' }} Системное уведомление"
         message: "Cервер запущен {{ '\uD83D\uDC4C' }} в {{ states('sensor.time') }}."
+
 - id: Home Assistant Stop Notification
   alias: Home Assistant Stop Notification
   trigger:
@@ -822,47 +839,6 @@
       entity_id: input_boolean.light_brightness
 
 ###############################################
-## Switch ON Presentation Script
-###############################################
-
-- id: Turn On Presentation Script
-  alias: Turn On Presentation Script
-  trigger:
-    - platform: state
-      entity_id: input_boolean.presentation_switch
-      to: "on"
-  condition:
-    - condition: state
-      entity_id: script.presentation
-      state: "off"
-  action:
-    - service: script.turn_on
-      target:
-        entity_id: script.presentation
-    - service: input_boolean.turn_off
-      entity_id: input_boolean.presentation_switch
-
-###############################################
-## Christmass Lights
-###############################################
-
-- id: Switch on Christmas Lights After Sunset
-  alias: Switch on Christmas Lights After Sunset
-  trigger:
-    - platform: sun
-      event: sunset
-  condition:
-    - condition: state
-      entity_id: binary_sensor.people_home
-      state: "on"
-    - condition: state
-      entity_id: media_player.tv
-      state: "on"
-  action:
-    - service: switch.turn_on
-      entity_id: switch.bar_light
-
-###############################################
 ## Automatic Scenning
 ###############################################
 
@@ -987,7 +963,7 @@
                 hvac_mode: "auto"
 
 ###############################################
-## Media Players Automations
+## Media Players Control
 ###############################################
 
 - alias: TV Wake on LAN
@@ -1001,7 +977,7 @@
         mac: !secret TV_MAC
 
 ###############################################
-## Buttons Automations
+## Other Buttons and Switches Handles
 ###############################################
 
 - id: Switch On Parking Light
@@ -1029,3 +1005,20 @@
               entity_id: switch.parking_light
           - delay:
               seconds: 1
+
+- id: Turn On Presentation Script
+  alias: Turn On Presentation Script
+  trigger:
+    - platform: state
+      entity_id: input_boolean.presentation_switch
+      to: "on"
+  condition:
+    - condition: state
+      entity_id: script.presentation
+      state: "off"
+  action:
+    - service: script.turn_on
+      target:
+        entity_id: script.presentation
+    - service: input_boolean.turn_off
+      entity_id: input_boolean.presentation_switch
