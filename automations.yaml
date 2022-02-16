@@ -207,7 +207,7 @@
         - light.gyver_lamp
     - service: switch.turn_on
       entity_id:
-        - switch.pc_backlight_sync_send
+#        - switch.pc_backlight_sync_send
         - switch.tradrfri_outlet_1
 
 - alias: Bar light switch ON
