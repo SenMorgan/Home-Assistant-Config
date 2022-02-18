@@ -172,6 +172,9 @@
     platform: state
     entity_id: binary_sensor.aqara_hall_door_sensor_contact
     to: "on"
+  condition:
+    - condition: template
+      value_template: "{{ as_timestamp(now()) - as_timestamp(states.light.hall_lights.last_changed) > 60 }}"
   action:
     service: light.turn_on
     entity_id: light.hall_lights
