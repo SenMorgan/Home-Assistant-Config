@@ -713,7 +713,7 @@ sensor:
           {{ as_timestamp(states.sensor.raven_rssi.last_changed) | timestamp_custom('%d.%m.%Y %H:%M:%S',1) }}
 
 ###############################################
-## Last Changed Sensors
+## Input Buttons
 ###############################################
 input_button:
   parking_light:
