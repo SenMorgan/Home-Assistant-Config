@@ -700,13 +700,12 @@ sensor:
       - "result"
       - "server"
     resource: !secret DUINOCOIN_USER_URI
-    value_template: "{{ value_json.json_duinocoin_response }}"
 
   - platform: template
     sensors:
       duco_balance:
         friendly_name: "Duco Balance"
-        value_template: "{{ state_attr('sensor.json_duinocoin_response', 'result')['balance']  | round(3) }}"
+        value_template: "{{ state_attr('sensor.json_duinocoin_response', 'result')['balance']  | round(2) }}"
       duco_username:
         friendly_name: "Duco Username"
         value_template: "{{ state_attr('sensor.json_duinocoin_response', 'result')['username'] }}"

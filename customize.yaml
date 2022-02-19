@@ -23,3 +23,8 @@ switch.asus_pc:
 light.desk_lamp:
   min_mireds: 200
   max_mireds: 385
+
+#sensor.duco_balance:
+#  entity_picture: /local/icon/duino.jpg
+#sensor.duco_server:
+#  entity_picture: /local/icon/duino.jpg
