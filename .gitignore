@@ -24,6 +24,7 @@ google_project_id.json
 ip_bans.yaml
 secrets.yaml
 known_devices.yaml
+yandex_station.yaml
 *.log*
 *.xml
 *.db*

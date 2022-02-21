@@ -19,6 +19,7 @@ automation: !include automations.yaml
 script: !include scripts.yaml
 scene: !include scenes.yaml
 yandex_smart_home: !include yandex.yaml
+yandex_station: !include yandex_station.yaml
 
 recorder:
   db_url: !secret MYSQL_URL
