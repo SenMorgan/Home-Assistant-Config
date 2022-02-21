@@ -18,7 +18,9 @@ group: !include groups.yaml
 automation: !include automations.yaml
 script: !include scripts.yaml
 scene: !include scenes.yaml
+# Sharing devices with Yandex Smart Home
 yandex_smart_home: !include yandex.yaml
+# Controlling of Yandex Station and TTS
 yandex_station: !include yandex_station.yaml
 
 recorder:
