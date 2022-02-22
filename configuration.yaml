@@ -694,29 +694,6 @@ sensor:
           {{ "%0.02d:%0.02d" | format(states("input_number.alarm_4_hour") | int, states("input_number.alarm_4_minutes") | int) }}
 
   ###############################################
-  ## DuinoCoin Sensors
-  ###############################################
-  - platform: rest
-    name: JSON DuinoCoin Response
-    scan_interval: 60
-    json_attributes:
-      - "result"
-      - "server"
-    resource: !secret DUINOCOIN_USER_URI
-
-  - platform: template
-    sensors:
-      duco_balance:
-        friendly_name: "Duco Balance"
-        value_template: "{{ state_attr('sensor.json_duinocoin_response', 'result')['balance']  | round(2) }}"
-      duco_username:
-        friendly_name: "Duco Username"
-        value_template: "{{ state_attr('sensor.json_duinocoin_response', 'result')['username'] }}"
-      duco_server:
-        friendly_name: "Duco Server"
-        value_template: "{{ state_attr('sensor.json_duinocoin_response', 'server') }}"
-
-  ###############################################
   ## Last Changed Sensors
   ###############################################
   - platform: template
@@ -745,3 +722,18 @@ input_button:
   parking_light:
     name: Parking Light
     icon: mdi:spotlight
+
+###############################################
+## DuinoCoin Sensors
+###############################################
+rest:
+  - resource: !secret DUINOCOIN_USER_URI
+    sensor:
+      - name: "Duco Balance"
+        value_template: "{{ value_json['result']['balance'] | round(2) }}"
+        device_class: monetary
+        state_class: measurement
+      - name: "Duco Username"
+        value_template: "{{ value_json['result']['username'] }}"
+      - name: "Duco Server"
+        value_template: "{{ value_json['server'] }}"
