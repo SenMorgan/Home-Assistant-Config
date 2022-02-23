@@ -716,6 +716,45 @@ sensor:
           {{ as_timestamp(states.sensor.raven_rssi.last_changed) | timestamp_custom('%d.%m.%Y %H:%M:%S',1) }}
 
 ###############################################
+## DuinoCoin Statistics Sensors
+###############################################
+  - platform: statistics
+    name: "Duco Mined over 1 minute"
+    entity_id: sensor.duco_balance  
+    state_characteristic: change
+    max_age:
+      minutes: 1
+    sampling_size: 3
+    precision: 2
+
+  - platform: statistics
+    name: "Duco Mined over 5 minutes"
+    entity_id: sensor.duco_balance  
+    state_characteristic: change
+    max_age:
+      minutes: 5
+    sampling_size: 10
+    precision: 2
+
+  - platform: statistics
+    name: "Duco Mined over 1 hour"
+    entity_id: sensor.duco_balance  
+    state_characteristic: change
+    max_age:
+      hours: 1
+    sampling_size: 70
+    precision: 2
+
+  - platform: statistics
+    name: "Duco Mined over 1 day"
+    entity_id: sensor.duco_balance  
+    state_characteristic: change
+    max_age:
+      days: 1
+    sampling_size: 1500
+    precision: 2
+
+###############################################
 ## Input Buttons
 ###############################################
 input_button:
@@ -727,7 +766,8 @@ input_button:
 ## DuinoCoin Sensors
 ###############################################
 rest:
-  - resource: !secret DUINOCOIN_USER_URI
+  - resource: !secret DUINOCOIN_USER_URI  
+    scan_interval: 60
     sensor:
       - name: "Duco Balance"
         value_template: "{{ value_json['result']['balance'] | round(2) }}"
@@ -737,3 +777,7 @@ rest:
         value_template: "{{ value_json['result']['username'] }}"
       - name: "Duco Server"
         value_template: "{{ value_json['server'] }}"
+
+###############################################
+## 
+###############################################
