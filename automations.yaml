@@ -959,11 +959,21 @@
                 extra:
                   volume_level: 0.8
             - delay: 30:00
-            - service: climate.set_hvac_mode
-              target:
-                entity_id: climate.thermostat
-              data:
-                hvac_mode: "auto"
+# Need to send the command a few times to ensure that thermostat changed it's mode
+            - repeat:
+                until:
+                  - condition: state
+                    entity_id: climate.thermostat
+                    state: auto
+                sequence:
+                  - service: climate.set_hvac_mode
+                    target:
+                      entity_id: climate.thermostat
+                    data:
+                      hvac_mode: "auto"
+                  - delay:
+                      seconds: 5
+
 
 - id: Thermostat On if Forgotten
   alias: Thermostat On if Forgotten
@@ -973,33 +983,33 @@
       entity_id: climate.thermostat
       attribute: current_temperature
       below: "20"
-      for:
-        hours: 0
-        minutes: 15
-        seconds: 0
+
   condition:
     - condition: state
       entity_id: binary_sensor.people_home
       state: "on"
-    - condition: template
-      value_template: |-
-        {% set domain = 'light' %}
-            {% set state = 'off' %}
-            {{ states[domain] | count == states[domain] | selectattr('state','eq', state) | list | count }}
     - condition: time
-      after: "00:00"
+      after: "01:00"
       before: "06:00"
   action:
-    - service: climate.set_hvac_mode
-      target:
-        entity_id: climate.thermostat
-      data:
-        hvac_mode: "auto"
-
     - service: notify.mobile_app_sm_a515f
       data:
         title: "{{ 'ℹ️' }} Системное уведомление"
         message: Термостат был снова включен в {{ states('sensor.time') }}, чтобы вы не замёрзли
+# Need to send the command a few times to ensure that thermostat changed it's mode
+    - repeat:
+        until:
+          - condition: state
+            entity_id: climate.thermostat
+            state: auto
+        sequence:
+          - service: climate.set_hvac_mode
+            target:
+              entity_id: climate.thermostat
+            data:
+              hvac_mode: "auto"
+          - delay:
+              seconds: 5
 
 ###############################################
 ## Media Players Control
