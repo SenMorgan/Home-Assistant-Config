@@ -877,7 +877,7 @@
 ###############################################
 
 - id: Movies On by TV
-  alias: Movies On
+  alias: Movies On by TV
   trigger:
     platform: state
     entity_id: media_player.tv
@@ -900,7 +900,7 @@
       entity_id: scene.movies
 
 - id: Movies On by Sunset
-  alias: Movies On
+  alias: Movies On by Sunset
   trigger:
     - platform: sun
       event: sunset
