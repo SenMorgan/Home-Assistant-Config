@@ -130,42 +130,6 @@
         title: "{{ 'ℹ️' }} Системное уведомление"
         message: Весь свет был погашен в {{ states('sensor.time') }}
 
-- id: Switch On Lights in Hall By Motion
-  alias: Switch On Lights in Hall By Motion
-  trigger:
-    platform: state
-    entity_id: binary_sensor.tradfri_motion_sensor_occupancy
-    to: "on"
-  condition:
-    - condition: time
-      after: "6:00"
-      before: "21:00"
-    - condition: time
-      weekday:
-        - mon
-        - tue
-        - wed
-        - thu
-        - fri
-  action:
-    service: light.turn_on
-    entity_id: light.hall_lights
-
-- id: Switch Off Lights in Hall By Motion
-  alias: Switch Off Lights in Hall By Motion
-  trigger:
-    platform: state
-    entity_id: binary_sensor.tradfri_motion_sensor_occupancy
-    to: "off"
-    for: "00:00:10"
-  condition:
-    condition: state
-    entity_id: light.hall_lights
-    state: "on"
-  action:
-    service: light.turn_off
-    entity_id: light.hall_lights
-
 - id: Welcome Hall Light
   alias: Welcome Hall Light
   trigger:
