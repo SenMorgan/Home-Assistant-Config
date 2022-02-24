@@ -978,13 +978,14 @@
       entity_id: climate.thermostat
       attribute: current_temperature
       below: "20"
-
+    - platform: time
+      at: "01:00"
   condition:
     - condition: state
       entity_id: binary_sensor.people_home
       state: "on"
     - condition: time
-      after: "01:00"
+      after: "00:00"
       before: "06:00"
   action:
     - service: notify.mobile_app_sm_a515f
