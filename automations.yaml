@@ -149,17 +149,17 @@
     platform: state
     entity_id: binary_sensor.aqara_hall_motion_sensor_occupancy
     to: "on"
-#  condition:
-#    - condition: time
-#      after: "6:00"
-#      before: "21:00"
-#    - condition: time
-#      weekday:
-#        - mon
-#        - tue
-#        - wed
-#        - thu
-#        - fri
+  #  condition:
+  #    - condition: time
+  #      after: "6:00"
+  #      before: "21:00"
+  #    - condition: time
+  #      weekday:
+  #        - mon
+  #        - tue
+  #        - wed
+  #        - thu
+  #        - fri
   action:
     service: light.turn_on
     entity_id: light.hall_lights
@@ -243,6 +243,16 @@
   action:
     - service: switch.turn_on
       entity_id: switch.bar_light
+
+- id: Kitchen Spotlights Motion Activating
+  alias: Kitchen Spotlights Motion Activating
+  use_blueprint:
+    path: homeassistant/motion_light.yaml
+    input:
+      motion_entity: binary_sensor.aqara_kitchen_workplace_motion_sensor_occupancy
+      light_target:
+        entity_id: light.kitchen_spotlights
+      no_motion_wait: 10
 
 ###############################################
 ## Cover Automations
@@ -954,7 +964,7 @@
                 extra:
                   volume_level: 0.8
             - delay: 30:00
-# Need to send the command a few times to ensure that thermostat changed it's mode
+            # Need to send the command a few times to ensure that thermostat changed it's mode
             - repeat:
                 until:
                   - condition: state
@@ -968,7 +978,6 @@
                       hvac_mode: "auto"
                   - delay:
                       seconds: 5
-
 
 - id: Thermostat On if Forgotten
   alias: Thermostat On if Forgotten
@@ -992,7 +1001,7 @@
       data:
         title: "{{ 'ℹ️' }} Системное уведомление"
         message: Термостат был снова включен в {{ states('sensor.time') }}, чтобы вы не замёрзли
-# Need to send the command a few times to ensure that thermostat changed it's mode
+    # Need to send the command a few times to ensure that thermostat changed it's mode
     - repeat:
         until:
           - condition: state
