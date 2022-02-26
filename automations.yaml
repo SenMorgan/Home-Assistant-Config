@@ -97,12 +97,12 @@
 - id: "Hall_Lights_by_Motion_ON"
   alias: Hall Lights by Motion ON
   trigger:
-  - platform: state
-    entity_id: binary_sensor.aqara_hall_door_sensor_contact
-    to: "on"
-  - platform: state
-    entity_id: binary_sensor.aqara_hall_motion_sensor_occupancy
-    to: "on"
+    - platform: state
+      entity_id: binary_sensor.aqara_hall_door_sensor_contact
+      to: "on"
+    - platform: state
+      entity_id: binary_sensor.aqara_hall_motion_sensor_occupancy
+      to: "on"
   #  condition:
   #    - condition: time
   #      after: "6:00"
@@ -139,28 +139,25 @@
       entity_id: switch.asus_pc
       from: "off"
       to: "on"
-  condition:
-    - condition: or
-      conditions:
-        - condition: state
-          entity_id: light.shelf_lighting
-          state: "off"
-        - condition: state
-          entity_id: light.gyver_lamp
-          state: "off"
-    - condition: template
-      value_template:
-        "{{ ( as_timestamp(now()) - as_timestamp(state_attr('automation.switch_on_lights_with_pc',
-        'last_triggered')) |int(0) ) > 7200 }}"
   action:
     - service: light.turn_on
       entity_id:
-        - light.shelf_lighting
         - light.gyver_lamp
     - service: switch.turn_on
       entity_id:
-        #        - switch.pc_backlight_sync_send
         - switch.tradrfri_outlet_1
+    - choose:
+        - conditions:
+            - condition: state
+              entity_id: person.kris
+              state: "not_home"
+          sequence:
+            - service: light.turn_on
+              entity_id:
+                - light.shelf_lighting
+            - service: switch.turn_on
+              entity_id:
+                - switch.pc_backlight_sync_send
 
 - id: "Living_Room_Bar_Lights_by_Sunset_ON"
   alias: Living Room Bar Lights by Sunset ON
