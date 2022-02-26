@@ -138,13 +138,18 @@
     platform: state
     entity_id: binary_sensor.aqara_kitchen_workplace_motion_sensor_occupancy
     to: "on"
-  #    condition:
+  condition:
+    - condition: state
+      entity_id: light.kitchen_spotlights
+      state: "off"
   #      condition: numeric_state
   #      entity_id: sensor.sensor.aqara_kitchen_workplace_motion_sensor_illuminance_lux
   #      below: '15'
   action:
-    service: light.turn_on
-    entity_id: light.kitchen_spotlights
+    - service: light.turn_on
+      entity_id: light.kitchen_spotlights
+    - service: input_boolean.turn_on
+      entity_id: input_boolean.flag_spotlight_triggered_by_motion
 
 - id: "Kitchen_Spotlights_by_Motion_OFF"
   alias: Kitchen Spotlights by Motion OFF
@@ -153,9 +158,25 @@
     entity_id: binary_sensor.aqara_kitchen_workplace_motion_sensor_occupancy
     to: "off"
     for: 00:00:45
+  condition:
+    - condition: state
+      entity_id: input_boolean.flag_spotlight_triggered_by_motion
+      state: "on"
   action:
-    service: light.turn_off
+    - service: light.turn_off
+      entity_id: light.kitchen_spotlights
+    - service: input_boolean.turn_off
+      entity_id: input_boolean.flag_spotlight_triggered_by_motion
+
+- id: "Kitchen_Spotlights_Triggered_by_Motion_Flag_Unset"
+  alias: Kitchen Spotlights Triggered by Motion Flag Unset
+  trigger:
+    platform: state
     entity_id: light.kitchen_spotlights
+    to: "off"
+  action:
+    - service: input_boolean.turn_off
+      entity_id: input_boolean.flag_spotlight_triggered_by_motion
 
 - id: "Kitchen_Motion_Sensor_Reset_State"
   alias: Kitchen Motion Sensor Reset State

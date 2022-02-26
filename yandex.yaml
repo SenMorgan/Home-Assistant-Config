@@ -6,6 +6,11 @@ notifier:
     user_id: !secret YANDEX_USER_ID
 filter:
   include_entities:
+    - binary_sensor.aqara_bedroom_window_sensor_contact
+    - binary_sensor.aqara_hall_door_sensor_contact
+    - climate.thermostat
+    - cover.bedroom
+    - input_boolean.flag_spotlight_triggered_by_motion
     - light.floor_lamp
     - light.gyver_lamp
     - light.hall_lights
@@ -24,10 +29,6 @@ filter:
     - switch.string_lights
     - switch.tradrfri_outlet_1
     - vacuum.johnny
-    - binary_sensor.aqara_bedroom_window_sensor_contact
-    - binary_sensor.aqara_hall_door_sensor_contact
-    - climate.thermostat
-    - cover.bedroom
 entity_config:
   # type: devices.types.humidifier  # параметр необязательный, вычисляется автоматически!
   binary_sensor.aqara_bedroom_window_sensor_contact:
@@ -45,6 +46,9 @@ entity_config:
   cover.bedroom:
     name: Штора
     room: Спальня
+  input_boolean.flag_spotlight_triggered_by_motion:
+    name: Таймер кухонного света
+    room: Кухня
   light.floor_lamp:
     name: Торшер
     room: Кухня
