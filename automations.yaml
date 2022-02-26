@@ -244,15 +244,43 @@
     - service: switch.turn_on
       entity_id: switch.bar_light
 
-- id: Kitchen Spotlights Motion Activating
-  alias: Kitchen Spotlights Motion Activating
-  use_blueprint:
-    path: homeassistant/motion_light.yaml
-    input:
-      motion_entity: binary_sensor.aqara_kitchen_workplace_motion_sensor_occupancy
-      light_target:
-        entity_id: light.kitchen_spotlights
-      no_motion_wait: 10
+- id: 'Kitchen-Spotlights-Motion-On'
+  alias: Kitchen Spotlights Motion On
+  trigger:
+    platform: state
+    entity_id: binary_sensor.aqara_kitchen_workplace_motion_sensor_occupancy
+    to: 'on'
+#    condition:
+#      condition: numeric_state
+#      entity_id: sensor.sensor.aqara_kitchen_workplace_motion_sensor_illuminance_lux
+#      below: '15'
+  action:
+    service: light.turn_on
+    entity_id: light.kitchen_spotlights
+
+- id: 'Kitchen-Spotlights-Motion-Off'
+  alias: Kitchen Spotlights Motion Off
+  trigger:
+    platform: state
+    entity_id: binary_sensor.aqara_kitchen_workplace_motion_sensor_occupancy
+    to: 'off'
+    for: 00:00:20
+  action:
+    service: light.turn_off
+    entity_id: light.kitchen_spotlights
+
+- id: 'Reset-Sensor-state'
+  alias: Reset Sensor state
+  trigger:
+    platform: state
+    entity_id: binary_sensor.aqara_kitchen_workplace_motion_sensor_occupancy
+    to: 'on'
+    for: 00:00:05
+  action:
+  - data_template:
+      entity_id: binary_sensor.aqara_kitchen_workplace_motion_sensor_occupancy
+      state: 'off'
+    service: python_script.set_state
 
 ###############################################
 ## Cover Automations
