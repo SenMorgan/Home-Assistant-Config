@@ -22,11 +22,9 @@
     switch.bar_light: on
     switch.string_lights: off
     light.desk_lamp: off
-    light.shelf_lighting:
-      state: off
+    light.shelf_lighting: off
     light.floor_lamp: off
     switch.tradrfri_outlet_1: off
-
 
 - name: Good Night
   entities:
@@ -43,16 +41,16 @@
       brightness: 255
       effect: "Lightning"
       intensity: 255
-      rgb_color: [255,255,255]
+      rgb_color: [255, 255, 255]
       speed: 255
     light.pc_backlight:
       state: on
       brightness: 255
       effect: "Lightning"
       intensity: 255
-      rgb_color: [255,255,255]
+      rgb_color: [255, 255, 255]
       speed: 255
-    light.gyver_lamp:    
+    light.gyver_lamp:
       state: on
       brightness: 255
       effect: "Гроза в банке"

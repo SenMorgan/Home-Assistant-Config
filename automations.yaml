@@ -210,8 +210,14 @@
       to: "on"
   condition:
     - condition: state
-      entity_id: binary_sensor.people_home
-      state: "on"
+      entity_id: person.sen
+      state: "home"
+    - condition: state
+      entity_id: switch.asus_pc
+      state: "off"
+    - condition: state
+      entity_id: light.kitchen_spotlights
+      state: "off"
   action:
     - choose:
         - conditions:
@@ -221,9 +227,8 @@
               entity_id: media_player.tv
               state: "on"
           sequence:
-            - service: light.turn_on
-              target:
-                entity_id: switch.bar_light
+            - service: scene.turn_on
+              entity_id: scene.movies
         - conditions:
             - condition: trigger
               id: "TV_ON"
@@ -231,9 +236,8 @@
               after: sunset
               before_offset: 00:15:00
           sequence:
-            - service: light.turn_on
-              target:
-                entity_id: light.bar_light
+            - service: scene.turn_on
+              entity_id: scene.movies
 
 - id: "Living_Room_Bar_Lights_by_Sunrise_OFF"
   alias: Living Room Bar Lights by Sunrise OFF
@@ -840,52 +844,6 @@
   action:
     - service: input_boolean.turn_off
       entity_id: input_boolean.light_brightness
-
-###############################################
-## Automatic Scenning
-###############################################
-
-- id: "Scene_Movies_by_TV_ON"
-  alias: Scene Movies by TV ON
-  trigger:
-    platform: state
-    entity_id: media_player.tv
-    to: "on"
-    for: "00:00:10"
-  condition:
-    - condition: state
-      entity_id: switch.asus_pc
-      state: "off"
-    - condition: state
-      entity_id: light.kitchen_spotlights
-      state: "off"
-    - condition: time
-      after: "18:00:00"
-    - condition: state
-      entity_id: person.sen
-      state: "home"
-  action:
-    - service: scene.turn_on
-      entity_id: scene.movies
-
-- id: "Scene_Movies_by_Sunset_ON"
-  alias: Scene Movies by Sunset ON
-  trigger:
-    - platform: sun
-      event: sunset
-  condition:
-    - condition: state
-      entity_id: media_player.tv
-      state: "on"
-    - condition: state
-      entity_id: switch.asus_pc
-      state: "off"
-    - condition: state
-      entity_id: light.kitchen_spotlights
-      state: "off"
-  action:
-    - service: scene.turn_on
-      entity_id: scene.movies
 
 ###############################################
 ## Thermostat automations
