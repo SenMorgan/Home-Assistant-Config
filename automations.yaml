@@ -60,42 +60,6 @@
                 extra:
                   volume_level: 0.9
 
-- id: "Hall_Lights_Welcome"
-  alias: Hall Lights Welcome
-  trigger:
-    - platform: state
-      entity_id: binary_sensor.people_home
-      from: "off"
-      to: "on"
-  condition:
-    condition: or
-    conditions:
-      - condition: and
-        conditions:
-          - condition: sun
-            after: sunset
-          - condition: time
-            after: "6:00:00"
-            before: "21:00:00"
-          - condition: time
-            weekday:
-              - mon
-              - tue
-              - wed
-              - thu
-              - fri
-      - condition: and
-        conditions:
-          - condition: sun
-            after: sunset
-          - condition: time
-            weekday:
-              - sun
-              - sat
-  action:
-    - service: scene.turn_on
-      entity_id: scene.welcome_home_lights
-
 - id: "Home_All_Lights_OFF"
   alias: Home All Lights OFF
   trigger:
