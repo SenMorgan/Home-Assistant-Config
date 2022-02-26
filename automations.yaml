@@ -2,8 +2,8 @@
 ## Welcome and Hall Lights Automations
 ###############################################
 
-- id: Welcome Home Mr and Mrs
-  alias: Welcome Home Mr and Mrs
+- id: "Hall_Lights_and_Alice_Greeting"
+  alias: Hall Lights and Alice Greeting
   mode: queued
   trigger:
     - platform: state
@@ -60,8 +60,8 @@
                 extra:
                   volume_level: 0.9
 
-- id: Welcome Home Lights
-  alias: Welcome Home Lights
+- id: "Hall_Lights_Welcome"
+  alias: Hall Lights Welcome
   trigger:
     - platform: state
       entity_id: binary_sensor.people_home
@@ -96,8 +96,8 @@
     - service: scene.turn_on
       entity_id: scene.welcome_home_lights
 
-- id: Switch Off Lights
-  alias: Switch Off Lights
+- id: "Home_All_Lights_OFF"
+  alias: Home All Lights OFF
   trigger:
     - platform: state
       entity_id: binary_sensor.aqara_hall_door_sensor_contact
@@ -130,8 +130,8 @@
         title: "{{ 'ℹ️' }} Системное уведомление"
         message: Весь свет был погашен в {{ states('sensor.time') }}
 
-- id: Welcome Hall Light
-  alias: Welcome Hall Light
+- id: "Hall_Lights_by_Contact_ON"
+  alias: Hall Lights by Contact ON
   trigger:
     platform: state
     entity_id: binary_sensor.aqara_hall_door_sensor_contact
@@ -143,8 +143,8 @@
     service: light.turn_on
     entity_id: light.hall_lights
 
-- id: Switch On Lights in Hall By Motion
-  alias: Switch On Lights in Hall By Motion
+- id: "Hall_Lights_by_Motion_ON"
+  alias: Hall Lights by Motion ON
   trigger:
     platform: state
     entity_id: binary_sensor.aqara_hall_motion_sensor_occupancy
@@ -164,8 +164,8 @@
     service: light.turn_on
     entity_id: light.hall_lights
 
-- id: Switch Off Lights in Hall By Motion
-  alias: Switch Off Lights in Hall By Motion
+- id: "Hall_Lights_by_Motion_OFF"
+  alias: Hall Lights by Motion OFF
   trigger:
     platform: state
     entity_id: binary_sensor.aqara_hall_motion_sensor_occupancy
@@ -178,8 +178,8 @@
 ## Automatic Lights
 ###############################################
 
-- id: Switch ON Lights with PC
-  alias: Switch ON Lights with PC
+- id: "Kitchen_Background_Lights_by_PC_ON"
+  alias: Kitchen Background Lights by PC ON
   trigger:
     - platform: state
       entity_id: switch.asus_pc
@@ -208,8 +208,8 @@
         #        - switch.pc_backlight_sync_send
         - switch.tradrfri_outlet_1
 
-- alias: Bar light switch ON
-  id: Bar light switch ON
+- id: "Living_Room_Bar_Lights_by_Sunset_ON"
+  alias: Living Room Bar Lights by Sunset ON
   trigger:
     - platform: sun
       event: sunset
@@ -218,8 +218,8 @@
     - service: light.turn_on
       entity_id: switch.bar_light
 
-- alias: Bar light switch OFF
-  id: Bar light switch OFF
+- id: "Living_Room_Bar_Lights_by_Sunrise_OFF"
+  alias: Living Room Bar Lights by Sunrise OFF
   trigger:
     - platform: sun
       event: sunrise
@@ -228,8 +228,8 @@
     - service: light.turn_off
       entity_id: switch.bar_light
 
-- id: Switch on Christmas Lights After Sunset
-  alias: Switch on Christmas Lights After Sunset
+- id: "Living_Room_Christmas_Lights_by_Sunset_ON"
+  alias: Living Room Christmas Lights by Sunset ON
   trigger:
     - platform: sun
       event: sunset
@@ -244,50 +244,50 @@
     - service: switch.turn_on
       entity_id: switch.bar_light
 
-- id: 'Kitchen-Spotlights-Motion-On'
-  alias: Kitchen Spotlights Motion On
+- id: "Kitchen_Spotlights_by_Motion_ON"
+  alias: Kitchen Spotlights by Motion ON
   trigger:
     platform: state
     entity_id: binary_sensor.aqara_kitchen_workplace_motion_sensor_occupancy
-    to: 'on'
-#    condition:
-#      condition: numeric_state
-#      entity_id: sensor.sensor.aqara_kitchen_workplace_motion_sensor_illuminance_lux
-#      below: '15'
+    to: "on"
+  #    condition:
+  #      condition: numeric_state
+  #      entity_id: sensor.sensor.aqara_kitchen_workplace_motion_sensor_illuminance_lux
+  #      below: '15'
   action:
     service: light.turn_on
     entity_id: light.kitchen_spotlights
 
-- id: 'Kitchen-Spotlights-Motion-Off'
-  alias: Kitchen Spotlights Motion Off
+- id: "Kitchen_Spotlights_by_Motion_OFF"
+  alias: Kitchen Spotlights by Motion OFF
   trigger:
     platform: state
     entity_id: binary_sensor.aqara_kitchen_workplace_motion_sensor_occupancy
-    to: 'off'
+    to: "off"
     for: 00:00:20
   action:
     service: light.turn_off
     entity_id: light.kitchen_spotlights
 
-- id: 'Reset-Sensor-state'
-  alias: Reset Sensor state
+- id: "Kitchen_Motion_Sensor_Reset_State"
+  alias: Kitchen Motion Sensor Reset State
   trigger:
     platform: state
     entity_id: binary_sensor.aqara_kitchen_workplace_motion_sensor_occupancy
-    to: 'on'
+    to: "on"
     for: 00:00:05
   action:
-  - data_template:
-      entity_id: binary_sensor.aqara_kitchen_workplace_motion_sensor_occupancy
-      state: 'off'
-    service: python_script.set_state
+    - data_template:
+        entity_id: binary_sensor.aqara_kitchen_workplace_motion_sensor_occupancy
+        state: "off"
+      service: python_script.set_state
 
 ###############################################
 ## Cover Automations
 ###############################################
 
-- id: Close Blinds At Evening
-  alias: Close Blinds At Evening
+- id: "Bedroom_Blinds_by_Sunset_Close"
+  alias: Bedroom Blinds by Sunset Close
   trigger:
     - platform: sun
       event: sunset
@@ -307,7 +307,7 @@
 ## Alarms
 ###############################################
 
-- id: Alarm Morgan
+- id: "Alarm_Morgan"
   alias: Alarm Morgan
   trigger:
     - platform: time_pattern
@@ -337,7 +337,7 @@
     - service: switch.turn_on
       entity_id: switch.asus_pc
 
-- id: Alarm Kris
+- id: "Alarm_Kris"
   alias: Alarm Kris
   trigger:
     - platform: time_pattern
@@ -364,7 +364,7 @@
         entity_id: light.floor_lamp
         brightness: 50
 
-- id: Alarm Weekends
+- id: "Alarm_Weekends"
   alias: Alarm Weekends
   trigger:
     - platform: time_pattern
@@ -386,7 +386,7 @@
     - service: cover.open_cover
       entity_id: cover.bedroom
 
-- id: Alarm Weekdays
+- id: "Alarm_Weekdays"
   alias: Alarm Weekdays
   trigger:
     - platform: time_pattern
@@ -415,8 +415,8 @@
 ## Notifications
 ###############################################
 
-- id: Kris Arrived
-  alias: Kris Arrived
+- id: "Notification_Kris_Arrived"
+  alias: Notification Kris Arrived
   trigger:
     - platform: state
       entity_id: person.kris
@@ -427,8 +427,8 @@
         title: "{{ 'ℹ️' }} Системное уведомление"
         message: Кристина пришла домой в {{ states('sensor.time') }}
 
-- id: Kris Leaved
-  alias: Kris Leaved
+- id: "Notification_Kris_Leaved"
+  alias: Notification Kris Leaved
   trigger:
     - platform: state
       entity_id: person.kris
@@ -440,8 +440,8 @@
         title: "{{ 'ℹ️' }} Системное уведомление"
         message: Кристина ушла в {{ states('sensor.time') }}
 
-- id: Snow Notification
-  alias: Snow Notification
+- id: "Notification_Snow"
+  alias: Notification Snow
   trigger:
     - platform: numeric_state
       entity_id: sensor.openweathermap_snow
@@ -456,8 +456,8 @@
 ## Raven Automations
 ###############################################
 
-- id: Raven Connected
-  alias: Raven Connected
+- id: "Notification_Raven_Connected"
+  alias: Notification Raven Connected
   trigger:
     - platform: state
       entity_id: person.Raven
@@ -468,8 +468,8 @@
         title: "{{ 'ℹ️' }} Сообщение от Raven"
         message: Raven подключился к серверу
 
-- id: Raven Disconnected
-  alias: Raven Disconnected
+- id: "Notification_Raven_Disconnected"
+  alias: Notification Raven Disconnected
   trigger:
     - platform: state
       entity_id: person.Raven
@@ -480,8 +480,8 @@
         title: "{{ 'ℹ️' }} Сообщение от Raven"
         message: Raven отключился от сервера
 
-- id: Raven Alarm
-  alias: Raven Alarm
+- id: "Notification_Raven_Alarm"
+  alias: Notification Raven Alarm
   trigger:
     - platform: state
       entity_id: binary_sensor.raven_alarm
@@ -493,8 +493,8 @@
         title: "{{ '❗️' }} Сообщение от Raven"
         message: Несанкционированный доступ в Raven в {{ states('sensor.time') }}
 
-- id: Raven Low Battery Notification
-  alias: Raven Low Battery Notification
+- id: "Notification_Raven_Low_Battery"
+  alias: Notification Raven Low Battery
   trigger:
     - platform: numeric_state
       entity_id: sensor.raven_battery_voltage
@@ -538,8 +538,8 @@
 ## Home Assistant Automations
 ###############################################
 
-- id: Home Assistant Start Notification
-  alias: Home Assistant Start Notification
+- id: "Notification_Home_Assistant_Started"
+  alias: Notification Home Assistant Started
   trigger:
     - platform: homeassistant
       event: start
@@ -549,8 +549,8 @@
         title: "{{ 'ℹ️' }} Системное уведомление"
         message: "Cервер запущен {{ '\uD83D\uDC4C' }} в {{ states('sensor.time') }}."
 
-- id: Home Assistant Stop Notification
-  alias: Home Assistant Stop Notification
+- id: "Notification_Home_Assistant_Stopped"
+  alias: Notification Home Assistant Stopped
   trigger:
     - platform: event
       event_type: homeassistant_stop
@@ -560,8 +560,8 @@
         title: "{{ 'ℹ️' }} Системное уведомление"
         message: "Сервер остановлен {{'\uD83D\uDED1'}} в {{ states('sensor.time') }}"
 
-- id: New Device Connected
-  alias: New Device Connected
+- id: "Notification_New_Device_Connected"
+  alias: Notification New Device Connected
   mode: queued
   trigger:
     platform: event
@@ -614,8 +614,8 @@
       data:
         addon: core_letsencrypt
 
-- id: Update Available Notification
-  alias: Update Available Notification
+- id: "Notification_Home_Assistant_Update_Available"
+  alias: Notification Home Assistant Update Available
   trigger:
     - platform: state
       entity_id: binary_sensor.updater
@@ -639,8 +639,8 @@
 ## Aqara Cube Automations
 ###############################################
 
-- id: Cube Flip 90
-  alias: Cube Flip 90
+- id: "Aqara_Cube_Flip_90"
+  alias: Aqara Cube Flip 90
   trigger:
     platform: state
     entity_id: sensor.aqara_cube_1_action
@@ -653,8 +653,8 @@
     - service: light.toggle
       entity_id: light.kitchen_spotlights
 
-- id: Cube Flip 180
-  alias: Cube Flip 180
+- id: "Aqara_Cube_Flip_180"
+  alias: Aqara Cube Flip 180
   trigger:
     platform: state
     entity_id: sensor.aqara_cube_1_action
@@ -667,8 +667,8 @@
     - service: light.turn_off
       entity_id: all
 
-- id: Cube Shake
-  alias: Cube Shake
+- id: "Aqara_Cube_Shake"
+  alias: Aqara Cube Shake
   trigger:
     - platform: state
       entity_id: sensor.aqara_cube_1_action
@@ -706,8 +706,8 @@
         - light.floor_lamp
     - delay: 0.8
 
-- id: Cube Tap
-  alias: Cube Tap
+- id: "Aqara_Cube_Tap"
+  alias: Aqara Cube Tap
   trigger:
     platform: state
     entity_id: sensor.aqara_cube_1_action
@@ -720,8 +720,8 @@
     - service: scene.turn_on
       entity_id: scene.movies
 
-- id: Cube Slide
-  alias: Cube Slide
+- id: "Aqara_Cube_Slide"
+  alias: Aqara Cube Slide
   trigger:
     platform: state
     entity_id: sensor.aqara_cube_1_action
@@ -734,8 +734,8 @@
     - service: light.toggle
       entity_id: light.mi_desk_lamp
 
-- id: Cube Rotate
-  alias: Cube Rotate
+- id: "Aqara_Cube_Rotate"
+  alias: Aqara Cube Rotate
   trigger:
     - platform: state
       entity_id: sensor.aqara_cube_1_action
@@ -760,8 +760,8 @@
 ## Aqara Switch Automations
 ###############################################
 
-- id: Aqara Switch Single
-  alias: Aqara Switch Single
+- id: "Bedroom_Aqara_Switch_Single_Press"
+  alias: Bedroom Aqara Switch Single Press
   trigger:
     platform: state
     entity_id: sensor.aqara_switch_1_action
@@ -772,8 +772,8 @@
     - service: scene.turn_on
       entity_id: scene.good_night
 
-- id: Aqara Switch Triple
-  alias: Aqara Switch Triple
+- id: "Bedroom_Aqara_Switch_Triple_Press"
+  alias: Bedroom Aqara Switch Triple Press
   trigger:
     platform: state
     entity_id: sensor.aqara_switch_1_action
@@ -782,8 +782,8 @@
     - service: switch.turn_off
       entity_id: switch.asus_pc
 
-- id: Aqara Switch Hold
-  alias: Aqara Switch Hold
+- id: "Bedroom_Aqara_Switch_Hold"
+  alias: Bedroom Aqara Switch Hold
   trigger:
     platform: state
     entity_id: sensor.aqara_switch_1_action
@@ -796,8 +796,8 @@
 ## Floorlamp Tradfri Button Control
 ###############################################
 
-- id: Tradfri Switch On
-  alias: Tradfri Switch On
+- id: "Living_Room_Floorlamp_Tradfri_Switch_Control_ON"
+  alias: Living Room Floorlamp Tradfri Switch Control ON
   trigger:
     platform: state
     entity_id: sensor.tradfri_switch_action
@@ -806,8 +806,8 @@
     - service: light.turn_on
       entity_id: light.floor_lamp
 
-- id: Tradfri Switch Off
-  alias: Tradfri Switch Off
+- id: "Living_Room_Floorlamp_Tradfri_Switch_Control_OFF"
+  alias: Living Room Floorlamp Tradfri Switch Control OFF
   trigger:
     platform: state
     entity_id: sensor.tradfri_switch_action
@@ -816,8 +816,8 @@
     - service: light.turn_off
       entity_id: light.floor_lamp
 
-- id: ikea_controller_brighten_on
-  alias: Ikea Controller - Brighten on
+- id: "Living_Room_Floorlamp_Tradfri_Switch_Control_Brightness_Up"
+  alias: Floorlamp Tradfri Switch Control Brightness Up
   trigger:
     - platform: state
       entity_id: sensor.tradfri_switch_action
@@ -835,8 +835,8 @@
         input_boolean: input_boolean.light_brightness
         delta: 10
 
-- id: ikea_controller_dim_on
-  alias: Ikea Controller - Dim on
+- id: "Living_Room_Floorlamp_Tradfri_Switch_Control_Brightness_Down"
+  alias: Living Room Floorlamp Tradfri Switch Control Brightness Down
   trigger:
     - platform: state
       entity_id: sensor.tradfri_switch_action
@@ -854,8 +854,8 @@
         input_boolean: input_boolean.light_brightness
         delta: -10
 
-- id: ikea_controller_brighten_dim_off
-  alias: Ikea Controller - Brighten Dim off
+- id: "Living_Room_Floorlamp_Tradfri_Switch_Control_Brightness_Controll_OFF"
+  alias: Living Room Floorlamp Tradfri Switch Control Brightness Controll OFF
   initial_state: "on"
   trigger:
     - platform: state
@@ -878,8 +878,8 @@
 ## Automatic Scenning
 ###############################################
 
-- id: Movies On by TV
-  alias: Movies On by TV
+- id: "Scene_Movies_by_TV_ON"
+  alias: Scene Movies by TV ON
   trigger:
     platform: state
     entity_id: media_player.tv
@@ -901,8 +901,8 @@
     - service: scene.turn_on
       entity_id: scene.movies
 
-- id: Movies On by Sunset
-  alias: Movies On by Sunset
+- id: "Scene_Movies_by_Sunset_ON"
+  alias: Scene Movies by Sunset ON
   trigger:
     - platform: sun
       event: sunset
@@ -924,8 +924,8 @@
 ## Thermostat automations
 ###############################################
 
-- id: Thermostat Off While Window Opened
-  alias: Thermostat Off While Window Opened
+- id: "Kitchen_Thermostat_Change_Mode_by_Window_State"
+  alias: Kitchen Thermostat Change Mode by Window State
   mode: restart
   trigger:
     - platform: state
@@ -1007,8 +1007,8 @@
                   - delay:
                       seconds: 5
 
-- id: Thermostat On if Forgotten
-  alias: Thermostat On if Forgotten
+- id: "Kitchen_Thermostat_Emergency_ON"
+  alias: Kitchen Thermostat Emergency ON
   mode: single
   trigger:
     - platform: numeric_state
@@ -1048,7 +1048,8 @@
 ## Media Players Control
 ###############################################
 
-- alias: TV Wake on LAN
+- id: "Living_Room_TV_by_WoL_ON"
+  alias: Living Room TV by WoL ON
   mode: restart
   trigger:
     - platform: webostv.turn_on
@@ -1062,8 +1063,8 @@
 ## Other Buttons and Switches Handles
 ###############################################
 
-- id: Switch On Parking Light
-  alias: Switch On Parking Light
+- id: "Parking_Lights_ON"
+  alias: Parking Lights ON
   trigger:
     - platform: state
       entity_id: input_button.parking_light
@@ -1088,8 +1089,8 @@
           - delay:
               seconds: 1
 
-- id: Turn On Presentation Script
-  alias: Turn On Presentation Script
+- id: "Kitchen_Presentation_ON"
+  alias: Kitchen Presentation ON
   trigger:
     - platform: state
       entity_id: input_boolean.presentation_switch
