@@ -130,23 +130,13 @@
         title: "{{ 'ℹ️' }} Системное уведомление"
         message: Весь свет был погашен в {{ states('sensor.time') }}
 
-- id: "Hall_Lights_by_Contact_ON"
-  alias: Hall Lights by Contact ON
-  trigger:
-    platform: state
-    entity_id: binary_sensor.aqara_hall_door_sensor_contact
-    to: "on"
-  condition:
-    - condition: template
-      value_template: "{{ as_timestamp(now()) - as_timestamp(states.light.hall_lights.last_changed) > 60 }}"
-  action:
-    service: light.turn_on
-    entity_id: light.hall_lights
-
 - id: "Hall_Lights_by_Motion_ON"
   alias: Hall Lights by Motion ON
   trigger:
-    platform: state
+  - platform: state
+    entity_id: binary_sensor.aqara_hall_door_sensor_contact
+    to: "on"
+  - platform: state
     entity_id: binary_sensor.aqara_hall_motion_sensor_occupancy
     to: "on"
   #  condition:
