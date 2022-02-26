@@ -129,8 +129,46 @@
     entity_id: light.hall_lights
 
 ###############################################
-## Automatic Lights
+## Other Automatic Lights
 ###############################################
+
+- id: "Kitchen_Spotlights_by_Motion_ON"
+  alias: Kitchen Spotlights by Motion ON
+  trigger:
+    platform: state
+    entity_id: binary_sensor.aqara_kitchen_workplace_motion_sensor_occupancy
+    to: "on"
+  #    condition:
+  #      condition: numeric_state
+  #      entity_id: sensor.sensor.aqara_kitchen_workplace_motion_sensor_illuminance_lux
+  #      below: '15'
+  action:
+    service: light.turn_on
+    entity_id: light.kitchen_spotlights
+
+- id: "Kitchen_Spotlights_by_Motion_OFF"
+  alias: Kitchen Spotlights by Motion OFF
+  trigger:
+    platform: state
+    entity_id: binary_sensor.aqara_kitchen_workplace_motion_sensor_occupancy
+    to: "off"
+    for: 00:00:20
+  action:
+    service: light.turn_off
+    entity_id: light.kitchen_spotlights
+
+- id: "Kitchen_Motion_Sensor_Reset_State"
+  alias: Kitchen Motion Sensor Reset State
+  trigger:
+    platform: state
+    entity_id: binary_sensor.aqara_kitchen_workplace_motion_sensor_occupancy
+    to: "on"
+    for: 00:00:05
+  action:
+    - data_template:
+        entity_id: binary_sensor.aqara_kitchen_workplace_motion_sensor_occupancy
+        state: "off"
+      service: python_script.set_state
 
 - id: "Kitchen_Background_Lights_by_PC_ON"
   alias: Kitchen Background Lights by PC ON
@@ -206,44 +244,6 @@
   action:
     - service: light.turn_off
       entity_id: switch.bar_light
-
-- id: "Kitchen_Spotlights_by_Motion_ON"
-  alias: Kitchen Spotlights by Motion ON
-  trigger:
-    platform: state
-    entity_id: binary_sensor.aqara_kitchen_workplace_motion_sensor_occupancy
-    to: "on"
-  #    condition:
-  #      condition: numeric_state
-  #      entity_id: sensor.sensor.aqara_kitchen_workplace_motion_sensor_illuminance_lux
-  #      below: '15'
-  action:
-    service: light.turn_on
-    entity_id: light.kitchen_spotlights
-
-- id: "Kitchen_Spotlights_by_Motion_OFF"
-  alias: Kitchen Spotlights by Motion OFF
-  trigger:
-    platform: state
-    entity_id: binary_sensor.aqara_kitchen_workplace_motion_sensor_occupancy
-    to: "off"
-    for: 00:00:20
-  action:
-    service: light.turn_off
-    entity_id: light.kitchen_spotlights
-
-- id: "Kitchen_Motion_Sensor_Reset_State"
-  alias: Kitchen Motion Sensor Reset State
-  trigger:
-    platform: state
-    entity_id: binary_sensor.aqara_kitchen_workplace_motion_sensor_occupancy
-    to: "on"
-    for: 00:00:05
-  action:
-    - data_template:
-        entity_id: binary_sensor.aqara_kitchen_workplace_motion_sensor_occupancy
-        state: "off"
-      service: python_script.set_state
 
 ###############################################
 ## Cover Automations
@@ -416,7 +416,7 @@
         message: Должно выпасть {{ states('sensor.openweathermap_snow') }} мм снега
 
 ###############################################
-## Raven Automations
+## Raven Notifications
 ###############################################
 
 - id: "Notification_Raven_Connected"
@@ -498,7 +498,7 @@
                 entity_id: switch.backyard_socket
 
 ###############################################
-## Home Assistant Automations
+## Home Assistant Notifications
 ###############################################
 
 - id: "Notification_Home_Assistant_Started"
@@ -566,17 +566,6 @@
         extra:
           volume_level: 0.8
 
-- id: letsencrypt-renewal
-  initial_state: true
-  alias: Let's Encrypt Renewal
-  trigger:
-    - platform: time
-      at: 00:00:00
-  action:
-    - service: hassio.addon_restart
-      data:
-        addon: core_letsencrypt
-
 - id: "Notification_Home_Assistant_Update_Available"
   alias: Notification Home Assistant Update Available
   trigger:
@@ -597,6 +586,21 @@
             - action: "URI"
               title: "Release Notes"
               uri: "{{ state_attr('binary_sensor.updater', 'release_notes') }}"
+
+###############################################
+## Home Assistant Automations
+###############################################
+
+- id: letsencrypt-renewal
+  initial_state: true
+  alias: Let's Encrypt Renewal
+  trigger:
+    - platform: time
+      at: 00:00:00
+  action:
+    - service: hassio.addon_restart
+      data:
+        addon: core_letsencrypt
 
 ###############################################
 ## Aqara Cube Automations
@@ -756,7 +760,7 @@
       entity_id: cover.bedroom
 
 ###############################################
-## Floorlamp Tradfri Button Control
+## Floorlamp Tradfri Switch Control
 ###############################################
 
 - id: "Living_Room_Floorlamp_Tradfri_Switch_Control_ON"
