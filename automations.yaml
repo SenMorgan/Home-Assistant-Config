@@ -419,6 +419,17 @@
         title: Уведомление о снеге {{ '\u2744\ufe0f' }}
         message: Должно выпасть {{ states('sensor.openweathermap_snow') }} мм снега
 
+- id: "Notification_Every_100_Duco_Mined"
+  alias: Notification Every 100 Duco Mined
+  trigger:
+    - platform: state
+      entity_id: sensor.duco_balance_100_trigger
+  action:
+    - service: notify.mobile_app_sm_a515f
+      data:
+        title: "{{ 'ℹ️' }} Системное уведомление"
+        message: "{{ '\u26cf\ufe0f' }} You have mined {{ states('sensor.duco_balance') | round(2) }} DUCO {{ '\ud83e\ude99' }}"
+
 ###############################################
 ## Raven Notifications
 ###############################################
