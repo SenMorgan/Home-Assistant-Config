@@ -159,15 +159,43 @@
               entity_id:
                 - switch.pc_backlight_sync_send
 
-- id: "Living_Room_Bar_Lights_by_Sunset_ON"
-  alias: Living Room Bar Lights by Sunset ON
+- id: "Living_Room_Bar_Lights_by_Sunset_or_TV_ON"
+  alias: Living Room Bar Lights by Sunset or TV ON
   trigger:
     - platform: sun
+      id: "SUNSET"
       event: sunset
       offset: -00:15:00
+    - platform: state
+      id: "TV_ON"
+      entity_id: media_player.tv
+      to: "on"
+  condition:
+    - condition: state
+      entity_id: binary_sensor.people_home
+      state: "on"
   action:
-    - service: light.turn_on
-      entity_id: switch.bar_light
+    - choose:
+        - conditions:
+            - condition: trigger
+              id: "SUNSET"
+            - condition: state
+              entity_id: media_player.tv
+              state: "on"
+          sequence:
+            - service: light.turn_on
+              target:
+                entity_id: switch.bar_light
+        - conditions:
+            - condition: trigger
+              id: "TV_ON"
+            - condition: sun
+              after: sunset
+              before_offset: 00:15:00
+          sequence:
+            - service: light.turn_on
+              target:
+                entity_id: light.bar_light
 
 - id: "Living_Room_Bar_Lights_by_Sunrise_OFF"
   alias: Living Room Bar Lights by Sunrise OFF
@@ -177,22 +205,6 @@
       offset: -01:00:00
   action:
     - service: light.turn_off
-      entity_id: switch.bar_light
-
-- id: "Living_Room_Christmas_Lights_by_Sunset_ON"
-  alias: Living Room Christmas Lights by Sunset ON
-  trigger:
-    - platform: sun
-      event: sunset
-  condition:
-    - condition: state
-      entity_id: binary_sensor.people_home
-      state: "on"
-    - condition: state
-      entity_id: media_player.tv
-      state: "on"
-  action:
-    - service: switch.turn_on
       entity_id: switch.bar_light
 
 - id: "Kitchen_Spotlights_by_Motion_ON"
