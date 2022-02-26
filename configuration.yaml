@@ -715,12 +715,12 @@ sensor:
         value_template: >
           {{ as_timestamp(states.sensor.raven_rssi.last_changed) | timestamp_custom('%d.%m.%Y %H:%M:%S',1) }}
 
-###############################################
-## DuinoCoin Statistics Sensors
-###############################################
+  ###############################################
+  ## DuinoCoin Statistics Sensors
+  ###############################################
   - platform: statistics
     name: "Duco Mined over 1 minute"
-    entity_id: sensor.duco_balance  
+    entity_id: sensor.duco_balance
     state_characteristic: change
     max_age:
       minutes: 1
@@ -729,7 +729,7 @@ sensor:
 
   - platform: statistics
     name: "Duco Mined over 5 minutes"
-    entity_id: sensor.duco_balance  
+    entity_id: sensor.duco_balance
     state_characteristic: change
     max_age:
       minutes: 5
@@ -738,7 +738,7 @@ sensor:
 
   - platform: statistics
     name: "Duco Mined over 1 hour"
-    entity_id: sensor.duco_balance  
+    entity_id: sensor.duco_balance
     state_characteristic: change
     max_age:
       hours: 1
@@ -747,7 +747,7 @@ sensor:
 
   - platform: statistics
     name: "Duco Mined over 1 day"
-    entity_id: sensor.duco_balance  
+    entity_id: sensor.duco_balance
     state_characteristic: change
     max_age:
       days: 1
@@ -763,21 +763,22 @@ input_button:
     icon: mdi:spotlight
 
 ###############################################
-## DuinoCoin Sensors
+## DuinoCoin Rest Sensors
 ###############################################
 rest:
-  - resource: !secret DUINOCOIN_USER_URI  
+  - resource: !secret DUINOCOIN_USER_URI
     scan_interval: 60
     sensor:
       - name: "Duco Balance"
         value_template: "{{ value_json['result']['balance'] | round(5) }}"
         device_class: monetary
         state_class: measurement
+      - name: "Duco Balance 100 Trigger"
+        value_template: "{{ (value_json['result']['balance'] | float / 100) | int }}"
       - name: "Duco Username"
         value_template: "{{ value_json['result']['username'] }}"
       - name: "Duco Server"
         value_template: "{{ value_json['server'] }}"
-
 ###############################################
-## 
+##
 ###############################################
