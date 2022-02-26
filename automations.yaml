@@ -411,7 +411,7 @@
   alias: Notification Raven Connected
   trigger:
     - platform: state
-      entity_id: person.Raven
+      entity_id: person.raven
       to: "home"
   action:
     - service: notify.mobile_app_sm_a515f
@@ -423,7 +423,7 @@
   alias: Notification Raven Disconnected
   trigger:
     - platform: state
-      entity_id: person.Raven
+      entity_id: person.raven
       to: "not_home"
   action:
     - service: notify.mobile_app_sm_a515f
