@@ -142,6 +142,9 @@
     - condition: state
       entity_id: light.kitchen_spotlights
       state: "off"
+    - condition: time
+      after: "06:00"
+      before: "21:00"
   #      condition: numeric_state
   #      entity_id: sensor.sensor.aqara_kitchen_workplace_motion_sensor_illuminance_lux
   #      below: '15'
