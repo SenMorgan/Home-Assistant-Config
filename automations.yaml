@@ -160,7 +160,7 @@
     platform: state
     entity_id: binary_sensor.aqara_kitchen_workplace_motion_sensor_occupancy
     to: "off"
-    for: 00:00:45
+    for: 00:00:10
   condition:
     - condition: state
       entity_id: input_boolean.flag_spotlight_triggered_by_motion
