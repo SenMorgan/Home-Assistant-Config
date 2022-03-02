@@ -194,13 +194,38 @@
         state: "off"
       service: python_script.set_state
 
-- id: "Kitchen_Background_Lights_by_PC_ON"
-  alias: Kitchen Background Lights by PC ON
+- id: "Kitchen_Asus_PC_Background_Lights ON"
+  alias: Kitchen Asus PC Background Lights ON
   trigger:
+    - platform: sun
+      id: "SUNSET"
+      event: sunset
+      offset: -00:10:00
     - platform: state
+      id: "PC_ON"
       entity_id: switch.asus_pc
       from: "off"
       to: "on"
+  condition:
+    - condition: state
+      entity_id: person.sen
+      state: "home"
+    - condition: or
+      conditions:
+        - condition: and
+          conditions:
+            - condition: trigger
+              id: "SUNSET"
+            - condition: state
+              entity_id: switch.asus_pc
+              state: "on"
+        - condition: and
+          conditions:
+            - condition: trigger
+              id: "PC_ON"
+            - condition: sun
+              after: sunset
+              before_offset: 00:10:00
   action:
     - service: light.turn_on
       entity_id:
