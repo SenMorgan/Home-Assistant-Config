@@ -267,26 +267,25 @@
     - condition: state
       entity_id: light.kitchen_spotlights
       state: "off"
-  action:
-    - choose:
-        - conditions:
+    - condition: or
+      conditions:
+        - condition: and
+          conditions:
             - condition: trigger
               id: "SUNSET"
             - condition: state
               entity_id: media_player.tv
               state: "on"
-          sequence:
-            - service: scene.turn_on
-              entity_id: scene.movies
-        - conditions:
+        - condition: and
+          conditions:
             - condition: trigger
               id: "TV_ON"
             - condition: sun
               after: sunset
               before_offset: 00:15:00
-          sequence:
-            - service: scene.turn_on
-              entity_id: scene.movies
+  action:
+    - service: scene.turn_on
+      entity_id: scene.movies
 
 - id: "Living_Room_Bar_Lights_by_Sunrise_OFF"
   alias: Living Room Bar Lights by Sunrise OFF
