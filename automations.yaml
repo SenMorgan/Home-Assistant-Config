@@ -290,12 +290,6 @@
     - condition: state
       entity_id: person.sen
       state: "home"
-    - condition: state
-      entity_id: switch.asus_pc
-      state: "off"
-    - condition: state
-      entity_id: light.kitchen_spotlights
-      state: "off"
     - condition: or
       conditions:
         - condition: and
@@ -313,6 +307,12 @@
               after: sunset
               before_offset: 00:15:00
   action:
+    - wait_template: "{{ states('switch.asus_pc') == 'off' }}"
+      timeout: 00:10:00
+      continue_on_timeout: false
+    - wait_template: "{{ states('light.kitchen_spotlights') == 'off' }}"
+      timeout: 00:10:00
+      continue_on_timeout: false
     - service: scene.turn_on
       entity_id: scene.movies
 
