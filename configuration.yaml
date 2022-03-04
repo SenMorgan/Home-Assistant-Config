@@ -39,13 +39,6 @@ notify:
 wake_on_lan:
 
 camera:
-  - platform: mjpeg
-    name: Parking
-    still_image_url: !secret PARKING_IMAGE_URL
-    mjpeg_url: !secret PARKING_MJPEG_URL
-  - platform: mjpeg
-    name: Galaxy Tablet
-    mjpeg_url: !secret GALAXY_GT_N5100_MJPEG_URL
   - platform: xiaomi_cloud_map_extractor
     host: !secret XIAOMI_VACUUM_HOST
     token: !secret XIAOMI_VACUUM_TOKEN
