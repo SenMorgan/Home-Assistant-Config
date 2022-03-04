@@ -200,7 +200,7 @@
     - platform: sun
       id: "SUNSET"
       event: sunset
-      offset: -00:10:00
+      offset: -00:20:00
     - platform: state
       id: "PC_ON"
       entity_id: switch.asus_pc
@@ -225,7 +225,7 @@
               id: "PC_ON"
             - condition: sun
               after: sunset
-              before_offset: 00:10:00
+              before_offset: 00:20:00
   action:
     - service: light.turn_on
       entity_id:
@@ -998,10 +998,14 @@
     - platform: numeric_state
       entity_id: climate.thermostat
       attribute: current_temperature
-      below: "20"
+      below: 20
     - platform: time
       at: "01:00"
   condition:
+    - condition: numeric_state
+      entity_id: climate.thermostat
+      attribute: current_temperature
+      below: 20
     - condition: state
       entity_id: binary_sensor.people_home
       state: "on"
