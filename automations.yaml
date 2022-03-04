@@ -7,11 +7,9 @@
   mode: queued
   trigger:
     - platform: state
-      id: Sen Come Home
       entity_id: person.sen
       to: "home"
     - platform: state
-      id: Kris Come Home
       entity_id: person.kris
       to: "home"
   condition:
@@ -25,9 +23,11 @@
     - wait_template: "{{ states('binary_sensor.aqara_hall_door_sensor_contact') == 'off' }}"
       timeout: 00:10:00
     - choose:
+        # Only Sen came home
         - conditions:
-            - condition: trigger
-              id: Sen Come Home
+            - condition: state
+              entity_id: person.sen
+              state: "home"
           sequence:
             - alias: "Switch on lights and welcome"
               choose:
@@ -46,9 +46,11 @@
                 media_content_type: dialog
                 extra:
                   volume_level: 0.9
+        # Only Kris came home
         - conditions:
-            - condition: trigger
-              id: Kris Come Home
+            - condition: state
+              entity_id: person.kris
+              state: "home"
           sequence:
             - alias: "Only welcome"
               service: media_player.play_media
@@ -56,6 +58,33 @@
               data:
                 media_content_id: >
                   Добро пожаловать домой миссис Морган
+                media_content_type: dialog
+                extra:
+                  volume_level: 0.9
+        # Bouth came home
+        - conditions:
+            - condition: state
+              entity_id: person.sen
+              state: "home"
+            - condition: state
+              entity_id: person.kris
+              state: "home"
+          sequence:
+            - alias: "Switch on lights and welcome"
+              choose:
+                - conditions:
+                    - condition: sun
+                      after: sunset
+                      before_offset: 00:15:00
+                  sequence:
+                    - service: switch.turn_on
+                      entity_id: switch.string_lights
+            - alias: "Welcome everybody"
+              service: media_player.play_media
+              entity_id: media_player.yandex_station
+              data:
+                media_content_id: >
+                  Добро пожаловать домой мистер и миссис Морган
                 media_content_type: dialog
                 extra:
                   volume_level: 0.9
