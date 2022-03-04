@@ -501,11 +501,25 @@
   trigger:
     - platform: state
       entity_id: sensor.duco_balance_100_trigger
+  condition:
+    - condition: template
+      value_template: >-
+        {% if states.sensor.duco_balance %}
+        true
+        {% else %}
+        false
+        {% endif %}
+    - condition: template
+      value_template: >-
+        {{ not is_state(trigger.from_state.state, "unavailable") and
+        not is_state(trigger.from_state.state, "unknown") and
+        not is_state(trigger.to_state.state, "unavailable") and
+        not is_state(trigger.to_state.state, "unknown") }}
   action:
     - service: notify.mobile_app_sm_a515f
       data:
         title: "{{ 'ℹ️' }} Системное уведомление"
-        message: "{{ '\u26cf\ufe0f' }} You have mined {{ states('sensor.duco_balance') | round(2) }} DUCO {{ '\ud83e\ude99' }}"
+        message: "{{ '\u26cf\ufe0f' }} You have mined {{ states('sensor.duco_balance') | round(0) }} DUCO {{ '\ud83e\ude99' }}"
 
 ###############################################
 ## Raven Notifications
