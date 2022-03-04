@@ -662,22 +662,19 @@
   alias: Notification Home Assistant Update Available
   trigger:
     - platform: state
-      entity_id: binary_sensor.updater
+      entity_id: binary_sensor.home_assistant_versions_update_available
       from: "off"
       to: "on"
   action:
     - service: notify.mobile_app_sm_a515f
       data:
         title: "{{ 'ℹ️' }} Системное уведомление"
-        message: "Update! {{ '\uD83C\uDF0D' }} Доступно новое обновление!"
+        message: "Update! {{ '\uD83C\uDF0D' }} Доступна новая версия {{ states('sensor.home_assistant_versions') }}"
         data:
           actions:
             - action: "URI"
               title: "Open Config"
               uri: "/config"
-            - action: "URI"
-              title: "Release Notes"
-              uri: "{{ state_attr('binary_sensor.updater', 'release_notes') }}"
 
 ###############################################
 ## Home Assistant Automations
