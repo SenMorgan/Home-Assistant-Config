@@ -164,9 +164,12 @@
 - id: "Kitchen_Spotlights_by_Motion_ON"
   alias: Kitchen Spotlights by Motion ON
   trigger:
-    platform: state
-    entity_id: binary_sensor.aqara_kitchen_workplace_motion_sensor_occupancy
-    to: "on"
+    - platform: state
+      entity_id: binary_sensor.aqara_kitchen_workplace_motion_sensor_occupancy
+      to: "on"
+    - platform: state
+      entity_id: binary_sensor.tradfri_motion_sensor_occupancy
+      to: "on"
   condition:
     - condition: state
       entity_id: light.kitchen_spotlights
@@ -176,7 +179,7 @@
       before: "21:00"
     - condition: numeric_state
       entity_id: sensor.aqara_kitchen_workplace_motion_sensor_illuminance_lux
-      below: 10
+      below: 15
   action:
     - service: light.turn_on
       entity_id: light.kitchen_spotlights
@@ -185,12 +188,23 @@
 
 - id: "Kitchen_Spotlights_by_Motion_OFF"
   alias: Kitchen Spotlights by Motion OFF
+  mode: single
   trigger:
-    platform: state
-    entity_id: binary_sensor.aqara_kitchen_workplace_motion_sensor_occupancy
-    to: "off"
-    for: 00:00:10
+    - platform: state
+      entity_id: binary_sensor.aqara_kitchen_workplace_motion_sensor_occupancy
+      to: "off"
+      for: 00:00:10
+    - platform: state
+      entity_id: binary_sensor.tradfri_motion_sensor_occupancy
+      to: "off"
+      for: 00:00:10
   condition:
+    - condition: state
+      entity_id: binary_sensor.aqara_kitchen_workplace_motion_sensor_occupancy
+      state: "off"
+    - condition: state
+      entity_id: binary_sensor.tradfri_motion_sensor_occupancy
+      state: "off"
     - condition: state
       entity_id: input_boolean.flag_spotlight_triggered_by_motion
       state: "on"
