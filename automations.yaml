@@ -163,6 +163,7 @@
 
 - id: "Kitchen_Spotlights_by_Motion_ON"
   alias: Kitchen Spotlights by Motion ON
+  mode: restart
   trigger:
     - platform: state
       entity_id: binary_sensor.aqara_kitchen_workplace_motion_sensor_occupancy
@@ -188,7 +189,7 @@
 
 - id: "Kitchen_Spotlights_by_Motion_OFF"
   alias: Kitchen Spotlights by Motion OFF
-  mode: single
+  mode: restart
   trigger:
     - platform: state
       entity_id: binary_sensor.aqara_kitchen_workplace_motion_sensor_occupancy
@@ -896,6 +897,7 @@
 
 - id: "Living_Room_Floorlamp_Tradfri_Switch_Control_ON"
   alias: Living Room Floorlamp Tradfri Switch Control ON
+  mode: restart
   trigger:
     platform: state
     entity_id: sensor.tradfri_switch_action
@@ -906,6 +908,7 @@
 
 - id: "Living_Room_Floorlamp_Tradfri_Switch_Control_OFF"
   alias: Living Room Floorlamp Tradfri Switch Control OFF
+  mode: restart
   trigger:
     platform: state
     entity_id: sensor.tradfri_switch_action
@@ -954,7 +957,6 @@
 
 - id: "Living_Room_Floorlamp_Tradfri_Switch_Control_Brightness_Controll_OFF"
   alias: Living Room Floorlamp Tradfri Switch Control Brightness Controll OFF
-  initial_state: "on"
   trigger:
     - platform: state
       entity_id: sensor.tradfri_switch_action
