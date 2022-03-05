@@ -765,11 +765,11 @@ rest:
     scan_interval: 60
     sensor:
       - name: "Duco Balance"
-        value_template: "{{ value_json['result']['balance'] | round(5) }}"
+        value_template: "{{ value_json['result']['balance'] | round(5, default=none) }}"
         device_class: monetary
         state_class: measurement
       - name: "Duco Balance 100 Trigger"
-        value_template: "{{ (value_json['result']['balance'] | float / 100) | int }}"
+        value_template: "{{ (value_json['result']['balance'] | float / 100) | round(0, default=none) }}"
       - name: "Duco Username"
         value_template: "{{ value_json['result']['username'] }}"
       - name: "Duco Server"
