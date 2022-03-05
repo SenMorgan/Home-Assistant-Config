@@ -28,6 +28,9 @@
             - condition: state
               entity_id: person.sen
               state: "home"
+            - condition: template
+              value_template: >
+                {{ not states('person.kris') == 'home'}}
           sequence:
             - alias: "Switch on lights and welcome"
               choose:
@@ -48,6 +51,9 @@
                   volume_level: 0.9
         # Only Kris came home
         - conditions:
+            - condition: template
+              value_template: >
+                {{ not states('person.sen') == 'home'}}
             - condition: state
               entity_id: person.kris
               state: "home"
