@@ -285,9 +285,9 @@
         - switch.tradrfri_outlet_1
     - choose:
         - conditions:
-            - condition: state
-              entity_id: person.kris
-              state: "not_home"
+            - condition: template
+              value_template: >
+                {{ not states('person.kris') == 'home'}}
           sequence:
             - service: light.turn_on
               entity_id:
