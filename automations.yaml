@@ -4,12 +4,14 @@
 
 - id: "Hall_Lights_and_Alice_Greeting"
   alias: Hall Lights and Alice Greeting
-  mode: queued
+  mode: single
   trigger:
     - platform: state
+      id: "SEN_CAME_HOME"
       entity_id: person.sen
       to: "home"
     - platform: state
+      id: "KRIS_CAME_HOME"
       entity_id: person.kris
       to: "home"
   condition:
@@ -25,12 +27,13 @@
     - choose:
         # Only Sen came home
         - conditions:
-            - condition: state
-              entity_id: person.sen
-              state: "home"
+            - condition: trigger
+              id: "SEN_CAME_HOME"
+            # Check if Kris's state didn't changed after Sen's
             - condition: template
-              value_template: >
-                {{ not states('person.kris') == 'home'}}
+              value_template:
+                "{{ ( as_timestamp(states.person.kris.last_changed) | int(0) ) <
+                ( as_timestamp(states.person.sen.last_changed) | int(0) ) }}"
           sequence:
             - alias: "Switch on lights and welcome"
               choose:
@@ -51,12 +54,13 @@
                   volume_level: 0.9
         # Only Kris came home
         - conditions:
+            - condition: trigger
+              id: "KRIS_CAME_HOME"
+            # Check if Sen's state didn't changed after Kris's
             - condition: template
-              value_template: >
-                {{ not states('person.sen') == 'home'}}
-            - condition: state
-              entity_id: person.kris
-              state: "home"
+              value_template:
+                "{{ ( as_timestamp(states.person.sen.last_changed) | int(0) ) <
+                ( as_timestamp(states.person.kris.last_changed) | int(0) ) }}"
           sequence:
             - alias: "Only welcome"
               service: media_player.play_media
@@ -94,6 +98,11 @@
                 media_content_type: dialog
                 extra:
                   volume_level: 0.9
+      default:
+        - service: notify.mobile_app_sm_a515f
+          data:
+            title: "{{ 'ℹ️' }} Системное уведомление"
+            message: Автоматизация приветствия не смогла определить кто пришел - исправьте код
 
 - id: "Home_All_Lights_OFF"
   alias: Home All Lights OFF
@@ -108,11 +117,7 @@
       state: "on"
     - condition: template
       value_template:
-        "{{ ( as_timestamp(now()) - as_timestamp(state_attr('automation.welcome_home_mr_and_mrs',
-        'last_triggered')) |int(0) ) > 60 }}"
-    - condition: template
-      value_template:
-        "{{ ( as_timestamp(now()) - as_timestamp(state_attr('automation.welcome_hall_light',
+        "{{ ( as_timestamp(now()) - as_timestamp(state_attr('automation.hall_lights_and_alice_greeting',
         'last_triggered')) |int(0) ) > 60 }}"
   action:
     - wait_template: "{{ states('binary_sensor.people_home') == 'off' }}"
