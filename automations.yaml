@@ -1230,29 +1230,14 @@
 
 - id: "Parking_Lights_ON"
   alias: Parking Lights ON
+  mode: single
   trigger:
     - platform: state
       entity_id: input_button.parking_light
   action:
-    - service: switch.turn_off
+    - service: script.turn_on
       target:
-        entity_id: switch.parking_light
-    - delay:
-        seconds: 15
-    - repeat:
-        while:
-          - condition: state
-            entity_id: switch.parking_light
-            state: "off"
-          # Don't do it too many times
-          - condition: template
-            value_template: "{{ repeat.index <= 10 }}"
-        sequence:
-          - service: switch.turn_on
-            target:
-              entity_id: switch.parking_light
-          - delay:
-              seconds: 1
+        entity_id: script.switch_on_parking_light
 
 - id: "Kitchen_Presentation_ON"
   alias: Kitchen Presentation ON
