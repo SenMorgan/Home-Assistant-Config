@@ -1126,6 +1126,69 @@
 ###############################################
 ## Other Buttons and Switches Handles
 ###############################################
+- id: "Raven_Engine_Switch"
+  alias: Raven Engine Switch
+  mode: single
+  trigger:
+    - platform: state
+      id: START_ENGINE
+      entity_id: input_boolean.raven_engine_start_stop
+      to: "on"
+    - platform: state
+      id: STOP_ENGINE
+      entity_id: input_boolean.raven_engine_start_stop
+      to: "off"
+  condition:
+    - condition: state
+      entity_id: script.start_raven_engine_with_repeat
+      state: "off"
+    - condition: state
+      entity_id: script.stop_raven_engine_with_repeat
+      state: "off"
+  action:
+    - choose:
+        - conditions:
+            - condition: trigger
+              id: START_ENGINE
+            - condition: numeric_state
+              entity_id: sensor.raven_motor_rpm
+              below: 1
+          sequence:
+            - service: script.turn_on
+              entity_id: script.start_raven_engine_with_repeat
+        - conditions:
+            - condition: trigger
+              id: STOP_ENGINE
+          sequence:
+            - service: script.turn_on
+              entity_id: script.stop_raven_engine_with_repeat
+
+- id: "Raven_Engine_State_Handler"
+  alias: Raven Engine State Handler
+  trigger:
+    - platform: state
+      entity_id: sensor.raven_started_by_status
+  action:
+    - choose:
+        - conditions:
+            - condition: or
+              conditions:
+                - condition: state
+                  entity_id: sensor.raven_started_by_status
+                  state: "KEY"
+                - condition: state
+                  entity_id: sensor.raven_started_by_status
+                  state: "REMOTE"
+          sequence:
+            - service: input_boolean.turn_on
+              entity_id: input_boolean.raven_engine_start_stop
+        - conditions:
+            - condition: state
+              entity_id: sensor.raven_started_by_status
+              state: "OFF"
+          sequence:
+            - service: input_boolean.turn_off
+              entity_id: input_boolean.raven_engine_start_stop
 
 - id: "Parking_Lights_ON"
   alias: Parking Lights ON

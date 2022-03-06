@@ -293,6 +293,9 @@ input_boolean:
   presentation_switch:
     name: Presentation
     icon: mdi:presentation-play
+  raven_engine_start_stop:
+    name: Raven Engine Start/Stop
+    icon: mdi:engine-outline
   flag_spotlight_triggered_by_motion:
     name: Flag - Spotlight Was Triggered by Motion Sensor
 

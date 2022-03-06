@@ -11,6 +11,7 @@ filter:
     - climate.thermostat
     - cover.bedroom
     - input_boolean.flag_spotlight_triggered_by_motion
+    - input_boolean.raven_engine_start_stop
     - light.floor_lamp
     - light.gyver_lamp
     - light.hall_lights
@@ -49,6 +50,9 @@ entity_config:
   input_boolean.flag_spotlight_triggered_by_motion:
     name: Таймер кухонного света
     room: Кухня
+  input_boolean.raven_engine_start_stop:
+    name: Двигатель
+    room: Парковка
   light.floor_lamp:
     name: Торшер
     room: Кухня
@@ -99,9 +103,6 @@ entity_config:
     name: Ёлка
     room: Зал
     type: devices.types.light
-  #  switch.raven_engine:
-  #    name: Двигатель Рэйвэн
-  #    room: Парковка
   switch.string_lights:
     name: Лампочки
     room: Кухня
