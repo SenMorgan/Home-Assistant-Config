@@ -585,6 +585,7 @@
 
 - id: "Notification_Raven_Low_Battery"
   alias: Notification Raven Low Battery
+  mode: single
   trigger:
     - platform: numeric_state
       entity_id: sensor.raven_battery_voltage
