@@ -624,6 +624,43 @@
               target:
                 entity_id: switch.backyard_socket
 
+- id: "Notification_Raven_Not_Sleeping"
+  alias: Notification Raven Not Sleeping
+  mode: restart
+  trigger:
+    - platform: state
+      entity_id: sensor.raven_actual_mode
+      to: "0"
+      for: "00:05:00"
+    - platform: state
+      entity_id: lock.raven_locks
+      to: "locked"
+      for: "00:05:00"
+    - platform: state
+      entity_id: binary_sensor.raven_sleep_mode
+      to: "on"
+      for: "00:05:00"
+  condition:
+    - condition: state
+      entity_id: binary_sensor.raven_actual_mode
+      state: "0"
+    - condition: state
+      entity_id: binary_sensor.raven_locks
+      state: "locked"
+    - condition: state
+      entity_id: binary_sensor.raven_sleep_mode
+      state: "off"
+  action:
+    - service: notify.mobile_app_sm_a515f
+      data:
+        title: "{{ '❗️' }} Сообщение от Raven"
+        message: CAN-BUS не засыпает! Примите меры!
+        data:
+          actions:
+            - action: "URI"
+              title: "Open URI"
+              uri: "/lovelace/raven"
+
 ###############################################
 ## Home Assistant Notifications
 ###############################################
