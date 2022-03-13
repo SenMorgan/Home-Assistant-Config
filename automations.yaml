@@ -297,6 +297,7 @@
             - service: light.turn_on
               entity_id:
                 - light.shelf_lighting
+                - light.pc_backlight
             - service: switch.turn_on
               entity_id:
                 - switch.pc_backlight_sync_send
