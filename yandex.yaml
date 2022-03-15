@@ -63,7 +63,7 @@ entity_config:
     name: Лампы
     room: Коридор
   light.kitchen_spotlights:
-    name: Кухонный свет
+    name: Подсветка кухни
     room: Кухня
   light.mi_desk_lamp:
     name: Настольная лампа
