@@ -249,7 +249,7 @@
         state: "off"
       service: python_script.set_state
 
-- id: "Kitchen_Asus_PC_Background_Lights ON"
+- id: "Kitchen_Asus_PC_Background_Lights_ON"
   alias: Kitchen Asus PC Background Lights ON
   trigger:
     - platform: sun
