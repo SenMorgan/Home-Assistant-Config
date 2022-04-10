@@ -741,7 +741,7 @@
   alias: Notification Home Assistant Update Available
   trigger:
     - platform: state
-      entity_id: binary_sensor.home_assistant_versions_update_available
+      entity_id: update.home_assistant_core_update
       from: "off"
       to: "on"
   action:
