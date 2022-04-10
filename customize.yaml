@@ -4,8 +4,6 @@ switch.bar_light:
   icon: mdi:led-strip-variant
 switch.string_lights:
   icon: mdi:string-lights
-switch.tradrfri_outlet_1:
-  icon: mdi:string-lights
 light.floor_lamp:
   icon: mdi:floor-lamp-dual
   color_mode: brightness
@@ -23,8 +21,3 @@ switch.asus_pc:
 light.desk_lamp:
   min_mireds: 200
   max_mireds: 385
-
-#sensor.duco_balance:
-#  entity_picture: /local/icon/duino.jpg
-#sensor.duco_server:
-#  entity_picture: /local/icon/duino.jpg
