@@ -760,7 +760,7 @@
   mode: single
   trigger:
     - platform: state
-      entity_id: binary_sensor.home_assistant_versions_update_available
+      entity_id: binary_sensor.iss
       from: "off"
       to: "on"
   action:
