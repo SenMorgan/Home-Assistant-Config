@@ -280,7 +280,7 @@
               id: "PC_ON"
             - condition: sun
               after: sunset
-              before_offset: 00:25:00
+              after_offset: -00:25:00
   action:
     - service: light.turn_on
       entity_id:
