@@ -108,8 +108,8 @@ entity_config:
     room: Кухня
     type: devices.types.light
   switch.tradrfri_outlet_1:
-    name: Гирлянда
-    room: Кухня
+    name: Ночник
+    room: Спальня
     type: devices.types.light
   vacuum.johnny:
     name: Джонни
