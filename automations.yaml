@@ -1268,3 +1268,19 @@
         entity_id: script.presentation
     - service: input_boolean.turn_off
       entity_id: input_boolean.presentation_switch
+
+###############################################
+## Yandex Alice Automations
+###############################################
+- id: "Sync_Shopping_List"
+  alias: Sync Shopping List
+  trigger:
+    - platform: state
+      entity_id: person.sen
+      from: "home"
+      to: "not_home"
+    - platform: time_pattern
+      hours: "/1"
+  action:
+    - service: script.turn_on
+      entity_id: script.update_shopping_list

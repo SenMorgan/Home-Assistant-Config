@@ -279,3 +279,12 @@ presentation:
       entity_id: scene.daytime_lights_enabled
     - service: cover.open_cover
       entity_id: cover.bedroom
+
+update_shopping_list:
+  alias: Update Shopping List
+  sequence:
+    - service: media_player.play_media
+      entity_id: media_player.yandex_station
+      data:
+        media_content_id: update
+        media_content_type: shopping_list
