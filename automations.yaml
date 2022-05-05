@@ -128,7 +128,7 @@
     - service: switch.turn_off
       entity_id: switch.string_lights
     - service: switch.turn_off
-      entity_id: switch.bar_light
+      entity_id: light.bar_light
     - service: notify.mobile_app_sm_a515f
       data:
         title: "{{ 'ℹ️' }} Системное уведомление"
@@ -348,7 +348,7 @@
       offset: -01:00:00
   action:
     - service: light.turn_off
-      entity_id: switch.bar_light
+      entity_id: light.bar_light
 
 ###############################################
 ## Cover Automations

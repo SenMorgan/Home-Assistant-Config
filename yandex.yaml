@@ -26,7 +26,7 @@ filter:
     - scene.movies
     - scene.welcome_home_lights
     - switch.asus_pc
-    - switch.bar_light
+    - light.bar_light
     - switch.string_lights
     - switch.tradrfri_outlet_1
     - vacuum.johnny
@@ -99,7 +99,7 @@ entity_config:
   #  switch.backyard_socket:
   #    name: Дворовая розетка
   #    room: Двор
-  switch.bar_light:
+  light.bar_light:
     name: Ёлка
     room: Зал
     type: devices.types.light

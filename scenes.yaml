@@ -19,9 +19,9 @@
     light.hall_lights: off
     media_player.tv: on
     light.kitchen_spotlights: off
-    switch.bar_light: on
+    light.bar_light: on
     switch.string_lights: off
-    light.desk_lamp: off
+    light.mi_desk_lamp: off
     light.shelf_lighting: off
     light.floor_lamp: off
     switch.tradrfri_outlet_1: off
@@ -29,7 +29,7 @@
 - name: Good Night
   entities:
     media_player.tv: off
-    switch.bar_light: off
+    light.bar_light: off
     switch.string_lights: off
     switch.tradrfri_outlet_1: off
     cover.bedroom: closed

@@ -97,7 +97,7 @@ google_assistant:
     light.hall_lights:
       name: Hall lights
       room: Hall
-    switch.bar_light:
+    light.bar_light:
       room: Living room
       aliases:
         - STRING LIGHTS

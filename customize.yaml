@@ -1,6 +1,6 @@
 light.kitchen_spotlights:
   icon: mdi:spotlight
-switch.bar_light:
+light.bar_light:
   icon: mdi:led-strip-variant
 switch.string_lights:
   icon: mdi:string-lights
@@ -18,6 +18,6 @@ light.table_lamp:
   icon: mdi:desk-lamp
 switch.asus_pc:
   icon: mdi:desktop-tower-monitor
-light.desk_lamp:
+light.mi_desk_lamp:
   min_mireds: 200
   max_mireds: 385
