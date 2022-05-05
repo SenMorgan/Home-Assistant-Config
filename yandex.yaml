@@ -100,7 +100,7 @@ entity_config:
   #    name: Дворовая розетка
   #    room: Двор
   light.bar_light:
-    name: Ёлка
+    name: Подсветка бара
     room: Зал
     type: devices.types.light
   switch.string_lights:
