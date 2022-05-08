@@ -1280,6 +1280,7 @@
 ###############################################
 - id: "Sync_Shopping_List"
   alias: Sync Shopping List
+  mode: single
   trigger:
     - platform: state
       entity_id: person.sen
@@ -1292,13 +1293,16 @@
       data:
         entity_id: media_player.yandex_station
         is_volume_muted: true
+    - delay: 0.3
     - service: script.turn_on
       entity_id: script.update_shopping_list
+    - delay: 0.3
     - service: media_player.play_media
       entity_id: media_player.yandex_station
       data:
         media_content_id: stop
         media_content_type: command
+    - delay: 0.3
     - service: media_player.volume_mute
       data:
         entity_id: media_player.yandex_station
