@@ -21,3 +21,5 @@ switch.asus_pc:
 light.mi_desk_lamp:
   min_mireds: 200
   max_mireds: 385
+input_boolean.heating_season_switch:
+  icon: mdi:sun-snowflake-variant

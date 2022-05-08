@@ -1052,6 +1052,9 @@
       to: "off"
       for: "00:00:05"
   condition:
+    - condition: state
+      entity_id: input_boolean.heating_season_switch
+      state: "on"
     - condition: or
       conditions:
         - condition: and
@@ -1129,6 +1132,9 @@
     - platform: time
       at: "01:00"
   condition:
+    - condition: state
+      entity_id: input_boolean.heating_season_switch
+      state: "on"
     - condition: numeric_state
       entity_id: climate.thermostat
       attribute: current_temperature
