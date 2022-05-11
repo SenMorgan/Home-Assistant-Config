@@ -487,6 +487,14 @@ sensor:
     state_topic: "zigbee2mqtt/bridge/state"
     icon: mdi:router-wireless
 
+  - platform: mqtt
+    name: "ESP-01 Test"
+    availability_topic: "/ESP-01/availability"
+    payload_available: "online"
+    payload_not_available: "offline"
+    state_topic: "/ESP-01/data"
+    value_template: "{{ value }}"
+
   ###############################################
   ## Raven Binary Sensors
   ###############################################
