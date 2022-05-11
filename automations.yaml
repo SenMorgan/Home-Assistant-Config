@@ -24,6 +24,7 @@
       continue_on_timeout: false
     - wait_template: "{{ states('binary_sensor.aqara_hall_door_sensor_contact') == 'off' }}"
       timeout: 00:10:00
+      continue_on_timeout: false
     - choose:
         # Only Sen came home
         - conditions:
