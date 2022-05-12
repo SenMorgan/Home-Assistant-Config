@@ -488,12 +488,10 @@ sensor:
     icon: mdi:router-wireless
 
   - platform: mqtt
-    name: "ESP-01 Test"
-    availability_topic: "/ESP-01/availability"
-    payload_available: "online"
-    payload_not_available: "offline"
-    state_topic: "/ESP-01/data"
+    name: "ESP-01 VCC"
+    state_topic: "/ESP-01/vcc"
     value_template: "{{ value }}"
+    unit_of_measurement: "mV"
 
   ###############################################
   ## Raven Binary Sensors
