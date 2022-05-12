@@ -1287,8 +1287,8 @@
       entity_id: person.sen
       from: "home"
       to: "not_home"
-    - platform: time_pattern
-      hours: "/1"
+#    - platform: time_pattern
+#      hours: "/1"
   action:
     - service: media_player.volume_mute
       data:
