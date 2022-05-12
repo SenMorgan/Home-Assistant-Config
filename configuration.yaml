@@ -493,6 +493,14 @@ sensor:
     value_template: "{{ value }}"
     unit_of_measurement: "mV"
 
+  - platform: mqtt
+    name: "ESP-01 Temp"
+    icon: mdi:temperature-celsius
+    device_class: temperature
+    state_topic: "/ESP-01/temp"
+    value_template: "{{ value }}"
+    unit_of_measurement: "°C"
+
   ###############################################
   ## Raven Binary Sensors
   ###############################################
