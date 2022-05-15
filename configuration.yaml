@@ -487,17 +487,19 @@ sensor:
     state_topic: "zigbee2mqtt/bridge/state"
     icon: mdi:router-wireless
 
+  ###############################################
+  ## Swimming Pool Sensors
+  ###############################################
   - platform: mqtt
     name: "ESP-01 VCC"
-    state_topic: "/ESP-01/vcc"
+    state_topic: "/pool-thermometer/vcc"
     value_template: "{{ value }}"
     unit_of_measurement: "mV"
-
   - platform: mqtt
     name: "ESP-01 Temp"
     icon: mdi:temperature-celsius
     device_class: temperature
-    state_topic: "/ESP-01/temp"
+    state_topic: "/pool-thermometer/temp"
     value_template: "{{ value }}"
     unit_of_measurement: "°C"
 
