@@ -491,12 +491,12 @@ sensor:
   ## Swimming Pool Sensors
   ###############################################
   - platform: mqtt
-    name: "ESP-01 VCC"
+    name: "Pool Thermometer Battery Voltage"
     state_topic: "/pool-thermometer/vcc"
     value_template: "{{ value }}"
     unit_of_measurement: "mV"
   - platform: mqtt
-    name: "ESP-01 Temp"
+    name: "Pool Thermometer Inside Temperature"
     icon: mdi:temperature-celsius
     device_class: temperature
     state_topic: "/pool-thermometer/temp"
