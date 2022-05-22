@@ -52,7 +52,7 @@
                   Добро пожаловать домой мистер Морган!
                 media_content_type: dialog
                 extra:
-                  volume_level: 0.9
+                  volume_level: 0.6
         # Only Kris came home
         - conditions:
             - condition: trigger
@@ -71,7 +71,7 @@
                   Добро пожаловать домой миссис Морган
                 media_content_type: dialog
                 extra:
-                  volume_level: 0.9
+                  volume_level: 0.6
         # Bouth came home
         - conditions:
             - condition: state
@@ -98,7 +98,7 @@
                   Добро пожаловать домой мистер и миссис Морган
                 media_content_type: dialog
                 extra:
-                  volume_level: 0.9
+                  volume_level: 0.6
       default:
         - service: notify.mobile_app_sm_a515f
           data:
@@ -733,7 +733,7 @@
           К локальной сети было подключено новое устройство с именем {{state_attr(entity,'friendly_name')}}
         media_content_type: dialog
         extra:
-          volume_level: 0.8
+          volume_level: 0.7
 
 - id: "Notification_Home_Assistant_Update_Available"
   alias: Notification Home Assistant Update Available
@@ -1089,7 +1089,7 @@
                 media_content_id: Термостат отключен
                 media_content_type: dialog
                 extra:
-                  volume_level: 0.8
+                  volume_level: 0.7
             - service: climate.set_hvac_mode
               data:
                 hvac_mode: "off"
@@ -1105,7 +1105,7 @@
                 media_content_id: Термостат будет включен снова через 30 минут
                 media_content_type: dialog
                 extra:
-                  volume_level: 0.8
+                  volume_level: 0.7
             - delay: 30:00
             # Need to send the command a few times to ensure that thermostat changed it's mode
             - repeat:
