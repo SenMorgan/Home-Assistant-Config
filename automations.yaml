@@ -279,9 +279,9 @@
           conditions:
             - condition: trigger
               id: "PC_ON"
-            - condition: sun
-              after: sunset
-              after_offset: -00:25:00
+#            - condition: sun
+#              after: sunset
+#              after_offset: -00:25:00
   action:
     - service: light.turn_on
       entity_id:
