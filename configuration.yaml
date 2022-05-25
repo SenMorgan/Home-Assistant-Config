@@ -504,6 +504,41 @@ sensor:
     unit_of_measurement: "°C"
 
   ###############################################
+  ## Solar Station Sensors
+  ###############################################
+  - platform: mqtt
+    name: "Solar Panel Voltage"
+    device_class: voltage
+    state_topic: "/solar/solar/volt"
+    value_template: "{{ value }}"
+  - platform: mqtt
+    name: "Solar Panel Current"
+    device_class: current
+    state_topic: "/solar/solar/amp"
+    value_template: "{{ value }}"
+  - platform: mqtt
+    name: "Solar Panel Power"
+    device_class: power
+    state_topic: "/solar/solar/watt"
+    value_template: "{{ value }}"
+
+  - platform: mqtt
+    name: "Battery Charging Voltage"
+    device_class: voltage
+    state_topic: "/solar/batt/volt"
+    value_template: "{{ value }}"
+  - platform: mqtt
+    name: "Battery Charging Current"
+    device_class: current
+    state_topic: "/solar/batt/amp"
+    value_template: "{{ value }}"
+  - platform: mqtt
+    name: "Battery Charging Power"
+    device_class: power
+    state_topic: "/solar/batt/watt"
+    value_template: "{{ value }}"
+
+  ###############################################
   ## Raven Binary Sensors
   ###############################################
   - platform: mqtt
