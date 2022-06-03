@@ -144,30 +144,31 @@
     - platform: state
       entity_id: binary_sensor.aqara_hall_motion_sensor_occupancy
       to: "on"
-  #  condition:
-  #    - condition: time
-  #      after: "6:00"
-  #      before: "21:00"
-  #    - condition: time
-  #      weekday:
-  #        - mon
-  #        - tue
-  #        - wed
-  #        - thu
-  #        - fri
+  condition:
+    - condition: state
+      entity_id: light.hall_lights
+      state: "off"
   action:
-    service: light.turn_on
-    entity_id: light.hall_lights
+    - service: light.turn_on
+      entity_id: light.hall_lights
+    - service: input_boolean.turn_on
+      entity_id: input_boolean.flag_hall_lights_triggered_by_motion
 
 - id: "Hall_Lights_by_Motion_OFF"
   alias: Hall Lights by Motion OFF
   trigger:
-    platform: state
-    entity_id: binary_sensor.aqara_hall_motion_sensor_occupancy
-    to: "off"
+    - platform: state
+      entity_id: binary_sensor.aqara_hall_motion_sensor_occupancy
+      to: "off"
+  condition:
+    - condition: state
+      entity_id: input_boolean.flag_hall_lights_triggered_by_motion
+      state: "on"
   action:
-    service: light.turn_off
-    entity_id: light.hall_lights
+    - service: light.turn_off
+      entity_id: light.hall_lights
+    - service: input_boolean.turn_off
+      entity_id: input_boolean.flag_hall_lights_triggered_by_motion
 
 ###############################################
 ## Other Automatic Lights
@@ -279,9 +280,9 @@
           conditions:
             - condition: trigger
               id: "PC_ON"
-#            - condition: sun
-#              after: sunset
-#              after_offset: -00:25:00
+  #            - condition: sun
+  #              after: sunset
+  #              after_offset: -00:25:00
   action:
     - service: light.turn_on
       entity_id:
@@ -1287,8 +1288,8 @@
       entity_id: person.sen
       from: "home"
       to: "not_home"
-#    - platform: time_pattern
-#      hours: "/1"
+  #    - platform: time_pattern
+  #      hours: "/1"
   action:
     - service: media_player.volume_mute
       data:

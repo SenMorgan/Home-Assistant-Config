@@ -298,6 +298,9 @@ input_boolean:
     icon: mdi:engine-outline
   flag_spotlight_triggered_by_motion:
     name: Flag - Spotlight Was Triggered by Motion Sensor
+    icon: mdi:engine-outline
+  flag_hall_lights_triggered_by_motion:
+    name: Flag - Hall Lights Was Triggered by Motion Sensor
   heating_season_switch:
     name: Heating Season
 
@@ -376,7 +379,7 @@ switch:
     command_topic: "/solar/reset"
     payload_on: "1"
     optimistic: true
-    
+
   ###############################################
   ## Other Switches
   ###############################################
