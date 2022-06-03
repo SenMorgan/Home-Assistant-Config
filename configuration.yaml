@@ -369,6 +369,15 @@ switch:
     optimistic: false
 
   ###############################################
+  ## Solar Station Switches
+  ###############################################
+  - platform: mqtt
+    name: "Solar Power Meter Reset"
+    command_topic: "/solar/reset"
+    payload_on: "1"
+    optimistic: true
+    
+  ###############################################
   ## Other Switches
   ###############################################
   - platform: mqtt
@@ -507,36 +516,54 @@ sensor:
   ## Solar Station Sensors
   ###############################################
   - platform: mqtt
-    name: "Solar Panel Voltage"
+    name: "Solar Panel Voltage 2"
     device_class: voltage
     state_topic: "/solar/solar/volt"
     value_template: "{{ value }}"
+    unit_of_measurement: "V"
   - platform: mqtt
-    name: "Solar Panel Current"
+    name: "Solar Panel Current 2"
     device_class: current
     state_topic: "/solar/solar/amp"
     value_template: "{{ value }}"
+    unit_of_measurement: "A"
   - platform: mqtt
-    name: "Solar Panel Power"
+    name: "Solar Panel Power 2"
     device_class: power
     state_topic: "/solar/solar/watt"
     value_template: "{{ value }}"
+    unit_of_measurement: "W"
+  - platform: mqtt
+    name: "Solar Panel Energy 1"
+    device_class: energy
+    state_topic: "/solar/solar/wh"
+    value_template: "{{ value }}"
+    unit_of_measurement: "Wh"
 
   - platform: mqtt
-    name: "Battery Charging Voltage"
+    name: "Battery Charging Voltage 2"
     device_class: voltage
     state_topic: "/solar/batt/volt"
     value_template: "{{ value }}"
+    unit_of_measurement: "V"
   - platform: mqtt
-    name: "Battery Charging Current"
+    name: "Battery Charging Current 2"
     device_class: current
     state_topic: "/solar/batt/amp"
     value_template: "{{ value }}"
+    unit_of_measurement: "A"
   - platform: mqtt
-    name: "Battery Charging Power"
+    name: "Battery Charging Power 2"
     device_class: power
     state_topic: "/solar/batt/watt"
     value_template: "{{ value }}"
+    unit_of_measurement: "W"
+  - platform: mqtt
+    name: "Battery Charging Energy 1"
+    device_class: energy
+    state_topic: "/solar/batt/wh"
+    value_template: "{{ value }}"
+    unit_of_measurement: "Wh"
 
   ###############################################
   ## Raven Binary Sensors
