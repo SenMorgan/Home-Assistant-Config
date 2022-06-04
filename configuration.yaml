@@ -536,6 +536,60 @@ sensor:
     unit_of_measurement: "%"
 
   ###############################################
+  ## Air Quality Station Sensors
+  ###############################################
+  - platform: mqtt
+    name: "Air Quality Station Tempereture"
+    state_topic: "/air-quality-station/temp"
+    icon: mdi:temperature-celsius
+    device_class: temperature
+    value_template: "{{ value }}"
+    unit_of_measurement: "°C"
+  - platform: mqtt
+    name: "Air Quality Station Humidity"
+    state_topic: "/air-quality-station/hum"
+    device_class: humidity
+    value_template: "{{ value }}"
+    unit_of_measurement: "%"
+  - platform: mqtt
+    name: "Air Quality Station Pressure"
+    state_topic: "/air-quality-station/press"
+    device_class: pressure
+    value_template: "{{ value }}"
+    unit_of_measurement: "hPa"
+
+    # From BSEC Software Library:
+    #
+    # The IAQ scale ranges from 0 (clean air) to 500 (heavily polluted air). During operation, algorithms
+    # automatically calibrate and adapt themselves to the typical environments where the sensor is operated
+    # (e.g., home, workplace, inside a car, etc.).This automatic background calibration ensures that users experience
+    # consistent IAQ performance. The calibration process considers the recent measurement history (typ. up to four
+    # days) to ensure that IAQ=25 corresponds to typical good air and IAQ=250 indicates typical polluted air.
+  - platform: mqtt
+    name: "Air Quality Station IAQ"
+    state_topic: "/air-quality-station/iaq"
+    device_class: aqi
+    value_template: "{{ value }}"
+  - platform: mqtt
+    name: "Air Quality Station IAQ Accuracy"
+    state_topic: "/air-quality-station/iaqAccuracy"
+    value_template: "{{ value }}"
+    # co2 equivalent estimate [ppm]
+  - platform: mqtt
+    name: "Air Quality Station CO2"
+    state_topic: "/air-quality-station/co2Equivalent"
+    device_class: carbon_dioxide
+    value_template: "{{ value }}"
+    unit_of_measurement: "ppm"
+    # breath VOC concentration estimate [ppm]
+  - platform: mqtt
+    name: "Air Quality Station VOC"
+    state_topic: "/air-quality-station/breathVocEquivalent"
+    value_template: "{{ value }}"
+    unit_of_measurement: "ppm"
+
+
+  ###############################################
   ## Solar Station Sensors
   ###############################################
   - platform: mqtt
