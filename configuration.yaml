@@ -540,20 +540,20 @@ sensor:
   ###############################################
   - platform: mqtt
     name: "Air Quality Station Tempereture"
-    state_topic: "/air-quality-station/temp"
+    state_topic: "/air-quality-station/temperature"
     icon: mdi:temperature-celsius
     device_class: temperature
     value_template: "{{ value }}"
     unit_of_measurement: "°C"
   - platform: mqtt
     name: "Air Quality Station Humidity"
-    state_topic: "/air-quality-station/hum"
+    state_topic: "/air-quality-station/humidity"
     device_class: humidity
     value_template: "{{ value }}"
     unit_of_measurement: "%"
   - platform: mqtt
     name: "Air Quality Station Pressure"
-    state_topic: "/air-quality-station/press"
+    state_topic: "/air-quality-station/pressure"
     device_class: pressure
     value_template: "{{ value }}"
     unit_of_measurement: "hPa"
