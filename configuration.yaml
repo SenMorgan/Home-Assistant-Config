@@ -515,6 +515,36 @@ sensor:
     value_template: "{{ value }}"
     unit_of_measurement: "°C"
 
+  - platform: mqtt
+    name: "Pool BME680 Tempereture"
+    state_topic: "/pool-thermometer/bme680/temp"
+    icon: mdi:temperature-celsius
+    device_class: temperature
+    value_template: "{{ value }}"
+    unit_of_measurement: "°C"
+  - platform: mqtt
+    name: "Pool BME680 Pressure"
+    state_topic: "/pool-thermometer/bme680/press"
+    device_class: pressure
+    value_template: "{{ value }}"
+    unit_of_measurement: "hPa"
+  - platform: mqtt
+    name: "Pool BME680 Humidity"
+    state_topic: "/pool-thermometer/bme680/hum"
+    device_class: humidity
+    value_template: "{{ value }}"
+    unit_of_measurement: "%"
+  - platform: mqtt
+    name: "Pool BME680 Gas Resistance"
+    state_topic: "/pool-thermometer/bme680/gas"
+    value_template: "{{ value }}"
+    unit_of_measurement: "KOhms"
+  - platform: mqtt
+    name: "Pool BME680 Altitude"
+    state_topic: "/pool-thermometer/bme680/alt"
+    value_template: "{{ value }}"
+    unit_of_measurement: "m"
+
   ###############################################
   ## Solar Station Sensors
   ###############################################
