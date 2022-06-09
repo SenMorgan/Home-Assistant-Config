@@ -570,6 +570,15 @@ sensor:
     state_topic: "/air-quality-station/iaq"
     device_class: aqi
     value_template: "{{ value }}"
+
+  # The IAQ accuracy is reflects the current state of the background calibration process, such as:
+  #
+  # IAQ Accuracy=0 could either mean:
+  # BSEC was just started, and the sensor is stabilizing (this lasts normally 5min in LP mode or 20min in ULP mode),
+  # there was a timing violation (i.e. BSEC was called too early or too late), which should be indicated by a warning/error flag by BSEC,
+  # IAQ Accuracy=1 means the background history of BSEC is uncertain. This typically means the gas sensor data was too stable for BSEC to clearly define its references,
+  # IAQ Accuracy=2 means BSEC found a new calibration data and is currently calibrating,
+  # IAQ Accuracy=3 means BSEC calibrated successfully.
   - platform: mqtt
     name: "Air Quality Station IAQ Accuracy"
     state_topic: "/air-quality-station/iaqAccuracy"
@@ -588,55 +597,54 @@ sensor:
     value_template: "{{ value }}"
     unit_of_measurement: "ppm"
 
-
   ###############################################
   ## Solar Station Sensors
   ###############################################
   - platform: mqtt
-    name: "Solar Panel Voltage 2"
+    name: "Solar Panel Voltage"
     device_class: voltage
     state_topic: "/solar/solar/volt"
     value_template: "{{ value }}"
     unit_of_measurement: "V"
   - platform: mqtt
-    name: "Solar Panel Current 2"
+    name: "Solar Panel Current"
     device_class: current
     state_topic: "/solar/solar/amp"
     value_template: "{{ value }}"
     unit_of_measurement: "A"
   - platform: mqtt
-    name: "Solar Panel Power 2"
+    name: "Solar Panel Power"
     device_class: power
     state_topic: "/solar/solar/watt"
     value_template: "{{ value }}"
     unit_of_measurement: "W"
   - platform: mqtt
-    name: "Solar Panel Energy 1"
+    name: "Solar Panel Energy"
     device_class: energy
     state_topic: "/solar/solar/wh"
     value_template: "{{ value }}"
     unit_of_measurement: "Wh"
 
   - platform: mqtt
-    name: "Battery Charging Voltage 2"
+    name: "Battery Charging Voltage"
     device_class: voltage
     state_topic: "/solar/batt/volt"
     value_template: "{{ value }}"
     unit_of_measurement: "V"
   - platform: mqtt
-    name: "Battery Charging Current 2"
+    name: "Battery Charging Current"
     device_class: current
     state_topic: "/solar/batt/amp"
     value_template: "{{ value }}"
     unit_of_measurement: "A"
   - platform: mqtt
-    name: "Battery Charging Power 2"
+    name: "Battery Charging Power"
     device_class: power
     state_topic: "/solar/batt/watt"
     value_template: "{{ value }}"
     unit_of_measurement: "W"
   - platform: mqtt
-    name: "Battery Charging Energy 1"
+    name: "Battery Charging Energy"
     device_class: energy
     state_topic: "/solar/batt/wh"
     value_template: "{{ value }}"
