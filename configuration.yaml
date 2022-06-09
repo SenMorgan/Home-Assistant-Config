@@ -570,6 +570,7 @@ sensor:
     state_topic: "/air-quality-station/iaq"
     device_class: aqi
     value_template: "{{ value }}"
+    unit_of_measurement: "IAQ"
 
   # The IAQ accuracy is reflects the current state of the background calibration process, such as:
   #
@@ -583,6 +584,7 @@ sensor:
     name: "Air Quality Station IAQ Accuracy"
     state_topic: "/air-quality-station/iaqAccuracy"
     value_template: "{{ value }}"
+    unit_of_measurement: "IAQ Acc"
     # co2 equivalent estimate [ppm]
   - platform: mqtt
     name: "Air Quality Station CO2"
