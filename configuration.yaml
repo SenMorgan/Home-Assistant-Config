@@ -626,6 +626,7 @@ sensor:
     state_topic: "/solar/solar/wh"
     value_template: "{{ value }}"
     unit_of_measurement: "Wh"
+    state_class: total_increasing
 
   - platform: mqtt
     name: "Battery Charging Voltage"
@@ -651,6 +652,7 @@ sensor:
     state_topic: "/solar/batt/wh"
     value_template: "{{ value }}"
     unit_of_measurement: "Wh"
+    state_class: total_increasing
 
   ###############################################
   ## Raven Binary Sensors
