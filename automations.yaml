@@ -734,7 +734,7 @@
           К локальной сети было подключено новое устройство с именем {{state_attr(entity,'friendly_name')}}
         media_content_type: dialog
         extra:
-          volume_level: 0.7
+          volume_level: 0.6
 
 - id: "Notification_Home_Assistant_Update_Available"
   alias: Notification Home Assistant Update Available
