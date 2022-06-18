@@ -1298,7 +1298,7 @@
     - delay: 0.3
     - service: script.turn_on
       entity_id: script.update_shopping_list
-    - delay: 0.3
+    - delay: 1
     - service: media_player.play_media
       entity_id: media_player.yandex_station
       data:
