@@ -381,6 +381,15 @@ switch:
     optimistic: true
 
   ###############################################
+  ## Inverter Switches
+  ###############################################
+  - platform: mqtt
+    name: "Power Inverter Meter Reset"
+    command_topic: "/inverter/reset"
+    payload_on: "1"
+    optimistic: true
+
+  ###############################################
   ## Other Switches
   ###############################################
   - platform: mqtt
