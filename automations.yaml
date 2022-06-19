@@ -113,9 +113,6 @@
       from: "on"
       to: "off"
   condition:
-    - condition: state
-      entity_id: binary_sensor.tradfri_motion_sensor_occupancy
-      state: "on"
     - condition: template
       value_template:
         "{{ ( as_timestamp(now()) - as_timestamp(state_attr('automation.hall_lights_and_alice_greeting',
@@ -181,9 +178,9 @@
     - platform: state
       entity_id: binary_sensor.aqara_kitchen_workplace_motion_sensor_occupancy
       to: "on"
-    - platform: state
-      entity_id: binary_sensor.tradfri_motion_sensor_occupancy
-      to: "on"
+#    - platform: state
+#      entity_id: binary_sensor.tradfri_motion_sensor_occupancy
+#      to: "on"
   condition:
     - condition: state
       entity_id: light.kitchen_spotlights
@@ -208,17 +205,17 @@
       entity_id: binary_sensor.aqara_kitchen_workplace_motion_sensor_occupancy
       to: "off"
       for: 00:00:10
-    - platform: state
-      entity_id: binary_sensor.tradfri_motion_sensor_occupancy
-      to: "off"
-      for: 00:00:10
+#    - platform: state
+#      entity_id: binary_sensor.tradfri_motion_sensor_occupancy
+#      to: "off"
+#      for: 00:00:10
   condition:
     - condition: state
       entity_id: binary_sensor.aqara_kitchen_workplace_motion_sensor_occupancy
       state: "off"
-    - condition: state
-      entity_id: binary_sensor.tradfri_motion_sensor_occupancy
-      state: "off"
+#    - condition: state
+#      entity_id: binary_sensor.tradfri_motion_sensor_occupancy
+#      state: "off"
     - condition: state
       entity_id: input_boolean.flag_spotlight_triggered_by_motion
       state: "on"
