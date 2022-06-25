@@ -517,21 +517,21 @@ sensor:
     value_template: "{{ value }}"
     unit_of_measurement: "mV"
   - platform: mqtt
-    name: "Pool Thermometer Upper Water Tempareture"
+    name: "Pool Thermometer Upper Water Temperature"
     icon: mdi:temperature-celsius
     device_class: temperature
     state_topic: "/pool-thermometer/ds18b20/upper-water-temp"
     value_template: "{{ value }}"
     unit_of_measurement: "°C"
   - platform: mqtt
-    name: "Pool Thermometer Bottom Water Tempareture"
+    name: "Pool Thermometer Bottom Water Temperature"
     icon: mdi:temperature-celsius
     device_class: temperature
     state_topic: "/pool-thermometer/ds18b20/bottom-water-temp"
     value_template: "{{ value }}"
     unit_of_measurement: "°C"
   - platform: mqtt
-    name: "Pool Thermometer Inside Tempareture"
+    name: "Pool Thermometer Inside Temperature"
     icon: mdi:temperature-celsius
     device_class: temperature
     state_topic: "/pool-thermometer/ds18b20/inside-temp"
@@ -539,7 +539,7 @@ sensor:
     unit_of_measurement: "°C"
 
   - platform: mqtt
-    name: "Pool BME280 Tempereture"
+    name: "Pool BME280 Temperature"
     state_topic: "/pool-thermometer/bme280/temp"
     icon: mdi:temperature-celsius
     device_class: temperature
@@ -562,7 +562,7 @@ sensor:
   ## Air Quality Station Sensors
   ###############################################
   - platform: mqtt
-    name: "Air Quality Station Tempereture"
+    name: "Air Quality Station Temperature"
     state_topic: "/air-quality-station/temperature"
     icon: mdi:temperature-celsius
     device_class: temperature
