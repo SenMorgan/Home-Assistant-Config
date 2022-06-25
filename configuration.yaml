@@ -517,24 +517,24 @@ sensor:
     value_template: "{{ value }}"
     unit_of_measurement: "mV"
   - platform: mqtt
-    name: "Pool Thermometer Sensor 1"
+    name: "Pool Thermometer Upper Water Tempareture"
     icon: mdi:temperature-celsius
     device_class: temperature
-    state_topic: "/pool-thermometer/ds18b20/sensor-1"
+    state_topic: "/pool-thermometer/ds18b20/upper-water-temp"
     value_template: "{{ value }}"
     unit_of_measurement: "°C"
   - platform: mqtt
-    name: "Pool Thermometer Sensor 2"
+    name: "Pool Thermometer Bottom Water Tempareture"
     icon: mdi:temperature-celsius
     device_class: temperature
-    state_topic: "/pool-thermometer/ds18b20/sensor-2"
+    state_topic: "/pool-thermometer/ds18b20/bottom-water-temp"
     value_template: "{{ value }}"
     unit_of_measurement: "°C"
   - platform: mqtt
-    name: "Pool Thermometer Sensor 3"
+    name: "Pool Thermometer Inside Tempareture"
     icon: mdi:temperature-celsius
     device_class: temperature
-    state_topic: "/pool-thermometer/ds18b20/sensor-3"
+    state_topic: "/pool-thermometer/ds18b20/inside-temp"
     value_template: "{{ value }}"
     unit_of_measurement: "°C"
 
