@@ -381,11 +381,11 @@ switch:
     optimistic: true
 
   ###############################################
-  ## Inverter Switches
+  ## Power Monitor Switches
   ###############################################
   - platform: mqtt
-    name: "Power Inverter Meter Reset"
-    command_topic: "/inverter/reset"
+    name: "Power Monitor Reset"
+    command_topic: "/power-monitor/reset"
     payload_on: "1"
     optimistic: true
 
@@ -678,36 +678,36 @@ sensor:
     state_class: total_increasing
 
   ###############################################
-  ## Inverter Monitor Sensors
+  ## Power Monitor Sensors
   ###############################################
   - platform: mqtt
-    name: "Inverter Input Voltage"
+    name: "Power Monitor Voltage"
     device_class: voltage
-    state_topic: "/inverter/volt"
+    state_topic: "/power-monitor/volt"
     value_template: "{{ value }}"
     unit_of_measurement: "V"
   - platform: mqtt
-    name: "Inverter Input Current"
+    name: "Power Monitor Current"
     device_class: current
-    state_topic: "/inverter/amp"
+    state_topic: "/power-monitor/amp"
     value_template: "{{ value }}"
     unit_of_measurement: "A"
   - platform: mqtt
-    name: "Inverter Input Power"
+    name: "Power Monitor Power"
     device_class: power
-    state_topic: "/inverter/watt"
+    state_topic: "/power-monitor/watt"
     value_template: "{{ value }}"
     unit_of_measurement: "W"
   - platform: mqtt
-    name: "Inverter Input Energy"
+    name: "Power Monitor Energy"
     device_class: energy
-    state_topic: "/inverter/wh"
+    state_topic: "/power-monitor/wh"
     value_template: "{{ value }}"
     unit_of_measurement: "Wh"
     state_class: total_increasing
   - platform: mqtt
-    name: "Inverter Uptime"
-    state_topic: "/inverter/timestamp"
+    name: "Power Monitor Uptime"
+    state_topic: "/power-monitor/uptime"
     value_template: "{{ value }}"
     state_class: total_increasing
 
