@@ -705,6 +705,11 @@ sensor:
     value_template: "{{ value }}"
     unit_of_measurement: "Wh"
     state_class: total_increasing
+  - platform: mqtt
+    name: "Inverter Uptime"
+    state_topic: "/inverter/timestamp"
+    value_template: "{{ value }}"
+    state_class: total_increasing
 
   ###############################################
   ## Raven Binary Sensors
