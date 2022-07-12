@@ -178,9 +178,9 @@
     - platform: state
       entity_id: binary_sensor.aqara_kitchen_workplace_motion_sensor_occupancy
       to: "on"
-#    - platform: state
-#      entity_id: binary_sensor.tradfri_motion_sensor_occupancy
-#      to: "on"
+  #    - platform: state
+  #      entity_id: binary_sensor.tradfri_motion_sensor_occupancy
+  #      to: "on"
   condition:
     - condition: state
       entity_id: light.kitchen_spotlights
@@ -205,17 +205,17 @@
       entity_id: binary_sensor.aqara_kitchen_workplace_motion_sensor_occupancy
       to: "off"
       for: 00:00:10
-#    - platform: state
-#      entity_id: binary_sensor.tradfri_motion_sensor_occupancy
-#      to: "off"
-#      for: 00:00:10
+  #    - platform: state
+  #      entity_id: binary_sensor.tradfri_motion_sensor_occupancy
+  #      to: "off"
+  #      for: 00:00:10
   condition:
     - condition: state
       entity_id: binary_sensor.aqara_kitchen_workplace_motion_sensor_occupancy
       state: "off"
-#    - condition: state
-#      entity_id: binary_sensor.tradfri_motion_sensor_occupancy
-#      state: "off"
+    #    - condition: state
+    #      entity_id: binary_sensor.tradfri_motion_sensor_occupancy
+    #      state: "off"
     - condition: state
       entity_id: input_boolean.flag_spotlight_triggered_by_motion
       state: "on"
@@ -516,7 +516,7 @@
   action:
     - service: notify.mobile_app_sm_a515f
       data_template:
-        title: Уведомление о снеге {{ '\u2744\ufe0f' }}
+        title: Уведомление о снеге
         message: Должно выпасть {{ states('sensor.openweathermap_snow') }} мм снега
 
 - id: "Notification_Every_100_Duco_Mined"
@@ -542,7 +542,7 @@
     - service: notify.mobile_app_sm_a515f
       data:
         title: "{{ 'ℹ️' }} Системное уведомление"
-        message: "{{ '\u26cf\ufe0f' }} You have mined {{ states('sensor.duco_balance') | round(0, default=none) }} DUCO {{ '\ud83e\ude99' }}"
+        message: You have mined {{ states('sensor.duco_balance') | round(0, default=none) }} DUCO
 
 ###############################################
 ## Raven Notifications
@@ -677,7 +677,7 @@
     - service: notify.mobile_app_sm_a515f
       data:
         title: "{{ 'ℹ️' }} Системное уведомление"
-        message: "Cервер запущен {{ '\uD83D\uDC4C' }} в {{ states('sensor.time') }}."
+        message: Home Assistant started at {{ states('sensor.time') }}
 
 - id: "Notification_Home_Assistant_Stopped"
   alias: Notification Home Assistant Stopped
@@ -688,7 +688,7 @@
     - service: notify.mobile_app_sm_a515f
       data:
         title: "{{ 'ℹ️' }} Системное уведомление"
-        message: "Сервер остановлен {{'\uD83D\uDED1'}} в {{ states('sensor.time') }}"
+        message: Home Assistant stopped at {{ states('sensor.time') }}
 
 - id: "Notification_New_Device_Connected"
   alias: Notification New Device Connected
@@ -723,7 +723,7 @@
     - service: notify.mobile_app_sm_a515f
       data:
         title: "{{ 'ℹ️' }} Системное уведомление"
-        message: "В сети появилось {{ '\uD83D\uDCE1' }} новое устройство {{state_attr(entity,'friendly_name')}}"
+        message: В сети появилось {{ '\uD83D\uDCE1' }} новое устройство {{state_attr(entity,'friendly_name')}}
     - service: media_player.play_media
       entity_id: media_player.yandex_station
       data:
@@ -744,7 +744,7 @@
     - service: notify.mobile_app_sm_a515f
       data:
         title: "{{ 'ℹ️' }} Системное уведомление"
-        message: "Update! {{ '\uD83C\uDF0D' }} Доступна новая версия {{ states('sensor.home_assistant_versions') }}"
+        message: Update! Доступна новая версия {{ states('sensor.home_assistant_versions') }}
         data:
           actions:
             - action: "URI"
