@@ -329,16 +329,6 @@ light:
     payload_available: "online"
     payload_not_available: "offline"
     optimistic: false
-  - platform: mqtt
-    name: "Hall Lights"
-    state_topic: "/smart-3-lights/state"
-    command_topic: "/smart-3-lights/set"
-    payload_on: "1"
-    payload_off: "0"
-    availability_topic: "/smart-3-lights/availability"
-    payload_available: "online"
-    payload_not_available: "offline"
-    optimistic: false
 
 ######################## START OF SWITCHES SECTION ########################
 
