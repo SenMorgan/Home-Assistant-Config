@@ -49,27 +49,6 @@ camera:
     attributes:
       - calibration_points
 
-climate:
-  - platform: mqtt
-    name: Thermostat
-    action_topic: "kitchen/thermostat/properties"
-    action_template: "{{value_json.state}}"
-    temperature_command_topic: "kitchen/thermostat/set/targetTemperature"
-    temperature_state_topic: "kitchen/thermostat/properties"
-    temperature_state_template: "{{value_json.targetTemperature}}"
-    current_temperature_topic: "kitchen/thermostat/properties"
-    current_temperature_template: "{{value_json.temperature}}"
-    mode_command_topic: "kitchen/thermostat/set/schedulesMode"
-    mode_state_topic: "kitchen/thermostat/properties"
-    mode_state_template: "{{value_json.schedulesMode}}"
-    payload_on: true
-    payload_off: false
-    modes: ["auto", "heat", "off"] # mode off means ECO mode (14 degrees), not switching OFF device
-    min_temp: 14
-    max_temp: 28
-    temp_step: 1
-    precision: 1
-
 google_assistant:
   project_id: !secret GOOGLE_ASSISTANT_PROJ_ID
   service_account: !include google_project_id.json
@@ -211,25 +190,6 @@ google_assistant:
     switch.udpate_sensors:
       expose: false
 
-######################## START OF COVER SECTION ########################
-
-cover:
-  - platform: mqtt
-    name: "Bedroom"
-    device_class: shade
-    command_topic: "/blinds/set"
-    position_topic: "/blinds/position"
-    availability:
-      - topic: "/blinds/availability"
-    set_position_topic: "/blinds/set_position"
-    payload_open: "OPEN"
-    payload_close: "CLOSE"
-    payload_stop: "STOP"
-    position_open: 100
-    position_closed: 0
-    optimistic: false
-    position_template: "{{ value }}"
-
 ######################## START OF INPUT NUMBER SECTION ########################
 
 input_number:
@@ -304,104 +264,10 @@ input_boolean:
   heating_season_switch:
     name: Heating Season
 
-######################## START OF LOCKS SECTION ########################
-
-lock:
-  - platform: mqtt
-    name: "Raven Locks"
-    state_topic: "/Raven/locks"
-    command_topic: "/Raven/set/locks"
-    availability_topic: "/Raven/availability"
-    optimistic: false
-    qos: 1
-    retain: false
-
-######################## START OF LIGHTS SECTION ########################
-
-light:
-  - platform: mqtt
-    name: "Kitchen Spotlights"
-    state_topic: "/Sonoff-Spotlights/Status"
-    command_topic: "/Sonoff-Spotlights/Switch"
-    payload_on: "1"
-    payload_off: "0"
-    availability_topic: "/Sonoff-Spotlights/availability"
-    payload_available: "online"
-    payload_not_available: "offline"
-    optimistic: false
-
-######################## START OF SWITCHES SECTION ########################
-
+###############################################
+## SWITCHES
+###############################################
 switch:
-  ###############################################
-  ## Raven Switches
-  ###############################################
-  - platform: mqtt
-    name: "Raven Engine"
-    icon: mdi:engine-outline
-    state_topic: "/Raven/engine/engine_running"
-    state_on: "RUNNING"
-    state_off: "STOPPED"
-    command_topic: "/Raven/set/engine"
-    payload_on: "ON"
-    payload_off: "OFF"
-    availability_topic: "/Raven/availability"
-    payload_available: "online"
-    payload_not_available: "offline"
-    optimistic: false
-  - platform: mqtt
-    name: "Raven Udpate Sensors"
-    icon: mdi:update
-    state_topic: "/Raven/sensors_updating"
-    command_topic: "/Raven/set/update_sensors"
-    payload_on: "1"
-    payload_off: "0"
-    availability_topic: "/Raven/availability"
-    payload_available: "online"
-    payload_not_available: "offline"
-    optimistic: false
-
-  ###############################################
-  ## Solar Station Switches
-  ###############################################
-  - platform: mqtt
-    name: "Solar Power Meter Reset"
-    command_topic: "/solar/reset"
-    payload_on: "1"
-    optimistic: true
-
-  ###############################################
-  ## Power Monitor Switches
-  ###############################################
-  - platform: mqtt
-    name: "Power Monitor Reset"
-    command_topic: "/power-monitor/reset"
-    payload_on: "1"
-    optimistic: true
-  - platform: mqtt
-    name: "Power Monitor Sleep Mode"
-    command_topic: "/power-monitor/sleep-mode"
-    payload_on: "1"
-    payload_off: "0"
-    optimistic: true
-    retain: true
-
-  ###############################################
-  ## Other Switches
-  ###############################################
-  - platform: mqtt
-    #name: "Pump"
-    name: "Backyard Socket"
-    #icon: mdi:water-pump
-    state_topic: "/Sonoff-Socket_01/Status"
-    command_topic: "/Sonoff-Socket_01/Switch"
-    payload_on: "1"
-    payload_off: "0"
-    availability_topic: "/Sonoff-Socket_01/availability"
-    payload_available: "online"
-    payload_not_available: "offline"
-    optimistic: false
-
   - platform: wake_on_lan
     mac: !secret ASUS_PC_MAC
     name: ASUS-PC
@@ -423,44 +289,6 @@ binary_sensor:
         value_template: >
           {{ is_state('person.sen', 'home') or
           is_state('person.kris', 'home') }}
-
-  - platform: mqtt
-    name: Garage Kalorifer
-    device_class: moving
-    state_topic: "/Kalorifer/Status"
-    payload_on: "1"
-    payload_off: "0"
-
-  ###############################################
-  ## Raven Binary Sensors
-  ###############################################
-  - platform: mqtt
-    name: "Raven Alarm"
-    availability_topic: "/Raven/availability"
-    payload_available: "online"
-    payload_not_available: "offline"
-    state_topic: "/Raven/alarm_flag"
-    payload_on: "1"
-    payload_off: "0"
-    device_class: power
-  - platform: mqtt
-    name: "Raven Error"
-    availability_topic: "/Raven/availability"
-    payload_available: "online"
-    payload_not_available: "offline"
-    state_topic: "/Raven/error_flag"
-    payload_on: "1"
-    payload_off: "0"
-    device_class: power
-  - platform: mqtt
-    name: "Raven Sleep Mode"
-    availability_topic: "/Raven/availability"
-    payload_available: "online"
-    payload_not_available: "offline"
-    state_topic: "/Raven/wifi/sleep_mode"
-    payload_on: "1"
-    payload_off: "0"
-    device_class: power
 
 sensor:
   ###############################################
@@ -499,392 +327,6 @@ sensor:
     display_options:
       - "time"
       - "date"
-
-  - platform: mqtt
-    name: Zigbee-Bridge state
-    state_topic: "zigbee2mqtt/bridge/state"
-    icon: mdi:router-wireless
-
-  ###############################################
-  ## Swimming Pool Sensors
-  ###############################################
-  - platform: mqtt
-    name: "Pool Thermometer Battery Voltage"
-    state_topic: "/pool-thermometer/vcc"
-    value_template: "{{ value }}"
-    unit_of_measurement: "mV"
-  - platform: mqtt
-    name: "Pool Thermometer Upper Water Temperature"
-    icon: mdi:temperature-celsius
-    device_class: temperature
-    state_topic: "/pool-thermometer/ds18b20/upper-water-temp"
-    value_template: "{{ value }}"
-    unit_of_measurement: "°C"
-  - platform: mqtt
-    name: "Pool Thermometer Bottom Water Temperature"
-    icon: mdi:temperature-celsius
-    device_class: temperature
-    state_topic: "/pool-thermometer/ds18b20/bottom-water-temp"
-    value_template: "{{ value }}"
-    unit_of_measurement: "°C"
-  - platform: mqtt
-    name: "Pool Thermometer Inside Temperature"
-    icon: mdi:temperature-celsius
-    device_class: temperature
-    state_topic: "/pool-thermometer/ds18b20/inside-temp"
-    value_template: "{{ value }}"
-    unit_of_measurement: "°C"
-
-  - platform: mqtt
-    name: "Pool BME280 Temperature"
-    state_topic: "/pool-thermometer/bme280/temp"
-    icon: mdi:temperature-celsius
-    device_class: temperature
-    value_template: "{{ value }}"
-    unit_of_measurement: "°C"
-  - platform: mqtt
-    name: "Pool BME280 Pressure"
-    state_topic: "/pool-thermometer/bme280/press"
-    device_class: pressure
-    value_template: "{{ value }}"
-    unit_of_measurement: "hPa"
-  - platform: mqtt
-    name: "Pool BME280 Humidity"
-    state_topic: "/pool-thermometer/bme280/hum"
-    device_class: humidity
-    value_template: "{{ value }}"
-    unit_of_measurement: "%"
-
-  ###############################################
-  ## Air Quality Station Sensors
-  ###############################################
-  - platform: mqtt
-    name: "Air Quality Station Temperature"
-    state_topic: "/air-quality-station/temperature"
-    icon: mdi:temperature-celsius
-    device_class: temperature
-    value_template: "{{ value }}"
-    unit_of_measurement: "°C"
-  - platform: mqtt
-    name: "Air Quality Station Humidity"
-    state_topic: "/air-quality-station/humidity"
-    device_class: humidity
-    value_template: "{{ value }}"
-    unit_of_measurement: "%"
-  - platform: mqtt
-    name: "Air Quality Station Pressure"
-    state_topic: "/air-quality-station/pressure"
-    device_class: pressure
-    value_template: "{{ value }}"
-    unit_of_measurement: "hPa"
-
-    # From BSEC Software Library:
-    #
-    # The IAQ scale ranges from 0 (clean air) to 500 (heavily polluted air). During operation, algorithms
-    # automatically calibrate and adapt themselves to the typical environments where the sensor is operated
-    # (e.g., home, workplace, inside a car, etc.).This automatic background calibration ensures that users experience
-    # consistent IAQ performance. The calibration process considers the recent measurement history (typ. up to four
-    # days) to ensure that IAQ=25 corresponds to typical good air and IAQ=250 indicates typical polluted air.
-  - platform: mqtt
-    name: "Air Quality Station IAQ"
-    state_topic: "/air-quality-station/iaq"
-    device_class: aqi
-    value_template: "{{ value }}"
-    unit_of_measurement: "IAQ"
-
-  # The IAQ accuracy is reflects the current state of the background calibration process, such as:
-  #
-  # IAQ Accuracy=0 could either mean:
-  # BSEC was just started, and the sensor is stabilizing (this lasts normally 5min in LP mode or 20min in ULP mode),
-  # there was a timing violation (i.e. BSEC was called too early or too late), which should be indicated by a warning/error flag by BSEC,
-  # IAQ Accuracy=1 means the background history of BSEC is uncertain. This typically means the gas sensor data was too stable for BSEC to clearly define its references,
-  # IAQ Accuracy=2 means BSEC found a new calibration data and is currently calibrating,
-  # IAQ Accuracy=3 means BSEC calibrated successfully.
-  - platform: mqtt
-    name: "Air Quality Station IAQ Accuracy"
-    state_topic: "/air-quality-station/iaqAccuracy"
-    value_template: "{{ value }}"
-    unit_of_measurement: "IAQ Acc"
-    # co2 equivalent estimate [ppm]
-  - platform: mqtt
-    name: "Air Quality Station CO2"
-    state_topic: "/air-quality-station/co2Equivalent"
-    device_class: carbon_dioxide
-    value_template: "{{ value }}"
-    unit_of_measurement: "ppm"
-    # breath VOC concentration estimate [ppm]
-  - platform: mqtt
-    name: "Air Quality Station VOC"
-    state_topic: "/air-quality-station/breathVocEquivalent"
-    value_template: "{{ value }}"
-    unit_of_measurement: "ppm"
-
-  ###############################################
-  ## Solar Station Sensors
-  ###############################################
-  - platform: mqtt
-    name: "Solar Panel Voltage"
-    device_class: voltage
-    state_topic: "/solar/solar/volt"
-    value_template: "{{ value }}"
-    unit_of_measurement: "V"
-  - platform: mqtt
-    name: "Solar Panel Current"
-    device_class: current
-    state_topic: "/solar/solar/amp"
-    value_template: "{{ value }}"
-    unit_of_measurement: "A"
-  - platform: mqtt
-    name: "Solar Panel Power"
-    device_class: power
-    state_topic: "/solar/solar/watt"
-    value_template: "{{ value }}"
-    unit_of_measurement: "W"
-  - platform: mqtt
-    name: "Solar Panel Energy"
-    device_class: energy
-    state_topic: "/solar/solar/wh"
-    value_template: "{{ value }}"
-    unit_of_measurement: "Wh"
-    state_class: total_increasing
-
-  - platform: mqtt
-    name: "Battery Charging Voltage"
-    device_class: voltage
-    state_topic: "/solar/batt/volt"
-    value_template: "{{ value }}"
-    unit_of_measurement: "V"
-  - platform: mqtt
-    name: "Battery Charging Current"
-    device_class: current
-    state_topic: "/solar/batt/amp"
-    value_template: "{{ value }}"
-    unit_of_measurement: "A"
-  - platform: mqtt
-    name: "Battery Charging Power"
-    device_class: power
-    state_topic: "/solar/batt/watt"
-    value_template: "{{ value }}"
-    unit_of_measurement: "W"
-  - platform: mqtt
-    name: "Battery Charging Energy"
-    device_class: energy
-    state_topic: "/solar/batt/wh"
-    value_template: "{{ value }}"
-    unit_of_measurement: "Wh"
-    state_class: total_increasing
-
-  ###############################################
-  ## Power Monitor Sensors
-  ###############################################
-  - platform: mqtt
-    name: "Power Monitor Voltage"
-    device_class: voltage
-    state_topic: "/power-monitor/volt"
-    value_template: "{{ value }}"
-    unit_of_measurement: "V"
-  - platform: mqtt
-    name: "Power Monitor Current"
-    device_class: current
-    state_topic: "/power-monitor/amp"
-    value_template: "{{ value }}"
-    unit_of_measurement: "A"
-  - platform: mqtt
-    name: "Power Monitor Power"
-    device_class: power
-    state_topic: "/power-monitor/watt"
-    value_template: "{{ value }}"
-    unit_of_measurement: "W"
-  - platform: mqtt
-    name: "Power Monitor Energy"
-    device_class: energy
-    state_topic: "/power-monitor/wh"
-    value_template: "{{ value }}"
-    unit_of_measurement: "Wh"
-    state_class: total_increasing
-  - platform: mqtt
-    name: "Power Monitor Uptime"
-    state_topic: "/power-monitor/uptime"
-    value_template: "{{ value }}"
-    state_class: total_increasing
-
-  ###############################################
-  ## Raven Binary Sensors
-  ###############################################
-  - platform: mqtt
-    name: "Raven Motor RPM"
-    icon: mdi:gauge-empty
-    availability_topic: "/Raven/availability"
-    payload_available: "online"
-    payload_not_available: "offline"
-    state_topic: "/Raven/engine/RPM"
-    value_template: "{{ value }}"
-    unit_of_measurement: "RPM"
-  - platform: mqtt
-    name: "Raven Motor Coolant Temperature"
-    icon: mdi:oil-temperature
-    availability_topic: "/Raven/availability"
-    payload_available: "online"
-    payload_not_available: "offline"
-    state_topic: "/Raven/engine/coolant"
-    value_template: "{{ value }}"
-    unit_of_measurement: "°C"
-    device_class: temperature
-  - platform: mqtt
-    name: "Raven Selector Position"
-    icon: mdi:cogs
-    availability_topic: "/Raven/availability"
-    payload_available: "online"
-    payload_not_available: "offline"
-    state_topic: "/Raven/engine/selector_position"
-    value_template: "{{ value }}"
-  - platform: mqtt
-    name: "Raven Started by Status"
-    icon: mdi:key-wireless
-    availability_topic: "/Raven/availability"
-    payload_available: "online"
-    payload_not_available: "offline"
-    state_topic: "/Raven/started_by_status"
-    value_template: "{{ value }}"
-  - platform: mqtt
-    name: "Raven Actual Mode"
-    icon: mdi:state-machine
-    availability_topic: "/Raven/availability"
-    payload_available: "online"
-    payload_not_available: "offline"
-    state_topic: "/Raven/actual_mode"
-    value_template: "{{ value }}"
-  - platform: mqtt
-    name: "Raven Fuel Burned"
-    icon: mdi:fuel
-    availability_topic: "/Raven/availability"
-    payload_available: "online"
-    payload_not_available: "offline"
-    state_topic: "/Raven/engine/engine_fuel_burned"
-    value_template: "{{ value }}"
-    unit_of_measurement: "mg"
-  - platform: mqtt
-    name: "Raven Fuel Level"
-    icon: mdi:gas-station
-    availability_topic: "/Raven/availability"
-    payload_available: "online"
-    payload_not_available: "offline"
-    state_topic: "/Raven/engine/engine_fuel_level"
-    value_template: "{{ value }}"
-  - platform: mqtt
-    name: "Raven Signal"
-    icon: mdi:car-connected
-    availability_topic: "/Raven/availability"
-    payload_available: "online"
-    payload_not_available: "offline"
-    state_topic: "/Raven/wifi/signal"
-    unit_of_measurement: "%"
-    value_template: "{{ value }}"
-    device_class: signal_strength
-  - platform: mqtt
-    name: "Raven RSSI"
-    icon: mdi:car-connected
-    availability_topic: "/Raven/availability"
-    payload_available: "online"
-    payload_not_available: "offline"
-    state_topic: "/Raven/wifi/rssi"
-    unit_of_measurement: "dBm"
-    device_class: signal_strength
-  - platform: mqtt
-    name: "Raven SSID"
-    icon: mdi:car-connected
-    availability_topic: "/Raven/availability"
-    payload_available: "online"
-    payload_not_available: "offline"
-    state_topic: "/Raven/wifi/ssid"
-    value_template: "{{ value }}"
-  - platform: mqtt
-    name: "Raven WiFi channel"
-    icon: mdi:car-connected
-    availability_topic: "/Raven/availability"
-    payload_available: "online"
-    payload_not_available: "offline"
-    state_topic: "/Raven/wifi/channel"
-    value_template: "{{ value }}"
-  - platform: mqtt
-    name: "Raven Uptime"
-    icon: mdi:timer-sand
-    availability_topic: "/Raven/availability"
-    payload_available: "online"
-    payload_not_available: "offline"
-    state_topic: "/Raven/uptime"
-    value_template: "{{ value }}"
-  - platform: mqtt
-    name: "Raven Battery Voltage"
-    icon: mdi:car-battery
-    availability_topic: "/Raven/availability"
-    payload_available: "online"
-    payload_not_available: "offline"
-    state_topic: "/Raven/battery_voltage"
-    value_template: "{{ value }}"
-    unit_of_measurement: "V"
-  - platform: mqtt
-    name: "Raven Outside Temperature"
-    icon: mdi:temperature-celsius
-    device_class: temperature
-    availability_topic: "/Raven/availability"
-    payload_available: "online"
-    payload_not_available: "offline"
-    state_topic: "/Raven/out_temp"
-    value_template: "{{ value }}"
-    unit_of_measurement: "°C"
-  - platform: mqtt
-    name: "Raven Roof Temperature"
-    icon: mdi:temperature-celsius
-    device_class: temperature
-    availability_topic: "/Raven/availability"
-    payload_available: "online"
-    payload_not_available: "offline"
-    state_topic: "/Raven/roof_temp"
-    value_template: "{{ value }}"
-    unit_of_measurement: "°C"
-  - platform: mqtt
-    name: "Raven Odometer"
-    icon: mdi:counter
-    availability_topic: "/Raven/availability"
-    payload_available: "online"
-    payload_not_available: "offline"
-    state_topic: "/Raven/odometer"
-    value_template: "{{ value }}"
-    unit_of_measurement: "km"
-  - platform: mqtt
-    name: "Raven Doors Status"
-    icon: mdi:car-door
-    availability_topic: "/Raven/availability"
-    payload_available: "online"
-    payload_not_available: "offline"
-    state_topic: "/Raven/doors"
-    value_template: "{{ value }}"
-
-  ###############################################
-  ## Kalorifer in Garage
-  ###############################################
-  - platform: mqtt
-    name: "Garage Air Temperature"
-    state_topic: "/Kalorifer/Temp"
-    value_template: "{{ value }}"
-    unit_of_measurement: "°C"
-    availability_topic: "/Kalorifer/availability"
-    device_class: temperature
-  - platform: mqtt
-    name: "Garage Air Humidity"
-    state_topic: "/Kalorifer/Hum"
-    value_template: "{{ value }}"
-    unit_of_measurement: "%"
-    availability_topic: "/Kalorifer/availability"
-    device_class: humidity
-  - platform: mqtt
-    name: "Garage Kalorifer Water Temperature"
-    state_topic: "/Kalorifer/WaterTemp"
-    value_template: "{{ value }}"
-    unit_of_measurement: "°C"
-    availability_topic: "/Kalorifer/availability"
-    device_class: temperature
 
   ###############################################
   ## Alarms
@@ -1000,6 +442,563 @@ rest:
         value_template: "{{ value_json['result']['username'] }}"
       - name: "Duco Server"
         value_template: "{{ value_json['server'] }}"
+
 ###############################################
-##
+## MQTT stuff
 ###############################################
+mqtt:
+
+  ###############################################
+  ## CLIMATE
+  ###############################################
+  climate:
+    - name: Thermostat
+      action_topic: "kitchen/thermostat/properties"
+      action_template: "{{value_json.state}}"
+      temperature_command_topic: "kitchen/thermostat/set/targetTemperature"
+      temperature_state_topic: "kitchen/thermostat/properties"
+      temperature_state_template: "{{value_json.targetTemperature}}"
+      current_temperature_topic: "kitchen/thermostat/properties"
+      current_temperature_template: "{{value_json.temperature}}"
+      mode_command_topic: "kitchen/thermostat/set/schedulesMode"
+      mode_state_topic: "kitchen/thermostat/properties"
+      mode_state_template: "{{value_json.schedulesMode}}"
+      payload_on: true
+      payload_off: false
+      modes: ["auto", "heat", "off"] # mode off means ECO mode (14 degrees), not switching OFF device
+      min_temp: 14
+      max_temp: 28
+      temp_step: 1
+      precision: 1
+
+  ###############################################
+  ## COVERS
+  ###############################################
+  cover:
+    - name: "Bedroom"
+      device_class: shade
+      command_topic: "/blinds/set"
+      position_topic: "/blinds/position"
+      availability:
+        - topic: "/blinds/availability"
+      set_position_topic: "/blinds/set_position"
+      payload_open: "OPEN"
+      payload_close: "CLOSE"
+      payload_stop: "STOP"
+      position_open: 100
+      position_closed: 0
+      optimistic: false
+      position_template: "{{ value }}"
+
+  ###############################################
+  ## LOCKS
+  ###############################################
+  lock:
+    - name: "Raven Locks"
+      state_topic: "/Raven/locks"
+      command_topic: "/Raven/set/locks"
+      availability_topic: "/Raven/availability"
+      optimistic: false
+      qos: 1
+      retain: false
+
+  ###############################################
+  ## LIGHTS
+  ###############################################
+  light:
+    - name: "Kitchen Spotlights"
+      state_topic: "/Sonoff-Spotlights/Status"
+      command_topic: "/Sonoff-Spotlights/Switch"
+      payload_on: "1"
+      payload_off: "0"
+      availability_topic: "/Sonoff-Spotlights/availability"
+      payload_available: "online"
+      payload_not_available: "offline"
+      optimistic: false
+
+  ###############################################
+  ## SWITCHES
+  ###############################################
+  switch:
+    ###############################################
+    ## Raven Switches
+    ###############################################
+    - name: "Raven Engine"
+      icon: mdi:engine-outline
+      state_topic: "/Raven/engine/engine_running"
+      state_on: "RUNNING"
+      state_off: "STOPPED"
+      command_topic: "/Raven/set/engine"
+      payload_on: "ON"
+      payload_off: "OFF"
+      availability_topic: "/Raven/availability"
+      payload_available: "online"
+      payload_not_available: "offline"
+      optimistic: false
+
+    - name: "Raven Udpate Sensors"
+      icon: mdi:update
+      state_topic: "/Raven/sensors_updating"
+      command_topic: "/Raven/set/update_sensors"
+      payload_on: "1"
+      payload_off: "0"
+      availability_topic: "/Raven/availability"
+      payload_available: "online"
+      payload_not_available: "offline"
+      optimistic: false
+
+    ###############################################
+    ## Solar Station Switches
+    ###############################################
+    - name: "Solar Power Meter Reset"
+      command_topic: "/solar/reset"
+      payload_on: "1"
+      optimistic: true
+
+    ###############################################
+    ## Power Monitor Switches
+    ###############################################
+    - name: "Power Monitor Reset"
+      command_topic: "/power-monitor/reset"
+      payload_on: "1"
+      optimistic: true
+
+    - name: "Power Monitor Sleep Mode"
+      command_topic: "/power-monitor/sleep-mode"
+      payload_on: "1"
+      payload_off: "0"
+      optimistic: true
+      retain: true
+
+    ###############################################
+    ## Other Switches
+    ###############################################
+    - name: "Backyard Socket"
+      icon: mdi:power-socket-fr
+      state_topic: "/Sonoff-Socket_01/Status"
+      command_topic: "/Sonoff-Socket_01/Switch"
+      payload_on: "1"
+      payload_off: "0"
+      availability_topic: "/Sonoff-Socket_01/availability"
+      payload_available: "online"
+      payload_not_available: "offline"
+      optimistic: false
+
+  ###############################################
+  ## BINARY SENSORS
+  ###############################################
+  binary_sensor:
+
+    - name: Garage Kalorifer
+      device_class: moving
+      state_topic: "/Kalorifer/Status"
+      payload_on: "1"
+      payload_off: "0"
+
+    ###############################################
+    ## Raven Binary Sensors
+    ###############################################
+    - name: "Raven Alarm"
+      availability_topic: "/Raven/availability"
+      payload_available: "online"
+      payload_not_available: "offline"
+      state_topic: "/Raven/alarm_flag"
+      payload_on: "1"
+      payload_off: "0"
+      device_class: power
+
+    - name: "Raven Error"
+      availability_topic: "/Raven/availability"
+      payload_available: "online"
+      payload_not_available: "offline"
+      state_topic: "/Raven/error_flag"
+      payload_on: "1"
+      payload_off: "0"
+      device_class: power
+
+    - name: "Raven Sleep Mode"
+      availability_topic: "/Raven/availability"
+      payload_available: "online"
+      payload_not_available: "offline"
+      state_topic: "/Raven/wifi/sleep_mode"
+      payload_on: "1"
+      payload_off: "0"
+      device_class: power
+
+  ###############################################
+  ## SENSORS
+  ###############################################
+  sensor:
+
+    ###############################################
+    ## Swimming Pool Sensors
+    ###############################################
+    - name: "Pool Thermometer Battery Voltage"
+      state_topic: "/pool-thermometer/vcc"
+      value_template: "{{ value }}"
+      unit_of_measurement: "mV"
+
+    - name: "Pool Thermometer Upper Water Temperature"
+      icon: mdi:temperature-celsius
+      device_class: temperature
+      state_topic: "/pool-thermometer/ds18b20/upper-water-temp"
+      value_template: "{{ value }}"
+      unit_of_measurement: "°C"
+
+    - name: "Pool Thermometer Bottom Water Temperature"
+      icon: mdi:temperature-celsius
+      device_class: temperature
+      state_topic: "/pool-thermometer/ds18b20/bottom-water-temp"
+      value_template: "{{ value }}"
+      unit_of_measurement: "°C"
+
+    - name: "Pool Thermometer Inside Temperature"
+      icon: mdi:temperature-celsius
+      device_class: temperature
+      state_topic: "/pool-thermometer/ds18b20/inside-temp"
+      value_template: "{{ value }}"
+      unit_of_measurement: "°C"
+
+    - name: "Pool BME280 Temperature"
+      state_topic: "/pool-thermometer/bme280/temp"
+      icon: mdi:temperature-celsius
+      device_class: temperature
+      value_template: "{{ value }}"
+      unit_of_measurement: "°C"
+
+    - name: "Pool BME280 Pressure"
+      state_topic: "/pool-thermometer/bme280/press"
+      device_class: pressure
+      value_template: "{{ value }}"
+      unit_of_measurement: "hPa"
+
+    - name: "Pool BME280 Humidity"
+      state_topic: "/pool-thermometer/bme280/hum"
+      device_class: humidity
+      value_template: "{{ value }}"
+      unit_of_measurement: "%"
+
+    ###############################################
+    ## Air Quality Station Sensors
+    ###############################################
+    - name: "Air Quality Station Temperature"
+      state_topic: "/air-quality-station/temperature"
+      icon: mdi:temperature-celsius
+      device_class: temperature
+      value_template: "{{ value }}"
+      unit_of_measurement: "°C"
+
+    - name: "Air Quality Station Humidity"
+      state_topic: "/air-quality-station/humidity"
+      device_class: humidity
+      value_template: "{{ value }}"
+      unit_of_measurement: "%"
+
+    - name: "Air Quality Station Pressure"
+      state_topic: "/air-quality-station/pressure"
+      device_class: pressure
+      value_template: "{{ value }}"
+      unit_of_measurement: "hPa"
+
+      # From BSEC Software Library:
+      #
+      # The IAQ scale ranges from 0 (clean air) to 500 (heavily polluted air). During operation, algorithms
+      # automatically calibrate and adapt themselves to the typical environments where the sensor is operated
+      # (e.g., home, workplace, inside a car, etc.).This automatic background calibration ensures that users experience
+      # consistent IAQ performance. The calibration process considers the recent measurement history (typ. up to four
+      # days) to ensure that IAQ=25 corresponds to typical good air and IAQ=250 indicates typical polluted air.
+
+    - name: "Air Quality Station IAQ"
+      state_topic: "/air-quality-station/iaq"
+      device_class: aqi
+      value_template: "{{ value }}"
+      unit_of_measurement: "IAQ"
+
+    # The IAQ accuracy is reflects the current state of the background calibration process, such as:
+    #
+    # IAQ Accuracy=0 could either mean:
+    # BSEC was just started, and the sensor is stabilizing (this lasts normally 5min in LP mode or 20min in ULP mode),
+    # there was a timing violation (i.e. BSEC was called too early or too late), which should be indicated by a warning/error flag by BSEC,
+    # IAQ Accuracy=1 means the background history of BSEC is uncertain. This typically means the gas sensor data was too stable for BSEC to clearly define its references,
+    # IAQ Accuracy=2 means BSEC found a new calibration data and is currently calibrating,
+    # IAQ Accuracy=3 means BSEC calibrated successfully.
+
+    - name: "Air Quality Station IAQ Accuracy"
+      state_topic: "/air-quality-station/iaqAccuracy"
+      value_template: "{{ value }}"
+      unit_of_measurement: "IAQ Acc"
+      # co2 equivalent estimate [ppm]
+
+    - name: "Air Quality Station CO2"
+      state_topic: "/air-quality-station/co2Equivalent"
+      device_class: carbon_dioxide
+      value_template: "{{ value }}"
+      unit_of_measurement: "ppm"
+      # breath VOC concentration estimate [ppm]
+
+    - name: "Air Quality Station VOC"
+      state_topic: "/air-quality-station/breathVocEquivalent"
+      value_template: "{{ value }}"
+      unit_of_measurement: "ppm"
+
+    ###############################################
+    ## Solar Station Sensors
+    ###############################################
+    - name: "Solar Panel Voltage"
+      device_class: voltage
+      state_topic: "/solar/solar/volt"
+      value_template: "{{ value }}"
+      unit_of_measurement: "V"
+
+    - name: "Solar Panel Current"
+      device_class: current
+      state_topic: "/solar/solar/amp"
+      value_template: "{{ value }}"
+      unit_of_measurement: "A"
+
+    - name: "Solar Panel Power"
+      device_class: power
+      state_topic: "/solar/solar/watt"
+      value_template: "{{ value }}"
+      unit_of_measurement: "W"
+
+    - name: "Solar Panel Energy"
+      device_class: energy
+      state_topic: "/solar/solar/wh"
+      value_template: "{{ value }}"
+      unit_of_measurement: "Wh"
+      state_class: total_increasing
+
+    - name: "Battery Charging Voltage"
+      device_class: voltage
+      state_topic: "/solar/batt/volt"
+      value_template: "{{ value }}"
+      unit_of_measurement: "V"
+
+    - name: "Battery Charging Current"
+      device_class: current
+      state_topic: "/solar/batt/amp"
+      value_template: "{{ value }}"
+      unit_of_measurement: "A"
+
+    - name: "Battery Charging Power"
+      device_class: power
+      state_topic: "/solar/batt/watt"
+      value_template: "{{ value }}"
+      unit_of_measurement: "W"
+
+    - name: "Battery Charging Energy"
+      device_class: energy
+      state_topic: "/solar/batt/wh"
+      value_template: "{{ value }}"
+      unit_of_measurement: "Wh"
+      state_class: total_increasing
+
+    ###############################################
+    ## Power Monitor Sensors
+    ###############################################
+    - name: "Power Monitor Voltage"
+      device_class: voltage
+      state_topic: "/power-monitor/volt"
+      value_template: "{{ value }}"
+      unit_of_measurement: "V"
+
+    - name: "Power Monitor Current"
+      device_class: current
+      state_topic: "/power-monitor/amp"
+      value_template: "{{ value }}"
+      unit_of_measurement: "A"
+
+    - name: "Power Monitor Power"
+      device_class: power
+      state_topic: "/power-monitor/watt"
+      value_template: "{{ value }}"
+      unit_of_measurement: "W"
+
+    - name: "Power Monitor Energy"
+      device_class: energy
+      state_topic: "/power-monitor/wh"
+      value_template: "{{ value }}"
+      unit_of_measurement: "Wh"
+      state_class: total_increasing
+
+    - name: "Power Monitor Uptime"
+      state_topic: "/power-monitor/uptime"
+      value_template: "{{ value }}"
+      state_class: total_increasing
+
+    ###############################################
+    ## Raven Sensors
+    ###############################################
+    - name: "Raven Motor RPM"
+      icon: mdi:gauge-empty
+      availability_topic: "/Raven/availability"
+      payload_available: "online"
+      payload_not_available: "offline"
+      state_topic: "/Raven/engine/RPM"
+      value_template: "{{ value }}"
+      unit_of_measurement: "RPM"
+
+    - name: "Raven Motor Coolant Temperature"
+      icon: mdi:oil-temperature
+      availability_topic: "/Raven/availability"
+      payload_available: "online"
+      payload_not_available: "offline"
+      state_topic: "/Raven/engine/coolant"
+      value_template: "{{ value }}"
+      unit_of_measurement: "°C"
+      device_class: temperature
+
+    - name: "Raven Selector Position"
+      icon: mdi:cogs
+      availability_topic: "/Raven/availability"
+      payload_available: "online"
+      payload_not_available: "offline"
+      state_topic: "/Raven/engine/selector_position"
+      value_template: "{{ value }}"
+
+    - name: "Raven Started by Status"
+      icon: mdi:key-wireless
+      availability_topic: "/Raven/availability"
+      payload_available: "online"
+      payload_not_available: "offline"
+      state_topic: "/Raven/started_by_status"
+      value_template: "{{ value }}"
+
+    - name: "Raven Actual Mode"
+      icon: mdi:state-machine
+      availability_topic: "/Raven/availability"
+      payload_available: "online"
+      payload_not_available: "offline"
+      state_topic: "/Raven/actual_mode"
+      value_template: "{{ value }}"
+
+    - name: "Raven Fuel Burned"
+      icon: mdi:fuel
+      availability_topic: "/Raven/availability"
+      payload_available: "online"
+      payload_not_available: "offline"
+      state_topic: "/Raven/engine/engine_fuel_burned"
+      value_template: "{{ value }}"
+      unit_of_measurement: "mg"
+
+    - name: "Raven Fuel Level"
+      icon: mdi:gas-station
+      availability_topic: "/Raven/availability"
+      payload_available: "online"
+      payload_not_available: "offline"
+      state_topic: "/Raven/engine/engine_fuel_level"
+      value_template: "{{ value }}"
+
+    - name: "Raven Signal"
+      icon: mdi:car-connected
+      availability_topic: "/Raven/availability"
+      payload_available: "online"
+      payload_not_available: "offline"
+      state_topic: "/Raven/wifi/signal"
+      unit_of_measurement: "%"
+      value_template: "{{ value }}"
+      device_class: signal_strength
+
+    - name: "Raven RSSI"
+      icon: mdi:car-connected
+      availability_topic: "/Raven/availability"
+      payload_available: "online"
+      payload_not_available: "offline"
+      state_topic: "/Raven/wifi/rssi"
+      unit_of_measurement: "dBm"
+      device_class: signal_strength
+
+    - name: "Raven SSID"
+      icon: mdi:car-connected
+      availability_topic: "/Raven/availability"
+      payload_available: "online"
+      payload_not_available: "offline"
+      state_topic: "/Raven/wifi/ssid"
+      value_template: "{{ value }}"
+
+    - name: "Raven WiFi channel"
+      icon: mdi:car-connected
+      availability_topic: "/Raven/availability"
+      payload_available: "online"
+      payload_not_available: "offline"
+      state_topic: "/Raven/wifi/channel"
+      value_template: "{{ value }}"
+
+    - name: "Raven Uptime"
+      icon: mdi:timer-sand
+      availability_topic: "/Raven/availability"
+      payload_available: "online"
+      payload_not_available: "offline"
+      state_topic: "/Raven/uptime"
+      value_template: "{{ value }}"
+
+    - name: "Raven Battery Voltage"
+      icon: mdi:car-battery
+      availability_topic: "/Raven/availability"
+      payload_available: "online"
+      payload_not_available: "offline"
+      state_topic: "/Raven/battery_voltage"
+      value_template: "{{ value }}"
+      unit_of_measurement: "V"
+
+    - name: "Raven Outside Temperature"
+      icon: mdi:temperature-celsius
+      device_class: temperature
+      availability_topic: "/Raven/availability"
+      payload_available: "online"
+      payload_not_available: "offline"
+      state_topic: "/Raven/out_temp"
+      value_template: "{{ value }}"
+      unit_of_measurement: "°C"
+
+    - name: "Raven Roof Temperature"
+      icon: mdi:temperature-celsius
+      device_class: temperature
+      availability_topic: "/Raven/availability"
+      payload_available: "online"
+      payload_not_available: "offline"
+      state_topic: "/Raven/roof_temp"
+      value_template: "{{ value }}"
+      unit_of_measurement: "°C"
+
+    - name: "Raven Odometer"
+      icon: mdi:counter
+      availability_topic: "/Raven/availability"
+      payload_available: "online"
+      payload_not_available: "offline"
+      state_topic: "/Raven/odometer"
+      value_template: "{{ value }}"
+      unit_of_measurement: "km"
+
+    - name: "Raven Doors Status"
+      icon: mdi:car-door
+      availability_topic: "/Raven/availability"
+      payload_available: "online"
+      payload_not_available: "offline"
+      state_topic: "/Raven/doors"
+      value_template: "{{ value }}"
+
+    ###############################################
+    ## Kalorifer in Garage Sensors
+    ###############################################
+    - name: "Garage Air Temperature"
+      state_topic: "/Kalorifer/Temp"
+      value_template: "{{ value }}"
+      unit_of_measurement: "°C"
+      availability_topic: "/Kalorifer/availability"
+      device_class: temperature
+
+    - name: "Garage Air Humidity"
+      state_topic: "/Kalorifer/Hum"
+      value_template: "{{ value }}"
+      unit_of_measurement: "%"
+      availability_topic: "/Kalorifer/availability"
+      device_class: humidity
+
+    - name: "Garage Kalorifer Water Temperature"
+      state_topic: "/Kalorifer/WaterTemp"
+      value_template: "{{ value }}"
+      unit_of_measurement: "°C"
+      availability_topic: "/Kalorifer/availability"
+      device_class: temperature
