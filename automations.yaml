@@ -25,6 +25,8 @@
     - wait_template: "{{ states('binary_sensor.aqara_hall_door_sensor_contact') == 'off' }}"
       timeout: 00:10:00
       continue_on_timeout: false
+    - service: light.turn_on
+      entity_id: light.tab_a7_lite_polzovatelia_sen_screen
     - choose:
         # Only Sen came home
         - conditions:
@@ -916,6 +918,9 @@
       entity_id: all
     - service: scene.turn_on
       entity_id: scene.good_night
+    # We don't want to turn off tablet's screen
+    - service: light.turn_on
+      entity_id: light.tab_a7_lite_polzovatelia_sen_screen
 
 - id: "Bedroom_Aqara_Switch_Double_Press"
   alias: Bedroom Aqara Switch Double Press
