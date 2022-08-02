@@ -571,6 +571,17 @@ mqtt:
       retain: true
 
     ###############################################
+    ## Swimming Pool Switches
+    ###############################################
+    - name: "Pool Light"
+      state_topic: "/pool-thermometer/state/light"
+      command_topic: "/pool-thermometer/set/light"
+      payload_on: "1"
+      payload_off: "0"
+      optimistic: false
+      retain: true
+
+    ###############################################
     ## Other Switches
     ###############################################
     - name: "Backyard Socket"
@@ -649,7 +660,7 @@ mqtt:
       icon: mdi:temperature-celsius
       device_class: temperature
       state_topic: "/pool-thermometer/ds18b20/bottom-water-temp"
-      value_template: "{{ value }}"
+      value_template: "{{ value  | float - 0.33 }}"
       unit_of_measurement: "°C"
 
     - name: "Pool Thermometer Inside Temperature"
