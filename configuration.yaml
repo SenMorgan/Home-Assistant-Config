@@ -660,14 +660,7 @@ mqtt:
       icon: mdi:temperature-celsius
       device_class: temperature
       state_topic: "/pool-thermometer/ds18b20/bottom-water-temp"
-      value_template: "{{ value  | float - 0.33 }}"
-      unit_of_measurement: "°C"
-
-    - name: "Pool Thermometer Inside Temperature"
-      icon: mdi:temperature-celsius
-      device_class: temperature
-      state_topic: "/pool-thermometer/ds18b20/inside-temp"
-      value_template: "{{ value }}"
+      value_template: "{{ value  | float - 0.33  | round(2, default=none)}}"
       unit_of_measurement: "°C"
 
     - name: "Pool BME280 Temperature"
