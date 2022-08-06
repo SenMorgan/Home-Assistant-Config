@@ -1311,3 +1311,51 @@
       data:
         entity_id: media_player.yandex_station
         is_volume_muted: false
+
+###############################################
+## Wall Tablet Automations
+###############################################
+- id: "Tablet_Power_ON_When_People_Came_Home"
+  alias: Tablet Power ON When People Came Home
+  trigger:
+    - platform: state
+      entity_id: binary_sensor.people_home
+      to: "on"
+      for: "00:02:00"
+  condition:
+    - condition: state
+      entity_id: light.tab_a7_lite_polzovatelia_sen_screen
+      state: "off"
+  action:
+    - service: light.turn_on
+      entity_id: light.tab_a7_lite_polzovatelia_sen_screen
+
+- id: "Tablet_Brightness_Down_After_Sunset"
+  alias: Tablet Brightness Down After Sunset
+  trigger:
+    - platform: sun
+      event: sunset
+  condition:
+    - condition: state
+      entity_id: binary_sensor.people_home
+      state: "on"
+  action:
+    - service: light.turn_on
+      entity_id: light.tab_a7_lite_polzovatelia_sen_screen
+      data:
+        brightness: 1
+
+- id: "Tablet_Brightness_Up_After_Sunrize"
+  alias: Tablet Brightness Up After Sunrise
+  trigger:
+    - platform: sun
+      event: sunset
+  condition:
+    - condition: state
+      entity_id: binary_sensor.people_home
+      state: "on"
+  action:
+    - service: light.turn_on
+      entity_id: light.tab_a7_lite_polzovatelia_sen_screen
+      data:
+        brightness: 255
