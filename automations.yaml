@@ -1327,8 +1327,21 @@
       entity_id: light.tab_a7_lite_polzovatelia_sen_screen
       state: "off"
   action:
-    - service: light.turn_on
-      entity_id: light.tab_a7_lite_polzovatelia_sen_screen
+    choose:
+      - conditions:
+          - condition: sun
+            after: sunset
+        sequence:
+          - service: light.turn_on
+            entity_id: light.tab_a7_lite_polzovatelia_sen_screen
+            data:
+              brightness: 1
+    default:
+      - service: light.turn_on
+        entity_id: light.tab_a7_lite_polzovatelia_sen_screen
+        data:
+          brightness: 255
+
 
 - id: "Tablet_Brightness_Down_After_Sunset"
   alias: Tablet Brightness Down After Sunset
