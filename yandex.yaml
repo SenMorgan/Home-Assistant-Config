@@ -28,7 +28,7 @@ filter:
     - switch.asus_pc
     - light.bar_light
     - switch.string_lights
-    - switch.tradrfri_outlet_1
+    - light.bedroom_nightlight
     - vacuum.johnny
 entity_config:
   # type: devices.types.humidifier  # параметр необязательный, вычисляется автоматически!
@@ -107,7 +107,7 @@ entity_config:
     name: Лампочки
     room: Кухня
     type: devices.types.light
-  switch.tradrfri_outlet_1:
+  light.bedroom_nightlight:
     name: Ночник
     room: Спальня
     type: devices.types.light

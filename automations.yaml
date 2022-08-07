@@ -930,7 +930,7 @@
     to: "double"
   action:
     - service: switch.turn_on
-      entity_id: switch.tradrfri_outlet_1
+      entity_id: light.bedroom_nightlight
 
 - id: "Bedroom_Aqara_Switch_Triple_Press"
   alias: Bedroom Aqara Switch Triple Press
