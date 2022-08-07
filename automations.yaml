@@ -1349,7 +1349,7 @@
   alias: Tablet Brightness Up After Sunrise
   trigger:
     - platform: sun
-      event: sunset
+      event: sunrise
   condition:
     - condition: state
       entity_id: binary_sensor.people_home
