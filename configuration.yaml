@@ -652,6 +652,7 @@ mqtt:
     ## Swimming Pool Sensors
     ###############################################
     - name: "Pool Thermometer Battery Voltage"
+      icon: mdi:battery
       state_topic: "/pool-thermometer/vcc"
       value_template: "{{ value }}"
       unit_of_measurement: "mV"
@@ -671,8 +672,8 @@ mqtt:
       unit_of_measurement: "°C"
 
     - name: "Pool BME280 Temperature"
-      state_topic: "/pool-thermometer/bme280/temp"
       icon: mdi:temperature-celsius
+      state_topic: "/pool-thermometer/bme280/temp"
       device_class: temperature
       value_template: "{{ value }}"
       unit_of_measurement: "°C"
@@ -684,6 +685,7 @@ mqtt:
       unit_of_measurement: "hPa"
 
     - name: "Pool BME280 Humidity"
+      icon: mdi:water-percent
       state_topic: "/pool-thermometer/bme280/hum"
       device_class: humidity
       value_template: "{{ value }}"
