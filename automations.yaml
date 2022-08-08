@@ -102,7 +102,7 @@
                 extra:
                   volume_level: 0.6
       default:
-        - service: notify.mobile_app_sm_a515f
+        - service: notify.mobile_app_sm_s901b
           data:
             title: "{{ 'ℹ️' }} Системное уведомление"
             message: Автоматизация приветствия не смогла определить кто пришел - исправьте код
@@ -129,7 +129,7 @@
       entity_id: switch.string_lights
     - service: switch.turn_off
       entity_id: light.bar_light
-    - service: notify.mobile_app_sm_a515f
+    - service: notify.mobile_app_sm_s901b
       data:
         title: "{{ 'ℹ️' }} Системное уведомление"
         message: Весь свет был погашен в {{ states('sensor.time') }}
@@ -491,7 +491,7 @@
       entity_id: person.kris
       to: "home"
   action:
-    - service: notify.mobile_app_sm_a515f
+    - service: notify.mobile_app_sm_s901b
       data:
         title: "{{ 'ℹ️' }} Системное уведомление"
         message: Кристина пришла домой в {{ states('sensor.time') }}
@@ -504,7 +504,7 @@
       from: "home"
       to: "not_home"
   action:
-    - service: notify.mobile_app_sm_a515f
+    - service: notify.mobile_app_sm_s901b
       data:
         title: "{{ 'ℹ️' }} Системное уведомление"
         message: Кристина ушла в {{ states('sensor.time') }}
@@ -516,7 +516,7 @@
       entity_id: sensor.openweathermap_snow
       above: 0
   action:
-    - service: notify.mobile_app_sm_a515f
+    - service: notify.mobile_app_sm_s901b
       data_template:
         title: Уведомление о снеге
         message: Должно выпасть {{ states('sensor.openweathermap_snow') }} мм снега
@@ -541,7 +541,7 @@
         not is_state(trigger.to_state.state, unavailable) and
         not is_state(trigger.to_state.state, unknown) }}
   action:
-    - service: notify.mobile_app_sm_a515f
+    - service: notify.mobile_app_sm_s901b
       data:
         title: "{{ 'ℹ️' }} Системное уведомление"
         message: You have mined {{ states('sensor.duco_balance') | round(0, default=none) }} DUCO
@@ -557,7 +557,7 @@
       entity_id: person.raven
       to: "home"
   action:
-    - service: notify.mobile_app_sm_a515f
+    - service: notify.mobile_app_sm_s901b
       data:
         title: "{{ 'ℹ️' }} Сообщение от Raven"
         message: Raven подключился к серверу
@@ -569,7 +569,7 @@
       entity_id: person.raven
       to: "not_home"
   action:
-    - service: notify.mobile_app_sm_a515f
+    - service: notify.mobile_app_sm_s901b
       data:
         title: "{{ 'ℹ️' }} Сообщение от Raven"
         message: Raven отключился от сервера
@@ -582,7 +582,7 @@
       from: "off"
       to: "on"
   action:
-    - service: notify.mobile_app_sm_a515f
+    - service: notify.mobile_app_sm_s901b
       data:
         title: "{{ '❗️' }} Сообщение от Raven"
         message: Несанкционированный доступ в Raven в {{ states('sensor.time') }}
@@ -602,7 +602,7 @@
         # and not accidentally trigger for other notification actions
         action_start_charging: "{{ 'START_CHARGING_' ~ context.id }}"
     - alias: "Ask to ask to start charging"
-      service: notify.mobile_app_sm_a515f
+      service: notify.mobile_app_sm_s901b
       data:
         title: "{{ '❗️' }} Сообщение от Raven"
         message: Низкое бортовое напряжение - {{ states('sensor.raven_battery_voltage') }}V
@@ -656,7 +656,7 @@
       entity_id: binary_sensor.raven_sleep_mode
       state: "off"
   action:
-    - service: notify.mobile_app_sm_a515f
+    - service: notify.mobile_app_sm_s901b
       data:
         title: "{{ '❗️' }} Сообщение от Raven"
         message: CAN-BUS не засыпает! Примите меры!
@@ -676,7 +676,7 @@
     - platform: homeassistant
       event: start
   action:
-    - service: notify.mobile_app_sm_a515f
+    - service: notify.mobile_app_sm_s901b
       data:
         title: "{{ 'ℹ️' }} Системное уведомление"
         message: Home Assistant started at {{ states('sensor.time') }}
@@ -687,7 +687,7 @@
     - platform: event
       event_type: homeassistant_stop
   action:
-    - service: notify.mobile_app_sm_a515f
+    - service: notify.mobile_app_sm_s901b
       data:
         title: "{{ 'ℹ️' }} Системное уведомление"
         message: Home Assistant stopped at {{ states('sensor.time') }}
@@ -722,7 +722,7 @@
           Ip: {{state_attr(entity,'ip')}}
           Mac-address: {{state_attr(entity,'mac')}}
           Full data: {{trigger.event.data}}
-    - service: notify.mobile_app_sm_a515f
+    - service: notify.mobile_app_sm_s901b
       data:
         title: "{{ 'ℹ️' }} Системное уведомление"
         message: В сети появилось {{ '\uD83D\uDCE1' }} новое устройство {{state_attr(entity,'friendly_name')}}
@@ -743,7 +743,7 @@
       from: "off"
       to: "on"
   action:
-    - service: notify.mobile_app_sm_a515f
+    - service: notify.mobile_app_sm_s901b
       data:
         title: "{{ 'ℹ️' }} Системное уведомление"
         message: Update! Доступна новая версия {{ states('sensor.home_assistant_versions') }}
@@ -762,7 +762,7 @@
       from: "off"
       to: "on"
   action:
-    - service: notify.mobile_app_sm_a515f
+    - service: notify.mobile_app_sm_s901b
       data:
         title: 🛰 МКС над головой! 🛰
         message: МКС поднялась выше 10° над горизонтом в {{ states('sensor.time') }}
@@ -1150,7 +1150,7 @@
       after: "00:00"
       before: "06:00"
   action:
-    - service: notify.mobile_app_sm_a515f
+    - service: notify.mobile_app_sm_s901b
       data:
         title: "{{ 'ℹ️' }} Системное уведомление"
         message: Термостат был снова включен в {{ states('sensor.time') }}, чтобы вы не замёрзли
