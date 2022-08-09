@@ -921,6 +921,8 @@
     # We don't want to turn off tablet's screen
     - service: light.turn_on
       entity_id: light.tab_a7_lite_polzovatelia_sen_screen
+      data:
+        brightness: 1
 
 - id: "Bedroom_Aqara_Switch_Double_Press"
   alias: Bedroom Aqara Switch Double Press
