@@ -1350,6 +1350,7 @@
   trigger:
     - platform: sun
       event: sunset
+      offset: "00:30:00"
   condition:
     - condition: state
       entity_id: binary_sensor.people_home
