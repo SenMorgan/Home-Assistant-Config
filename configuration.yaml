@@ -38,6 +38,10 @@ notify:
 # Enables the ability to send magic packets to Wake on LAN capable devices to turn them on
 wake_on_lan:
 
+# BLE device tracker
+device_tracker:
+  - platform: bluetooth_le_tracker
+
 camera:
   - platform: xiaomi_cloud_map_extractor
     host: !secret XIAOMI_VACUUM_HOST
