@@ -41,6 +41,9 @@ wake_on_lan:
 # BLE device tracker
 device_tracker:
   - platform: bluetooth_le_tracker
+    track_new_devices: true
+    track_battery: true
+    track_battery_interval: 01:00:00
 
 camera:
   - platform: xiaomi_cloud_map_extractor
@@ -563,15 +566,28 @@ mqtt:
     ## Power Monitor Switches
     ###############################################
     - name: "Power Monitor Reset"
-      command_topic: "/power-monitor/reset"
+      command_topic: "/power-monitor/set/reset"
       payload_on: "1"
       optimistic: true
-
     - name: "Power Monitor Sleep Mode"
-      command_topic: "/power-monitor/sleep-mode"
+      state_topic: "/power-monitor/state/sleep"
+      command_topic: "/power-monitor/set/sleep"
       payload_on: "1"
       payload_off: "0"
-      optimistic: true
+      optimistic: false
+      retain: true
+    - name: "Power Monitor Reset Wh"
+      command_topic: "/power-monitor/set/wh-reset"
+      payload_on: "1"
+      payload_off: "0"
+      optimistic: false
+      retain: true
+    - name: "Power Monitor Light"
+      state_topic: "/power-monitor/state/light"
+      command_topic: "/power-monitor/set/light"
+      payload_on: "1"
+      payload_off: "0"
+      optimistic: false
       retain: true
 
     ###############################################
@@ -816,31 +832,31 @@ mqtt:
     ###############################################
     - name: "Power Monitor Voltage"
       device_class: voltage
-      state_topic: "/power-monitor/volt"
+      state_topic: "/power-monitor/state/volt"
       value_template: "{{ value }}"
       unit_of_measurement: "V"
 
     - name: "Power Monitor Current"
       device_class: current
-      state_topic: "/power-monitor/amp"
+      state_topic: "/power-monitor/state/amp"
       value_template: "{{ value }}"
       unit_of_measurement: "A"
 
     - name: "Power Monitor Power"
       device_class: power
-      state_topic: "/power-monitor/watt"
+      state_topic: "/power-monitor/state/watt"
       value_template: "{{ value }}"
       unit_of_measurement: "W"
 
     - name: "Power Monitor Energy"
       device_class: energy
-      state_topic: "/power-monitor/wh"
+      state_topic: "/power-monitor/state/wh"
       value_template: "{{ value }}"
       unit_of_measurement: "Wh"
       state_class: total_increasing
 
     - name: "Power Monitor Uptime"
-      state_topic: "/power-monitor/uptime"
+      state_topic: "/power-monitor/state/uptime"
       value_template: "{{ value }}"
       state_class: total_increasing
 
