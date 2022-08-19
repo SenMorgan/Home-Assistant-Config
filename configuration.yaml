@@ -454,7 +454,6 @@ rest:
 ## MQTT stuff
 ###############################################
 mqtt:
-
   ###############################################
   ## CLIMATE
   ###############################################
@@ -524,6 +523,25 @@ mqtt:
       optimistic: false
 
   ###############################################
+  ## BUTTONS
+  ###############################################
+  button:
+    ###############################################
+    ## Power Monitor Buttons
+    ###############################################
+    - name: "Power Monitor Reset"
+      command_topic: "/power-monitor/set/reset"
+      payload_press: "1"
+      retain: true
+      entity_category: "config"
+      device_class: "restart"
+    - name: "Power Monitor Reset Wh"
+      command_topic: "/power-monitor/set/wh-reset"
+      payload_press: "1"
+      retain: true
+      entity_category: "config"
+
+  ###############################################
   ## SWITCHES
   ###############################################
   switch:
@@ -565,19 +583,9 @@ mqtt:
     ###############################################
     ## Power Monitor Switches
     ###############################################
-    - name: "Power Monitor Reset"
-      command_topic: "/power-monitor/set/reset"
-      payload_on: "1"
-      optimistic: true
     - name: "Power Monitor Sleep Mode"
       state_topic: "/power-monitor/state/sleep"
       command_topic: "/power-monitor/set/sleep"
-      payload_on: "1"
-      payload_off: "0"
-      optimistic: false
-      retain: true
-    - name: "Power Monitor Reset Wh"
-      command_topic: "/power-monitor/set/wh-reset"
       payload_on: "1"
       payload_off: "0"
       optimistic: false
@@ -626,7 +634,6 @@ mqtt:
   ## BINARY SENSORS
   ###############################################
   binary_sensor:
-
     - name: Garage Kalorifer
       device_class: moving
       state_topic: "/Kalorifer/Status"
@@ -667,7 +674,6 @@ mqtt:
   ## SENSORS
   ###############################################
   sensor:
-
     ###############################################
     ## Swimming Pool Sensors
     ###############################################
@@ -733,6 +739,7 @@ mqtt:
       value_template: "{{ value }}"
       unit_of_measurement: "hPa"
 
+
       # From BSEC Software Library:
       #
       # The IAQ scale ranges from 0 (clean air) to 500 (heavily polluted air). During operation, algorithms
@@ -740,7 +747,6 @@ mqtt:
       # (e.g., home, workplace, inside a car, etc.).This automatic background calibration ensures that users experience
       # consistent IAQ performance. The calibration process considers the recent measurement history (typ. up to four
       # days) to ensure that IAQ=25 corresponds to typical good air and IAQ=250 indicates typical polluted air.
-
     - name: "Air Quality Station IAQ"
       state_topic: "/air-quality-station/iaq"
       device_class: aqi
@@ -760,15 +766,15 @@ mqtt:
       state_topic: "/air-quality-station/iaqAccuracy"
       value_template: "{{ value }}"
       unit_of_measurement: "IAQ Acc"
-      # co2 equivalent estimate [ppm]
 
+      # co2 equivalent estimate [ppm]
     - name: "Air Quality Station CO2"
       state_topic: "/air-quality-station/co2Equivalent"
       device_class: carbon_dioxide
       value_template: "{{ value }}"
       unit_of_measurement: "ppm"
-      # breath VOC concentration estimate [ppm]
 
+      # breath VOC concentration estimate [ppm]
     - name: "Air Quality Station VOC"
       state_topic: "/air-quality-station/breathVocEquivalent"
       value_template: "{{ value }}"
