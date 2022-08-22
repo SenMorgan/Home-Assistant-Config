@@ -25,8 +25,6 @@
     - wait_template: "{{ states('binary_sensor.aqara_hall_door_sensor_contact') == 'off' }}"
       timeout: 00:10:00
       continue_on_timeout: false
-    - service: light.turn_on
-      entity_id: light.tab_a7_lite_polzovatelia_sen_screen
     - choose:
         # Only Sen came home
         - conditions:
@@ -926,6 +924,12 @@
       entity_id: light.tab_a7_lite_polzovatelia_sen_screen
       data:
         brightness: 1
+    # Repeate command in 2 minutes, because it fails sometimes or router is rebooting
+    - delay: 02:00
+    - service: light.turn_on
+      entity_id: light.tab_a7_lite_polzovatelia_sen_screen
+      data:
+        brightness: 1
 
 - id: "Bedroom_Aqara_Switch_Double_Press"
   alias: Bedroom Aqara Switch Double Press
@@ -1327,10 +1331,6 @@
       entity_id: binary_sensor.people_home
       to: "on"
       for: "00:02:00"
-  condition:
-    - condition: state
-      entity_id: light.tab_a7_lite_polzovatelia_sen_screen
-      state: "off"
   action:
     choose:
       - conditions:
@@ -1341,7 +1341,19 @@
             entity_id: light.tab_a7_lite_polzovatelia_sen_screen
             data:
               brightness: 1
+          # Repeate command in 2 minutes, because it fails sometimes or router is rebooting
+          - delay: 02:00
+          - service: light.turn_on
+            entity_id: light.tab_a7_lite_polzovatelia_sen_screen
+            data:
+              brightness: 1
     default:
+      - service: light.turn_on
+        entity_id: light.tab_a7_lite_polzovatelia_sen_screen
+        data:
+          brightness: 255
+      # Repeate command in 2 minutes, because it fails sometimes or router is rebooting
+      - delay: 02:00
       - service: light.turn_on
         entity_id: light.tab_a7_lite_polzovatelia_sen_screen
         data:
@@ -1363,6 +1375,12 @@
       entity_id: light.tab_a7_lite_polzovatelia_sen_screen
       data:
         brightness: 1
+    # Repeate command in 2 minutes, because it fails sometimes or router is rebooting
+    - delay: 02:00
+    - service: light.turn_on
+      entity_id: light.tab_a7_lite_polzovatelia_sen_screen
+      data:
+        brightness: 1
 
 - id: "Tablet_Brightness_Up_After_Sunrize"
   alias: Tablet Brightness Up After Sunrise
@@ -1374,6 +1392,12 @@
       entity_id: binary_sensor.people_home
       state: "on"
   action:
+    - service: light.turn_on
+      entity_id: light.tab_a7_lite_polzovatelia_sen_screen
+      data:
+        brightness: 255
+    # Repeate command in 2 minutes, because it fails sometimes or router is rebooting
+    - delay: 02:00
     - service: light.turn_on
       entity_id: light.tab_a7_lite_polzovatelia_sen_screen
       data:
