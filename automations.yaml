@@ -115,6 +115,9 @@
       from: "on"
       to: "off"
   condition:
+    - condition: state
+      entity_id: binary_sensor.people_home
+      state: "on"
     - condition: template
       value_template:
         "{{ ( as_timestamp(now()) - as_timestamp(state_attr('automation.hall_lights_and_alice_greeting',
