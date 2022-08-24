@@ -726,7 +726,7 @@
     - service: notify.mobile_app_sm_s901b
       data:
         title: "{{ 'ℹ️' }} Системное уведомление"
-        message: В сети появилось {{ '\uD83D\uDCE1' }} новое устройство {{state_attr(entity,'friendly_name')}}
+        message: В сети появилось новое устройство {{state_attr(entity,'friendly_name')}}
     - service: media_player.play_media
       entity_id: media_player.yandex_station
       data:
