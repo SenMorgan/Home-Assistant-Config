@@ -789,18 +789,21 @@ mqtt:
       state_topic: "/solar/solar/volt"
       value_template: "{{ value }}"
       unit_of_measurement: "V"
+      state_class: measurement
 
     - name: "Solar Panel Current"
       device_class: current
       state_topic: "/solar/solar/amp"
       value_template: "{{ value }}"
       unit_of_measurement: "A"
+      state_class: measurement
 
     - name: "Solar Panel Power"
       device_class: power
       state_topic: "/solar/solar/watt"
       value_template: "{{ value }}"
       unit_of_measurement: "W"
+      state_class: measurement
 
     - name: "Solar Panel Energy"
       device_class: energy
@@ -814,18 +817,21 @@ mqtt:
       state_topic: "/solar/batt/volt"
       value_template: "{{ value }}"
       unit_of_measurement: "V"
+      state_class: measurement
 
     - name: "Battery Charging Current"
       device_class: current
       state_topic: "/solar/batt/amp"
       value_template: "{{ value }}"
       unit_of_measurement: "A"
+      state_class: measurement
 
     - name: "Battery Charging Power"
       device_class: power
       state_topic: "/solar/batt/watt"
       value_template: "{{ value }}"
       unit_of_measurement: "W"
+      state_class: measurement
 
     - name: "Battery Charging Energy"
       device_class: energy
