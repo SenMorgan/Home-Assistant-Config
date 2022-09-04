@@ -1402,3 +1402,16 @@
       entity_id: light.tab_a7_lite_polzovatelia_sen_screen
       data:
         brightness: 255
+
+###############################################
+## Solar Station Automations
+###############################################
+- alias: Save Energy Produced Value at Start of the Day
+  trigger:
+    platform: time
+    at: '00:00:00'
+  action:
+    service: input_number.set_value
+    data_template:
+      entity_id: input_number.solar_energy_produced_at_beginning_of_day
+      value: "{{ states.sensor.solar_panel_energy.state }}"
