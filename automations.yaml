@@ -754,20 +754,6 @@
               title: "Open Config"
               uri: "/config"
 
-- id: "Notification_ISS_is_overhead"
-  alias: Notification ISS is overhead
-  mode: single
-  trigger:
-    - platform: state
-      entity_id: binary_sensor.iss
-      from: "off"
-      to: "on"
-  action:
-    - service: notify.mobile_app_sm_s901b
-      data:
-        title: 🛰 МКС над головой! 🛰
-        message: МКС поднялась выше 10° над горизонтом в {{ states('sensor.time') }}
-
 ###############################################
 ## Home Assistant Automations
 ###############################################
