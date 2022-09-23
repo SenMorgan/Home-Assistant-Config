@@ -37,6 +37,12 @@ notify:
 
 # Enables the ability to send magic packets to Wake on LAN capable devices to turn them on
 wake_on_lan:
+# The zabbix integration to connect to a Zabbix monitoring instance via the Zabbix API
+zabbix:
+  host: !secret ZABBIX_IP
+  ssl: false
+  username: !secret ZABBIX_USER
+  password: !secret ZABBIX_PASS
 
 # BLE device tracker
 device_tracker:
