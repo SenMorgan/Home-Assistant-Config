@@ -453,10 +453,10 @@ input_button:
     name: Parking Light
     icon: mdi:spotlight
 
-###############################################
-## DuinoCoin Rest Sensors
-###############################################
 rest:
+  ###############################################
+  ## DuinoCoin Rest Sensors
+  ###############################################
   - resource: !secret DUINOCOIN_USER_URI
     scan_interval: 60
     sensor:
@@ -470,6 +470,11 @@ rest:
         value_template: "{{ value_json['result']['username'] }}"
       - name: "Duco Server"
         value_template: "{{ value_json['server'] }}"
+
+  ###############################################
+  ## Water Quality Rest Sensors
+  ###############################################
+  - !include water-quality.yaml
 
 ###############################################
 ## MQTT stuff
@@ -799,6 +804,7 @@ mqtt:
       # breath VOC concentration estimate [ppm]
     - name: "Air Quality Station VOC"
       state_topic: "/air-quality-station/breathVocEquivalent"
+      device_class: volatile_organic_compounds
       value_template: "{{ value }}"
       unit_of_measurement: "ppm"
 
