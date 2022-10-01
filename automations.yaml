@@ -1384,7 +1384,6 @@
         data:
           brightness: 255
 
-
 - id: "Tablet_Brightness_Down_After_Sunset"
   alias: Tablet Brightness Down After Sunset
   trigger:
@@ -1434,7 +1433,7 @@
 - alias: Save Energy Produced Value at Start of the Day
   trigger:
     platform: time
-    at: '00:00:00'
+    at: "00:00:00"
   action:
     service: input_number.set_value
     data_template:
