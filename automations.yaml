@@ -1339,7 +1339,13 @@
             entity_id: light.tab_a7_lite_polzovatelia_sen_screen
             data:
               brightness: 1
-          # Repeate command in 2 minutes, because it fails sometimes or router is rebooting
+          # Repeate command in a few times,
+          # because it fails sometimes or router is rebooting at the moment
+          - delay: 02:00
+          - service: light.turn_on
+            entity_id: light.tab_a7_lite_polzovatelia_sen_screen
+            data:
+              brightness: 1
           - delay: 02:00
           - service: light.turn_on
             entity_id: light.tab_a7_lite_polzovatelia_sen_screen
@@ -1350,7 +1356,13 @@
         entity_id: light.tab_a7_lite_polzovatelia_sen_screen
         data:
           brightness: 255
-      # Repeate command in 2 minutes, because it fails sometimes or router is rebooting
+        # Repeate command in a few times,
+        # because it fails sometimes or router is rebooting at the moment
+      - delay: 02:00
+      - service: light.turn_on
+        entity_id: light.tab_a7_lite_polzovatelia_sen_screen
+        data:
+          brightness: 255
       - delay: 02:00
       - service: light.turn_on
         entity_id: light.tab_a7_lite_polzovatelia_sen_screen
