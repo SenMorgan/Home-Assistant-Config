@@ -301,6 +301,21 @@
               entity_id:
                 - switch.pc_backlight_sync_send
 
+- id: "Kitchen_Asus_PC_Background_Lights_OFF"
+  alias: Kitchen Asus PC Background Lights OFF
+  trigger:
+    - platform: state
+      entity_id: switch.asus_pc
+      from: "on"
+      to: "off"
+  action:
+    - service: light.turn_off
+      entity_id:
+        - light.gyver_lamp
+    - service: switch.turn_off
+      entity_id:
+        - switch.pc_backlight_sync_send
+
 - id: "Living_Room_Bar_Lights_by_Sunset_or_TV_ON"
   alias: Living Room Bar Lights by Sunset or TV ON
   trigger:
