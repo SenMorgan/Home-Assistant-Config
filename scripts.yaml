@@ -288,3 +288,11 @@ update_shopping_list:
       data:
         media_content_id: update
         media_content_type: shopping_list
+
+# Switch ON LG TV with magic packet through WoL
+wake_tv:
+  alias: Wake TV
+  sequence:
+    - service: wake_on_lan.send_magic_packet
+      data:
+        mac: !secret TV_MAC

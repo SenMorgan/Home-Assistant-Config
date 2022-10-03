@@ -1190,9 +1190,8 @@
     - platform: webostv.turn_on
       entity_id: media_player.tv
   action:
-    - service: wake_on_lan.send_magic_packet
-      data:
-        mac: !secret TV_MAC
+    - service: script.turn_on
+      entity_id: script.wake_tv
 
 ###############################################
 ## Other Buttons and Switches Handles
