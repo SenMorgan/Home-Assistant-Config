@@ -307,7 +307,26 @@ binary_sensor:
           {{ is_state('person.sen', 'home') or
           is_state('person.kris', 'home') }}
 
+counter:
+  ###############################################
+  ## Counter for Gas Meter
+  ###############################################
+  gas_counter:
+    name: Gas Counter
+
 sensor:
+  ###############################################
+  ## Gas Meter Sensor from Gas Counter
+  ###############################################
+  - platform: template
+    sensors:
+      gas_meter:
+        friendly_name: Gas Meter
+        value_template: "{{ states ('counter.gas_counter') | float * 0.01}}"
+        unit_of_measurement: "m³"
+        icon_template: "mdi:fire"
+        device_class: gas
+
   ###############################################
   ## 17TRACK Sensor
   ###############################################
