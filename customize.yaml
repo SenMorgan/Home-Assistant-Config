@@ -24,5 +24,6 @@ light.mi_desk_lamp:
 input_boolean.heating_season_switch:
   icon: mdi:sun-snowflake-variant
 sensor.gas_meter:
-  state_class: measurement
-  last_reset: '2022-10-05T18:35:00.740703+00:00'
+  state_class: total_increasing
+#  state_class: measurement
+#  last_reset: '2022-10-05T18:35:00.740703+00:00'
