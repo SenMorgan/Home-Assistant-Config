@@ -744,15 +744,15 @@
     - service: notify.mobile_app_sm_s901b
       data:
         title: "{{ 'ℹ️' }} Системное уведомление"
-        message: В сети появилось новое устройство {{state_attr(entity,'friendly_name')}}
+        message: В сети появилось новое устройство {{state_attr(entity,'friendly_name') }} {{state_attr(entity,'ip') }}
     - service: media_player.play_media
       entity_id: media_player.yandex_station
       data:
         media_content_id: >
-          К локальной сети было подключено новое устройство с именем {{state_attr(entity,'friendly_name')}}
+          К локальной сети было подключено новое устройство с адресом {{state_attr(entity,'ip')}}
         media_content_type: dialog
         extra:
-          volume_level: 0.6
+          volume_level: 0.3
 
 - id: "Notification_Home_Assistant_Update_Available"
   alias: Notification Home Assistant Update Available
