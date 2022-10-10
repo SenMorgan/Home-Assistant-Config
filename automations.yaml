@@ -1336,6 +1336,30 @@
         entity_id: media_player.yandex_station
         is_volume_muted: false
 
+- id: "Kitchen_Yandex_Reduce_Volume_At_Evening"
+  alias: Kitchen Yandex Reduce Volume At Evening
+  mode: single
+  trigger:
+    - platform: time
+      at: "19:30:00"
+  action:
+    - service: media_player.volume_set
+      data:
+        entity_id: media_player.yandex_station
+        volume_level: 0.2
+
+- id: "Kitchen_Yandex_Restore_Volume_At_Morning"
+  alias: Kitchen Yandex Restore Volume At Morning
+  mode: single
+  trigger:
+    - platform: time
+      at: "07:00:00"
+  action:
+    - service: media_player.volume_set
+      data:
+        entity_id: media_player.yandex_station
+        volume_level: 0.5
+
 ###############################################
 ## Wall Tablet Automations
 ###############################################
