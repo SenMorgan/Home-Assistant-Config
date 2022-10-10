@@ -1461,8 +1461,8 @@
   trigger:
     - platform: state
       entity_id: binary_sensor.aqara_bedroom_window_sensor_contact
-      from: 'off'
-      to: 'on'
+      from: "off"
+      to: "on"
   action:
     - service: counter.increment
       target:
