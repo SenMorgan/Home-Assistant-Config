@@ -910,17 +910,6 @@
       entity_id: all
     - service: scene.turn_on
       entity_id: scene.good_night
-    # We don't want to turn off tablet's screen, but set minimal brightness
-    - service: number.set_value
-      data:
-        entity_id: number.tab_a7_lite_screen_brightness
-        value: 1
-    # Repeate command in 2 minutes, because it fails sometimes or router is rebooting
-    - delay: 02:00
-    - service: number.set_value
-      data:
-        entity_id: number.tab_a7_lite_screen_brightness
-        value: 1
 
 - id: "Bedroom_Aqara_Switch_Double_Press"
   alias: Bedroom Aqara Switch Double Press
@@ -1346,99 +1335,6 @@
       data:
         entity_id: media_player.yandex_station
         volume_level: 0.5
-
-###############################################
-## Wall Tablet Automations
-###############################################
-- id: "Kitchen_Tablet_Power_ON_When_People_Came_Home"
-  alias: Kitchen Tablet Power ON When People Came Home
-  trigger:
-    - platform: state
-      entity_id: binary_sensor.people_home
-      to: "on"
-      for: "00:02:00"
-  action:
-    choose:
-      - conditions:
-          - condition: sun
-            after: sunset
-        sequence:
-          - service: number.set_value
-            data:
-              entity_id: number.tab_a7_lite_screen_brightness
-              value: 1
-          # Repeate command in a few times,
-          # because it fails sometimes or router is rebooting at the moment
-          - delay: 02:00
-          - service: number.set_value
-            data:
-              entity_id: number.tab_a7_lite_screen_brightness
-              value: 1
-          - delay: 02:00
-          - service: number.set_value
-            data:
-              entity_id: number.tab_a7_lite_screen_brightness
-              value: 1
-    default:
-      - service: number.set_value
-        data:
-          entity_id: number.tab_a7_lite_screen_brightness
-          value: 255
-        # Repeate command in a few times,
-        # because it fails sometimes or router is rebooting at the moment
-      - delay: 02:00
-      - service: number.set_value
-        data:
-          entity_id: number.tab_a7_lite_screen_brightness
-          value: 255
-      - delay: 02:00
-      - service: number.set_value
-        data:
-          entity_id: number.tab_a7_lite_screen_brightness
-          value: 255
-
-- id: "Kitchen_Tablet_Brightness_Down_After_Sunset"
-  alias: Kitchen Tablet Brightness Down After Sunset
-  trigger:
-    - platform: sun
-      event: sunset
-      offset: "00:30:00"
-  condition:
-    - condition: state
-      entity_id: binary_sensor.people_home
-      state: "on"
-  action:
-    - service: number.set_value
-      data:
-        entity_id: number.tab_a7_lite_screen_brightness
-        value: 1
-    # Repeate command in 2 minutes, because it fails sometimes or router is rebooting
-    - delay: 02:00
-    - service: number.set_value
-      data:
-        entity_id: number.tab_a7_lite_screen_brightness
-        value: 1
-
-- id: "Kitchen_Tablet_Brightness_Up_After_Sunrize"
-  alias: Kitchen Tablet Brightness Up After Sunrise
-  trigger:
-    - platform: sun
-      event: sunrise
-  condition:
-    - condition: state
-      entity_id: binary_sensor.people_home
-      state: "on"
-  action:
-    - service: number.set_value
-      data:
-        entity_id: number.tab_a7_lite_screen_brightness
-        value: 255
-    # Repeate command in 2 minutes, because it fails sometimes or router is rebooting
-    - delay: 02:00
-    - service: number.set_value
-      data:
-        entity_id: number.tab_a7_lite_screen_brightness
-        value: 255
 
 ###############################################
 ## Solar Station Automations
