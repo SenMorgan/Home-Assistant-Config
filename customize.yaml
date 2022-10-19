@@ -2,7 +2,7 @@ light.kitchen_spotlights:
   icon: mdi:spotlight
 light.bar_light:
   icon: mdi:led-strip-variant
-switch.string_lights:
+light.string_lights:
   icon: mdi:string-lights
 light.floor_lamp:
   icon: mdi:floor-lamp-dual

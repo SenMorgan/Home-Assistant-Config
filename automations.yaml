@@ -43,8 +43,8 @@
                       after: sunset
                       before_offset: 00:15:00
                   sequence:
-                    - service: switch.turn_on
-                      entity_id: switch.string_lights
+                    - service: light.turn_on
+                      entity_id: light.string_lights
             - service: media_player.play_media
               entity_id: media_player.yandex_station
               data:
@@ -88,8 +88,8 @@
                       after: sunset
                       before_offset: 00:15:00
                   sequence:
-                    - service: switch.turn_on
-                      entity_id: switch.string_lights
+                    - service: light.turn_on
+                      entity_id: light.string_lights
             - alias: "Welcome everybody"
               service: media_player.play_media
               entity_id: media_player.yandex_station
@@ -126,8 +126,8 @@
       continue_on_timeout: false
     - service: light.turn_off
       entity_id: all
-    - service: switch.turn_off
-      entity_id: switch.string_lights
+    - service: light.turn_off
+      entity_id: light.string_lights
     - service: switch.turn_off
       entity_id: light.bar_light
     - service: notify.mobile_app_sm_s901b

@@ -3,7 +3,7 @@
     light.hall_lights: on
     light.gyver_lamp: on
     light.kitchen_spotlights: on
-    switch.string_lights: on
+    light.string_lights: on
     cover.bedroom: open
     light.shelf_lighting:
       state: on
@@ -20,7 +20,7 @@
     media_player.tv: on
     light.kitchen_spotlights: off
     light.bar_light: on
-    switch.string_lights: off
+    light.string_lights: off
     light.mi_desk_lamp: off
     light.shelf_lighting: off
     light.floor_lamp: off
@@ -30,7 +30,7 @@
   entities:
     media_player.tv: off
     light.bar_light: off
-    switch.string_lights: off
+    light.string_lights: off
     light.bedroom_nightlight: off
     cover.bedroom: closed
 

@@ -27,7 +27,7 @@ filter:
     - scene.welcome_home_lights
     - switch.asus_pc
     - light.bar_light
-    - switch.string_lights
+    - light.string_lights
     - light.bedroom_nightlight
     - vacuum.johnny
 entity_config:
@@ -103,7 +103,7 @@ entity_config:
     name: Подсветка бара
     room: Зал
     type: devices.types.light
-  switch.string_lights:
+  light.string_lights:
     name: Лампочки
     room: Кухня
     type: devices.types.light

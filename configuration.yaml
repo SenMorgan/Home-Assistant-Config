@@ -95,7 +95,7 @@ google_assistant:
         - STRING LIGHTS
         - STRIP LIGHTS
         - CHRISTMAS LIGHTS
-    switch.string_lights:
+    light.string_lights:
       name: String Lights
       room: Kitchen
     switch.backyard_socket:
