@@ -871,7 +871,7 @@
       state: "on"
   action:
     - service: light.toggle
-      entity_id: light.mi_desk_lamp
+      entity_id: light.string_lights
 
 - id: "Aqara_Cube_Rotate"
   alias: Aqara Cube Rotate
