@@ -559,9 +559,9 @@
       entity_id: binary_sensor.aqara_hall_door_sensor_contact
       to: "on"
   condition:
-    - condition: state
-      entity_id: person.sen
-      state: "not_home"
+    - condition: template
+      value_template: >
+        {{ not states('person.sen') == 'home'}}
   action:
     - service: notify.mobile_app_sm_s901b
       data:
