@@ -668,6 +668,54 @@
               uri: "/config"
 
 ###############################################
+## Low Battery Notifications
+###############################################
+- id: "Create_Group_of_Battery_Devices"
+  alias: Create Group of Battery Devices
+  trigger:
+    # Trigger on startup
+    - platform: homeassistant
+      event: start
+    # Trigger every 2 hours by time_pattern
+    - platform: time_pattern
+      hours: "/2"
+  action:
+    - service: group.set
+      data:
+        object_id: battery_devices
+        entities: >-
+          {%-
+            for state in states.sensor
+              if is_state_attr(state.entity_id, 'device_class', 'battery') and
+              (state.entity_id.endswith("_battery") or state.entity_id.endswith("_power"))
+          %}
+          {{ state.entity_id }}{%- if not loop.last -%}, {%- endif -%}
+          {%- endfor %}
+
+- id: "Notification_Low_Battery"
+  alias: Notification Low Battery
+  trigger:
+    - platform: event
+      event_type: state_changed
+  condition:
+    - condition: template
+      value_template: >-
+        {{ trigger.event.data.entity_id in (expand('group.battery_devices') | map(attribute='entity_id')) }}
+    - condition: template
+      value_template: >-
+        {{ not trigger.event.data.new_state.state in ['unknown', 'unavailable'] }}
+    - condition: template
+      value_template: >-
+        {{ (trigger.event.data.new_state.state | int) < 20 }}
+  action:
+    - service: notify.mobile_app_sm_s901b
+      data:
+        title: "{{ 'ℹ️' }} Системное уведомление"
+        message: |
+          *Внимание, низкий заряд батареи!*
+          {{ trigger.event.data.new_state.attributes.friendly_name }}: {{ trigger.event.data.new_state.state }}%!
+
+###############################################
 ## Home Assistant Automations
 ###############################################
 
