@@ -1,0 +1,23 @@
+###############################################
+## Power Monitor Buttons
+###############################################
+- name: "Power Monitor Reset"
+  command_topic: "/power-monitor/set/reset"
+  payload_press: "1"
+  retain: true
+  entity_category: "config"
+  device_class: "restart"
+- name: "Power Monitor Reset Wh"
+  command_topic: "/power-monitor/set/wh-reset"
+  payload_press: "1"
+  retain: true
+  entity_category: "config"
+
+###############################################
+## Solar Station Buttons
+###############################################
+- name: "Solar Power Meter Reset"
+  command_topic: "/solar/reset"
+  payload_press: "1"
+  entity_category: "config"
+  device_class: "restart"

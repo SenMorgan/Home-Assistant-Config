@@ -1,0 +1,380 @@
+###############################################
+## Swimming Pool Sensors
+###############################################
+- name: "Pool Thermometer Battery Voltage"
+  icon: mdi:battery
+  state_topic: "/pool-thermometer/vcc"
+  value_template: "{{ value }}"
+  unit_of_measurement: "mV"
+
+- name: "Pool Thermometer Upper Water Temperature"
+  icon: mdi:temperature-celsius
+  device_class: temperature
+  state_topic: "/pool-thermometer/ds18b20/upper-water-temp"
+  value_template: "{{ value }}"
+  unit_of_measurement: "°C"
+
+- name: "Pool Thermometer Bottom Water Temperature"
+  icon: mdi:temperature-celsius
+  device_class: temperature
+  state_topic: "/pool-thermometer/ds18b20/bottom-water-temp"
+  value_template: "{{ (value  | float - 0.33)  | round(2, default=none)}}"
+  unit_of_measurement: "°C"
+
+- name: "Pool BME280 Temperature"
+  icon: mdi:temperature-celsius
+  state_topic: "/pool-thermometer/bme280/temp"
+  device_class: temperature
+  value_template: "{{ value }}"
+  unit_of_measurement: "°C"
+
+- name: "Pool BME280 Pressure"
+  state_topic: "/pool-thermometer/bme280/press"
+  device_class: pressure
+  value_template: "{{ value }}"
+  unit_of_measurement: "hPa"
+
+- name: "Pool BME280 Humidity"
+  icon: mdi:water-percent
+  state_topic: "/pool-thermometer/bme280/hum"
+  device_class: humidity
+  value_template: "{{ value }}"
+  unit_of_measurement: "%"
+
+###############################################
+## Air Quality Station Sensors
+###############################################
+- name: "Air Quality Station Temperature"
+  state_topic: "/air-quality-station/temperature"
+  icon: mdi:temperature-celsius
+  device_class: temperature
+  value_template: "{{ value }}"
+  unit_of_measurement: "°C"
+
+- name: "Air Quality Station Humidity"
+  state_topic: "/air-quality-station/humidity"
+  device_class: humidity
+  value_template: "{{ value }}"
+  unit_of_measurement: "%"
+
+- name: "Air Quality Station Pressure"
+  state_topic: "/air-quality-station/pressure"
+  device_class: pressure
+  value_template: "{{ value }}"
+  unit_of_measurement: "hPa"
+
+
+  # From BSEC Software Library:
+  #
+  # The IAQ scale ranges from 0 (clean air) to 500 (heavily polluted air). During operation, algorithms
+  # automatically calibrate and adapt themselves to the typical environments where the sensor is operated
+  # (e.g., home, workplace, inside a car, etc.).This automatic background calibration ensures that users experience
+  # consistent IAQ performance. The calibration process considers the recent measurement history (typ. up to four
+  # days) to ensure that IAQ=25 corresponds to typical good air and IAQ=250 indicates typical polluted air.
+- name: "Air Quality Station IAQ"
+  state_topic: "/air-quality-station/iaq"
+  device_class: aqi
+  value_template: "{{ value }}"
+  unit_of_measurement: "IAQ"
+
+# The IAQ accuracy is reflects the current state of the background calibration process, such as:
+#
+# IAQ Accuracy=0 could either mean:
+# BSEC was just started, and the sensor is stabilizing (this lasts normally 5min in LP mode or 20min in ULP mode),
+# there was a timing violation (i.e. BSEC was called too early or too late), which should be indicated by a warning/error flag by BSEC,
+# IAQ Accuracy=1 means the background history of BSEC is uncertain. This typically means the gas sensor data was too stable for BSEC to clearly define its references,
+# IAQ Accuracy=2 means BSEC found a new calibration data and is currently calibrating,
+# IAQ Accuracy=3 means BSEC calibrated successfully.
+
+- name: "Air Quality Station IAQ Accuracy"
+  state_topic: "/air-quality-station/iaqAccuracy"
+  value_template: "{{ value }}"
+  unit_of_measurement: "IAQ Acc"
+
+  # co2 equivalent estimate [ppm]
+- name: "Air Quality Station CO2"
+  state_topic: "/air-quality-station/co2Equivalent"
+  device_class: carbon_dioxide
+  value_template: "{{ value }}"
+  unit_of_measurement: "ppm"
+
+  # breath VOC concentration estimate [ppm]
+- name: "Air Quality Station VOC"
+  state_topic: "/air-quality-station/breathVocEquivalent"
+  device_class: volatile_organic_compounds
+  value_template: "{{ value }}"
+  unit_of_measurement: "ppm"
+
+###############################################
+## Solar Station Sensors
+###############################################
+- name: "Solar Panel Voltage"
+  device_class: voltage
+  state_topic: "/solar/solar/volt"
+  value_template: "{{ value }}"
+  unit_of_measurement: "V"
+  state_class: measurement
+
+- name: "Solar Panel Current"
+  device_class: current
+  state_topic: "/solar/solar/amp"
+  value_template: "{{ value }}"
+  unit_of_measurement: "A"
+  state_class: measurement
+
+- name: "Solar Panel Power"
+  device_class: power
+  state_topic: "/solar/solar/watt"
+  value_template: "{{ value }}"
+  unit_of_measurement: "W"
+  state_class: measurement
+
+- name: "Solar Panel Energy"
+  device_class: energy
+  state_topic: "/solar/solar/wh"
+  value_template: "{{ value }}"
+  unit_of_measurement: "Wh"
+  state_class: total_increasing
+
+- name: "Battery Charging Voltage"
+  device_class: voltage
+  state_topic: "/solar/batt/volt"
+  value_template: "{{ value }}"
+  unit_of_measurement: "V"
+  state_class: measurement
+
+- name: "Battery Charging Current"
+  device_class: current
+  state_topic: "/solar/batt/amp"
+  value_template: "{{ value }}"
+  unit_of_measurement: "A"
+  state_class: measurement
+
+- name: "Battery Charging Power"
+  device_class: power
+  state_topic: "/solar/batt/watt"
+  value_template: "{{ value }}"
+  unit_of_measurement: "W"
+  state_class: measurement
+
+- name: "Battery Charging Energy"
+  device_class: energy
+  state_topic: "/solar/batt/wh"
+  value_template: "{{ value }}"
+  unit_of_measurement: "Wh"
+  state_class: total_increasing
+
+###############################################
+## Power Monitor Sensors
+###############################################
+- name: "Power Monitor Voltage"
+  device_class: voltage
+  state_topic: "/power-monitor/state/volt"
+  value_template: "{{ value }}"
+  unit_of_measurement: "V"
+
+- name: "Power Monitor Current"
+  device_class: current
+  state_topic: "/power-monitor/state/amp"
+  value_template: "{{ value }}"
+  unit_of_measurement: "A"
+
+- name: "Power Monitor Power"
+  device_class: power
+  state_topic: "/power-monitor/state/watt"
+  value_template: "{{ value }}"
+  unit_of_measurement: "W"
+
+- name: "Power Monitor Energy"
+  device_class: energy
+  state_topic: "/power-monitor/state/wh"
+  value_template: "{{ value }}"
+  unit_of_measurement: "Wh"
+  state_class: total_increasing
+
+- name: "Power Monitor Signal Quality"
+  device_class: signal_strength
+  state_topic: "/power-monitor/state/signal-quality"
+  value_template: "{{ value }}"
+  unit_of_measurement: "%"
+
+- name: "Power Monitor Uptime"
+  state_topic: "/power-monitor/state/uptime"
+  value_template: "{{ value }}"
+  state_class: total_increasing
+
+###############################################
+## Raven Sensors
+###############################################
+- name: "Raven Motor RPM"
+  icon: mdi:gauge-empty
+  availability_topic: "/Raven/availability"
+  payload_available: "online"
+  payload_not_available: "offline"
+  state_topic: "/Raven/engine/RPM"
+  value_template: "{{ value }}"
+  unit_of_measurement: "RPM"
+
+- name: "Raven Motor Coolant Temperature"
+  icon: mdi:oil-temperature
+  availability_topic: "/Raven/availability"
+  payload_available: "online"
+  payload_not_available: "offline"
+  state_topic: "/Raven/engine/coolant"
+  value_template: "{{ value }}"
+  unit_of_measurement: "°C"
+  device_class: temperature
+
+- name: "Raven Selector Position"
+  icon: mdi:cogs
+  availability_topic: "/Raven/availability"
+  payload_available: "online"
+  payload_not_available: "offline"
+  state_topic: "/Raven/engine/selector_position"
+  value_template: "{{ value }}"
+
+- name: "Raven Started by Status"
+  icon: mdi:key-wireless
+  availability_topic: "/Raven/availability"
+  payload_available: "online"
+  payload_not_available: "offline"
+  state_topic: "/Raven/started_by_status"
+  value_template: "{{ value }}"
+
+- name: "Raven Actual Mode"
+  icon: mdi:state-machine
+  availability_topic: "/Raven/availability"
+  payload_available: "online"
+  payload_not_available: "offline"
+  state_topic: "/Raven/actual_mode"
+  value_template: "{{ value }}"
+
+- name: "Raven Fuel Burned"
+  icon: mdi:fuel
+  availability_topic: "/Raven/availability"
+  payload_available: "online"
+  payload_not_available: "offline"
+  state_topic: "/Raven/engine/engine_fuel_burned"
+  value_template: "{{ value }}"
+  unit_of_measurement: "mg"
+
+- name: "Raven Fuel Level"
+  icon: mdi:gas-station
+  availability_topic: "/Raven/availability"
+  payload_available: "online"
+  payload_not_available: "offline"
+  state_topic: "/Raven/engine/engine_fuel_level"
+  value_template: "{{ value }}"
+
+- name: "Raven Signal"
+  icon: mdi:car-connected
+  availability_topic: "/Raven/availability"
+  payload_available: "online"
+  payload_not_available: "offline"
+  state_topic: "/Raven/wifi/signal"
+  unit_of_measurement: "%"
+  value_template: "{{ value }}"
+  device_class: signal_strength
+
+- name: "Raven RSSI"
+  icon: mdi:car-connected
+  availability_topic: "/Raven/availability"
+  payload_available: "online"
+  payload_not_available: "offline"
+  state_topic: "/Raven/wifi/rssi"
+  unit_of_measurement: "dBm"
+  device_class: signal_strength
+
+- name: "Raven SSID"
+  icon: mdi:car-connected
+  availability_topic: "/Raven/availability"
+  payload_available: "online"
+  payload_not_available: "offline"
+  state_topic: "/Raven/wifi/ssid"
+  value_template: "{{ value }}"
+
+- name: "Raven WiFi channel"
+  icon: mdi:car-connected
+  availability_topic: "/Raven/availability"
+  payload_available: "online"
+  payload_not_available: "offline"
+  state_topic: "/Raven/wifi/channel"
+  value_template: "{{ value }}"
+
+- name: "Raven Uptime"
+  icon: mdi:timer-sand
+  availability_topic: "/Raven/availability"
+  payload_available: "online"
+  payload_not_available: "offline"
+  state_topic: "/Raven/uptime"
+  value_template: "{{ value }}"
+
+- name: "Raven Battery Voltage"
+  icon: mdi:car-battery
+  availability_topic: "/Raven/availability"
+  payload_available: "online"
+  payload_not_available: "offline"
+  state_topic: "/Raven/battery_voltage"
+  value_template: "{{ value }}"
+  unit_of_measurement: "V"
+
+- name: "Raven Outside Temperature"
+  icon: mdi:temperature-celsius
+  device_class: temperature
+  availability_topic: "/Raven/availability"
+  payload_available: "online"
+  payload_not_available: "offline"
+  state_topic: "/Raven/out_temp"
+  value_template: "{{ value }}"
+  unit_of_measurement: "°C"
+
+- name: "Raven Roof Temperature"
+  icon: mdi:temperature-celsius
+  device_class: temperature
+  availability_topic: "/Raven/availability"
+  payload_available: "online"
+  payload_not_available: "offline"
+  state_topic: "/Raven/roof_temp"
+  value_template: "{{ value }}"
+  unit_of_measurement: "°C"
+
+- name: "Raven Odometer"
+  icon: mdi:counter
+  availability_topic: "/Raven/availability"
+  payload_available: "online"
+  payload_not_available: "offline"
+  state_topic: "/Raven/odometer"
+  value_template: "{{ value }}"
+  unit_of_measurement: "km"
+
+- name: "Raven Doors Status"
+  icon: mdi:car-door
+  availability_topic: "/Raven/availability"
+  payload_available: "online"
+  payload_not_available: "offline"
+  state_topic: "/Raven/doors"
+  value_template: "{{ value }}"
+
+###############################################
+## Kalorifer in Garage Sensors
+###############################################
+- name: "Garage Air Temperature"
+  state_topic: "/Kalorifer/Temp"
+  value_template: "{{ value }}"
+  unit_of_measurement: "°C"
+  availability_topic: "/Kalorifer/availability"
+  device_class: temperature
+
+- name: "Garage Air Humidity"
+  state_topic: "/Kalorifer/Hum"
+  value_template: "{{ value }}"
+  unit_of_measurement: "%"
+  availability_topic: "/Kalorifer/availability"
+  device_class: humidity
+
+- name: "Garage Kalorifer Water Temperature"
+  state_topic: "/Kalorifer/WaterTemp"
+  value_template: "{{ value }}"
+  unit_of_measurement: "°C"
+  availability_topic: "/Kalorifer/availability"
+  device_class: temperature

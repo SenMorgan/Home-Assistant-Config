@@ -1,0 +1,76 @@
+###############################################
+## Raven Switches
+###############################################
+- name: "Raven Engine"
+  icon: mdi:engine-outline
+  state_topic: "/Raven/engine/engine_running"
+  state_on: "RUNNING"
+  state_off: "STOPPED"
+  command_topic: "/Raven/set/engine"
+  payload_on: "ON"
+  payload_off: "OFF"
+  availability_topic: "/Raven/availability"
+  payload_available: "online"
+  payload_not_available: "offline"
+  optimistic: false
+
+- name: "Raven Udpate Sensors"
+  icon: mdi:update
+  state_topic: "/Raven/sensors_updating"
+  command_topic: "/Raven/set/update_sensors"
+  payload_on: "1"
+  payload_off: "0"
+  availability_topic: "/Raven/availability"
+  payload_available: "online"
+  payload_not_available: "offline"
+  optimistic: false
+
+###############################################
+## Power Monitor Switches
+###############################################
+- name: "Power Monitor Sleep Mode"
+  state_topic: "/power-monitor/state/sleep"
+  command_topic: "/power-monitor/set/sleep"
+  payload_on: "1"
+  payload_off: "0"
+  optimistic: false
+  retain: true
+- name: "Power Monitor Light"
+  state_topic: "/power-monitor/state/light"
+  command_topic: "/power-monitor/set/light"
+  payload_on: "1"
+  payload_off: "0"
+  optimistic: false
+  retain: true
+
+###############################################
+## Swimming Pool Switches
+###############################################
+- name: "Pool Light"
+  state_topic: "/pool-thermometer/state/light"
+  command_topic: "/pool-thermometer/set/light"
+  payload_on: "1"
+  payload_off: "0"
+  optimistic: false
+  retain: true
+- name: "Pool Sleep Mode"
+  state_topic: "/pool-thermometer/state/sleep"
+  command_topic: "/pool-thermometer/set/sleep"
+  payload_on: "1"
+  payload_off: "0"
+  optimistic: false
+  retain: true
+
+###############################################
+## Other Switches
+###############################################
+- name: "Backyard Socket"
+  icon: mdi:power-socket-fr
+  state_topic: "/Sonoff-Socket_01/Status"
+  command_topic: "/Sonoff-Socket_01/Switch"
+  payload_on: "1"
+  payload_off: "0"
+  availability_topic: "/Sonoff-Socket_01/availability"
+  payload_available: "online"
+  payload_not_available: "offline"
+  optimistic: false
