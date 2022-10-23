@@ -1247,7 +1247,8 @@
 ###############################################
 ## Solar Station Automations
 ###############################################
-- alias: Save Energy Produced Value at Start of the Day
+- id: "Save_Energy_Produced_Value_at_Start_of_the_Day"
+  alias: Save Energy Produced Value at Start of the Day
   trigger:
     platform: time
     at: "00:00:00"
@@ -1260,7 +1261,8 @@
 ###############################################
 ## Gas Meter by Aqara door sensor and counter
 ###############################################
-- alias: Gas Counting
+- id: "Gas_Counting"
+  alias: Gas Counting
   initial_state: true
   trigger:
     - platform: state
