@@ -210,54 +210,6 @@ input_number:
     name: Solar Energy Produced at Beginning of Day
     min: 0
     max: 999999999
-  alarm_1_hour:
-    name: Час
-    icon: mdi:timer-outline
-    min: 0
-    max: 23
-    step: 1
-  alarm_1_minutes:
-    name: Минута
-    icon: mdi:timer-outline
-    min: 0
-    max: 59
-    step: 5
-  alarm_2_hour:
-    name: Час
-    icon: mdi:timer-outline
-    min: 0
-    max: 23
-    step: 1
-  alarm_2_minutes:
-    name: Минута
-    icon: mdi:timer-outline
-    min: 0
-    max: 59
-    step: 5
-  alarm_3_hour:
-    name: Час
-    icon: mdi:timer-outline
-    min: 0
-    max: 23
-    step: 1
-  alarm_3_minutes:
-    name: Минута
-    icon: mdi:timer-outline
-    min: 0
-    max: 59
-    step: 5
-  alarm_4_hour:
-    name: Час
-    icon: mdi:timer-outline
-    min: 0
-    max: 23
-    step: 1
-  alarm_4_minutes:
-    name: Минута
-    icon: mdi:timer-outline
-    min: 0
-    max: 59
-    step: 5
 
 ######################## START OF INPUT BOOLEAN SECTION ########################
 
@@ -374,34 +326,6 @@ sensor:
     display_options:
       - "time"
       - "date"
-
-  ###############################################
-  ## Alarms
-  ###############################################
-  - platform: template
-    sensors:
-      alarm_1_time:
-        friendly_name: "Alarm Time"
-        value_template: >-
-          {{ "%0.02d:%0.02d" | format(states("input_number.alarm_1_hour") | int, states("input_number.alarm_1_minutes") | int) }}
-  - platform: template
-    sensors:
-      alarm_2_time:
-        friendly_name: "Alarm Time"
-        value_template: >-
-          {{ "%0.02d:%0.02d" | format(states("input_number.alarm_2_hour") | int, states("input_number.alarm_2_minutes") | int) }}
-  - platform: template
-    sensors:
-      alarm_3_time:
-        friendly_name: "Alarm Time"
-        value_template: >-
-          {{ "%0.02d:%0.02d" | format(states("input_number.alarm_3_hour") | int, states("input_number.alarm_3_minutes") | int) }}
-  - platform: template
-    sensors:
-      alarm_4_time:
-        friendly_name: "Alarm Time"
-        value_template: >-
-          {{ "%0.02d:%0.02d" | format(states("input_number.alarm_4_hour") | int, states("input_number.alarm_4_minutes") | int) }}
 
   ###############################################
   ## Last Changed Sensors
