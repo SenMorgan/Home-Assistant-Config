@@ -936,91 +936,91 @@
 ## Thermostat automations
 ###############################################
 
-# - id: "Kitchen_Thermostat_Change_Mode_by_Window_State"
-#   alias: Kitchen Thermostat Change Mode by Window State
-#   mode: restart
-#   trigger:
-#     - platform: state
-#       entity_id: binary_sensor.aqara_bedroom_window_sensor_contact
-#       id: Window Opened
-#       to: "on"
-#       from: "off"
-#       for: "00:00:05"
-#     - platform: state
-#       entity_id: binary_sensor.aqara_bedroom_window_sensor_contact
-#       id: Window Closed
-#       from: "on"
-#       to: "off"
-#       for: "00:00:05"
-#   condition:
-#     - condition: state
-#       entity_id: input_boolean.heating_season_switch
-#       state: "on"
-#     - condition: or
-#       conditions:
-#         - condition: and
-#           conditions:
-#             - condition: or
-#               conditions:
-#                 - condition: state
-#                   entity_id: climate.thermostat
-#                   state: auto
-#                 - condition: state
-#                   entity_id: climate.thermostat
-#                   state: heat
-#             - condition: trigger
-#               id: Window Opened
-#         - condition: and
-#           conditions:
-#             - condition: state
-#               entity_id: climate.thermostat
-#               state: "off"
-#             - condition: trigger
-#               id: Window Closed
-#   action:
-#     - choose:
-#         - conditions:
-#             - condition: trigger
-#               id: Window Opened
-#           sequence:
-#             - service: media_player.play_media
-#               entity_id: media_player.yandex_station
-#               data:
-#                 media_content_id: Термостат отключен
-#                 media_content_type: dialog
-#                 extra:
-#                   volume_level: 0.7
-#             - service: climate.set_hvac_mode
-#               data:
-#                 hvac_mode: "off"
-#               target:
-#                 entity_id: climate.thermostat
-#         - conditions:
-#             - condition: trigger
-#               id: Window Closed
-#           sequence:
-#             - service: media_player.play_media
-#               entity_id: media_player.yandex_station
-#               data:
-#                 media_content_id: Термостат будет включен снова через 30 минут
-#                 media_content_type: dialog
-#                 extra:
-#                   volume_level: 0.7
-#             - delay: 30:00
-#             # Need to send the command a few times to ensure that thermostat changed it's mode
-#             - repeat:
-#                 until:
-#                   - condition: state
-#                     entity_id: climate.thermostat
-#                     state: auto
-#                 sequence:
-#                   - service: climate.set_hvac_mode
-#                     target:
-#                       entity_id: climate.thermostat
-#                     data:
-#                       hvac_mode: "auto"
-#                   - delay:
-#                       seconds: 5
+- id: "Kitchen_Thermostat_Change_Mode_by_Window_State"
+  alias: Kitchen Thermostat Change Mode by Window State
+  mode: restart
+  trigger:
+    - platform: state
+      entity_id: binary_sensor.aqara_bedroom_window_sensor_contact
+      id: Window Opened
+      to: "on"
+      from: "off"
+      for: "00:00:05"
+    - platform: state
+      entity_id: binary_sensor.aqara_bedroom_window_sensor_contact
+      id: Window Closed
+      from: "on"
+      to: "off"
+      for: "00:00:05"
+  condition:
+    - condition: state
+      entity_id: input_boolean.heating_season_switch
+      state: "on"
+    - condition: or
+      conditions:
+        - condition: and
+          conditions:
+            - condition: or
+              conditions:
+                - condition: state
+                  entity_id: climate.thermostat
+                  state: auto
+                - condition: state
+                  entity_id: climate.thermostat
+                  state: heat
+            - condition: trigger
+              id: Window Opened
+        - condition: and
+          conditions:
+            - condition: state
+              entity_id: climate.thermostat
+              state: "off"
+            - condition: trigger
+              id: Window Closed
+  action:
+    - choose:
+        - conditions:
+            - condition: trigger
+              id: Window Opened
+          sequence:
+            - service: media_player.play_media
+              entity_id: media_player.yandex_station
+              data:
+                media_content_id: Термостат отключен
+                media_content_type: dialog
+                extra:
+                  volume_level: 0.7
+            - service: climate.set_hvac_mode
+              data:
+                hvac_mode: "off"
+              target:
+                entity_id: climate.thermostat
+        - conditions:
+            - condition: trigger
+              id: Window Closed
+          sequence:
+            - service: media_player.play_media
+              entity_id: media_player.yandex_station
+              data:
+                media_content_id: Термостат будет включен снова через 30 минут
+                media_content_type: dialog
+                extra:
+                  volume_level: 0.7
+            - delay: 30:00
+            # Need to send the command a few times to ensure that thermostat changed it's mode
+            - repeat:
+                until:
+                  - condition: state
+                    entity_id: climate.thermostat
+                    state: auto
+                sequence:
+                  - service: climate.set_hvac_mode
+                    target:
+                      entity_id: climate.thermostat
+                    data:
+                      hvac_mode: "auto"
+                  - delay:
+                      seconds: 5
 
 - id: "Kitchen_Thermostat_Emergency_ON"
   alias: Kitchen Thermostat Emergency ON
