@@ -62,7 +62,7 @@ camera:
     attributes:
       - calibration_points
 
-google_assistant: !include google_assistant.yaml
+google_assistant: !include google-assistant.yaml
 
 ######################## START OF INPUT NUMBER SECTION ########################
 
