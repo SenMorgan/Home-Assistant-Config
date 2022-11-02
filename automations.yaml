@@ -623,13 +623,13 @@
     - service: system_log.write
       data:
         message: >
-          New device registrered: {{state_attr(entity,'friendly_name')}}
+          New device registrered: {{ entity }}
         level: warning
         logger: homeassistant.components.device_tracker
     - service: persistent_notification.create
       data:
         title: >
-          New device registered: {{state_attr(entity,'friendly_name')}}
+          New device registered: {{ entity }}
         message: >
           Entity: {{entity}}
           Host: {{state_attr(entity,'host_name')}}
@@ -639,12 +639,12 @@
     - service: notify.mobile_app_sm_s901b
       data:
         title: "{{ 'ℹ️' }} Системное уведомление"
-        message: В сети появилось новое устройство {{state_attr(entity,'friendly_name') }} {{state_attr(entity,'ip') }}
+        message: В сети появилось новое устройство {{ entity }}
     - service: media_player.play_media
       entity_id: media_player.yandex_station
       data:
         media_content_id: >
-          К локальной сети было подключено новое устройство с адресом {{state_attr(entity,'ip')}}
+          К локальной сети было подключено новое устройство с именем {{ entity }}
         media_content_type: dialog
 
 - id: "Notification_Home_Assistant_Update_Available"
