@@ -1278,6 +1278,48 @@
   trigger:
     - platform: time
       at: "07:00:00"
+  # Continue only if bedroom door is open
+  condition:
+    - condition: state
+      entity_id: binary_sensor.aqara_bedroom_door_sensor_contact
+      state: "on"
+  action:
+    - service: media_player.volume_set
+      data:
+        entity_id: media_player.yandex_station
+        volume_level: 0.6
+
+# Reduce Yandex Station volume if door was closed and restore if opened during the day time
+- id: "Kitchen_Yandex_Reduce_Volume_If_Bedroom_Door_Closed"
+  alias: Kitchen Yandex Reduce Volume If Bedroom Door Closed
+  mode: single
+  trigger:
+    - platform: state
+      entity_id: binary_sensor.aqara_bedroom_door_sensor_contact
+      to: "off"
+      for: 00:00:30
+  condition:
+    - condition: time
+      after: "07:00:05"
+      before: "19:29:55"
+  action:
+    - service: media_player.volume_set
+      data:
+        entity_id: media_player.yandex_station
+        volume_level: 0.2
+
+- id: "Kitchen_Yandex_Restore_Volume_If_Bedroom_Door_Opened"
+  alias: Kitchen Yandex Restore Volume If Bedroom Door Opened
+  mode: single
+  trigger:
+    - platform: state
+      entity_id: binary_sensor.aqara_bedroom_door_sensor_contact
+      to: "on"
+      for: 00:00:30
+  condition:
+    - condition: time
+      after: "07:00:05"
+      before: "19:29:55"
   action:
     - service: media_player.volume_set
       data:
