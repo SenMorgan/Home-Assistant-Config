@@ -985,14 +985,14 @@
   mode: restart
   trigger:
     - platform: state
-      entity_id: binary_sensor.aqara_bedroom_window_sensor_contact
-      id: Window Opened
+      entity_id: binary_sensor.windows
+      id: Some Window Opened
       to: "on"
       from: "off"
       for: "00:00:05"
     - platform: state
-      entity_id: binary_sensor.aqara_bedroom_window_sensor_contact
-      id: Window Closed
+      entity_id: binary_sensor.windows
+      id: All Windows Closed
       from: "on"
       to: "off"
       for: "00:00:05"
@@ -1013,19 +1013,19 @@
                   entity_id: climate.thermostat
                   state: heat
             - condition: trigger
-              id: Window Opened
+              id: Some Window Opened
         - condition: and
           conditions:
             - condition: state
               entity_id: climate.thermostat
               state: "off"
             - condition: trigger
-              id: Window Closed
+              id: All Windows Closed
   action:
     - choose:
         - conditions:
             - condition: trigger
-              id: Window Opened
+              id: Some Window Opened
           sequence:
             - service: media_player.play_media
               entity_id: media_player.yandex_station
@@ -1039,7 +1039,7 @@
                 entity_id: climate.thermostat
         - conditions:
             - condition: trigger
-              id: Window Closed
+              id: All Windows Closed
           sequence:
             - service: media_player.play_media
               entity_id: media_player.yandex_station
