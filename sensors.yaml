@@ -87,6 +87,7 @@
       value_template: >
         {{ (float(states.sensor.solar_panel_energy.state) - float(states.input_number.solar_energy_produced_at_beginning_of_day.state)) | round(3) }}
       unit_of_measurement: "Wh"
+      device_class: energy
 
 ###############################################
 ## DuinoCoin Statistics Sensors
