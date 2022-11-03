@@ -107,8 +107,9 @@ switch:
         addon: core_rpc_shutdown
         input: ASUS-PC
 
-######################## START OF SENSORS SECTION ########################
-
+###############################################
+## Binary Sensors
+###############################################
 binary_sensor:
   - platform: template
     sensors:
@@ -118,6 +119,17 @@ binary_sensor:
         value_template: >
           {{ is_state('person.sen', 'home') or
           is_state('person.kris', 'home') }}
+
+###############################################
+## Check if any window is open
+###############################################
+  - platform: group
+    name: Windows
+    device_class: opening
+    entities:
+      - binary_sensor.aqara_bedroom_window_sensor_contact
+      - binary_sensor.aqara_kitchen_window_sensor_contact
+      - binary_sensor.aqara_living_room_window_sensor_contact
 
 counter:
   ###############################################
