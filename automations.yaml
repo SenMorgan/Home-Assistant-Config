@@ -977,7 +977,7 @@
       entity_id: input_boolean.light_brightness
 
 ###############################################
-## Thermostat automations
+## Thermostat Automations
 ###############################################
 
 - id: "Kitchen_Thermostat_Change_Mode_by_Window_State"
@@ -987,8 +987,8 @@
     - platform: state
       entity_id: binary_sensor.windows
       id: Some Window Opened
-      to: "on"
       from: "off"
+      to: "on"
       for: "00:00:05"
     - platform: state
       entity_id: binary_sensor.windows
@@ -1046,7 +1046,18 @@
               data:
                 media_content_id: Термостат будет включен снова через 30 минут
                 media_content_type: dialog
-            - delay: 30:00
+            # Wait 30 minutes or stop if some window was opened
+            - wait_template: "{{ is_state('binary_sensor.windows', 'on') }}"
+              timeout: "00:30:00"
+            # Check if all window are still closed
+            - condition: state
+              entity_id: binary_sensor.windows
+              state: "off"
+            - service: media_player.play_media
+              entity_id: media_player.yandex_station
+              data:
+                media_content_id: Термостат включен
+                media_content_type: dialog
             # Need to send the command a few times to ensure that thermostat changed it's mode
             - repeat:
                 until:
