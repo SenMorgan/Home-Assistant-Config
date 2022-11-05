@@ -17,7 +17,7 @@
   sensors:
     distance_between_kris_and_sen:
       friendly_name: Distance Between Kris and Sen
-      value_template: "{{ distance('person.sen', 'person.kris') | round(0) }}"
+      value_template: "{{ distance(states.person.sen, states.person.kris) | round(0) }}"
       unit_of_measurement: "m"
       icon_template: "mdi:map-marker-distance"
 
