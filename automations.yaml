@@ -1282,10 +1282,16 @@
     - platform: time
       at: "19:30:00"
   action:
-    - service: media_player.volume_set
-      data:
-        entity_id: media_player.yandex_station
-        volume_level: 0.2
+    - repeat:
+        until:
+        - condition: template
+          value_template: "{{ is_state_attr('media_player.yandex_station', 'volume_level', 0.2) }}"
+        sequence:
+        - service: media_player.volume_set
+          data:
+            entity_id: media_player.yandex_station
+            volume_level: 0.2
+        - delay: 0.5
 
 - id: "Kitchen_Yandex_Restore_Volume_At_Morning"
   alias: Kitchen Yandex Restore Volume At Morning
@@ -1299,10 +1305,16 @@
       entity_id: binary_sensor.aqara_bedroom_door_sensor_contact
       state: "on"
   action:
-    - service: media_player.volume_set
-      data:
-        entity_id: media_player.yandex_station
-        volume_level: 0.6
+    - repeat:
+        until:
+        - condition: template
+          value_template: "{{ is_state_attr('media_player.yandex_station', 'volume_level', 0.6) }}"
+        sequence:
+        - service: media_player.volume_set
+          data:
+            entity_id: media_player.yandex_station
+            volume_level: 0.6
+        - delay: 0.5
 
 # Reduce Yandex Station volume if door was closed and restore if opened during the day time
 - id: "Kitchen_Yandex_Reduce_Volume_If_Bedroom_Door_Closed"
@@ -1318,10 +1330,16 @@
       after: "07:00:05"
       before: "19:29:55"
   action:
-    - service: media_player.volume_set
-      data:
-        entity_id: media_player.yandex_station
-        volume_level: 0.2
+    - repeat:
+        until:
+        - condition: template
+          value_template: "{{ is_state_attr('media_player.yandex_station', 'volume_level', 0.2) }}"
+        sequence:
+        - service: media_player.volume_set
+          data:
+            entity_id: media_player.yandex_station
+            volume_level: 0.2
+        - delay: 0.5
 
 - id: "Kitchen_Yandex_Restore_Volume_If_Bedroom_Door_Opened"
   alias: Kitchen Yandex Restore Volume If Bedroom Door Opened
@@ -1336,10 +1354,16 @@
       after: "07:00:05"
       before: "19:29:55"
   action:
-    - service: media_player.volume_set
-      data:
-        entity_id: media_player.yandex_station
-        volume_level: 0.6
+    - repeat:
+        until:
+        - condition: template
+          value_template: "{{ is_state_attr('media_player.yandex_station', 'volume_level', 0.6) }}"
+        sequence:
+        - service: media_player.volume_set
+          data:
+            entity_id: media_player.yandex_station
+            volume_level: 0.6
+        - delay: 0.5
 
 ###############################################
 ## Solar Station Automations
