@@ -366,6 +366,29 @@
     - service: light.turn_off
       entity_id: light.bar_light
 
+# Send me notification if switch.parking_light is turned off for more than 1 hour and turn it ON
+- id: "Parking_Light_Emergency_On"
+  alias: Parking Light Emergency On
+  trigger:
+    - platform: state
+      entity_id: switch.parking_light
+      to: "off"
+      for: 1:00:00
+  action:
+    - repeat:
+        until:
+          - condition: state
+            entity_id: switch.parking_light
+            state: "on"
+        sequence:
+          - service: switch.turn_on
+            entity_id: switch.parking_light
+          - service: notify.mobile_app_sm_s901b
+            data:
+              title: "{{ '🚗' }} Системное уведомление"
+              message: Реле освещения парковки было отключено более часа. Автоматическое включение в {{ states('sensor.time') }}
+          - delay: 00:01:00
+
 ###############################################
 ## Cover Automations
 ###############################################
