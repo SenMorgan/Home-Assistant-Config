@@ -42,8 +42,8 @@ entity_config:
     name: Термостат
     room: Кухня
     turn_on:
-       service: climate.turn_on
-       entity_id: climate.thermostat
+      service: climate.turn_on
+      entity_id: climate.thermostat
   cover.bedroom:
     name: Штора
     room: Спальня

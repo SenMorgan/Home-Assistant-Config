@@ -1246,14 +1246,14 @@
     # Repeat the «mute» command to ensure that the volume is muted
     - repeat:
         until:
-        - condition: template
-          value_template: "{{ is_state_attr('media_player.yandex_station', 'is_volume_muted', true) }}"
+          - condition: template
+            value_template: "{{ is_state_attr('media_player.yandex_station', 'is_volume_muted', true) }}"
         sequence:
-        - service: media_player.volume_mute
-          data:
-            entity_id: media_player.yandex_station
-            is_volume_muted: true
-        - delay: 0.5
+          - service: media_player.volume_mute
+            data:
+              entity_id: media_player.yandex_station
+              is_volume_muted: true
+          - delay: 0.5
     - service: script.turn_on
       entity_id: script.update_shopping_list
     - delay: 1
@@ -1266,14 +1266,14 @@
     # Repeat the «unmute» command to ensure that the volume is muted
     - repeat:
         until:
-        - condition: template
-          value_template: "{{ is_state_attr('media_player.yandex_station', 'is_volume_muted', false) }}"
+          - condition: template
+            value_template: "{{ is_state_attr('media_player.yandex_station', 'is_volume_muted', false) }}"
         sequence:
-        - service: media_player.volume_mute
-          data:
-            entity_id: media_player.yandex_station
-            is_volume_muted: false
-        - delay: 0.5
+          - service: media_player.volume_mute
+            data:
+              entity_id: media_player.yandex_station
+              is_volume_muted: false
+          - delay: 0.5
 
 - id: "Kitchen_Yandex_Reduce_Volume_At_Evening"
   alias: Kitchen Yandex Reduce Volume At Evening
@@ -1284,14 +1284,14 @@
   action:
     - repeat:
         until:
-        - condition: template
-          value_template: "{{ is_state_attr('media_player.yandex_station', 'volume_level', 0.2) }}"
+          - condition: template
+            value_template: "{{ is_state_attr('media_player.yandex_station', 'volume_level', 0.2) }}"
         sequence:
-        - service: media_player.volume_set
-          data:
-            entity_id: media_player.yandex_station
-            volume_level: 0.2
-        - delay: 0.5
+          - service: media_player.volume_set
+            data:
+              entity_id: media_player.yandex_station
+              volume_level: 0.2
+          - delay: 0.5
 
 - id: "Kitchen_Yandex_Restore_Volume_At_Morning"
   alias: Kitchen Yandex Restore Volume At Morning
@@ -1307,14 +1307,14 @@
   action:
     - repeat:
         until:
-        - condition: template
-          value_template: "{{ is_state_attr('media_player.yandex_station', 'volume_level', 0.6) }}"
+          - condition: template
+            value_template: "{{ is_state_attr('media_player.yandex_station', 'volume_level', 0.6) }}"
         sequence:
-        - service: media_player.volume_set
-          data:
-            entity_id: media_player.yandex_station
-            volume_level: 0.6
-        - delay: 0.5
+          - service: media_player.volume_set
+            data:
+              entity_id: media_player.yandex_station
+              volume_level: 0.6
+          - delay: 0.5
 
 # Reduce Yandex Station volume if door was closed and restore if opened during the day time
 - id: "Kitchen_Yandex_Reduce_Volume_If_Bedroom_Door_Closed"
@@ -1332,14 +1332,14 @@
   action:
     - repeat:
         until:
-        - condition: template
-          value_template: "{{ is_state_attr('media_player.yandex_station', 'volume_level', 0.2) }}"
+          - condition: template
+            value_template: "{{ is_state_attr('media_player.yandex_station', 'volume_level', 0.2) }}"
         sequence:
-        - service: media_player.volume_set
-          data:
-            entity_id: media_player.yandex_station
-            volume_level: 0.2
-        - delay: 0.5
+          - service: media_player.volume_set
+            data:
+              entity_id: media_player.yandex_station
+              volume_level: 0.2
+          - delay: 0.5
 
 - id: "Kitchen_Yandex_Restore_Volume_If_Bedroom_Door_Opened"
   alias: Kitchen Yandex Restore Volume If Bedroom Door Opened
@@ -1356,14 +1356,14 @@
   action:
     - repeat:
         until:
-        - condition: template
-          value_template: "{{ is_state_attr('media_player.yandex_station', 'volume_level', 0.6) }}"
+          - condition: template
+            value_template: "{{ is_state_attr('media_player.yandex_station', 'volume_level', 0.6) }}"
         sequence:
-        - service: media_player.volume_set
-          data:
-            entity_id: media_player.yandex_station
-            volume_level: 0.6
-        - delay: 0.5
+          - service: media_player.volume_set
+            data:
+              entity_id: media_player.yandex_station
+              volume_level: 0.6
+          - delay: 0.5
 
 ###############################################
 ## Solar Station Automations

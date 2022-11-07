@@ -63,7 +63,6 @@
   value_template: "{{ value }}"
   unit_of_measurement: "hPa"
 
-
   # From BSEC Software Library:
   #
   # The IAQ scale ranges from 0 (clean air) to 500 (heavily polluted air). During operation, algorithms

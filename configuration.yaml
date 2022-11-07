@@ -120,9 +120,9 @@ binary_sensor:
           {{ is_state('person.sen', 'home') or
           is_state('person.kris', 'home') }}
 
-###############################################
-## Check if any window is open
-###############################################
+  ###############################################
+  ## Check if any window is open
+  ###############################################
   - platform: group
     name: Windows
     device_class: opening
