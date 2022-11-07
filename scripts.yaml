@@ -46,7 +46,7 @@ switch_on_parking_light:
             state: "off"
           # Don't do it too many times
           - condition: template
-            value_template: "{{ repeat.index <= 10 }}"
+            value_template: "{{ repeat.index <= 300 }}"
         sequence:
           - service: switch.turn_on
             target:
