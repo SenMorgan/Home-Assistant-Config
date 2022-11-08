@@ -1353,10 +1353,6 @@
       entity_id: binary_sensor.aqara_bedroom_door_sensor_contact
       to: "off"
       for: 00:00:30
-  condition:
-    - condition: time
-      after: "07:00:05"
-      before: "19:29:55"
   action:
     - repeat:
         until:
