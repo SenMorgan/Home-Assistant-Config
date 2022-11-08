@@ -1305,6 +1305,10 @@
   trigger:
     - platform: time
       at: "19:30:00"
+    - platform: time
+      at: "21:00:00"
+    - platform: time
+      at: "23:00:00"
   action:
     - repeat:
         until:
