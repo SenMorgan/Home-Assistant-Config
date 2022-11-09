@@ -92,6 +92,8 @@ input_boolean:
     name: Flag - Hall Lights Was Triggered by Motion Sensor
   heating_season_switch:
     name: Heating Season
+  thermostat_10_minutes_heating_flag:
+    name: Thermostat 10 Minutes Heating Flag
 
 ###############################################
 ## SWITCHES
@@ -151,6 +153,22 @@ input_button:
     name: Parking Light
     icon: mdi:spotlight
 
+  thermostat_10_minutes_heating:
+    name: Heat 10 Minutes
+    icon: mdi:radiator
+
+###############################################
+## Input DateTimes
+###############################################
+input_datetime:
+  thermostat_10_minutes_heating_time_end:
+    name: Thermostat 10 Minutes Heating Time End
+    has_date: true
+    has_time: true
+
+###############################################
+## Rest Sensors
+###############################################
 rest:
   ###############################################
   ## DuinoCoin Rest Sensors

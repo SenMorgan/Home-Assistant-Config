@@ -1167,6 +1167,101 @@
           - delay:
               seconds: 5
 
+- id: "Kitchen_Thermostat_10_Minutes_Heating_ON"
+  alias: Kitchen Thermostat 10 Minutes Heating ON
+  mode: single
+  trigger:
+    - platform: state
+      entity_id: input_button.thermostat_10_minutes_heating
+  condition:
+    - condition: state
+      entity_id: input_boolean.thermostat_10_minutes_heating_flag
+      state: "off"
+  action:
+    - service: media_player.play_media
+      entity_id: media_player.yandex_station
+      data:
+        media_content_id: Включен подогрев квартиры на 10 минут
+        media_content_type: text
+    # Need to send the command a few times to ensure that thermostat changed it's mode
+    - repeat:
+        until:
+          - condition: state
+            entity_id: climate.thermostat
+            state: "heat"
+        sequence:
+          - service: climate.set_hvac_mode
+            target:
+              entity_id: climate.thermostat
+            data:
+              hvac_mode: "heat"
+          - delay:
+              seconds: 1
+    - repeat:
+        until:
+          - condition: template
+            value_template: "{{ is_state_attr('climate.thermostat', 'temperature', 23) }}"
+        sequence:
+          - service: climate.set_temperature
+            target:
+              entity_id: climate.thermostat
+            data:
+              temperature: 23
+          - delay:
+              seconds: 1
+    # Set heating_time_end to a time ten minutes in the future
+    - service: input_datetime.set_datetime
+      data:
+        entity_id: input_datetime.thermostat_10_minutes_heating_time_end
+        datetime: "{{ now() + timedelta(minutes=10) }}"
+    - service: input_boolean.turn_on
+      entity_id: input_boolean.thermostat_10_minutes_heating_flag
+
+- id: "Kitchen_Thermostat_10_Minutes_Heating_OFF"
+  alias: Kitchen Thermostat 10 Minutes Heating OFF
+  mode: single
+  trigger:
+    - platform: time
+      at: input_datetime.thermostat_10_minutes_heating_time_end
+  condition:
+    - condition: state
+      entity_id: input_boolean.thermostat_10_minutes_heating_flag
+      state: "on"
+  action:
+    - service: media_player.play_media
+      entity_id: media_player.yandex_station
+      data:
+        media_content_id: Подогрев квартиры отключен
+        media_content_type: text
+    # Need to send the command a few times to ensure that thermostat changed it's mode
+    - repeat:
+        until:
+          - condition: state
+            entity_id: climate.thermostat
+            state: "heat"
+        sequence:
+          - service: climate.set_hvac_mode
+            target:
+              entity_id: climate.thermostat
+            data:
+              hvac_mode: "heat"
+          - delay:
+              seconds: 1
+    - repeat:
+        until:
+          - condition: template
+            value_template: "{{ is_state_attr('climate.thermostat', 'temperature', 20) }}"
+        sequence:
+          - service: climate.set_temperature
+            target:
+              entity_id: climate.thermostat
+            data:
+              temperature: 20
+          - delay:
+              seconds: 1
+    - service: input_boolean.turn_off
+      entity_id: input_boolean.thermostat_10_minutes_heating_flag
+
 ###############################################
 ## Media Players Control
 ###############################################
