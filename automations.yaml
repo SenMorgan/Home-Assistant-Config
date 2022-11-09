@@ -426,6 +426,27 @@
       data:
         title: "{{ '👩‍🦰' }} Семейное уведомление"
         message: Кристина пришла домой в {{ states('sensor.time') }}
+    - choose:
+      - conditions:
+        - condition: state
+          entity_id: person.sen
+          state: "home"
+        - condition: state
+          entity_id: switch.asus_pc
+          state: "on"
+        sequence:
+          - service: select.select_option
+            target:
+              entity_id: select.pc_backlight_preset
+            data:
+              option: "Alarm"
+          - delay: 00:00:20
+          - service: select.select_option
+            target:
+              entity_id: select.pc_backlight_preset
+            data:
+              option: "Gender"
+
 
 - id: "Notification_Kris_Leaved"
   alias: Notification Kris Leaved
