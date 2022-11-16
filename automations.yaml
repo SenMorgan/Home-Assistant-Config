@@ -1231,7 +1231,7 @@
     - service: media_player.play_media
       entity_id: media_player.yandex_station
       data:
-        media_content_id: Подогрев квартиры отключен
+        media_content_id: Подогрев квартиры окончен
         media_content_type: text
     # Need to send the command a few times to ensure that thermostat changed it's mode
     - repeat:
