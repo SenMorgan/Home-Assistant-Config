@@ -10,6 +10,7 @@ filter:
     - binary_sensor.aqara_hall_door_sensor_contact
     - climate.thermostat
     - cover.bedroom
+    - input_button.thermostat_10_minutes_heating
     - input_boolean.flag_spotlight_triggered_by_motion
     - input_boolean.raven_engine_start_stop
     - light.floor_lamp
@@ -114,3 +115,7 @@ entity_config:
   vacuum.johnny:
     name: Джонни
     room: Спальня
+    type: devices.types.vacuum_cleaner
+  input_button.thermostat_10_minutes_heating:
+    name: Подогрев
+    room: Кухня
