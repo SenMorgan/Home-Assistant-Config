@@ -427,26 +427,25 @@
         title: "{{ '👩‍🦰' }} Семейное уведомление"
         message: Кристина пришла домой в {{ states('sensor.time') }}
     - choose:
-      - conditions:
-        - condition: state
-          entity_id: person.sen
-          state: "home"
-        - condition: state
-          entity_id: switch.asus_pc
-          state: "on"
-        sequence:
-          - service: select.select_option
-            target:
-              entity_id: select.pc_backlight_preset
-            data:
-              option: "Alarm"
-          - delay: 00:00:20
-          - service: select.select_option
-            target:
-              entity_id: select.pc_backlight_preset
-            data:
-              option: "Gender"
-
+        - conditions:
+            - condition: state
+              entity_id: person.sen
+              state: "home"
+            - condition: state
+              entity_id: switch.asus_pc
+              state: "on"
+          sequence:
+            - service: select.select_option
+              target:
+                entity_id: select.pc_backlight_preset
+              data:
+                option: "Alarm"
+            - delay: 00:00:20
+            - service: select.select_option
+              target:
+                entity_id: select.pc_backlight_preset
+              data:
+                option: "Gender"
 
 - id: "Notification_Kris_Leaved"
   alias: Notification Kris Leaved
@@ -1186,6 +1185,18 @@
     # Need to send the command a few times to ensure that thermostat changed it's mode
     - repeat:
         until:
+          - condition: template
+            value_template: "{{ is_state_attr('climate.thermostat', 'temperature', 23) }}"
+        sequence:
+          - service: climate.set_temperature
+            target:
+              entity_id: climate.thermostat
+            data:
+              temperature: 23
+          - delay:
+              seconds: 5
+    - repeat:
+        until:
           - condition: state
             entity_id: climate.thermostat
             state: "heat"
@@ -1196,19 +1207,7 @@
             data:
               hvac_mode: "heat"
           - delay:
-              seconds: 1
-    - repeat:
-        until:
-          - condition: template
-            value_template: "{{ is_state_attr('climate.thermostat', 'temperature', 23) }}"
-        sequence:
-          - service: climate.set_temperature
-            target:
-              entity_id: climate.thermostat
-            data:
-              temperature: 23
-          - delay:
-              seconds: 1
+              seconds: 5
     # Set heating_time_end to a time ten minutes in the future
     - service: input_datetime.set_datetime
       data:
@@ -1236,6 +1235,18 @@
     # Need to send the command a few times to ensure that thermostat changed it's mode
     - repeat:
         until:
+          - condition: template
+            value_template: "{{ is_state_attr('climate.thermostat', 'temperature', 20) }}"
+        sequence:
+          - service: climate.set_temperature
+            target:
+              entity_id: climate.thermostat
+            data:
+              temperature: 20
+          - delay:
+              seconds: 5
+    - repeat:
+        until:
           - condition: state
             entity_id: climate.thermostat
             state: "heat"
@@ -1246,19 +1257,7 @@
             data:
               hvac_mode: "heat"
           - delay:
-              seconds: 1
-    - repeat:
-        until:
-          - condition: template
-            value_template: "{{ is_state_attr('climate.thermostat', 'temperature', 20) }}"
-        sequence:
-          - service: climate.set_temperature
-            target:
-              entity_id: climate.thermostat
-            data:
-              temperature: 20
-          - delay:
-              seconds: 1
+              seconds: 5
     - service: input_boolean.turn_off
       entity_id: input_boolean.thermostat_10_minutes_heating_flag
 
