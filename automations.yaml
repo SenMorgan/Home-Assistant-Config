@@ -317,6 +317,16 @@
       entity_id:
         - switch.pc_backlight_sync_send
 
+- id: "Kitchen_Clock_On_if_People_Home"
+  alias: Kitchen Clock On if People Home
+  trigger:
+    platform: state
+    entity_id: binary_sensor.people_home
+    to: "on"
+  action:
+    - service: light.turn_on
+      entity_id: light.7_seg_clock
+
 - id: "Living_Room_Bar_Lights_by_Sunset_or_TV_ON"
   alias: Living Room Bar Lights by Sunset or TV ON
   trigger:
