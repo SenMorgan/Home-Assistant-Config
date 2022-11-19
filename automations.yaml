@@ -1246,13 +1246,13 @@
     - repeat:
         until:
           - condition: template
-            value_template: "{{ is_state_attr('climate.thermostat', 'temperature', 20) }}"
+            value_template: "{{ is_state_attr('climate.thermostat', 'temperature', 21) }}"
         sequence:
           - service: climate.set_temperature
             target:
               entity_id: climate.thermostat
             data:
-              temperature: 20
+              temperature: 21
           - delay:
               seconds: 5
     - repeat:
