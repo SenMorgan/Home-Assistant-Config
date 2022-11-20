@@ -1195,18 +1195,6 @@
     # Need to send the command a few times to ensure that thermostat changed it's mode
     - repeat:
         until:
-          - condition: template
-            value_template: "{{ is_state_attr('climate.thermostat', 'temperature', 23) }}"
-        sequence:
-          - service: climate.set_temperature
-            target:
-              entity_id: climate.thermostat
-            data:
-              temperature: 23
-          - delay:
-              seconds: 5
-    - repeat:
-        until:
           - condition: state
             entity_id: climate.thermostat
             state: "heat"
@@ -1216,6 +1204,18 @@
               entity_id: climate.thermostat
             data:
               hvac_mode: "heat"
+          - delay:
+              seconds: 5
+    - repeat:
+        until:
+          - condition: template
+            value_template: "{{ is_state_attr('climate.thermostat', 'temperature', 23) }}"
+        sequence:
+          - service: climate.set_temperature
+            target:
+              entity_id: climate.thermostat
+            data:
+              temperature: 23
           - delay:
               seconds: 5
     # Set heating_time_end to a time ten minutes in the future
@@ -1245,18 +1245,6 @@
     # Need to send the command a few times to ensure that thermostat changed it's mode
     - repeat:
         until:
-          - condition: template
-            value_template: "{{ is_state_attr('climate.thermostat', 'temperature', 21) }}"
-        sequence:
-          - service: climate.set_temperature
-            target:
-              entity_id: climate.thermostat
-            data:
-              temperature: 21
-          - delay:
-              seconds: 5
-    - repeat:
-        until:
           - condition: state
             entity_id: climate.thermostat
             state: "heat"
@@ -1266,6 +1254,18 @@
               entity_id: climate.thermostat
             data:
               hvac_mode: "heat"
+          - delay:
+              seconds: 5
+    - repeat:
+        until:
+          - condition: template
+            value_template: "{{ is_state_attr('climate.thermostat', 'temperature', 21) }}"
+        sequence:
+          - service: climate.set_temperature
+            target:
+              entity_id: climate.thermostat
+            data:
+              temperature: 21
           - delay:
               seconds: 5
     - service: input_boolean.turn_off
