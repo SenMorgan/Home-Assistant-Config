@@ -1489,6 +1489,25 @@
     - service: input_boolean.turn_on
       entity_id: input_boolean.yandex_night_mode
 
+- id: "Kitchen_Yandex_Volume_Increased_Trigger"
+  alias: Kitchen Yandex Volume Increased Trigger
+  mode: single
+  trigger:
+    - platform: state
+      entity_id: media_player.yandex_station
+  condition:
+    - condition: state
+      entity_id: input_boolean.yandex_night_mode
+      state: "on"
+    - condition: template
+      value_template: >
+        {% set from = trigger.from_state.attributes.volume_level | float %}
+        {% set to = trigger.to_state.attributes.volume_level | float %}
+        {{ to > from }}
+  action:
+    - service: automation.trigger
+      entity_id: automation.kitchen_yandex_night_mode_off
+
 - id: "Kitchen_Yandex_Night_Mode_OFF"
   alias: Kitchen Yandex Night Mode OFF
   mode: single
