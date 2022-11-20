@@ -1,9 +1,8 @@
-# https://github.com/dmitry-k/yandex_smart_home/blob/master/docs/advanced-settings.md
-
 notifier:
   - oauth_token: !secret YANDEX_OAUTH_TOKEN
     skill_id: !secret YANDEX_SKILL_ID
     user_id: !secret YANDEX_USER_ID
+
 filter:
   include_entities:
     - binary_sensor.aqara_bedroom_window_sensor_contact
@@ -17,6 +16,7 @@ filter:
     - light.gyver_lamp
     - light.hall_lights
     - light.kitchen_spotlights
+    - light.living_room_nightlight
     - light.mi_desk_lamp
     - light.pc_backlight
     - light.shelf_lighting
@@ -31,6 +31,7 @@ filter:
     - light.string_lights
     - light.bedroom_nightlight
     - vacuum.johnny
+
 entity_config:
   # type: devices.types.humidifier  # параметр необязательный, вычисляется автоматически!
   binary_sensor.aqara_bedroom_window_sensor_contact:
@@ -97,9 +98,6 @@ entity_config:
     name: Компьютер
     room: Кухня
     type: devices.types.switch
-  #  switch.backyard_socket:
-  #    name: Дворовая розетка
-  #    room: Двор
   light.bar_light:
     name: Подсветка бара
     room: Зал
@@ -119,3 +117,7 @@ entity_config:
   input_button.thermostat_10_minutes_heating:
     name: Подогрев
     room: Кухня
+  light.living_room_nightlight:
+    name: Светильник
+    room: Зал
+    type: devices.types.light
