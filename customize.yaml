@@ -1,9 +1,3 @@
-light.kitchen_spotlights:
-  icon: mdi:spotlight
-light.bar_light:
-  icon: mdi:led-strip-variant
-light.string_lights:
-  icon: mdi:string-lights
 light.floor_lamp:
   icon: mdi:floor-lamp-dual
   color_mode: brightness
@@ -14,13 +8,6 @@ light.floor_lamp:
     - Breathe
     - Lightning
     - Solid
-light.table_lamp:
-  icon: mdi:desk-lamp
-switch.asus_pc:
-  icon: mdi:desktop-tower-monitor
-light.mi_desk_lamp:
-  min_mireds: 200
-  max_mireds: 385
 input_boolean.heating_season_switch:
   icon: mdi:sun-snowflake-variant
 sensor.gas_meter:
