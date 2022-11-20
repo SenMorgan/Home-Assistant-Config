@@ -168,6 +168,10 @@ input_datetime:
     name: Thermostat 10 Minutes Heating Time End
     has_date: true
     has_time: true
+  thermostat_windows_close_delay_time_end:
+    name: Thermostat Windows Close Delay Time End
+    has_date: true
+    has_time: true
 
 ###############################################
 ## Rest Sensors
