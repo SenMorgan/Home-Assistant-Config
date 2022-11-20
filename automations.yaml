@@ -1459,16 +1459,22 @@
               is_volume_muted: false
           - delay: 0.5
 
-- id: "Kitchen_Yandex_Reduce_Volume_At_Evening"
-  alias: Kitchen Yandex Reduce Volume At Evening
+- id: "Kitchen_Yandex_Night_Mode_ON"
+  alias: Kitchen Yandex Night Mode ON
   mode: single
   trigger:
-    - platform: time
-      at: "19:30:00"
+    - platform: state
+      entity_id: binary_sensor.aqara_bedroom_door_sensor_contact
+      to: "off"
+      for: 00:00:30
     - platform: time
       at: "21:00:00"
-    - platform: time
-      at: "23:00:00"
+  condition:
+    - condition: time
+      after: "19:00:00"
+      before: "21:01:00"
+      # Don not check here «input_boolean.yandex_night_mode» state, because
+      # we need to ensure that the night mode will be turned ON at 21:00
   action:
     - repeat:
         until:
@@ -1480,18 +1486,25 @@
               entity_id: media_player.yandex_station
               volume_level: 0.2
           - delay: 0.5
+    - service: input_boolean.turn_on
+      entity_id: input_boolean.yandex_night_mode
 
-- id: "Kitchen_Yandex_Restore_Volume_At_Morning"
-  alias: Kitchen Yandex Restore Volume At Morning
+- id: "Kitchen_Yandex_Night_Mode_OFF"
+  alias: Kitchen Yandex Night Mode OFF
   mode: single
   trigger:
-    - platform: time
-      at: "07:00:00"
-  # Continue only if bedroom door is open
-  condition:
-    - condition: state
+    - platform: state
       entity_id: binary_sensor.aqara_bedroom_door_sensor_contact
-      state: "on"
+      to: "on"
+      for: 00:00:30
+    - platform: time
+      at: "09:00:00"
+  condition:
+    - condition: time
+      after: "06:00:00"
+      before: "09:01:00"
+      # Don not check here «input_boolean.yandex_night_mode» state, because
+      # we need to ensure that the night mode will be turned OFF at 9:00
   action:
     - repeat:
         until:
@@ -1503,6 +1516,8 @@
               entity_id: media_player.yandex_station
               volume_level: 0.6
           - delay: 0.5
+    - service: input_boolean.turn_off
+      entity_id: input_boolean.yandex_night_mode
 
 # Reduce Yandex Station volume if door was closed and restore if opened during the day time
 - id: "Kitchen_Yandex_Reduce_Volume_If_Bedroom_Door_Closed"
@@ -1513,6 +1528,10 @@
       entity_id: binary_sensor.aqara_bedroom_door_sensor_contact
       to: "off"
       for: 00:00:30
+  condition:
+    - condition: state
+      entity_id: input_boolean.yandex_night_mode
+      state: "off"
   action:
     - repeat:
         until:
@@ -1534,9 +1553,9 @@
       to: "on"
       for: 00:00:30
   condition:
-    - condition: time
-      after: "07:00:05"
-      before: "19:29:55"
+    - condition: state
+      entity_id: input_boolean.yandex_night_mode
+      state: "off"
   action:
     - repeat:
         until:
