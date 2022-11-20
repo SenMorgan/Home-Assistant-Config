@@ -296,3 +296,22 @@ wake_tv:
     - service: wake_on_lan.send_magic_packet
       data:
         mac: !secret TV_MAC
+
+tell_what_window_are_opened:
+  alias: Tell What Windows Are Opened
+  sequence:
+    - if:
+        - condition: state
+          entity_id: binary_sensor.windows
+          state: "on"
+      then:
+        - service: media_player.play_media
+          entity_id: media_player.yandex_station
+          data:
+            media_content_type: text
+            media_content_id: >
+              {% if expand('binary_sensor.windows') | selectattr('state','eq','on') | list | count == 1 %}
+                Внимание! Открыто окно: {{ expand('binary_sensor.windows') | selectattr('state','eq','on') | map(attribute='name') | list | join(', ') }}
+              {% else %}
+                Внимание! Открыты окна: {{ expand('binary_sensor.windows') | selectattr('state','eq','on') | map(attribute='name') | list | join(', ') }}
+              {% endif %}

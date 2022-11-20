@@ -1207,6 +1207,8 @@
       data:
         media_content_id: Включен подогрев квартиры на 10 минут
         media_content_type: text
+    - service: script.turn_on
+      entity_id: script.tell_what_window_are_opened
     # Need to send the command a few times to ensure that thermostat changed it's mode
     - repeat:
         until:
