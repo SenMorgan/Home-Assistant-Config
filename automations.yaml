@@ -1085,9 +1085,14 @@
             # Need to send the command a few times to ensure that thermostat changed it's mode
             - repeat:
                 until:
-                  - condition: state
-                    entity_id: climate.thermostat
-                    state: "off"
+                  - condition: or
+                    conditions:
+                      - condition: state
+                        entity_id: climate.thermostat
+                        state: "off"
+                      - condition: template
+                        # Repeat maximum 10 minutes
+                        value_template: "{{ repeat.index >= 10*60/5 }}"
                 sequence:
                   - service: climate.set_hvac_mode
                     target:
@@ -1120,9 +1125,14 @@
             # Need to send the command a few times to ensure that thermostat changed it's mode
             - repeat:
                 until:
-                  - condition: state
-                    entity_id: climate.thermostat
-                    state: "heat"
+                  - condition: or
+                    conditions:
+                      - condition: state
+                        entity_id: climate.thermostat
+                        state: "heat"
+                      - condition: template
+                        # Repeat maximum 10 minutes
+                        value_template: "{{ repeat.index >= 10*60/5 }}"
                 sequence:
                   - service: climate.set_hvac_mode
                     target:
@@ -1164,9 +1174,14 @@
     # Need to send the command a few times to ensure that thermostat changed it's mode
     - repeat:
         until:
-          - condition: state
-            entity_id: climate.thermostat
-            state: "heat"
+          - condition: or
+            conditions:
+              - condition: state
+                entity_id: climate.thermostat
+                state: "heat"
+              - condition: template
+                # Repeat maximum 10 minutes
+                value_template: "{{ repeat.index >= 10*60/5 }}"
         sequence:
           - service: climate.set_hvac_mode
             target:
@@ -1195,9 +1210,14 @@
     # Need to send the command a few times to ensure that thermostat changed it's mode
     - repeat:
         until:
-          - condition: state
-            entity_id: climate.thermostat
-            state: "heat"
+          - condition: or
+            conditions:
+              - condition: state
+                entity_id: climate.thermostat
+                state: "heat"
+              - condition: template
+                # Repeat maximum 10 minutes
+                value_template: "{{ repeat.index >= 10*60/5 }}"
         sequence:
           - service: climate.set_hvac_mode
             target:
@@ -1208,8 +1228,13 @@
               seconds: 5
     - repeat:
         until:
-          - condition: template
-            value_template: "{{ is_state_attr('climate.thermostat', 'temperature', 23) }}"
+          - condition: or
+            conditions:
+              - condition: template
+                value_template: "{{ is_state_attr('climate.thermostat', 'temperature', 23) }}"
+              - condition: template
+                # Repeat maximum 10 minutes
+                value_template: "{{ repeat.index >= 10*60/5 }}"
         sequence:
           - service: climate.set_temperature
             target:
@@ -1245,9 +1270,14 @@
     # Need to send the command a few times to ensure that thermostat changed it's mode
     - repeat:
         until:
-          - condition: state
-            entity_id: climate.thermostat
-            state: "heat"
+          - condition: or
+            conditions:
+              - condition: state
+                entity_id: climate.thermostat
+                state: "heat"
+              - condition: template
+                # Repeat maximum 10 minutes
+                value_template: "{{ repeat.index >= 10*60/5 }}"
         sequence:
           - service: climate.set_hvac_mode
             target:
@@ -1258,8 +1288,13 @@
               seconds: 5
     - repeat:
         until:
-          - condition: template
-            value_template: "{{ is_state_attr('climate.thermostat', 'temperature', 21) }}"
+          - condition: or
+            conditions:
+              - condition: template
+                value_template: "{{ is_state_attr('climate.thermostat', 'temperature', 21) }}"
+              - condition: template
+                # Repeat maximum 10 minutes
+                value_template: "{{ repeat.index >= 10*60/5 }}"
         sequence:
           - service: climate.set_temperature
             target:
