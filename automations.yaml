@@ -1199,7 +1199,7 @@
       entity_id: input_button.thermostat_10_minutes_heating
   condition:
     - condition: state
-      entity_id: input_boolean.thermostat_10_minutes_heating_flag
+      entity_id: automation.kitchen_thermostat_10_minutes_heating_off
       state: "off"
   action:
     - service: media_player.play_media
@@ -1250,19 +1250,19 @@
       data:
         entity_id: input_datetime.thermostat_10_minutes_heating_time_end
         datetime: "{{ now() + timedelta(minutes=10) }}"
-    - service: input_boolean.turn_on
-      entity_id: input_boolean.thermostat_10_minutes_heating_flag
+    - service: automation.turn_on
+      entity_id: automation.kitchen_thermostat_10_minutes_heating_off
 
 - id: "Kitchen_Thermostat_10_Minutes_Heating_OFF"
   alias: Kitchen Thermostat 10 Minutes Heating OFF
   mode: single
   trigger:
-    - platform: time
-      at: input_datetime.thermostat_10_minutes_heating_time_end
+  # Trigger every 1 minute
+    - platform: time_pattern
+      minutes: "/1"
   condition:
-    - condition: state
-      entity_id: input_boolean.thermostat_10_minutes_heating_flag
-      state: "on"
+    - condition: time
+      after: input_datetime.thermostat_10_minutes_heating_time_end
   action:
     - service: media_player.play_media
       entity_id: media_player.yandex_station
@@ -1305,8 +1305,8 @@
               temperature: 21
           - delay:
               seconds: 5
-    - service: input_boolean.turn_off
-      entity_id: input_boolean.thermostat_10_minutes_heating_flag
+    - service: automation.turn_off
+      entity_id: automation.kitchen_thermostat_10_minutes_heating_off
 
 ###############################################
 ## Media Players Control

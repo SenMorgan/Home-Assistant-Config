@@ -92,8 +92,6 @@ input_boolean:
     name: Flag - Hall Lights Was Triggered by Motion Sensor
   heating_season_switch:
     name: Heating Season
-  thermostat_10_minutes_heating_flag:
-    name: Thermostat 10 Minutes Heating Flag
   yandex_night_mode:
     name: Yandex Night Mode
     icon: mdi:volume-off
