@@ -1307,7 +1307,7 @@
           - condition: or
             conditions:
               - condition: template
-                value_template: "{{ is_state_attr('climate.thermostat', 'temperature', 21) }}"
+                value_template: "{{ is_state_attr('climate.thermostat', 'temperature', 22) }}"
               - condition: template
                 # Repeat maximum 10 minutes
                 value_template: "{{ repeat.index >= 10*60/5 }}"
@@ -1316,7 +1316,7 @@
             target:
               entity_id: climate.thermostat
             data:
-              temperature: 21
+              temperature: 22
           - delay:
               seconds: 5
     - service: automation.turn_off
