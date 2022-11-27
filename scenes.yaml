@@ -35,6 +35,7 @@
     light.bedroom_nightlight: off
     cover.bedroom: closed
     light.christmas_tree: off
+    light.7_seg_clock: on
 
 - name: Lighting
   entities:
