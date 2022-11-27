@@ -25,6 +25,7 @@
     light.shelf_lighting: off
     light.floor_lamp: off
     light.bedroom_nightlight: off
+    light.christmas_tree: on
 
 - name: Good Night
   entities:
@@ -33,6 +34,7 @@
     light.string_lights: off
     light.bedroom_nightlight: off
     cover.bedroom: closed
+    light.christmas_tree: off
 
 - name: Lighting
   entities:
