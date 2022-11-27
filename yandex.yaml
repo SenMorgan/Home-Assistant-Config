@@ -31,6 +31,7 @@ filter:
     - light.string_lights
     - light.bedroom_nightlight
     - vacuum.johnny
+    - light.christmas_tree
 
 entity_config:
   # type: devices.types.humidifier  # параметр необязательный, вычисляется автоматически!
@@ -119,5 +120,9 @@ entity_config:
     room: Кухня
   light.living_room_nightlight:
     name: Светильник
+    room: Зал
+    type: devices.types.light
+  light.christmas_tree:
+    name: Ёлка
     room: Зал
     type: devices.types.light
