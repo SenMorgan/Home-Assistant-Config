@@ -287,19 +287,22 @@
     - service: light.turn_on
       entity_id:
         - light.gyver_lamp
-    - choose:
-        - conditions:
-            - condition: template
-              value_template: >
-                {{ not states('person.kris') == 'home'}}
-          sequence:
-            - service: light.turn_on
-              entity_id:
-                - light.shelf_lighting
-                - light.pc_backlight
-            - service: switch.turn_on
-              entity_id:
-                - switch.pc_backlight_sync_send
+    - if:
+        - condition: template
+          value_template: >
+            {{ states('person.kris') == 'home'}}
+      then:
+        - service: switch.turn_off
+          entity_id:
+            - switch.pc_backlight_sync_send
+      else:
+        - service: light.turn_on
+          entity_id:
+            - light.shelf_lighting
+            - light.pc_backlight
+        - service: switch.turn_on
+          entity_id:
+            - switch.pc_backlight_sync_send
 
 - id: "Kitchen_Asus_PC_Background_Lights_OFF"
   alias: Kitchen Asus PC Background Lights OFF
@@ -313,9 +316,6 @@
       entity_id:
         - light.gyver_lamp
         - light.shelf_lighting
-    - service: switch.turn_off
-      entity_id:
-        - switch.pc_backlight_sync_send
 
 - id: "Kitchen_Clock_On_if_People_Home"
   alias: Kitchen Clock On if People Home
