@@ -70,6 +70,11 @@ input_number:
     name: Solar Energy Produced at Beginning of Day
     min: 0
     max: 999999999
+  volume_yandex_station:
+    name: Volume Yandex Station
+    min: 0
+    max: 100
+    initial: 0.1
 
 ######################## START OF INPUT BOOLEAN SECTION ########################
 

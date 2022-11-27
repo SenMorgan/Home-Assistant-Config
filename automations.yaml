@@ -1443,16 +1443,24 @@
       from: "home"
       to: "not_home"
   action:
-    # Repeat the «mute» command to ensure that the volume is muted
+    # Save actual volume
+    - service: input_number.set_value
+      target:
+        entity_id: input_number.volume_yandex_station
+      data:
+        value: "{{ state_attr('media_player.yandex_station', 'volume_level')}}"
+    # Repeat the command to ensure that the volume is muted
     - repeat:
-        until:
+        while:
           - condition: template
-            value_template: "{{ is_state_attr('media_player.yandex_station', 'is_volume_muted', true) }}"
+            value_template: "{{ is_state_attr('media_player.yandex_station', 'volume_level', 0.01) }}"
+          - condition: template
+            value_template: "{{ repeat.index <= 3 }}"
         sequence:
-          - service: media_player.volume_mute
+          - service: media_player.volume_set
             data:
               entity_id: media_player.yandex_station
-              is_volume_muted: true
+              volume_level: 0.01
           - delay: 0.5
     - service: script.turn_on
       entity_id: script.update_shopping_list
@@ -1463,16 +1471,18 @@
         media_content_id: stop
         media_content_type: command
     - delay: 0.5
-    # Repeat the «unmute» command to ensure that the volume is muted
+    # Repeat the command to ensure that the volume is muted
     - repeat:
-        until:
+        while:
           - condition: template
-            value_template: "{{ is_state_attr('media_player.yandex_station', 'is_volume_muted', false) }}"
+            value_template: "{{ is_state_attr('media_player.yandex_station', 'volume_level', states('input_number.volume_yandex_station')) }}"
+          - condition: template
+            value_template: "{{ repeat.index <= 3 }}"
         sequence:
-          - service: media_player.volume_mute
+          - service: media_player.volume_set
             data:
               entity_id: media_player.yandex_station
-              is_volume_muted: false
+              volume_level: "{{ states('input_number.volume_yandex_station')}}"
           - delay: 0.5
 
 - id: "Kitchen_Yandex_Night_Mode_ON"
