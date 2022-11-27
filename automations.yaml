@@ -1453,7 +1453,7 @@
     - repeat:
         while:
           - condition: template
-            value_template: "{{ is_state_attr('media_player.yandex_station', 'volume_level', 0.01) }}"
+            value_template: "{{ not is_state_attr('media_player.yandex_station', 'volume_level', 0.01) }}"
           - condition: template
             value_template: "{{ repeat.index <= 3 }}"
         sequence:
@@ -1475,7 +1475,7 @@
     - repeat:
         while:
           - condition: template
-            value_template: "{{ is_state_attr('media_player.yandex_station', 'volume_level', states('input_number.volume_yandex_station')) }}"
+            value_template: "{{ not is_state_attr('media_player.yandex_station', 'volume_level', states('input_number.volume_yandex_station')) }}"
           - condition: template
             value_template: "{{ repeat.index <= 3 }}"
         sequence:
