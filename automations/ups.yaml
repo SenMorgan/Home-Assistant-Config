@@ -1,0 +1,72 @@
+- alias: UPS Lost Grid Power Notification
+  id: "ups_lost_grid_power_notification"
+  trigger:
+    - platform: state
+      entity_id: sensor.ups_status_data
+      to: "OB DISCHRG"
+  action:
+    - service: persistent_notification.create
+      data:
+        title: "{{ '🚨' }} Уведомление от UPS"
+        message: >
+          UPS потерял питание в {{ states('sensor.time') }}
+          Рассчётное время работы: {{ states('sensor.ups_battery_runtime') | int | timestamp_custom('%M:%S') }} минут
+    - service: notify.mobile_app_sm_s901b
+      data:
+        title: "{{ '🚨' }} Уведомление от UPS"
+        message: >
+          UPS потерял питание в {{ states('sensor.time') }}\n
+          Рассчётное время работы: {{ states('sensor.ups_battery_runtime') | int | timestamp_custom('%M:%S') }} минут
+
+- alias: UPS Discharging Loop Notification
+  id: "ups_discharging_loop_notification"
+  trigger:
+    - platform: state
+      entity_id: sensor.ups_status_data
+      to: "OB DISCHRG"
+  action:
+    - delay: 00:00:10
+    - repeat:
+        while:
+          - condition: state
+            entity_id: sensor.ups_status_data
+            state: "OB DISCHRG"
+        sequence:
+          - service: notify.mobile_app_sm_s901b
+            data:
+              title: "{{ '🚨' }} Уведомление от UPS"
+              message: >
+                UPS отключится через {{ states('sensor.ups_battery_runtime') | int | timestamp_custom('%M:%S') }} минут\n
+                Заряд аккумулятора: {{ states('sensor.ups_battery_charge') }}%\n
+                Напряжение аккумулятора: {{ states('sensor.ups_battery_voltage') }} В\n
+                Статус: {{ states('sensor.ups_status') }}
+          - delay: 00:02:00
+
+- alias: UPS Low Battery Warning Notification
+  id: "ups_low_battery_warning_notification"
+  trigger:
+    - platform: numeric_state
+      entity_id: sensor.ups_battery_charge
+      below: 21
+  action:
+    - service: notify.mobile_app_sm_s901b
+      data:
+        title: "{{ '🚨' }} Уведомление от UPS"
+        message: >
+          Низкий заряд аккумулятора UPS: {{ states('sensor.ups_battery_charge') }}%
+
+- alias: UPS Shutdown Home Assistant Server
+  id: "ups_shutdown_home_assistant_server"
+  trigger:
+    - platform: state
+      entity_id: sensor.ups_status_data
+      to: "FSD OB DISCHRG LB"
+  action:
+    - service: notify.mobile_app_sm_s901b
+      data:
+        title: "{{ '🚨' }} Уведомление от UPS"
+        message: >
+          Критически низкий заряд батареи UPS\n
+          Немедленное отключение сервера Home Assistant в {{ states('sensor.time') }}
+    - delay: 00:00:02
+    - service: hassio.host_shutdown
