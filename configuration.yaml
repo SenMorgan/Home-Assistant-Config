@@ -14,7 +14,7 @@ tts:
 homeassistant:
   customize: !include customize.yaml
 
-automation: !include automations.yaml
+automation: !include_dir_merge_list automations
 script: !include scripts.yaml
 scene: !include scenes.yaml
 # Sharing devices with Yandex Smart Home
