@@ -32,6 +32,7 @@ filter:
     - light.bedroom_nightlight
     - vacuum.johnny
     - light.christmas_tree
+    - input_boolean.yandex_night_mode
 
 entity_config:
   # type: devices.types.humidifier  # параметр необязательный, вычисляется автоматически!
@@ -126,3 +127,6 @@ entity_config:
     name: Ёлка
     room: Зал
     type: devices.types.light
+  input_boolean.yandex_night_mode:
+    name: Ночной режим
+    room: Дом
