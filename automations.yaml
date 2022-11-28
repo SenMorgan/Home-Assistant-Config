@@ -510,6 +510,48 @@
         title: "{{ 'ℹ️' }} Системное уведомление"
         message: Входная дверь была открыта в {{ states('sensor.time') }}
 
+- id: "Notification_Gas_Leakage_Detected"
+  alias: Notification Gas Leakage Detected
+  trigger:
+    - platform: state
+      entity_id: binary_sensor.co_and_natural_gas_alarm_gas
+      to: "on"
+  action:
+    - repeat:
+        while:
+          - condition: state
+            entity_id: binary_sensor.co_and_natural_gas_alarm_gas
+            state: "on"
+        sequence:
+          - service: notify.mobile_app_sm_s901b
+            data:
+              title: "{{ '🚨' }} Системное уведомление"
+              message: >
+                Обнаружена утечка газа в {{ states('sensor.time') }}
+                Концентрация газа: {{ states('sensor.co_and_natural_gas_alarm_gas') }} ppm
+          - delay: 00:00:10
+
+- id: "Notification_Carbon_Monoxide_Detected"
+  alias: Notification Carbon Monoxide Detected
+  trigger:
+    - platform: state
+      entity_id: binary_sensor.co_and_natural_gas_alarm_carbon_monoxide
+      to: "on"
+  action:
+    - repeat:
+        while:
+          - condition: state
+            entity_id: binary_sensor.co_and_natural_gas_alarm_carbon_monoxide
+            state: "on"
+        sequence:
+          - service: notify.mobile_app_sm_s901b
+            data:
+              title: "{{ '🚨' }} Системное уведомление"
+              message: >
+                Обнаружена высокая концентрация угарного газа в {{ states('sensor.time') }}
+                Концентрация газа: {{ states('sensor.co_and_natural_gas_alarm_carbon_monoxide') }} ppm
+          - delay: 00:00:10
+
 ###############################################
 ## Raven Notifications
 ###############################################
