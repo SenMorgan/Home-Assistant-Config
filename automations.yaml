@@ -1161,11 +1161,11 @@
             - condition: state
               entity_id: binary_sensor.windows
               state: "off"
-            - service: media_player.play_media
-              entity_id: media_player.yandex_station
-              data:
-                media_content_id: Термостат включен
-                media_content_type: text
+            # - service: media_player.play_media
+            #   entity_id: media_player.yandex_station
+            #   data:
+            #     media_content_id: Термостат включен
+            #     media_content_type: text
             # Need to send the command a few times to ensure that thermostat changed it's mode
             - repeat:
                 until:
