@@ -1,5 +1,6 @@
 - alias: UPS Lost Grid Power Notification
   id: "ups_lost_grid_power_notification"
+  mode: single
   trigger:
     - platform: state
       entity_id: sensor.ups_status_data
@@ -20,6 +21,7 @@
 
 - alias: UPS Discharging Loop Notification
   id: "ups_discharging_loop_notification"
+  mode: single
   trigger:
     - platform: state
       entity_id: sensor.ups_status_data
@@ -44,6 +46,7 @@
 
 - alias: UPS Low Battery Warning Notification
   id: "ups_low_battery_warning_notification"
+  mode: single
   trigger:
     - platform: numeric_state
       entity_id: sensor.ups_battery_charge
@@ -57,6 +60,7 @@
 
 - alias: UPS Shutdown Home Assistant Server
   id: "ups_shutdown_home_assistant_server"
+  mode: single
   trigger:
     - platform: numeric_state
       entity_id: sensor.ups_battery_charge
