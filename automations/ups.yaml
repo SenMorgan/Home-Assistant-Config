@@ -58,9 +58,14 @@
 - alias: UPS Shutdown Home Assistant Server
   id: "ups_shutdown_home_assistant_server"
   trigger:
-    - platform: state
-      entity_id: sensor.ups_status_data
-      to: "FSD OB DISCHRG LB"
+    - platform: numeric_state
+      entity_id: sensor.ups_battery_charge
+      below: 10
+    - platform: numeric_state
+      entity_id: sensor.ups_battery_runtime
+      below: 300
+    - platform: template
+      value_template: "{{ 'OB DISCHRG LB' in states('sensor.ups_status_data') }}"
   action:
     - service: notify.mobile_app_sm_s901b
       data:
@@ -68,5 +73,5 @@
         message: >
           Критически низкий заряд батареи UPS\n
           Немедленное отключение сервера Home Assistant в {{ states('sensor.time') }}
-    - delay: 00:00:02
+    - delay: 00:00:05
     - service: hassio.host_shutdown
