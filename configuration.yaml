@@ -75,6 +75,11 @@ input_number:
     min: 0
     max: 100
     initial: 0.1
+  thermostat_saved_target_temperature:
+    name: Thermostat Saved Target Temperature
+    min: 15
+    max: 30
+    initial: 20
 
 ######################## START OF INPUT BOOLEAN SECTION ########################
 
