@@ -1,3 +1,11 @@
+######################################################################
+# File: ups.yaml                                                     #
+# Author: SenMorgan https://github.com/SenMorgan                     #
+# Date: 2022-11-28                                                   #
+#                                                                    #
+# Copyright (c) 2022 Sen Morgan                                      #
+######################################################################
+
 - alias: UPS Lost Grid Power Notification
   id: "ups_lost_grid_power_notification"
   mode: single
