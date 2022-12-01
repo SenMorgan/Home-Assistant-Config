@@ -476,6 +476,9 @@
     - platform: numeric_state
       entity_id: sensor.distance_between_kris_and_sen
       below: 200
+  condition:
+    - condition: template
+      value_template: "{{ not states('person.kris') == 'home' }}"
   action:
     - service: notify.mobile_app_sm_s901b
       data:
