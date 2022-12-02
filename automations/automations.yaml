@@ -829,24 +829,25 @@
 
 - id: "Aqara_Cube_Flip_90"
   alias: Aqara Cube Flip 90
+  mode: single
   trigger:
-    platform: state
-    entity_id: sensor.aqara_cube_1_action
-    to: "flip90"
+    - platform: state
+      entity_id: sensor.aqara_cube_1_action
+      to: "flip90"
   condition:
     - condition: state
       entity_id: input_boolean.cube_1_control
       state: "on"
   action:
     - service: light.toggle
-      entity_id: light.kitchen_spotlights
+      entity_id: light.string_lights
 
 - id: "Aqara_Cube_Flip_180"
   alias: Aqara Cube Flip 180
   trigger:
-    platform: state
-    entity_id: sensor.aqara_cube_1_action
-    to: "flip180"
+    - platform: state
+      entity_id: sensor.aqara_cube_1_action
+      to: "flip180"
   condition:
     - condition: state
       entity_id: input_boolean.cube_1_control
@@ -857,6 +858,7 @@
 
 - id: "Aqara_Cube_Shake"
   alias: Aqara Cube Shake
+  mode: single
   trigger:
     - platform: state
       entity_id: sensor.aqara_cube_1_action
@@ -894,10 +896,11 @@
 
 - id: "Aqara_Cube_Tap"
   alias: Aqara Cube Tap
+  mode: single
   trigger:
-    platform: state
-    entity_id: sensor.aqara_cube_1_action
-    to: "tap"
+    - platform: state
+      entity_id: sensor.aqara_cube_1_action
+      to: "tap"
   condition:
     - condition: state
       entity_id: input_boolean.cube_1_control
@@ -908,20 +911,22 @@
 
 - id: "Aqara_Cube_Slide"
   alias: Aqara Cube Slide
+  mode: single
   trigger:
-    platform: state
-    entity_id: sensor.aqara_cube_1_action
-    to: "slide"
+    - platform: state
+      entity_id: sensor.aqara_cube_1_action
+      to: "slide"
   condition:
     - condition: state
       entity_id: input_boolean.cube_1_control
       state: "on"
   action:
     - service: light.toggle
-      entity_id: light.string_lights
+      entity_id: light.mi_desk_lamp
 
 - id: "Aqara_Cube_Rotate"
   alias: Aqara Cube Rotate
+  mode: single
   trigger:
     - platform: state
       entity_id: sensor.aqara_cube_1_action
