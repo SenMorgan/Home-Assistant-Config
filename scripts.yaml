@@ -364,6 +364,9 @@ thermostat_set_temperature:
   alias: Thermostat Set Temperature
   mode: restart
   sequence:
+    # Thermostat can't save new temperature if it's in "off" mode
+    - condition: template
+      value_template: "{{ not is_state('climate.thermostat', 'off') }}"
     - service: script.thermostat_set_temperature_repeater
       data_template:
         temperature: "{{ temperature }}"
