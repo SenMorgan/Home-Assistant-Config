@@ -938,8 +938,8 @@
       entity_id: light.mi_desk_lamp
       data_template:
         brightness:
-          "{% set suggested = states.light.mi_desk_lamp.attributes.brightness\
-          \ | int + \n  states.sensor.aqara_cube_1_action.attributes.angle | int + 1\
+          "{% set suggested = state_attr('light.mi_desk_lamp', 'brightness')\
+          \ | int + \n  state_attr('sensor.aqara_cube_1_action', 'angle') | int + 1\
           \ %}\n{% if suggested > 0 %} {{ suggested }} {% else %} 1 {% endif %}\n"
 
 ###############################################
@@ -1382,7 +1382,7 @@
     service: input_number.set_value
     data_template:
       entity_id: input_number.solar_energy_produced_at_beginning_of_day
-      value: "{{ states.sensor.solar_panel_energy.state }}"
+      value: "{{ states('sensor.solar_panel_energy') }}"
 
 ###############################################
 ## Gas Meter by Aqara door sensor and counter
