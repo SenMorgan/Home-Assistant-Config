@@ -251,6 +251,7 @@
 - id: "thermostat_10_minutes_heating_off"
   alias: Thermostat 10 Minutes Heating OFF
   mode: single
+  initial_state: "off"
   trigger:
     # Trigger every 30 seconds
     - platform: time_pattern
