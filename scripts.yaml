@@ -327,7 +327,7 @@ thermostat_set_mode:
       data_template:
         mode: "{{ mode }}"
     # Check if thermostat didn't change it's mode back after 10 seconds.
-    - delay: 00:00:10
+    - delay: 00:00:05
     # If thermostat didn't change it's mode back, then repeat the script.
     # This is needed because thermostat sometimes changes it's mode back
     # because of a bug in the thermostat firmware.
@@ -364,14 +364,14 @@ thermostat_set_temperature:
   alias: Thermostat Set Temperature
   mode: restart
   sequence:
-    # Thermostat can't save new temperature if it's in "off" mode
+    # Thermostat can save new temperature only if it in "heat" mode
     - condition: template
-      value_template: "{{ not is_state('climate.thermostat', 'off') }}"
+      value_template: "{{ is_state('climate.thermostat', 'heat') }}"
     - service: script.thermostat_set_temperature_repeater
       data_template:
         temperature: "{{ temperature }}"
     # Check if thermostat didn't change it's temperature back after 10 seconds.
-    - delay: 00:00:10
+    - delay: 00:00:05
     # If thermostat didn't change it's temperature back, then repeat the script.
     # This is needed because thermostat sometimes changes it's temperature back
     # because of a bug in the thermostat firmware.
