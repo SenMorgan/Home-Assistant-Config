@@ -127,9 +127,10 @@
     - platform: numeric_state
       entity_id: climate.thermostat
       attribute: current_temperature
-      below: 20
-    - platform: time
-      at: "01:00"
+      below: 19
+      for: "00:05:00"
+    - platform: time_pattern
+      hours: "/1"
   condition:
     - condition: state
       entity_id: input_boolean.heating_season_switch
@@ -137,7 +138,7 @@
     - condition: numeric_state
       entity_id: climate.thermostat
       attribute: current_temperature
-      below: 20
+      below: 19
     - condition: state
       entity_id: binary_sensor.people_home
       state: "on"
