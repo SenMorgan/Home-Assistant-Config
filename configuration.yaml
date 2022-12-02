@@ -63,6 +63,13 @@ camera:
 
 google_assistant: !include google-assistant.yaml
 
+######################## START OF INPUT TEXT SECTION ########################
+
+input_text:
+  thermostat_mode:
+    name: Thermostat Mode
+    initial: auto
+
 ######################## START OF INPUT NUMBER SECTION ########################
 
 input_number:
