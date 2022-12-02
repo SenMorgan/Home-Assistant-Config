@@ -316,6 +316,9 @@ tell_what_window_are_opened:
                 Внимание! Открыты окна: {{ expand('binary_sensor.windows') | selectattr('state','eq','on') | map(attribute='name') | list | join(', ') }}
               {% endif %}
 
+# Thermostat Set Mode script
+# Required parameters:
+#   [mode]: "auto" or "heat" or "off"
 thermostat_set_mode:
   alias: Thermostat Set Mode
   mode: restart
@@ -352,4 +355,46 @@ thermostat_set_mode_repeater:
               entity_id: climate.thermostat
             data:
               hvac_mode: "{{ mode }}"
+          - delay: 00:00:05
+
+# Thermostat Set Temperature script
+# Required parameters:
+#   [temperature]: temperature in Celsius
+thermostat_set_temperature:
+  alias: Thermostat Set Temperature
+  mode: restart
+  sequence:
+    - service: script.thermostat_set_temperature_repeater
+      data_template:
+        temperature: "{{ temperature }}"
+    # Check if thermostat didn't change it's temperature back after 10 seconds.
+    - delay: 00:00:10
+    # If thermostat didn't change it's temperature back, then repeat the script.
+    # This is needed because thermostat sometimes changes it's temperature back
+    # because of a bug in the thermostat firmware.
+    - condition: template
+      value_template: "{{ not is_state_attr('climate.thermostat', 'temperature', temperature) }}"
+    - service: script.thermostat_set_temperature_repeater
+      data_template:
+        temperature: "{{ temperature }}"
+
+thermostat_set_temperature_repeater:
+  alias: Thermostat Set Temperature Repeater
+  mode: restart
+  sequence:
+    # Need to send the command a few times to ensure that thermostat changed it's temperature
+    - repeat:
+        while:
+          # This thermostat model sends values in int format
+          - condition: template
+            value_template: "{{ not is_state_attr('climate.thermostat', 'temperature', temperature | int) }}"
+          - condition: template
+            # Repeat maximum 10 minutes
+            value_template: "{{ repeat.index < 10*60/5 }}"
+        sequence:
+          - service: climate.set_temperature
+            target:
+              entity_id: climate.thermostat
+            data:
+              temperature: "{{ temperature }}"
           - delay: 00:00:05
