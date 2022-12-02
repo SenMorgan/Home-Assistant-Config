@@ -323,6 +323,8 @@ thermostat_set_mode:
   alias: Thermostat Set Mode
   mode: restart
   sequence:
+    - condition: template
+      value_template: "{{ not is_state('climate.thermostat', mode) }}"
     - service: script.thermostat_set_mode_repeater
       data_template:
         mode: "{{ mode }}"
@@ -364,6 +366,9 @@ thermostat_set_temperature:
   alias: Thermostat Set Temperature
   mode: restart
   sequence:
+    # This thermostat model sends values in int format
+    - condition: template
+      value_template: "{{ not is_state_attr('climate.thermostat', 'temperature', temperature | int) }}"
     # Thermostat can save new temperature only if it in "heat" mode
     - condition: template
       value_template: "{{ is_state('climate.thermostat', 'heat') }}"
