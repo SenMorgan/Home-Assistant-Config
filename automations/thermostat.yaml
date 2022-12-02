@@ -196,3 +196,50 @@
         temperature: "{{ states('input_number.thermostat_saved_target_temperature') }}"
     - service: automation.turn_off
       entity_id: automation.thermostat_10_minutes_heating_off
+
+- id: "thermostat_eco_mode_when_noone_home"
+  alias: Thermostat ECO Mode When Noone Home
+  mode: single
+  trigger:
+    - platform: state
+      entity_id: binary_sensor.people_home
+      to: "off"
+      for: "00:15:00"
+  condition:
+    - condition: state
+      entity_id: input_boolean.heating_season_switch
+      state: "on"
+    - condition: template
+      value_template: "{{ not is_state('climate.thermostat', 'off') }}"
+  action:
+    - service: notify.mobile_app_sm_s901b
+      data:
+        title: "{{ 'ℹ️' }} Системное уведомление"
+        message: Термостат переведён в режим экономии
+    - service: script.thermostat_set_mode
+      data:
+        mode: "off"
+
+- id: "thermostat_normal_mode_when_someone_home"
+  alias: Thermostat Normal Mode When Someone Home
+  mode: single
+  trigger:
+    - platform: state
+      entity_id: binary_sensor.people_home
+      to: "on"
+  condition:
+    - condition: state
+      entity_id: input_boolean.heating_season_switch
+      state: "on"
+    - condition: template
+      value_template: "{{ is_state('climate.thermostat', 'off') }}"
+  action:
+    - service: notify.mobile_app_sm_s901b
+      data:
+        title: "{{ 'ℹ️' }} Системное уведомление"
+        message: >
+          Термостат переведён в нормальный режим.\n
+          Температура дома: {{ state_attr('climate.thermostat', 'current_temperature') }}°C
+    - service: script.thermostat_set_mode
+      data:
+        mode: "heat"
