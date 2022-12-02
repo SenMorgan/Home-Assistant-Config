@@ -58,26 +58,9 @@
             #   data:
             #     media_content_id: Термостат отключен
             #     media_content_type: text
-
-            # Need to send the command a few times to ensure that thermostat changed it's mode
-            - repeat:
-                until:
-                  - condition: or
-                    conditions:
-                      - condition: state
-                        entity_id: climate.thermostat
-                        state: "off"
-                      - condition: template
-                        # Repeat maximum 10 minutes
-                        value_template: "{{ repeat.index >= 10*60/5 }}"
-                sequence:
-                  - service: climate.set_hvac_mode
-                    target:
-                      entity_id: climate.thermostat
-                    data:
-                      hvac_mode: "off"
-                  - delay:
-                      seconds: 5
+            - service: script.thermostat_set_mode
+              data:
+                mode: "off"
         - conditions:
             - condition: trigger
               id: All Windows Closed
@@ -100,25 +83,9 @@
             #   data:
             #     media_content_id: Термостат включен
             #     media_content_type: text
-            # Need to send the command a few times to ensure that thermostat changed it's mode
-            - repeat:
-                until:
-                  - condition: or
-                    conditions:
-                      - condition: state
-                        entity_id: climate.thermostat
-                        state: "heat"
-                      - condition: template
-                        # Repeat maximum 10 minutes
-                        value_template: "{{ repeat.index >= 10*60/5 }}"
-                sequence:
-                  - service: climate.set_hvac_mode
-                    target:
-                      entity_id: climate.thermostat
-                    data:
-                      hvac_mode: "heat"
-                  - delay:
-                      seconds: 5
+            - service: script.thermostat_set_mode
+              data:
+                mode: "heat"
 
 - id: "thermostat_emergency_on"
   alias: Thermostat Emergency ON
@@ -150,25 +117,9 @@
       data:
         title: "{{ 'ℹ️' }} Системное уведомление"
         message: Термостат был снова включен в {{ states('sensor.time') }}, чтобы вы не замёрзли
-    # Need to send the command a few times to ensure that thermostat changed it's mode
-    - repeat:
-        until:
-          - condition: or
-            conditions:
-              - condition: state
-                entity_id: climate.thermostat
-                state: "heat"
-              - condition: template
-                # Repeat maximum 10 minutes
-                value_template: "{{ repeat.index >= 10*60/5 }}"
-        sequence:
-          - service: climate.set_hvac_mode
-            target:
-              entity_id: climate.thermostat
-            data:
-              hvac_mode: "heat"
-          - delay:
-              seconds: 5
+    - service: script.thermostat_set_mode
+      data:
+        mode: "heat"
 
 - id: "thermostat_10_minutes_heating_on"
   alias: Thermostat 10 Minutes Heating ON
@@ -205,25 +156,9 @@
                 media_content_type: text
             - service: script.turn_on
               entity_id: script.tell_what_window_are_opened
-            # Need to send the command a few times to ensure that thermostat changed it's mode
-            - repeat:
-                until:
-                  - condition: or
-                    conditions:
-                      - condition: state
-                        entity_id: climate.thermostat
-                        state: "heat"
-                      - condition: template
-                        # Repeat maximum 10 minutes
-                        value_template: "{{ repeat.index >= 10*60/5 }}"
-                sequence:
-                  - service: climate.set_hvac_mode
-                    target:
-                      entity_id: climate.thermostat
-                    data:
-                      hvac_mode: "heat"
-                  - delay:
-                      seconds: 5
+            - service: script.thermostat_set_mode
+              data:
+                mode: "heat"
             - repeat:
                 until:
                   - condition: or
@@ -266,25 +201,9 @@
       data:
         media_content_id: Подогрев квартиры окончен
         media_content_type: text
-    # Need to send the command a few times to ensure that thermostat changed it's mode
-    - repeat:
-        until:
-          - condition: or
-            conditions:
-              - condition: state
-                entity_id: climate.thermostat
-                state: "heat"
-              - condition: template
-                # Repeat maximum 10 minutes
-                value_template: "{{ repeat.index >= 10*60/5 }}"
-        sequence:
-          - service: climate.set_hvac_mode
-            target:
-              entity_id: climate.thermostat
-            data:
-              hvac_mode: "heat"
-          - delay:
-              seconds: 5
+    - service: script.thermostat_set_mode
+      data:
+        mode: "heat"
     # Load last thermostat target temperature
     - repeat:
         until:

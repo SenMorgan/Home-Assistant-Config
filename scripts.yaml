@@ -315,3 +315,41 @@ tell_what_window_are_opened:
               {% else %}
                 Внимание! Открыты окна: {{ expand('binary_sensor.windows') | selectattr('state','eq','on') | map(attribute='name') | list | join(', ') }}
               {% endif %}
+
+thermostat_set_mode:
+  alias: Thermostat Set Mode
+  mode: restart
+  sequence:
+    - service: script.thermostat_set_mode_repeater
+      data_template:
+        mode: "{{ mode }}"
+    # Check if thermostat didn't change it's mode back after 10 seconds.
+    - delay: 00:00:10
+    # If thermostat didn't change it's mode back, then repeat the script.
+    # This is needed because thermostat sometimes changes it's mode back
+    # because of a bug in the thermostat firmware.
+    - condition: template
+      value_template: "{{ not is_state('climate.thermostat', mode) }}"
+    - service: script.thermostat_set_mode_repeater
+      data_template:
+        mode: "{{ mode }}"
+
+thermostat_set_mode_repeater:
+  alias: Thermostat Set Mode Repeater
+  mode: restart
+  sequence:
+    # Need to send the command a few times to ensure that thermostat changed it's mode
+    - repeat:
+        while:
+          - condition: template
+            value_template: "{{ not is_state('climate.thermostat', mode) }}"
+          - condition: template
+            # Repeat maximum 10 minutes
+            value_template: "{{ repeat.index < 10*60/5 }}"
+        sequence:
+          - service: climate.set_hvac_mode
+            target:
+              entity_id: climate.thermostat
+            data:
+              hvac_mode: "{{ mode }}"
+          - delay: 00:00:05
