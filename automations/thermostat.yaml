@@ -6,8 +6,8 @@
 # Copyright (c) 2022 Sen Morgan                                      #
 ######################################################################
 
-- id: "Kitchen_Thermostat_Change_Mode_by_Window_State"
-  alias: Kitchen Thermostat Change Mode by Window State
+- id: "thermostat_change_mode_by_window_state"
+  alias: Thermostat Change Mode by Window State
   mode: restart
   trigger:
     - platform: state
@@ -120,8 +120,8 @@
                   - delay:
                       seconds: 5
 
-- id: "Kitchen_Thermostat_Emergency_ON"
-  alias: Kitchen Thermostat Emergency ON
+- id: "thermostat_emergency_on"
+  alias: Thermostat Emergency ON
   mode: single
   trigger:
     - platform: numeric_state
@@ -169,8 +169,8 @@
           - delay:
               seconds: 5
 
-- id: "Kitchen_Thermostat_10_Minutes_Heating_ON"
-  alias: Kitchen Thermostat 10 Minutes Heating ON
+- id: "thermostat_10_minutes_heating_on"
+  alias: Thermostat 10 Minutes Heating ON
   mode: single
   trigger:
     - platform: state
@@ -179,7 +179,7 @@
     - choose:
         - conditions:
             - condition: state
-              entity_id: automation.kitchen_thermostat_10_minutes_heating_off
+              entity_id: automation.thermostat_10_minutes_heating_off
               state: "on"
           sequence:
             - service: media_player.play_media
@@ -189,7 +189,7 @@
                 media_content_type: text
         - conditions:
             - condition: state
-              entity_id: automation.kitchen_thermostat_10_minutes_heating_off
+              entity_id: automation.thermostat_10_minutes_heating_off
               state: "off"
           sequence:
             # Save actual thermostat target temperature
@@ -246,10 +246,10 @@
                 entity_id: input_datetime.thermostat_10_minutes_heating_time_end
                 datetime: "{{ now() + timedelta(minutes=10) }}"
             - service: automation.turn_on
-              entity_id: automation.kitchen_thermostat_10_minutes_heating_off
+              entity_id: automation.thermostat_10_minutes_heating_off
 
-- id: "Kitchen_Thermostat_10_Minutes_Heating_OFF"
-  alias: Kitchen Thermostat 10 Minutes Heating OFF
+- id: "thermostat_10_minutes_heating_off"
+  alias: Thermostat 10 Minutes Heating OFF
   mode: single
   trigger:
     # Trigger every 30 seconds
@@ -305,4 +305,4 @@
           - delay:
               seconds: 5
     - service: automation.turn_off
-      entity_id: automation.kitchen_thermostat_10_minutes_heating_off
+      entity_id: automation.thermostat_10_minutes_heating_off
