@@ -406,3 +406,15 @@ thermostat_set_temperature_repeater:
             data:
               temperature: "{{ temperature }}"
           - delay: 00:00:05
+
+home_assistant_shutdown:
+  alias: Home Assistant Shutdown
+  mode: single
+  sequence:
+    - service: hassio.host_shutdown
+
+home_assistant_reboot:
+  alias: Home Assistant Reboot
+  mode: single
+  sequence:
+    - service: hassio.host_reboot

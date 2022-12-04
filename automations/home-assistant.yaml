@@ -9,6 +9,9 @@
 # Copyright (c) 2022 Sen Morgan                                      #
 ######################################################################
 
+###############################################
+## Notifications
+###############################################
 - id: "Notification_Home_Assistant_Started"
   alias: Notification Home Assistant Started
   trigger:
@@ -137,3 +140,91 @@
         message: |
           *Внимание, низкий заряд батареи!*
           {{ trigger.event.data.new_state.attributes.friendly_name }}: {{ trigger.event.data.new_state.state }}%!
+
+###############################################
+## Other Automations
+###############################################
+
+- alias: Power Off Home Assistant Action
+  id: power_off_home_assistant_action
+  trigger:
+    - platform: state
+      entity_id: input_button.power_off_home_assistant
+  action:
+    - service: script.turn_on
+      entity_id: script.home_assistant_shutdown
+
+- alias: Reboot Home Assistant Action
+  id: reboot_home_assistant_action
+  trigger:
+    - platform: state
+      entity_id: input_button.reboot_home_assistant
+  action:
+    - service: script.turn_on
+      entity_id: script.home_assistant_reboot
+
+- alias: Power Off Server Rack Action
+  id: power_off_server_rack_action
+  mode: restart
+  trigger:
+    - platform: state
+      entity_id: input_button.power_off_server_rack
+  action:
+    # Check Synology Shutdown button state:
+    - if:
+        - condition: state
+          entity_id: button.synology_ds220_shutdown
+          state: "unavailable"
+      # If Synology is unavailable, ask for the confirmation
+      then:
+        - variables:
+            # Including an id in the action allows us to identify this script run
+            # and not accidentally trigger for other notification actions
+            action_power_off: "{{ 'action_power_off' ~ context.id }}"
+            action_cancel: "{{ 'action_cancel' ~ context.id }}"
+        - service: notify.mobile_app_sm_s901b
+          data:
+            title: "{{ '❗️' }} Внимание!"
+            message: Synology DS220+ недоступен, продолжить выключение Home Assistant?
+            data:
+              actions:
+                - action: "{{ action_power_off }}"
+                  title: "Да"
+                - action: "{{ action_cancel }}"
+                  title: "Отмена"
+        # Waiting for «action_power_off» or «action_cancel» avoids accidentally continuing
+        # for another script/automation's notification action
+        - wait_for_trigger:
+            - platform: event
+              event_type: mobile_app_notification_action
+              event_data:
+                action: "{{ action_power_off }}"
+            - platform: event
+              event_type: mobile_app_notification_action
+              event_data:
+                action: "{{ action_cancel }}"
+        # Perform the action
+        - choose:
+            - conditions: "{{ wait.trigger.event.data.action == action_power_off }}"
+              sequence:
+                # Turn OFF Home Assistant
+                - service: script.turn_on
+                  entity_id: script.home_assistant_shutdown
+            - conditions: "{{ wait.trigger.event.data.action == action_cancel }}"
+              sequence:
+                - service: notify.mobile_app_sm_s901b
+                  data:
+                    title: "{{ 'ℹ️' }} Системное уведомление"
+                    message: Отмена выключения серверного шкафа
+      else:
+        - service: notify.mobile_app_sm_s901b
+          data:
+            title: "{{ 'ℹ️' }} Системное уведомление"
+            message: Выключение серверного шкафа
+        # Turn OFF the Synology DS220+
+        - service: button.press
+          entity_id: button.synology_ds220_shutdown
+        - delay: 00:00:10
+        # Turn OFF Home Assistant
+        - service: script.turn_on
+          entity_id: script.home_assistant_shutdown

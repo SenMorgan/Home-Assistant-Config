@@ -170,10 +170,18 @@ input_button:
   parking_light:
     name: Parking Light
     icon: mdi:light-flood-down
-
   thermostat_10_minutes_heating:
     name: Heat 10 Minutes
     icon: mdi:radiator
+  power_off_server_rack:
+    name: Power Off Server Rack
+    icon: mdi:power
+  power_off_home_assistant:
+    name: Power Off Home Assistant
+    icon: mdi:power
+  reboot_home_assistant:
+    name: Reboot Home Assistant
+    icon: mdi:restart
 
 ###############################################
 ## Input DateTimes
