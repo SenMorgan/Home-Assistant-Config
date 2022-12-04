@@ -87,3 +87,36 @@
           Немедленное отключение сервера Home Assistant в {{ states('sensor.time') }}
     - delay: 00:00:05
     - service: hassio.host_shutdown
+
+- alias: UPS Lost Grid Power Light Notification
+  id: "ups_lost_grid_power_light_notification"
+  mode: single
+  trigger:
+    - platform: template
+      value_template: "{{ 'OB' in states('sensor.ups_status_data') }}"
+  action:
+    - service: light.turn_on
+      data:
+        entity_id: light.tradfri_bulb
+        brightness: 255
+        effect: "breathe"
+
+- alias: UPS Grid Power Restored Light Notification
+  id: "ups_grid_power_restored_light_notification"
+  mode: single
+  trigger:
+    - platform: template
+      value_template: "{{ 'OL' in states('sensor.ups_status_data') }}"
+  action:
+    - service: light.turn_on
+      data:
+        entity_id: light.tradfri_bulb
+        brightness: 255
+    - wait_template: "{{ not ('OL' in states('sensor.ups_status_data')) }}"
+      timeout: "00:00:10"
+    - if:
+        - condition: template
+          value_template: "{{ 'OL' in states('sensor.ups_status_data') }}"
+      then:
+        - service: light.turn_off
+          entity_id: light.tradfri_bulb
