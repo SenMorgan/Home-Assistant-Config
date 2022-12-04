@@ -809,21 +809,6 @@
           {{ trigger.event.data.new_state.attributes.friendly_name }}: {{ trigger.event.data.new_state.state }}%!
 
 ###############################################
-## Home Assistant Automations
-###############################################
-
-- id: letsencrypt-renewal
-  initial_state: true
-  alias: Let's Encrypt Renewal
-  trigger:
-    - platform: time
-      at: 00:00:00
-  action:
-    - service: hassio.addon_restart
-      data:
-        addon: core_letsencrypt
-
-###############################################
 ## Aqara Cube Automations
 ###############################################
 
