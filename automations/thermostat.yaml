@@ -131,6 +131,9 @@
     - service: script.thermostat_set_mode
       data:
         mode: "heat"
+    - service: script.thermostat_set_temperature
+      data:
+        temperature: 21
 
 - id: "thermostat_10_minutes_heating_on"
   alias: Thermostat 10 Minutes Heating ON
