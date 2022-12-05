@@ -103,11 +103,11 @@
         - automation.thermostat_eco_mode_by_window_disable
 
 ###############################################
-## Thermostat Emergency ON
+## Thermostat Emergency Enable at Nigth
 ###############################################
 
-- id: "thermostat_emergency_on"
-  alias: Thermostat Emergency ON
+- alias: Thermostat Emergency Enable at Nigth
+  id: thermostat_emergency_enable_at_night
   mode: single
   trigger:
     - platform: numeric_state
@@ -147,8 +147,8 @@
 ## Thermostat 10 Minutes Heating
 ###############################################
 
-- id: "thermostat_10_minutes_heating_on"
-  alias: Thermostat 10 Minutes Heating ON
+- alias: Thermostat 10 Minutes Heating Enable
+  id: thermostat_10_minutes_heating_enable
   mode: single
   trigger:
     - platform: state
@@ -157,7 +157,7 @@
     - choose:
         - conditions:
             - condition: state
-              entity_id: automation.thermostat_10_minutes_heating_off
+              entity_id: automation.thermostat_10_minutes_heating_disable
               state: "on"
           sequence:
             - service: media_player.play_media
@@ -167,7 +167,7 @@
                 media_content_type: text
         - conditions:
             - condition: state
-              entity_id: automation.thermostat_10_minutes_heating_off
+              entity_id: automation.thermostat_10_minutes_heating_disable
               state: "off"
           sequence:
             # Save actual thermostat mode
@@ -199,10 +199,10 @@
                 entity_id: input_datetime.thermostat_10_minutes_heating_time_end
                 datetime: "{{ now() + timedelta(minutes=10) }}"
             - service: automation.turn_on
-              entity_id: automation.thermostat_10_minutes_heating_off
+              entity_id: automation.thermostat_10_minutes_heating_disable
 
-- id: "thermostat_10_minutes_heating_off"
-  alias: Thermostat 10 Minutes Heating OFF
+- alias: Thermostat 10 Minutes Heating Disable
+  id: thermostat_10_minutes_heating_disable
   mode: single
   trigger:
     # Trigger every 30 seconds
@@ -227,14 +227,14 @@
       data:
         mode: "{{ states('input_text.thermostat_mode') }}"
     - service: automation.turn_off
-      entity_id: automation.thermostat_10_minutes_heating_off
+      entity_id: automation.thermostat_10_minutes_heating_disable
 
 ###############################################
 ## Thermostat ECO Mode When Noone Home
 ###############################################
 
-- id: "thermostat_eco_mode_when_noone_home"
-  alias: Thermostat ECO Mode When Noone Home
+- alias: Thermostat ECO Mode When Noone Home Enable
+  id: thermostat_eco_mode_when_noone_home_enable
   mode: single
   trigger:
     - platform: state
@@ -261,8 +261,8 @@
       data:
         mode: "off"
 
-- id: "thermostat_normal_mode_when_someone_home"
-  alias: Thermostat Normal Mode When Someone Home
+- alias: Thermostat ECO Mode When Noone Home Disable
+  id: thermostat_eco_mode_when_noone_home_disable
   mode: single
   trigger:
     - platform: state
