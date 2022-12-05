@@ -206,14 +206,14 @@
       data:
         media_content_id: Подогрев квартиры окончен
         media_content_type: text
+    # Restore saved thermostat target temperature and wait till the script is finished
+    - service: script.thermostat_set_temperature
+      data:
+        temperature: "{{ states('input_number.thermostat_saved_target_temperature') }}"
     # Restore saved thermostat mode
     - service: script.thermostat_set_mode
       data:
         mode: "{{ states('input_text.thermostat_mode') }}"
-    # Restore saved thermostat target temperature
-    - service: script.thermostat_set_temperature
-      data:
-        temperature: "{{ states('input_number.thermostat_saved_target_temperature') }}"
     - service: automation.turn_off
       entity_id: automation.thermostat_10_minutes_heating_off
 

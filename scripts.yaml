@@ -323,13 +323,14 @@ thermostat_set_mode:
   alias: Thermostat Set Mode
   mode: restart
   sequence:
+    # Check if desired mode is not already set
     - condition: template
       value_template: "{{ not is_state('climate.thermostat', mode) }}"
     - service: script.thermostat_set_mode_repeater
       data_template:
         mode: "{{ mode }}"
-    # Check if thermostat didn't change it's mode back after 10 seconds.
-    - delay: 00:00:05
+    # Check if thermostat didn't change it's mode back after delay.
+    - delay: 00:00:04
     # If thermostat didn't change it's mode back, then repeat the script.
     # This is needed because thermostat sometimes changes it's mode back
     # because of a bug in the thermostat firmware.
@@ -357,7 +358,7 @@ thermostat_set_mode_repeater:
               entity_id: climate.thermostat
             data:
               hvac_mode: "{{ mode }}"
-          - delay: 00:00:05
+          - delay: 00:00:03
 
 # Thermostat Set Temperature script
 # Required parameters:
@@ -366,17 +367,30 @@ thermostat_set_temperature:
   alias: Thermostat Set Temperature
   mode: restart
   sequence:
-    # This thermostat model sends values in int format
+    # Check if desired temperature is not already set
     - condition: template
       value_template: "{{ not is_state_attr('climate.thermostat', 'temperature', temperature | int) }}"
+    - variables:
+        mode: "{{ saved_mode }}"
+        need_to_restore_mode: true
     # Thermostat can save new temperature only if it in "heat" mode
-    - condition: template
-      value_template: "{{ is_state('climate.thermostat', 'heat') }}"
+    - if:
+        - condition: template
+          value_template: "{{ not is_state('climate.thermostat', 'heat') }}"
+      then:
+        # Save actual thermostat mode to the variable
+        - variables:
+            saved_mode: "{{ states('climate.thermostat') }}"
+        # Set thermostat mode to "heat"
+        - service: script.thermostat_set_mode
+          data:
+            mode: "heat"
+    # Set thermostat temperature
     - service: script.thermostat_set_temperature_repeater
       data_template:
         temperature: "{{ temperature }}"
-    # Check if thermostat didn't change it's temperature back after 10 seconds.
-    - delay: 00:00:05
+    # Check if thermostat didn't change it's temperature back after delay.
+    - delay: 00:00:04
     # If thermostat didn't change it's temperature back, then repeat the script.
     # This is needed because thermostat sometimes changes it's temperature back
     # because of a bug in the thermostat firmware.
@@ -385,6 +399,14 @@ thermostat_set_temperature:
     - service: script.thermostat_set_temperature_repeater
       data_template:
         temperature: "{{ temperature }}"
+    # Restore thermostat mode if it was changed
+    - if:
+        - condition: template
+          value_template: "{{ need_to_restore_mode }}"
+      then:
+        - service: script.thermostat_set_mode
+          data_template:
+            mode: "{{ saved_mode }}"
 
 thermostat_set_temperature_repeater:
   alias: Thermostat Set Temperature Repeater
@@ -405,7 +427,7 @@ thermostat_set_temperature_repeater:
               entity_id: climate.thermostat
             data:
               temperature: "{{ temperature }}"
-          - delay: 00:00:05
+          - delay: 00:00:03
 
 home_assistant_shutdown:
   alias: Home Assistant Shutdown
