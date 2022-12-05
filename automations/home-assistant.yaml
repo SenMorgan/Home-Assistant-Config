@@ -12,8 +12,9 @@
 ###############################################
 ## Notifications
 ###############################################
-- id: "Notification_Home_Assistant_Started"
-  alias: Notification Home Assistant Started
+
+- alias: Home Assistant Started Notification
+  id: "home_assistant_started_notification"
   trigger:
     - platform: homeassistant
       event: start
@@ -23,8 +24,8 @@
         title: "{{ 'ℹ️' }} Системное уведомление"
         message: Home Assistant started at {{ states('sensor.time') }}
 
-- id: "Notification_Home_Assistant_Stopped"
-  alias: Notification Home Assistant Stopped
+- alias: Home Assistant Stopped Notification
+  id: "home_assistant_stopped_notification"
   trigger:
     - platform: event
       event_type: homeassistant_stop
@@ -34,8 +35,8 @@
         title: "{{ 'ℹ️' }} Системное уведомление"
         message: Home Assistant stopped at {{ states('sensor.time') }}
 
-- id: "Notification_New_Device_Connected"
-  alias: Notification New Device Connected
+- alias: Notification New Device Connected Notification
+  id: "home_assistant_new_device_connected_notification"
   mode: queued
   trigger:
     platform: event
@@ -75,8 +76,8 @@
           К локальной сети было подключено новое устройство с именем {{ entity }}
         media_content_type: text
 
-- id: "Notification_Home_Assistant_Update_Available"
-  alias: Notification Home Assistant Update Available
+- alias: Home Assistant Update Available Notification
+  id: "home_assistant_update_available_notification"
   trigger:
     - platform: state
       entity_id: update.home_assistant_core_update
@@ -96,8 +97,9 @@
 ###############################################
 ## Low Battery Notifications
 ###############################################
-- id: "Create_Group_of_Battery_Devices"
-  alias: Create Group of Battery Devices
+
+- alias: Home Assistant Create Group of Battery Devices
+  id: "home_assistant_create_group_of_battery_devices"
   trigger:
     # Trigger on startup
     - platform: homeassistant
@@ -118,8 +120,8 @@
           {{ state.entity_id }}{%- if not loop.last -%}, {%- endif -%}
           {%- endfor %}
 
-- id: "Notification_Low_Battery"
-  alias: Notification Low Battery
+- alias: Home Assistant Low Device Battery Notification
+  id: "home_assistant_low_device_battery_notification"
   trigger:
     - platform: event
       event_type: state_changed
@@ -145,8 +147,8 @@
 ## Other Automations
 ###############################################
 
-- alias: Power Off Home Assistant Action
-  id: power_off_home_assistant_action
+- alias: Home Assistant Power Off Action
+  id: home_assistant_power_off_action
   trigger:
     - platform: state
       entity_id: input_button.power_off_home_assistant
@@ -154,8 +156,8 @@
     - service: script.turn_on
       entity_id: script.home_assistant_shutdown
 
-- alias: Reboot Home Assistant Action
-  id: reboot_home_assistant_action
+- alias: Home Assistant Reboot Action
+  id: home_assistant_reboot_action
   trigger:
     - platform: state
       entity_id: input_button.reboot_home_assistant
@@ -163,8 +165,8 @@
     - service: script.turn_on
       entity_id: script.home_assistant_reboot
 
-- alias: Power Off Server Rack Action
-  id: power_off_server_rack_action
+- alias: Home Assistant Server Rack Power Off Action
+  id: home_assistant_server_rack_power_off_action
   mode: restart
   trigger:
     - platform: state
