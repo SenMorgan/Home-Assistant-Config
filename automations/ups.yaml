@@ -103,6 +103,8 @@
         entity_id: light.tradfri_bulb
         brightness: 255
         effect: "breathe"
+    - service: automation.turn_on
+      entity_id: automation.ups_grid_power_restored_light_notification
 
 - alias: UPS Grid Power Restored Light Notification
   id: "ups_grid_power_restored_light_notification"
@@ -123,3 +125,5 @@
       then:
         - service: light.turn_off
           entity_id: light.tradfri_bulb
+    - service: automation.turn_off
+      entity_id: automation.ups_grid_power_restored_light_notification
