@@ -103,11 +103,11 @@
         - automation.thermostat_eco_mode_by_window_disable
 
 ###############################################
-## Thermostat Emergency Enable at Nigth
+## Thermostat Emergency Control
 ###############################################
 
-- alias: Thermostat Emergency Enable at Nigth
-  id: thermostat_emergency_enable_at_night
+- alias: Thermostat Freeze Alert at Nigth
+  id: thermostat_freeze_alert_at_night
   mode: single
   trigger:
     - platform: numeric_state
@@ -142,6 +142,35 @@
     - service: script.thermostat_set_temperature
       data:
         temperature: 21
+
+- alias: Thermostat Preheat Alert
+  id: thermostat_preheat_alert
+  mode: restart
+  trigger:
+    - platform: numeric_state
+      entity_id: climate.thermostat
+      attribute: current_temperature
+      above: 23
+      for: "00:05:00"
+    - platform: time_pattern
+      hours: "/1"
+  condition:
+    - condition: state
+      entity_id: input_boolean.heating_season_switch
+      state: "on"
+    - condition: numeric_state
+      entity_id: climate.thermostat
+      attribute: current_temperature
+      above: 23
+  action:
+    - service: notify.mobile_app_sm_s901b
+      data:
+        title: "{{ '🚨' }} Превышение температуры!"
+        message: >
+          Термостат был переведён в автоматический режим по причине высокой температуры в квартире в {{ states('sensor.time') }}
+    - service: script.thermostat_set_mode
+      data:
+        mode: "off"
 
 ###############################################
 ## Thermostat 10 Minutes Heating
