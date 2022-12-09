@@ -415,7 +415,7 @@
       entity_id: cover.bedroom
       state: open
     # - condition: state
-    #   entity_id: binary_sensor.aqara_bedroom_window_sensor_contact
+    #   entity_id: binary_sensor.bedroom_window_contact
     #   state: "off"
   action:
     - service: cover.close_cover
@@ -1249,7 +1249,7 @@
   initial_state: true
   trigger:
     - platform: state
-      entity_id: binary_sensor.aqara_bedroom_window_sensor_contact
+      entity_id: binary_sensor.bedroom_window_contact
       from: "off"
       to: "on"
   action:

@@ -5,7 +5,7 @@ notifier:
 
 filter:
   include_entities:
-    - binary_sensor.aqara_bedroom_window_sensor_contact
+    - binary_sensor.bedroom_window_contact
     - binary_sensor.aqara_hall_door_sensor_contact
     - climate.thermostat
     - cover.bedroom
@@ -36,7 +36,7 @@ filter:
 
 entity_config:
   # type: devices.types.humidifier  # параметр необязательный, вычисляется автоматически!
-  binary_sensor.aqara_bedroom_window_sensor_contact:
+  binary_sensor.bedroom_window_contact:
     name: Окно
     room: Спальня
   binary_sensor.aqara_hall_door_sensor_contact:

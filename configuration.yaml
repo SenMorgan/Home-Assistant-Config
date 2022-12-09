@@ -147,9 +147,9 @@ binary_sensor:
     name: Windows
     device_class: opening
     entities:
-      - binary_sensor.aqara_bedroom_window_sensor_contact
-      - binary_sensor.aqara_kitchen_window_sensor_contact
-      - binary_sensor.aqara_living_room_window_sensor_contact
+      - binary_sensor.bedroom_window_contact
+      - binary_sensor.kitchen_window_contact
+      - binary_sensor.living_room_window_contact
 
 counter:
   ###############################################
