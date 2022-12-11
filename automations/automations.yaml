@@ -1096,7 +1096,7 @@
   mode: single
   trigger:
     - platform: state
-      entity_id: binary_sensor.aqara_bedroom_door_sensor_contact
+      entity_id: binary_sensor.bedroom_door_contact
       to: "off"
       for: 00:00:30
     - platform: time
@@ -1147,7 +1147,7 @@
   mode: single
   trigger:
     - platform: state
-      entity_id: binary_sensor.aqara_bedroom_door_sensor_contact
+      entity_id: binary_sensor.bedroom_door_contact
       to: "on"
       for: 00:00:30
     - platform: time
@@ -1180,7 +1180,7 @@
   mode: single
   trigger:
     - platform: state
-      entity_id: binary_sensor.aqara_bedroom_door_sensor_contact
+      entity_id: binary_sensor.bedroom_door_contact
       to: "off"
       for: 00:00:30
   condition:
@@ -1206,7 +1206,7 @@
   mode: single
   trigger:
     - platform: state
-      entity_id: binary_sensor.aqara_bedroom_door_sensor_contact
+      entity_id: binary_sensor.bedroom_door_contact
       to: "on"
       for: 00:00:30
   condition:
