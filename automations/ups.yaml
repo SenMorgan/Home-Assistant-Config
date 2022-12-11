@@ -29,6 +29,28 @@
         message: >
           UPS потерял питание в {{ states('sensor.time') }}\n
           Рассчётное время работы: {{ states('sensor.ups_battery_runtime') | int | timestamp_custom('%M:%S') }} минут
+    - service: automation.turn_on
+      entity_id: automation.ups_grid_power_restored_notification
+
+- alias: UPS Grid Power Restored Notification
+  id: "ups_grid_power_restored_notification"
+  mode: single
+  trigger:
+    - platform: template
+      value_template: "{{ 'OL' in states('sensor.ups_status_data') }}"
+  action:
+    - service: persistent_notification.create
+      data:
+        title: "{{ '🚨' }} Уведомление от UPS"
+        message: >
+          UPS восстановил питание в {{ states('sensor.time') }}
+    - service: notify.mobile_app_sm_s901b
+      data:
+        title: "{{ '🚨' }} Уведомление от UPS"
+        message: >
+          UPS восстановил питание в {{ states('sensor.time') }}
+    - service: automation.turn_off
+      entity_id: automation.ups_grid_power_restored_notification
 
 - alias: UPS Discharging Loop Notification
   id: "ups_discharging_loop_notification"
