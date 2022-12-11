@@ -89,9 +89,9 @@ input_number:
     initial: 20
   power_monitor_low_voltage_threshold:
     name: Power Monitor Low Voltage Threshold
-    min: 0
-    max: 25
-    initial: 3.3
+    min: 8
+    max: 16
+    step: 0.1
 
 ######################## START OF INPUT BOOLEAN SECTION ########################
 
