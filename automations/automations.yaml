@@ -945,6 +945,7 @@
 ###############################################
 ## Other Buttons and Switches Handles
 ###############################################
+
 - id: "Raven_Engine_Switch"
   alias: Raven Engine Switch
   mode: single
@@ -1040,6 +1041,7 @@
 ###############################################
 ## Yandex Alice Automations
 ###############################################
+
 - id: "Sync_Shopping_List"
   alias: Sync Shopping List
   mode: single
@@ -1235,6 +1237,7 @@
 ###############################################
 ## Solar Station Automations
 ###############################################
+
 - id: "Save_Energy_Produced_Value_at_Start_of_the_Day"
   alias: Save Energy Produced Value at Start of the Day
   trigger:
@@ -1249,6 +1252,7 @@
 ###############################################
 ## Gas Meter by Aqara door sensor and counter
 ###############################################
+
 - id: "Gas_Counting"
   alias: Gas Counting
   initial_state: true
@@ -1262,3 +1266,4 @@
       target:
         entity_id: counter.gas_counter
   mode: single
+
