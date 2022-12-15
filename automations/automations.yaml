@@ -1287,5 +1287,5 @@
           - service: notify.mobile_app_sm_s901b
             data:
               title: "{{ '🚨' }} Монитор питания"
-              message: "Напряжение ниже порога {{ states('input_number.power_monitor_low_voltage_threshold') }} V"
+              message: "Напряжение ниже порога: {{ states('sensor.power_monitor_voltage') }} V"
           - delay: 00:05:00
