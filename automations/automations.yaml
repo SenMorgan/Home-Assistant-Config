@@ -19,10 +19,10 @@
       after: "6:00:00"
       before: "22:00:00"
   action:
-    - wait_template: "{{ states('binary_sensor.aqara_hall_door_sensor_contact') == 'on' }}"
+    - wait_template: "{{ states('binary_sensor.hall_door_contact') == 'on' }}"
       timeout: 00:15:00
       continue_on_timeout: false
-    - wait_template: "{{ states('binary_sensor.aqara_hall_door_sensor_contact') == 'off' }}"
+    - wait_template: "{{ states('binary_sensor.hall_door_contact') == 'off' }}"
       timeout: 00:10:00
       continue_on_timeout: false
     - choose:
@@ -109,7 +109,7 @@
   alias: Home All Lights OFF
   trigger:
     - platform: state
-      entity_id: binary_sensor.aqara_hall_door_sensor_contact
+      entity_id: binary_sensor.hall_door_contact
       from: "on"
       to: "off"
   condition:
@@ -139,7 +139,7 @@
   alias: Hall Lights by Motion ON
   trigger:
     - platform: state
-      entity_id: binary_sensor.aqara_hall_door_sensor_contact
+      entity_id: binary_sensor.hall_door_contact
       to: "on"
     - platform: state
       entity_id: binary_sensor.aqara_hall_motion_sensor_occupancy
@@ -501,7 +501,7 @@
   alias: Notification Door Opened
   trigger:
     - platform: state
-      entity_id: binary_sensor.aqara_hall_door_sensor_contact
+      entity_id: binary_sensor.hall_door_contact
       to: "on"
   condition:
     - condition: template

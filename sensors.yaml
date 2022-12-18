@@ -75,7 +75,7 @@
     front_door_last_triggered:
       friendly_name: "Front Door Last Triggered"
       value_template: >
-        {{ as_timestamp(states.binary_sensor.aqara_hall_door_sensor_contact.last_changed) | timestamp_custom('%d.%m.%Y %H:%M:%S',1) }}
+        {{ as_timestamp(states.binary_sensor.hall_door_contact.last_changed) | timestamp_custom('%d.%m.%Y %H:%M:%S',1) }}
     bedroom_window_last_triggered:
       friendly_name: "Bedroom Window Last Triggered"
       value_template: >
