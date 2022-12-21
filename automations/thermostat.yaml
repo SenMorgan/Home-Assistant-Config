@@ -235,7 +235,7 @@
                 media_content_id: Включен подогрев квартиры на 10 минут
                 media_content_type: text
             - service: script.turn_on
-              entity_id: script.tell_what_window_are_opened
+              entity_id: script.tell_what_windows_are_opened
             - service: script.thermostat_set_mode
               data:
                 mode: "heat"

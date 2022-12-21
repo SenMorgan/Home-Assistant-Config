@@ -297,7 +297,7 @@ wake_tv:
       data:
         mac: !secret TV_MAC
 
-tell_what_window_are_opened:
+tell_what_windows_are_opened:
   alias: Tell What Windows Are Opened
   sequence:
     - if:
