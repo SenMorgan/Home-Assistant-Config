@@ -87,7 +87,7 @@
             - automation.thermostat_eco_mode_by_window_disable
 
 - alias: Thermostat ECO Mode by Window Reset
-  id: "thermostat_eco_mode_by_window_reset"
+  id: thermostat_eco_mode_by_window_reset
   mode: single
   trigger:
     - platform: state
@@ -102,7 +102,7 @@
         - automation.thermostat_eco_mode_by_window_reset
 
 - alias: Thermostat ECO Mode by Window Disable
-  id: "thermostat_eco_mode_by_window_disable"
+  id: thermostat_eco_mode_by_window_disable
   mode: single
   trigger:
     # Trigger every 1 minute
@@ -203,52 +203,47 @@
     - platform: state
       entity_id: input_button.thermostat_10_minutes_heating
   action:
-    - choose:
-        - conditions:
-            - condition: state
-              entity_id: automation.thermostat_10_minutes_heating_disable
-              state: "on"
-          sequence:
-            - service: media_player.play_media
-              entity_id: media_player.yandex_station
-              data:
-                media_content_id: Подогрев квартиры уже включен
-                media_content_type: text
-        - conditions:
-            - condition: state
-              entity_id: automation.thermostat_10_minutes_heating_disable
-              state: "off"
-          sequence:
-            # Save actual thermostat mode
-            - service: input_text.set_value
-              data:
-                entity_id: input_text.thermostat_mode
-                value: "{{ states('climate.thermostat') }}"
-            # Save actual thermostat target temperature
-            - service: input_number.set_value
-              data:
-                entity_id: input_number.thermostat_saved_target_temperature
-                value: "{{ state_attr('climate.thermostat', 'temperature') }}"
-            - service: media_player.play_media
-              entity_id: media_player.yandex_station
-              data:
-                media_content_id: Включен подогрев квартиры на 10 минут
-                media_content_type: text
-            - service: script.turn_on
-              entity_id: script.tell_what_windows_are_opened
-            - service: script.thermostat_set_mode
-              data:
-                mode: "heat"
-            - service: script.thermostat_set_temperature
-              data:
-                temperature: 23
-            # Set heating_time_end to a time ten minutes in the future
-            - service: input_datetime.set_datetime
-              data:
-                entity_id: input_datetime.thermostat_10_minutes_heating_time_end
-                datetime: "{{ now() + timedelta(minutes=10) }}"
-            - service: automation.turn_on
-              entity_id: automation.thermostat_10_minutes_heating_disable
+    - if:
+        - condition: state
+          entity_id: automation.thermostat_10_minutes_heating_disable
+          state: "on"
+      then:
+        - service: media_player.play_media
+          entity_id: media_player.yandex_station
+          data:
+            media_content_id: Подогрев квартиры уже включен
+            media_content_type: text
+      else:
+        # Save actual thermostat mode
+        - service: input_text.set_value
+          data:
+            entity_id: input_text.thermostat_mode
+            value: "{{ states('climate.thermostat') }}"
+        # Save actual thermostat target temperature
+        - service: input_number.set_value
+          data:
+            entity_id: input_number.thermostat_saved_target_temperature
+            value: "{{ state_attr('climate.thermostat', 'temperature') }}"
+        - service: media_player.play_media
+          entity_id: media_player.yandex_station
+          data:
+            media_content_id: Включен подогрев квартиры на 10 минут
+            media_content_type: text
+        - service: script.turn_on
+          entity_id: script.tell_what_windows_are_opened
+        - service: script.thermostat_set_mode
+          data:
+            mode: "heat"
+        - service: script.thermostat_set_temperature
+          data:
+            temperature: 23
+        # Set heating_time_end to a time ten minutes in the future
+        - service: input_datetime.set_datetime
+          data:
+            entity_id: input_datetime.thermostat_10_minutes_heating_time_end
+            datetime: "{{ now() + timedelta(minutes=10) }}"
+        - service: automation.turn_on
+          entity_id: automation.thermostat_10_minutes_heating_disable
 
 - alias: Thermostat 10 Minutes Heating Disable
   id: thermostat_10_minutes_heating_disable
