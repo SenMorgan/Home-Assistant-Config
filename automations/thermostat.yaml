@@ -228,11 +228,6 @@
           # If «ECO mode by windows» automation is enabled now - do not save actual state
           # and disable «ECO mode by windows» automation
           else:
-            - service: media_player.play_media
-              entity_id: media_player.yandex_station
-              data:
-                media_content_id: 30 минутное ожидание окончено
-                media_content_type: text
             # Disable «10 minutes heating» automation
             - service: automation.turn_off
               entity_id:
