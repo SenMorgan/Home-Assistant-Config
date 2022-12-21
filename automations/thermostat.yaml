@@ -46,14 +46,34 @@
           state: "on"
       # If some window was opened
       then:
-        # Save actual thermostat mode
-        - service: input_text.set_value
-          data:
-            entity_id: input_text.thermostat_mode
-            value: "{{ states('climate.thermostat') }}"
+        # If «10 minutes heating» automation is disabled now - save actual state
+        - if:
+            - condition: state
+              entity_id: automation.thermostat_10_minutes_heating_disable
+              state: "off"
+          then:
+            # Save actual thermostat mode
+            - service: input_text.set_value
+              data:
+                entity_id: input_text.thermostat_mode
+                value: "{{ states('climate.thermostat') }}"
+          # If «10 minutes heating» automation is enabled now - do not save actual state
+          # and disable «10 minutes heating» automation
+          else:
+            - service: media_player.play_media
+              entity_id: media_player.yandex_station
+              data:
+                media_content_id: Подогрев квартиры окончен раньше, потому что было открыто окно
+                media_content_type: text
+            # Disable «10 minutes heating» automation
+            - service: automation.turn_off
+              entity_id: automation.thermostat_10_minutes_heating_disable
+
+        # Set thermostat mode to «off»
         - service: script.thermostat_set_mode
           data:
             mode: "off"
+
       # If all windows were closed
       else:
         # Wait 30 minutes before restoring thermostat mode
