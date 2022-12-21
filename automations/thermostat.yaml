@@ -267,10 +267,18 @@
     # Trigger every 30 seconds
     - platform: time_pattern
       seconds: "/30"
+    # Or if thermostat changed it's mode
+    - platform: state
+      entity_id: climate.thermostat
   condition:
-    # We use here template condition because time condition ignores date part of timestamp
-    - condition: template
-      value_template: "{{ as_timestamp(now()) > as_timestamp(states('input_datetime.thermostat_10_minutes_heating_time_end')) }}"
+  # Either time condition or thermostat mode condition
+    - condition: or
+      conditions:
+        # We use here template condition because time condition ignores date part of timestamp
+        - condition: template
+          value_template: "{{ as_timestamp(now()) > as_timestamp(states('input_datetime.thermostat_10_minutes_heating_time_end')) }}"
+        - condition: template
+          value_template: "{{ not is_state('climate.thermostat', 'heat') }}"
   action:
     - service: media_player.play_media
       entity_id: media_player.yandex_station
