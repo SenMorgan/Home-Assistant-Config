@@ -326,6 +326,12 @@
     - service: script.thermostat_set_mode
       data:
         mode: "off"
+    # Stop all automations that can change thermostat mode
+    - service: automation.turn_off
+      entity_id:
+        - automation.thermostat_eco_mode_by_window_reset
+        - automation.thermostat_eco_mode_by_window_disable
+        - automation.thermostat_10_minutes_heating_disable
 
 - alias: Thermostat ECO Mode When Noone Home Disable
   id: thermostat_eco_mode_when_noone_home_disable
