@@ -214,11 +214,31 @@
             media_content_id: Подогрев квартиры уже включен
             media_content_type: text
       else:
-        # Save actual thermostat mode
-        - service: input_text.set_value
-          data:
-            entity_id: input_text.thermostat_mode
-            value: "{{ states('climate.thermostat') }}"
+        # If «ECO mode by windows» automation is disabled now - save actual state
+        - if:
+            - condition: state
+              entity_id: automation.thermostat_eco_mode_by_window_disable
+              state: "off"
+          then:
+            # Save actual thermostat mode
+            - service: input_text.set_value
+              data:
+                entity_id: input_text.thermostat_mode
+                value: "{{ states('climate.thermostat') }}"
+          # If «ECO mode by windows» automation is enabled now - do not save actual state
+          # and disable «ECO mode by windows» automation
+          else:
+            - service: media_player.play_media
+              entity_id: media_player.yandex_station
+              data:
+                media_content_id: 30 минутное ожидание окончено
+                media_content_type: text
+            # Disable «10 minutes heating» automation
+            - service: automation.turn_off
+              entity_id:
+                - automation.thermostat_eco_mode_by_window_reset
+                - automation.thermostat_eco_mode_by_window_disable
+
         # Save actual thermostat target temperature
         - service: input_number.set_value
           data:
