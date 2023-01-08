@@ -6,7 +6,6 @@ exposed_domains:
   - light
   - cover
   - media_player
-  - climate
   - sensor
   - scene
   - vacuum
@@ -79,8 +78,6 @@ entity_config:
       - CAR_DOORS
   switch.asus_pc:
     name: PC
-    room: Kitchen
-  climate.thermostat:
     room: Kitchen
   sensor.aqara_door_sensor_1_temperature:
     name: Hall Door Sensor Temperature
