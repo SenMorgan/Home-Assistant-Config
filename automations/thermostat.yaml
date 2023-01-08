@@ -33,12 +33,12 @@
     - condition: state
       entity_id: input_boolean.heating_season_switch
       state: "on"
-      # If some window was opened and thermostat is in «auto» or «heat» mode
+      # If some window was opened and thermostat is in «heat» mode
       # or if all windows were closed and thermostat is in «off» mode
     - condition: template
       value_template: >
-        {{ (states('climate.thermostat') in ['auto', 'heat'] and is_state('binary_sensor.windows', 'on')) or
-            (states('climate.thermostat') == 'off' and is_state('binary_sensor.windows', 'off')) }}
+        {{ (states('climate.family_room') == 'heat' and is_state('binary_sensor.windows', 'on')) or
+            (states('climate.family_room') == 'off' and is_state('binary_sensor.windows', 'off')) }}
   action:
     - if:
         - condition: state
@@ -46,20 +46,12 @@
           state: "on"
       # If some window was opened
       then:
-        # If «10 minutes heating» automation is disabled now - save actual state
+        # If «10 minutes heating» automation is enabled now - disable it
         - if:
             - condition: state
               entity_id: automation.thermostat_10_minutes_heating_disable
-              state: "off"
+              state: "on"
           then:
-            # Save actual thermostat mode
-            - service: input_text.set_value
-              data:
-                entity_id: input_text.thermostat_mode
-                value: "{{ states('climate.thermostat') }}"
-          # If «10 minutes heating» automation is enabled now - do not save actual state
-          # and disable «10 minutes heating» automation
-          else:
             - service: media_player.play_media
               entity_id: media_player.yandex_station
               data:
@@ -70,9 +62,10 @@
               entity_id: automation.thermostat_10_minutes_heating_disable
 
         # Set thermostat mode to «off»
-        - service: script.thermostat_set_mode
+        - service: climate.set_hvac_mode
+          entity_id: climate.family_room
           data:
-            mode: "off"
+            hvac_mode: "off"
 
       # If all windows were closed
       else:
@@ -113,10 +106,11 @@
     - condition: template
       value_template: "{{ as_timestamp(now()) > as_timestamp(states('input_datetime.thermostat_windows_close_delay_time_end')) }}"
   action:
-    # Restore saved thermostat mode
-    - service: script.thermostat_set_mode
+    # Set thermostat mode to «heat»
+    - service: climate.set_hvac_mode
+      entity_id: climate.family_room
       data:
-        mode: "{{ states('input_text.thermostat_mode') }}"
+        hvac_mode: "heat"
     - service: automation.turn_off
       entity_id:
         - automation.thermostat_eco_mode_by_window_reset
@@ -131,9 +125,9 @@
   mode: single
   trigger:
     - platform: numeric_state
-      entity_id: climate.thermostat
+      entity_id: climate.family_room
       attribute: current_temperature
-      below: 19
+      below: 19.0
       for: "00:05:00"
     - platform: time_pattern
       hours: "/1"
@@ -142,9 +136,9 @@
       entity_id: input_boolean.heating_season_switch
       state: "on"
     - condition: numeric_state
-      entity_id: climate.thermostat
+      entity_id: climate.family_room
       attribute: current_temperature
-      below: 19
+      below: 19.0
     - condition: state
       entity_id: binary_sensor.people_home
       state: "on"
@@ -156,21 +150,25 @@
       data:
         title: "{{ 'ℹ️' }} Системное уведомление"
         message: Термостат был снова включен в {{ states('sensor.time') }}, чтобы вы не замёрзли
-    - service: script.thermostat_set_mode
+    # Set thermostat mode to «heat»
+    - service: climate.set_hvac_mode
+      entity_id: climate.family_room
       data:
-        mode: "heat"
-    - service: script.thermostat_set_temperature
+        hvac_mode: "heat"
+    # Set temperature to 20°C
+    - service: climate.set_temperature
+      entity_id: climate.family_room
       data:
-        temperature: 21
+        temperature: 20
 
 - alias: Thermostat Preheat Alert
   id: thermostat_preheat_alert
   mode: restart
   trigger:
     - platform: numeric_state
-      entity_id: climate.thermostat
+      entity_id: climate.family_room
       attribute: current_temperature
-      above: 23
+      above: 24.0
       for: "00:05:00"
     - platform: time_pattern
       hours: "/1"
@@ -179,18 +177,25 @@
       entity_id: input_boolean.heating_season_switch
       state: "on"
     - condition: numeric_state
-      entity_id: climate.thermostat
+      entity_id: climate.family_room
       attribute: current_temperature
-      above: 23
+      above: 24.0
   action:
     - service: notify.mobile_app_sm_s901b
       data:
         title: "{{ '🚨' }} Превышение температуры!"
         message: >
           Термостат был переведён в автоматический режим по причине высокой температуры в квартире в {{ states('sensor.time') }}
-    - service: script.thermostat_set_mode
+    # Set thermostat mode to «heat»
+    - service: climate.set_hvac_mode
+      entity_id: climate.family_room
       data:
-        mode: "off"
+        hvac_mode: "heat"
+    # Set temperature to 20°C
+    - service: climate.set_temperature
+      entity_id: climate.family_room
+      data:
+        temperature: 20
 
 ###############################################
 ## Thermostat 10 Minutes Heating
@@ -214,21 +219,12 @@
             media_content_id: Подогрев квартиры уже включен
             media_content_type: text
       else:
-        # If «ECO mode by windows» automation is disabled now - save actual state
+        # If «ECO mode by windows» automation is enabled now - disable it
         - if:
             - condition: state
               entity_id: automation.thermostat_eco_mode_by_window_disable
-              state: "off"
+              state: "on"
           then:
-            # Save actual thermostat mode
-            - service: input_text.set_value
-              data:
-                entity_id: input_text.thermostat_mode
-                value: "{{ states('climate.thermostat') }}"
-          # If «ECO mode by windows» automation is enabled now - do not save actual state
-          # and disable «ECO mode by windows» automation
-          else:
-            # Disable «10 minutes heating» automation
             - service: automation.turn_off
               entity_id:
                 - automation.thermostat_eco_mode_by_window_reset
@@ -238,7 +234,7 @@
         - service: input_number.set_value
           data:
             entity_id: input_number.thermostat_saved_target_temperature
-            value: "{{ state_attr('climate.thermostat', 'temperature') }}"
+            value: "{{ state_attr('climate.family_room', 'temperature') }}"
         - service: media_player.play_media
           entity_id: media_player.yandex_station
           data:
@@ -246,12 +242,15 @@
             media_content_type: text
         - service: script.turn_on
           entity_id: script.tell_what_windows_are_opened
-        - service: script.thermostat_set_mode
+        # Set thermostat mode to «heat» with 24°C temperature
+        - service: climate.set_hvac_mode
+          entity_id: climate.family_room
           data:
-            mode: "heat"
-        - service: script.thermostat_set_temperature
+            hvac_mode: "heat"
+        - service: climate.set_temperature
+          entity_id: climate.family_room
           data:
-            temperature: 23
+            temperature: 24
         # Set heating_time_end to a time ten minutes in the future
         - service: input_datetime.set_datetime
           data:
@@ -269,30 +268,31 @@
       seconds: "/30"
     # Or if thermostat changed it's mode
     - platform: state
-      entity_id: climate.thermostat
+      entity_id: climate.family_room
   condition:
-  # Either time condition or thermostat mode condition
+    # Either time condition or thermostat mode condition
     - condition: or
       conditions:
         # We use here template condition because time condition ignores date part of timestamp
         - condition: template
           value_template: "{{ as_timestamp(now()) > as_timestamp(states('input_datetime.thermostat_10_minutes_heating_time_end')) }}"
         - condition: template
-          value_template: "{{ not is_state('climate.thermostat', 'heat') }}"
+          value_template: "{{ not is_state('climate.family_room', 'heat') }}"
   action:
     - service: media_player.play_media
       entity_id: media_player.yandex_station
       data:
         media_content_id: Подогрев квартиры окончен
         media_content_type: text
-    # Restore saved thermostat target temperature and wait till the script is finished
-    - service: script.thermostat_set_temperature
+    # Restore saved thermostat target temperature
+    - service: climate.set_hvac_mode
+      entity_id: climate.family_room
+      data:
+        hvac_mode: "heat"
+    - service: climate.set_temperature
+      entity_id: climate.family_room
       data:
         temperature: "{{ states('input_number.thermostat_saved_target_temperature') }}"
-    # Restore saved thermostat mode
-    - service: script.thermostat_set_mode
-      data:
-        mode: "{{ states('input_text.thermostat_mode') }}"
     - service: automation.turn_off
       entity_id: automation.thermostat_10_minutes_heating_disable
 
@@ -313,22 +313,19 @@
       entity_id: input_boolean.heating_season_switch
       state: "on"
     - condition: template
-      value_template: "{{ not is_state('climate.thermostat', 'off') }}"
+      value_template: "{{ not is_state('climate.family_room', 'off') }}"
   action:
     - service: notify.mobile_app_sm_s901b
       data:
         title: "{{ 'ℹ️' }} Системное уведомление"
         message: Термостат переведён в режим экономии
-    # Save actual thermostat mode
-    - service: input_text.set_value
+    # Set thermostat mode to «off»
+    - service: climate.set_hvac_mode
+      entity_id: climate.family_room
       data:
-        entity_id: input_text.thermostat_mode
-        value: "{{ states('climate.thermostat') }}"
+        hvac_mode: "off"
     - service: automation.turn_on
       entity_id: automation.thermostat_eco_mode_when_noone_home_disable
-    - service: script.thermostat_set_mode
-      data:
-        mode: "off"
     # Stop all automations that can change thermostat mode
     - service: automation.turn_off
       entity_id:
@@ -345,17 +342,18 @@
       to: "on"
   condition:
     - condition: template
-      value_template: "{{ is_state('climate.thermostat', 'off') }}"
+      value_template: "{{ is_state('climate.family_room', 'off') }}"
   action:
     - service: notify.mobile_app_sm_s901b
       data:
         title: "{{ 'ℹ️' }} Системное уведомление"
         message: >
           Термостат переведён в нормальный режим.\n
-          Температура дома: {{ state_attr('climate.thermostat', 'current_temperature') }}°C
-    # Restore saved thermostat mode
-    - service: script.thermostat_set_mode
+          Температура дома: {{ state_attr('climate.family_room', 'current_temperature') }}°C
+    # Set thermostat mode to «heat»
+    - service: climate.set_hvac_mode
+      entity_id: climate.family_room
       data:
-        mode: "{{ states('input_text.thermostat_mode') }}"
+        hvac_mode: "heat"
     - service: automation.turn_off
       entity_id: automation.thermostat_eco_mode_when_noone_home_disable
