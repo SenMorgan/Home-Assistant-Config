@@ -227,11 +227,6 @@ rest:
       - name: "Duco Server"
         value_template: "{{ value_json['server'] }}"
 
-  ###############################################
-  ## Water Quality Rest Sensors
-  ###############################################
-  - !include water-quality.yaml
-
 light:
   - platform: artnet_led
     host: !secret ARTNET_DMX_CONTROLLER_IP
