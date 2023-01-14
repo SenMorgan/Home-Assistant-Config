@@ -237,30 +237,6 @@ rest:
 ###############################################
 mqtt:
   ###############################################
-  ## CLIMATE
-  ###############################################
-  climate:
-    - name: Thermostat
-      unique_id: thermostat
-      action_topic: "kitchen/thermostat/properties"
-      action_template: "{{value_json.state}}"
-      temperature_command_topic: "kitchen/thermostat/set/targetTemperature"
-      temperature_state_topic: "kitchen/thermostat/properties"
-      temperature_state_template: "{{value_json.targetTemperature}}"
-      current_temperature_topic: "kitchen/thermostat/properties"
-      current_temperature_template: "{{value_json.temperature}}"
-      mode_command_topic: "kitchen/thermostat/set/schedulesMode"
-      mode_state_topic: "kitchen/thermostat/properties"
-      mode_state_template: "{{value_json.schedulesMode}}"
-      payload_on: true
-      payload_off: false
-      modes: ["auto", "heat", "off"] # mode off means ECO mode (14 degrees), not switching OFF device
-      min_temp: 14
-      max_temp: 28
-      temp_step: 1
-      precision: 1
-
-  ###############################################
   ## COVERS
   ###############################################
   cover:
