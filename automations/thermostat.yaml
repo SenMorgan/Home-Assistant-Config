@@ -230,19 +230,24 @@
                 - automation.thermostat_eco_mode_by_window_reset
                 - automation.thermostat_eco_mode_by_window_disable
 
-        # Save actual thermostat target temperature
-        - service: input_number.set_value
-          data:
-            entity_id: input_number.thermostat_saved_target_temperature
-            value: "{{ state_attr('climate.family_room', 'temperature') }}"
         - service: media_player.play_media
           entity_id: media_player.yandex_station
           data:
             media_content_id: Включен подогрев квартиры на 10 минут
             media_content_type: text
+        # Save actual thermostat target temperature
+        - service: input_number.set_value
+          data:
+            entity_id: input_number.thermostat_saved_target_temperature
+            value: "{{ state_attr('climate.family_room', 'temperature') }}"
+        # Save new thermostat target temperature by adding 1°C to the current temperature
+        - service: input_number.set_value
+          data:
+            entity_id: input_number.thermostat_new_target_temperature
+            value: "{{ state_attr('climate.family_room', 'current_temperature') + 1 }}"
         - service: script.turn_on
           entity_id: script.tell_what_windows_are_opened
-        # Set thermostat mode to «heat» with 24°C temperature
+        # Set thermostat mode to «heat» and increase temperature by 1°C
         - service: climate.set_hvac_mode
           entity_id: climate.family_room
           data:
@@ -250,12 +255,18 @@
         - service: climate.set_temperature
           entity_id: climate.family_room
           data:
-            temperature: 24
+            temperature: "{{ states('input_number.thermostat_new_target_temperature') }}"
         # Set heating_time_end to a time ten minutes in the future
         - service: input_datetime.set_datetime
           data:
             entity_id: input_datetime.thermostat_10_minutes_heating_time_end
             datetime: "{{ now() + timedelta(minutes=10) }}"
+        # Wait here until actual target temperature is the same as new target temperature
+        - wait_template: |
+            {{ state_attr('climate.family_room', 'temperature') ==
+            (states('input_number.thermostat_new_target_temperature') | float) }}
+          timeout: "00:01:00"
+          continue_on_timeout: false
         - service: automation.turn_on
           entity_id: automation.thermostat_10_minutes_heating_disable
 
@@ -278,6 +289,11 @@
           value_template: "{{ as_timestamp(now()) > as_timestamp(states('input_datetime.thermostat_10_minutes_heating_time_end')) }}"
         - condition: template
           value_template: "{{ not is_state('climate.family_room', 'heat') }}"
+          # Compare new target temperature with actual target temperature to know if the temperature was manually changed
+        - condition: template
+          value_template: |
+            {{ state_attr('climate.family_room', 'temperature') !=
+            (states('input_number.thermostat_new_target_temperature') | float) }}
   action:
     - service: media_player.play_media
       entity_id: media_player.yandex_station

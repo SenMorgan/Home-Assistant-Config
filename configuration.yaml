@@ -84,9 +84,14 @@ input_number:
     initial: 0.1
   thermostat_saved_target_temperature:
     name: Thermostat Saved Target Temperature
-    min: 15
-    max: 30
-    initial: 20
+    min: 15.0
+    max: 30.0
+    initial: 20.0
+  thermostat_new_target_temperature:
+    name: Thermostat New Target Temperature
+    min: 15.0
+    max: 30.0
+    initial: 20.0
   power_monitor_low_voltage_threshold:
     name: Power Monitor Low Voltage Threshold
     min: 8
