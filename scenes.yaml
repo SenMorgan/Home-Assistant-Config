@@ -35,7 +35,10 @@
     light.bedroom_nightlight: off
     cover.bedroom: closed
     light.christmas_tree: off
-    light.7_seg_clock: on
+    light.7_seg_clock:
+      state: on
+      effect: Solid
+      rgb_color: [255, 0, 0]
 
 - name: Lighting
   entities:

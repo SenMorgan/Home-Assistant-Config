@@ -1180,6 +1180,11 @@
     # Turn off yandex night mode anyway
     - service: input_boolean.turn_off
       entity_id: input_boolean.yandex_night_mode
+    # Change select.7_seg_clock_preset to «Orange Candle»
+    - service: select.select_option
+      data:
+        entity_id: select.7_seg_clock_preset
+        option: Orange Candle
 
 # Reduce Yandex Station volume if door was closed and restore if opened during the day time
 - id: "Kitchen_Yandex_Reduce_Volume_If_Bedroom_Door_Closed"
