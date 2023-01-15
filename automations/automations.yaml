@@ -282,9 +282,11 @@
               after: sunset
               before_offset: 00:15:00
   action:
-    - wait_template: "{{ states('switch.asus_pc') == 'off' and
-        states('light.kitchen_spotlights') == 'off' and
-        states('light.bedroom_nightlight') == 'off' }}"
+    - wait_template: >
+        "{{ states('switch.asus_pc') == 'off' and
+            states('light.mi_desk_lamp') == 'off' and
+            states('light.kitchen_spotlights') == 'off' and
+            states('light.bedroom_nightlight') == 'off' }}"
       timeout: 00:10:00
       continue_on_timeout: false
     - service: scene.turn_on
