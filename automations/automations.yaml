@@ -769,6 +769,11 @@
   action:
     - service: cover.open_cover
       entity_id: cover.bedroom
+    # Change select.7_seg_clock_preset to «Orange Candle»
+    - service: select.select_option
+      data:
+        entity_id: select.7_seg_clock_preset
+        option: Orange Candle
 
 ###############################################
 ## Floorlamp Tradfri Switch Control
