@@ -1030,7 +1030,7 @@
       at: "21:00:00"
   condition:
     - condition: time
-      after: "19:00:00"
+      after: "18:00:00"
       before: "21:01:00"
       # Don not check here «input_boolean.yandex_night_mode» state, because
       # we need to ensure that the night mode will be turned ON at 21:00
