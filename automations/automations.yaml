@@ -485,6 +485,13 @@
               message: >
                 Обнаружена утечка газа в {{ states('sensor.time') }}
                 Концентрация газа: {{ states('sensor.co_and_natural_gas_alarm_gas') }} ppm
+              data:
+                ttl: 0
+                priority: urgent
+                channel: alarm_stream
+                importance: high
+                persistent: true
+                tag: "persistent"
           - delay: 00:00:10
 
 - id: "Notification_Carbon_Monoxide_Detected"
