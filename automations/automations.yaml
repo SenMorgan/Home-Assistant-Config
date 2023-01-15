@@ -302,6 +302,34 @@
     - service: light.turn_off
       entity_id: light.bar_light
 
+- id: "Kids_Playground_By_Motion_ON"
+  alias: Kids Playground By Motion ON
+  trigger:
+    - platform: state
+      entity_id: binary_sensor.kids_playground_motion_occupancy
+      to: "on"
+  condition:
+    - condition: time
+      after: "07:00:00"
+      before: "19:00:00"
+    # If floor lamp is off
+    - condition: state
+      entity_id: light.floor_lamp
+      state: "off"
+    # If it has been more than 1 hour since the last time the light was turned on
+    - condition: template
+      value_template: >
+        {{ (as_timestamp(now()) - as_timestamp(states.light.kids_playground_power_up_light.last_changed)) > 3600 }}
+    # If it has been more than 1 hour since the last time floor lamp was triggered
+    - condition: template
+      value_template: >
+        {{ (as_timestamp(now()) - as_timestamp(states.light.floor_lamp.last_changed)) > 3600 }}
+  action:
+    - service: light.turn_on
+      entity_id: light.floor_lamp
+
+# Commit message: feat: add automation to turn on the light when the motion sensor is triggered
+
 # Send me notification if switch.parking_light is turned off for more than 1 hour and turn it ON
 - id: "Parking_Light_Emergency_On"
   alias: Parking Light Emergency On
