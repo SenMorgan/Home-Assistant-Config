@@ -319,7 +319,7 @@
     # If it has been more than 1 hour since the last time the light was turned on
     - condition: template
       value_template: >
-        {{ (as_timestamp(now()) - as_timestamp(states.light.kids_playground_power_up_light.last_changed)) > 3600 }}
+        {{ (as_timestamp(now()) - as_timestamp(states.light.kids_playground_by_motion_on.last_changed)) > 3600 }}
     # If it has been more than 1 hour since the last time floor lamp was triggered
     - condition: template
       value_template: >
