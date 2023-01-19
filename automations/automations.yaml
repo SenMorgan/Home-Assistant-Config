@@ -665,8 +665,8 @@
       entity_id: input_boolean.cube_1_control
       state: "on"
   action:
-    - service: light.turn_off
-      entity_id: all
+    - service: light.toggle
+      entity_id: light.floor_lamp
 
 - id: "Aqara_Cube_Shake"
   alias: Aqara Cube Shake
@@ -680,31 +680,8 @@
       entity_id: input_boolean.cube_1_control
       state: "on"
   action:
-    - service: media_player.play_media
-      entity_id: media_player.yandex_station
-      data:
-        media_content_id: О да, встряхни меня, детка!
-        media_content_type: text
-    - service: light.toggle
-      entity_id:
-        - light.kitchen_spotlights
-        - light.floor_lamp
-    - delay: 0.8
-    - service: light.toggle
-      entity_id:
-        - light.kitchen_spotlights
-        - light.floor_lamp
-    - delay: 0.8
-    - service: light.toggle
-      entity_id:
-        - light.kitchen_spotlights
-        - light.floor_lamp
-    - delay: 0.8
-    - service: light.toggle
-      entity_id:
-        - light.kitchen_spotlights
-        - light.floor_lamp
-    - delay: 0.8
+    - service: light.turn_off
+      entity_id: all
 
 - id: "Aqara_Cube_Tap"
   alias: Aqara Cube Tap
