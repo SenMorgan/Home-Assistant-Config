@@ -1096,10 +1096,16 @@
       for: 00:00:30
     - platform: time
       at: "09:00:00"
+    - platform: state
+      entity_id: cover.bedroom_cover
+      to: "open"
   condition:
     - condition: time
       after: "06:00:00"
       before: "12:00:00"
+    - condition: state
+      entity_id: binary_sensor.bedroom_door_contact
+      state: "on"
   action:
     # Rise volume only if bedroom door is actually opened
     - if:
