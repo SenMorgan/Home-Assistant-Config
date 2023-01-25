@@ -46,6 +46,14 @@
     light.christmas_tree: off
     light.living_room_nightlight: off
 
+- name: Anita is Sleeping
+  id: anita_is_sleeping
+  entities:
+    light.7_seg_clock:
+      state: on
+      effect: Solid
+      rgb_color: [255, 0, 0]
+
 - name: Lighting
   entities:
     light.shelf_lighting:

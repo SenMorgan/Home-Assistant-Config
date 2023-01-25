@@ -1066,6 +1066,8 @@
           - delay: 0.5
     - service: input_boolean.turn_on
       entity_id: input_boolean.yandex_night_mode
+    - service: scene.turn_on
+      entity_id: scene.anita_is_sleeping
 
 - id: "Kitchen_Yandex_Volume_Increased_Trigger"
   alias: Kitchen Yandex Volume Increased Trigger
