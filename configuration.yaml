@@ -161,6 +161,16 @@ binary_sensor:
       - binary_sensor.kitchen_window_contact
       - binary_sensor.living_room_window_contact
 
+  ###############################################
+  ## Check if thermostat is heating now
+  ###############################################
+  - platform: template
+    sensors:
+      thermostat_heating:
+        friendly_name: Thermostat is heating
+        value_template: >
+          {{ is_state_attr('climate.family_room', 'hvac_action', "heating") }}
+
 counter:
   ###############################################
   ## Counter for Gas Meter
@@ -231,31 +241,31 @@ light:
   - platform: artnet_led
     host: !secret ARTNET_DMX_CONTROLLER_IP
     universes:
-        1:
-          send_partial_universe: True
-          devices:
-            - channel: 1
-              name: Moving Head X axis
-            - channel: 2
-              name: Moving Head X trim
-            - channel: 3
-              name: Moving Head Y axis
-            - channel: 4
-              name: Moving Head Y trim
-            - channel: 5
-              name: Moving Head Axis Speed
-            - channel: 6
-              name: Moving Head Brightness
-            - channel: 7
-              name: Moving Head Stroboscope
-            - channel: 8
-              name: Moving Head Color
-            - channel: 9
-              name: Moving Head Pattern
-            - channel: 10
-              name: Moving Head Prism
-            - channel: 11
-              name: Moving Head Mode
+      1:
+        send_partial_universe: True
+        devices:
+          - channel: 1
+            name: Moving Head X axis
+          - channel: 2
+            name: Moving Head X trim
+          - channel: 3
+            name: Moving Head Y axis
+          - channel: 4
+            name: Moving Head Y trim
+          - channel: 5
+            name: Moving Head Axis Speed
+          - channel: 6
+            name: Moving Head Brightness
+          - channel: 7
+            name: Moving Head Stroboscope
+          - channel: 8
+            name: Moving Head Color
+          - channel: 9
+            name: Moving Head Pattern
+          - channel: 10
+            name: Moving Head Prism
+          - channel: 11
+            name: Moving Head Mode
 
 ###############################################
 ## MQTT stuff
