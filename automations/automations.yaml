@@ -515,6 +515,32 @@
                 Концентрация газа: {{ states('sensor.co_and_natural_gas_alarm_carbon_monoxide') }} ppm
           - delay: 00:00:10
 
+- id: "Notification_ADS_B_Receiver_Disconnected"
+  alias: Notification ADS-B Receiver Disconnected
+  trigger:
+    - platform: state
+      entity_id: binary_sensor.fr24_feeder_receiver_connected
+      from: "on"
+      to: "off"
+  action:
+    - service: notify.mobile_app_sm_s901b
+      data:
+        title: "{{ '❗️' }} Системное уведомление"
+        message: Связь с ADS-B приёмником была потеряна в {{ states('sensor.time') }}
+
+- id: "Notification_ADS_B_Receiver_Connected"
+  alias: Notification ADS-B Receiver Connected
+  trigger:
+    - platform: state
+      entity_id: binary_sensor.fr24_feeder_receiver_connected
+      from: "off"
+      to: "on"
+  action:
+    - service: notify.mobile_app_sm_s901b
+      data:
+        title: "{{ 'ℹ️' }} Системное уведомление"
+        message: Связь с ADS-B приёмником была восстановлена в {{ states('sensor.time') }}
+
 ###############################################
 ## Raven Notifications
 ###############################################
