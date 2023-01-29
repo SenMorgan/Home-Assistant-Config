@@ -523,6 +523,10 @@
       from: "on"
       to: "off"
   action:
+    - service: persistent_notification.create
+      data:
+        title: "{{ '❗️' }} Системное уведомление"
+        message: Связь с ADS-B приёмником была потеряна в {{ states('sensor.time') }}
     - service: notify.mobile_app_sm_s901b
       data:
         title: "{{ '❗️' }} Системное уведомление"
@@ -536,6 +540,10 @@
       from: "off"
       to: "on"
   action:
+    - service: persistent_notification.create
+      data:
+        title: "{{ 'ℹ️' }} Системное уведомление"
+        message: Связь с ADS-B приёмником была восстановлена в {{ states('sensor.time') }}
     - service: notify.mobile_app_sm_s901b
       data:
         title: "{{ 'ℹ️' }} Системное уведомление"
