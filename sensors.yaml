@@ -131,3 +131,36 @@
     days: 1
   sampling_size: 1500
   precision: 5
+
+###############################################
+## ADS-B System / Flightradar 24
+###############################################
+- platform: rest
+  name: FR24 Feeder
+  resource: http://127.0.0.1:8754/monitor.json
+  value_template: '{{ value_json.feed_alias }}'
+  method: GET
+  scan_interval: 60
+  json_attributes:
+    - rx_connected
+    - feed_status
+    - d11_map_size
+    - feed_num_ac_tracked
+    - build_version
+    - feed_alias
+- platform: template
+  sensors:
+    fr24_feeder_radar_code:
+      friendly_name: Radar Code
+      value_template: '{{ states.sensor.fr24_feeder.attributes["feed_alias"] }}'
+    fr24_feeder_aircraft_tracked:
+      friendly_name: Aircraft Tracked
+      value_template: '{{ states.sensor.fr24_feeder.attributes["d11_map_size"] | round(0) }}'
+      unit_of_measurement: 'aircrafts'
+    fr24_feeder_aircraft_uploaded:
+      friendly_name: Aircraft Uploaded
+      value_template: '{{ states.sensor.fr24_feeder.attributes["feed_num_ac_tracked"] | round(0) }}'
+      unit_of_measurement: 'aircrafts'
+    fr24_feeder_version:
+      friendly_name: Version
+      value_template: '{{ states.sensor.fr24_feeder.attributes["build_version"] }}'

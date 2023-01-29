@@ -150,9 +150,7 @@ binary_sensor:
           {{ is_state('person.sen', 'home') or
           is_state('person.kris', 'home') }}
 
-  ###############################################
-  ## Check if any window is open
-  ###############################################
+  # Check if any window is open
   - platform: group
     name: Windows
     device_class: opening
@@ -161,15 +159,25 @@ binary_sensor:
       - binary_sensor.kitchen_window_contact
       - binary_sensor.living_room_window_contact
 
-  ###############################################
-  ## Check if thermostat is heating now
-  ###############################################
+  # Check if thermostat is heating now
   - platform: template
     sensors:
       thermostat_heating:
         friendly_name: Thermostat is heating
         value_template: >
           {{ is_state_attr('climate.family_room', 'hvac_action', "heating") }}
+
+  # ADS-B System / Flightradar 24
+  - platform: template
+    sensors:
+      fr24_feeder_receiver_connected:
+        friendly_name: Receiver Connected
+        value_template: '{{ is_state_attr("sensor.fr24_feeder", "rx_connected", "1") }}'
+        device_class: connectivity
+      fr24_feeder_link_connected:
+        friendly_name: Link Connected
+        value_template: '{{ is_state_attr("sensor.fr24_feeder", "feed_status", "connected") }}'
+        device_class: connectivity
 
 counter:
   ###############################################
