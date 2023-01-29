@@ -311,19 +311,19 @@
   condition:
     - condition: time
       after: "07:00:00"
-      before: "19:00:00"
+      before: "20:00:00"
     # If floor lamp is off
     - condition: state
       entity_id: light.floor_lamp
       state: "off"
-    # If it has been more than 1 hour since the last time the light was turned on
+    # If it has been more than 10 minutes since the last time the light was turned on
     - condition: template
       value_template: >
-        {{ (as_timestamp(now()) - as_timestamp(states.automation.kids_playground_by_motion_on.last_changed)) > 3600 }}
-    # If it has been more than 1 hour since the last time floor lamp was triggered
+        {{ (as_timestamp(now()) - as_timestamp(states.automation.kids_playground_by_motion_on.last_changed)) > 600 }}
+    # If it has been more than 10 minutes since the last time floor lamp was triggered
     - condition: template
       value_template: >
-        {{ (as_timestamp(now()) - as_timestamp(states.light.floor_lamp.last_changed)) > 3600 }}
+        {{ (as_timestamp(now()) - as_timestamp(states.light.floor_lamp.last_changed)) > 600 }}
   action:
     - service: light.turn_on
       entity_id: light.floor_lamp
