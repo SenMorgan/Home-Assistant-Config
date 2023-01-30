@@ -44,38 +44,8 @@
         title: "{{ '🚨' }} Уведомление от UPS"
         message: >
           UPS восстановил питание в {{ states('sensor.time') }}
-    - service: notify.mobile_app_sm_s901b
-      data:
-        title: "{{ '🚨' }} Уведомление от UPS"
-        message: >
-          UPS восстановил питание в {{ states('sensor.time') }}
     - service: automation.turn_off
       entity_id: automation.ups_grid_power_restored_notification
-
-- alias: UPS Discharging Loop Notification
-  id: "ups_discharging_loop_notification"
-  mode: single
-  trigger:
-    - platform: state
-      entity_id: sensor.ups_status_data
-      to: "OB DISCHRG"
-  action:
-    - delay: 00:00:10
-    - repeat:
-        while:
-          - condition: state
-            entity_id: sensor.ups_status_data
-            state: "OB DISCHRG"
-        sequence:
-          - service: notify.mobile_app_sm_s901b
-            data:
-              title: "{{ '🚨' }} Уведомление от UPS"
-              message: >
-                UPS отключится через {{ states('sensor.ups_battery_runtime') | int | timestamp_custom('%M:%S') }} минут\n
-                Заряд аккумулятора: {{ states('sensor.ups_battery_charge') }}%\n
-                Напряжение аккумулятора: {{ states('sensor.ups_battery_voltage') }} В\n
-                Статус: {{ states('sensor.ups_status') }}
-          - delay: 00:02:00
 
 - alias: UPS Low Battery Warning Notification
   id: "ups_low_battery_warning_notification"

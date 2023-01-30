@@ -1,0 +1,29 @@
+######################################################################
+# File: alerts.yaml                                                  #
+# Author: SenMorgan https://github.com/SenMorgan                     #
+# Date: 2023-01-30                                                   #
+#                                                                    #
+# Info: this file contains different alert integration               #
+#                                                                    #
+# Copyright (c) 2023 Sen Morgan                                      #
+######################################################################
+
+ups_lost_power:
+  name: UPS lost power
+  entity_id: sensor.ups_status_data
+  state: "OB DISCHRG"
+  repeat: 1
+  can_acknowledge: false
+  notifiers: mobile_app_sm_s901b
+  title: "{{ '🚨' }} Уведомление от UPS"
+  message: |
+    UPS отключится через {{ states('sensor.ups_battery_runtime') | int | timestamp_custom('%M:%S') }} минут
+    Заряд аккумулятора: {{ states('sensor.ups_battery_charge') }}%
+    Напряжение аккумулятора: {{ states('sensor.ups_battery_voltage') }} В
+    Статус: {{ states('sensor.ups_status') }}
+  done_message: |
+    UPS восстановил питание в {{ states('sensor.time') }}
+    Оставшийся заряд аккумулятора: {{ states('sensor.ups_battery_charge') }}%
+  data:
+    ttl: 0
+    priority: high

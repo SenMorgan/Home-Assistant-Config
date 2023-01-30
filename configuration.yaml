@@ -17,6 +17,8 @@ homeassistant:
 automation: !include_dir_merge_list automations
 script: !include scripts.yaml
 scene: !include scenes.yaml
+alert: !include alerts.yaml
+
 # Sharing devices with Yandex Smart Home
 yandex_smart_home: !include yandex.yaml
 # Controlling of Yandex Station and TTS
