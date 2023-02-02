@@ -116,24 +116,23 @@
     - condition: state
       entity_id: binary_sensor.people_home
       state: "on"
-    - condition: template
-      value_template:
-        "{{ ( as_timestamp(now()) - as_timestamp(state_attr('automation.hall_lights_and_alice_greeting',
-        'last_triggered')) |int(0) ) > 60 }}"
   action:
     - wait_template: "{{ states('binary_sensor.people_home') == 'off' }}"
       timeout: "00:30:00"
       continue_on_timeout: false
     - service: light.turn_off
       entity_id: all
-    - service: light.turn_off
-      entity_id: light.string_lights
-    - service: switch.turn_off
-      entity_id: light.bar_light
+    - service: automation.trigger
+      entity_id: automation.thermostat_eco_mode_when_noone_home_enable
     - service: notify.mobile_app_sm_s901b
       data:
-        title: "{{ 'ℹ️' }} Системное уведомление"
-        message: Весь свет был погашен в {{ states('sensor.time') }}
+        title: "{{ '👋' }} До свидания"
+        message: >
+          {% if is_state('input_boolean.heating_season_switch', 'on') %}
+            Термостат и свет были отключены
+          {% else %}
+            Весь свет был отключен
+          {% endif %}
 
 - id: "Hall_Lights_by_Motion_ON"
   alias: Hall Lights by Motion ON
