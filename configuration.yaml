@@ -112,7 +112,7 @@ input_boolean:
     icon: mdi:engine-outline
   flag_hall_lights_triggered_by_motion:
     name: Flag - Hall Lights Was Triggered by Motion Sensor
-  heating_season_switch:
+  heating_season:
     name: Heating Season
   yandex_night_mode:
     name: Yandex Night Mode

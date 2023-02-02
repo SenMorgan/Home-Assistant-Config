@@ -31,7 +31,7 @@
       for: "00:00:10"
   condition:
     - condition: state
-      entity_id: input_boolean.heating_season_switch
+      entity_id: input_boolean.heating_season
       state: "on"
       # If some window was opened and thermostat is in «heat» mode
       # or if all windows were closed and thermostat is in «off» mode
@@ -133,7 +133,7 @@
       hours: "/1"
   condition:
     - condition: state
-      entity_id: input_boolean.heating_season_switch
+      entity_id: input_boolean.heating_season
       state: "on"
     - condition: numeric_state
       entity_id: climate.family_room
@@ -174,7 +174,7 @@
       hours: "/1"
   condition:
     - condition: state
-      entity_id: input_boolean.heating_season_switch
+      entity_id: input_boolean.heating_season
       state: "on"
     - condition: numeric_state
       entity_id: climate.family_room
@@ -326,7 +326,7 @@
       for: "00:15:00"
   condition:
     - condition: state
-      entity_id: input_boolean.heating_season_switch
+      entity_id: input_boolean.heating_season
       state: "on"
     - condition: template
       value_template: "{{ not is_state('climate.family_room', 'off') }}"

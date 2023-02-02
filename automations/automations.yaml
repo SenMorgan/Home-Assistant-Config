@@ -128,7 +128,7 @@
       data:
         title: "{{ '👋' }} До свидания"
         message: >
-          {% if is_state('input_boolean.heating_season_switch', 'on') %}
+          {% if is_state('input_boolean.heating_season', 'on') %}
             Термостат и свет были отключены
           {% else %}
             Весь свет был отключен
