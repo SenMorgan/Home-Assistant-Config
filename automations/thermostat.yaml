@@ -363,8 +363,8 @@
     - service: notify.mobile_app_sm_s901b
       data:
         title: "{{ 'ℹ️' }} Системное уведомление"
-        message: >
-          Термостат переведён в нормальный режим.\n
+        message: |
+          Термостат переведён в нормальный режим.
           Температура дома: {{ state_attr('climate.family_room', 'current_temperature') }}°C
     # Set thermostat mode to «heat»
     - service: climate.set_hvac_mode

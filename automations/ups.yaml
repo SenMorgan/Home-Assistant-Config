@@ -26,8 +26,8 @@
     - service: notify.mobile_app_sm_s901b
       data:
         title: "{{ '🚨' }} Уведомление от UPS"
-        message: >
-          UPS потерял питание в {{ states('sensor.time') }}\n
+        message: |
+          UPS потерял питание в {{ states('sensor.time') }}
           Рассчётное время работы: {{ states('sensor.ups_battery_runtime') | int | timestamp_custom('%M:%S') }} минут
     - service: automation.turn_on
       entity_id: automation.ups_grid_power_restored_notification
@@ -77,8 +77,8 @@
     - service: notify.mobile_app_sm_s901b
       data:
         title: "{{ '🚨' }} Уведомление от UPS"
-        message: >
-          Критически низкий заряд батареи UPS\n
+        message: |
+          Критически низкий заряд батареи UPS.
           Немедленное отключение сервера Home Assistant в {{ states('sensor.time') }}
     - delay: 00:00:05
     - service: hassio.host_shutdown
