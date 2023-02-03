@@ -1137,6 +1137,9 @@
       entity_id: cover.bedroom_cover
       to: "open"
   condition:
+    - condition: state
+      entity_id: input_boolean.yandex_night_mode
+      state: "on"
     - condition: time
       after: "06:00:00"
       before: "12:00:00"
