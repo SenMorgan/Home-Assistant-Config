@@ -25,10 +25,6 @@ entity_config:
     room: Hall
   light.bar_light:
     room: Living room
-    aliases:
-      - STRING LIGHTS
-      - STRIP LIGHTS
-      - CHRISTMAS LIGHTS
   light.string_lights:
     name: String Lights
     room: Kitchen

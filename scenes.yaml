@@ -43,7 +43,7 @@
     light.bar_light: off
     light.bedroom_nightlight: off
     cover.bedroom: closed
-    light.christmas_tree: off
+    switch.moving_head_power: off
     light.living_room_nightlight: off
 
 - name: Anita is Sleeping

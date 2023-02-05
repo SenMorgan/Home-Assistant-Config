@@ -31,7 +31,7 @@ filter:
     - light.string_lights
     - light.bedroom_nightlight
     - vacuum.johnny
-    - light.christmas_tree
+    - switch.moving_head_power
     - input_boolean.yandex_night_mode
 
 entity_config:
@@ -120,10 +120,9 @@ entity_config:
     name: Светильник
     room: Зал
     type: devices.types.light
-  light.christmas_tree:
-    name: Ёлка
-    room: Зал
-    type: devices.types.light
+  switch.moving_head_power:
+    name: Голова
+    type: devices.types.switch
   input_boolean.yandex_night_mode:
     name: Ночной режим
     room: Дом
