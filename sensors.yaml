@@ -164,3 +164,14 @@
     fr24_feeder_version:
       friendly_name: Version
       value_template: '{{ states.sensor.fr24_feeder.attributes["build_version"] }}'
+
+- platform: rest
+  name: FR24 Aircraft
+  resource: http://127.0.0.1:8080/data/aircraft.json
+  value_template: "{{ value_json.messages }}"
+  method: GET
+  scan_interval: 15
+  json_attributes:
+    - now
+    - aircraft
+
