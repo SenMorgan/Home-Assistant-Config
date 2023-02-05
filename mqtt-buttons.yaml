@@ -21,3 +21,13 @@
   payload_press: "1"
   entity_category: "config"
   device_class: "restart"
+
+###############################################
+## Electric Heater Controller Buttons
+###############################################
+- name: "Electric Heater Controller Reset"
+  command_topic: "/electric-heater-controller/set/reset"
+  payload_press: "1"
+  retain: false
+  entity_category: "config"
+  device_class: "restart"
