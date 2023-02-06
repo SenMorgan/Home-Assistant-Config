@@ -1074,7 +1074,7 @@
       data:
         media_content_id: stop
         media_content_type: command
-    - delay: 0.5
+    - delay: 1
     # Repeat the command to ensure that the volume is muted
     - repeat:
         while:
@@ -1087,7 +1087,7 @@
             data:
               entity_id: media_player.yandex_station
               volume_level: "{{ states('input_number.volume_yandex_station')}}"
-          - delay: 0.5
+          - delay: 1
 
 - id: "Kitchen_Yandex_Night_Mode_ON"
   alias: Kitchen Yandex Night Mode ON
@@ -1185,7 +1185,7 @@
                 data:
                   entity_id: media_player.yandex_station
                   volume_level: 0.6
-              - delay: 0.5
+              - delay: 1
     # Turn off yandex night mode anyway
     - service: input_boolean.turn_off
       entity_id: input_boolean.yandex_night_mode
@@ -1221,7 +1221,7 @@
             data:
               entity_id: media_player.yandex_station
               volume_level: 0.2
-          - delay: 0.5
+          - delay: 1
 
 - id: "Kitchen_Yandex_Restore_Volume_If_Bedroom_Door_Opened"
   alias: Kitchen Yandex Restore Volume If Bedroom Door Opened
@@ -1248,7 +1248,7 @@
             data:
               entity_id: media_player.yandex_station
               volume_level: 0.6
-          - delay: 0.5
+          - delay: 1
 
 ###############################################
 ## Solar Station Automations
