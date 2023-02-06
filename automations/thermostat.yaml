@@ -331,10 +331,6 @@
     - condition: template
       value_template: "{{ not is_state('climate.family_room', 'off') }}"
   action:
-    - service: notify.mobile_app_sm_s901b
-      data:
-        title: "{{ 'ℹ️' }} Системное уведомление"
-        message: Термостат переведён в режим экономии
     # Set thermostat mode to «off»
     - service: climate.set_hvac_mode
       entity_id: climate.family_room
