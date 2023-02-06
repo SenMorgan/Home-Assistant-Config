@@ -120,7 +120,7 @@
 ## Thermostat Emergency Control
 ###############################################
 
-- alias: Thermostat Freeze Alert at Nigth
+- alias: Thermostat Freeze Alert at Night
   id: thermostat_freeze_alert_at_night
   mode: single
   trigger:
