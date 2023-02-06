@@ -145,6 +145,12 @@
     - condition: time
       after: "00:00"
       before: "06:00"
+    # If thermostat is in «heat» mode and temperature is below 19°C or if thermostat is in «off» mode
+    - condition: template
+      value_template: >
+        {{ (states('climate.family_room') == 'heat' and
+            state_attr('climate.family_room', 'temperature') <= 19.0) or
+            states('climate.family_room') == 'off' }}
   action:
     - service: notify.mobile_app_sm_s901b
       data:
@@ -180,6 +186,11 @@
       entity_id: climate.family_room
       attribute: current_temperature
       above: 24.0
+    # If thermostat is in «heat» mode and temperature is above 24°C
+    - condition: template
+      value_template: >
+        {{ states('climate.family_room') == 'heat' and
+            state_attr('climate.family_room', 'temperature') >= 25.0 }}
   action:
     - service: notify.mobile_app_sm_s901b
       data:
