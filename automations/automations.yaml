@@ -548,6 +548,27 @@
         title: "{{ 'ℹ️' }} Системное уведомление"
         message: Связь с ADS-B приёмником была восстановлена в {{ states('sensor.time') }}
 
+- id: "Notification_Diesel_Price_Changed"
+  alias: Notification Diesel Price Changed
+  trigger:
+    - platform: state
+      entity_id: sensor.diesel_price_ono
+  condition:
+    - condition: template
+      value_template: >
+        {{ trigger.from_state.state != trigger.to_state.state }}
+    - condition: template
+      value_template: >
+        {{ is_number(trigger.from_state.state) and is_number(trigger.to_state.state) }}
+  action:
+    - service: notify.mobile_app_sm_s901b
+      data:
+        title: "{{ '🚗' }} Системное уведомление"
+        message: |
+          Цена дизеля изменилась на {{ states('sensor.diesel_price_ono') }} Kč/L
+          Старая цена: {{ trigger.from_state.state }}  Kč/L
+          Новая цена: {{ trigger.to_state.state }} Kč/L
+
 ###############################################
 ## Raven Notifications
 ###############################################
