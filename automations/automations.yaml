@@ -563,11 +563,10 @@
   action:
     - service: notify.mobile_app_sm_s901b
       data:
-        title: "{{ '🚗' }} Системное уведомление"
-        message: |
-          Цена дизеля изменилась на {{ states('sensor.diesel_price_ono') }} Kč/L
-          Старая цена: {{ trigger.from_state.state }}  Kč/L
-          Новая цена: {{ trigger.to_state.state }} Kč/L
+        title: "{{ '🚗' }} Цена топлива"
+        message: >
+          Цена дизеля {{ 'упала' if trigger.from_state.state | float > trigger.to_state.state | float else 'возрасла' }}
+          с {{ trigger.from_state.state }} до {{ trigger.to_state.state }} Kč/L
 
 ###############################################
 ## Raven Notifications
