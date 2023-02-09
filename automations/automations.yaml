@@ -568,6 +568,36 @@
           Цена дизеля {{ 'упала' if trigger.from_state.state | float > trigger.to_state.state | float else 'возрасла' }}
           с {{ trigger.from_state.state }} до {{ trigger.to_state.state }} Kč/L
 
+- id: "Notification_Aircraft_Detected"
+  alias: Notification Aircraft Detected
+  trigger:
+    - platform: state
+      entity_id: sensor.fr24_aircraft
+  condition:
+    - condition: template
+      value_template: >
+        {{ state_attr('sensor.fr24_aircraft', 'aircraft') | regex_search('OKBYE|OKJAG') }}
+  action:
+    - service: notify.mobile_app_sm_s901b
+      data:
+        title: "{{ '✈️' }} Пролетает знакомый самолёт"
+        message: |
+          {% set aircraft = namespace(flight='', alt_baro='', gs='') %}
+          {% set aircrafts_list = state_attr('sensor.fr24_aircraft', 'aircraft') %}
+          {% for element in aircrafts_list if element | regex_search('OKBYE|OKJAG') %}
+                  {% set aircraft.flight = element['flight'] %}
+                  {% set aircraft.alt = (((element['alt_baro'] | float) * 0.3048) | int) | string %}
+                  {% set aircraft.gs = (((element['gs'] | float) * 1.852) | int) | string %}
+          {% endfor %}
+          {% if aircraft.flight == '' %}
+                  {{ 'Данные о самолёте не получены' }}
+          {% else %}
+                  {{ 'Номер рейса: ' + aircraft.flight }}
+                  {{ 'Высота: ' + aircraft.alt + ' м' }}
+                  {{ 'Скорость: ' + aircraft.gs + ' км/ч' }}
+          {% endif %}
+
+
 ###############################################
 ## Raven Notifications
 ###############################################
