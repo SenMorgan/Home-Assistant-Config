@@ -33,6 +33,7 @@ filter:
     - vacuum.johnny
     - switch.moving_head_power
     - input_boolean.yandex_night_mode
+    - switch.wireless_charger
 
 entity_config:
   # type: devices.types.humidifier  # параметр необязательный, вычисляется автоматически!
@@ -126,3 +127,7 @@ entity_config:
   input_boolean.yandex_night_mode:
     name: Ночной режим
     room: Дом
+  switch.wireless_charger:
+    name: Беспроводная зарядка
+    room: Кухня
+    type: devices.types.switch
