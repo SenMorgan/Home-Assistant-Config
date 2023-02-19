@@ -1,0 +1,105 @@
+######################################################################
+# File: 3d-printer.yaml                                              #
+# Author: SenMorgan https://github.com/SenMorgan                     #
+# Date: 2023-02-19                                                   #
+#                                                                    #
+# Info: this file contains automations that are associated to the    #
+# 3D printer connected via Octoprint                                 #
+#                                                                    #
+# Copyright (c) 2023 Sen Morgan                                      #
+######################################################################
+
+###############################################
+## Remind me when the print is done
+###############################################
+- alias: "3D Printer - Print Done"
+  id: "3d-printer-print-done"
+  trigger:
+    platform: state
+    entity_id: binary_sensor.octoprint_printing
+    from: "on"
+    to: "off"
+  action:
+    - service: notify.mobile_app_sm_s901b
+      data:
+        title: "3D Printer"
+        message: "🎉 Печать завершена!"
+
+###############################################
+## Remind at 25%, 50% and 75% of the print
+###############################################
+- alias: "3D Printer - Print Progress"
+  id: "3d-printer-print-progress"
+  trigger:
+    platform: numeric_state
+    entity_id: sensor.octoprint_print_progress
+    above: 0
+    below: 100
+  condition:
+    condition: template
+    value_template: >
+      {{ (trigger.to_state.state | int) % 25 == 0 and (trigger.to_state.state | int) != (trigger.from_state.state | int) }}
+  action:
+    - service: notify.mobile_app_sm_s901b
+      data_template:
+        title: "3D Printer"
+        message: "📈 Печать {{ states('sensor.octoprint_print_progress') }}%"
+
+###############################################
+## Remind me when print is paused
+###############################################
+- alias: "3D Printer - Print Paused"
+  id: "3d-printer-print-paused"
+  trigger:
+    platform: state
+    entity_id: sensor.octoprint_current_state
+    from: "Printing"
+    to: "Paused"
+  action:
+    - service: notify.mobile_app_sm_s901b
+      data:
+        title: "⚠️ 3D Printer"
+        message: "Печать приостановлена!"
+
+###############################################
+## Remind me when print is resumed
+###############################################
+- alias: "3D Printer - Print Resumed"
+  id: "3d-printer-print-resumed"
+  trigger:
+    platform: state
+    entity_id: sensor.octoprint_current_state
+    from: "Paused"
+    to: "Printing"
+  action:
+    - service: notify.mobile_app_sm_s901b
+      data:
+        title: "⚠️ 3D Printer"
+        message: "Печать возобновлена!"
+
+###############################################
+## Remind me when bed or hotend is overheated
+###############################################
+- alias: "3D Printer - Overheated"
+  id: "3d-printer-overheated"
+  trigger:
+    platform: state
+    entity_id:
+      - sensor.octoprint_actual_bed_temp
+      - sensor.octoprint_actual_tool0_temp
+  condition:
+    condition: or
+    conditions:
+      - condition: template
+        value_template: >
+          {{ states('sensor.octoprint_actual_bed_temp') | int > 100 }}
+      - condition: template
+        value_template: >
+          {{ states('sensor.octoprint_actual_tool0_temp') | int > 250 }}
+  action:
+    - service: notify.mobile_app_sm_s901b
+      data:
+        title: "🌡️ 3D Printer перегрелся!"
+        message: |
+          🛏️ Температура стола: {{ states('sensor.octoprint_actual_bed_temp') }}°C
+          🔥 Температура хотенда: {{ states('sensor.octoprint_actual_tool0_temp') }}°C
