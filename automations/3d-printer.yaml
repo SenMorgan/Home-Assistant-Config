@@ -32,7 +32,7 @@
   id: "3d-printer-print-progress"
   trigger:
     platform: numeric_state
-    entity_id: sensor.octoprint_print_progress
+    entity_id: sensor.octoprint_job_percentage
     above: 0
     below: 100
   condition:
@@ -43,7 +43,7 @@
     - service: notify.mobile_app_sm_s901b
       data_template:
         title: "3D Printer"
-        message: "📈 Печать {{ states('sensor.octoprint_print_progress') }}%"
+        message: "📈 Печать {{ states('sensor.octoprint_job_percentage') }}%"
 
 ###############################################
 ## Remind me when print is paused
@@ -71,7 +71,9 @@
   trigger:
     platform: state
     entity_id: sensor.octoprint_current_state
-    from: "Paused"
+    from:
+      - "Paused"
+      - "Pausing"
     to: "Printing"
   action:
     - service: notify.mobile_app_sm_s901b
