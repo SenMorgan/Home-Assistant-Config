@@ -327,3 +327,9 @@ home_assistant_reboot:
   mode: single
   sequence:
     - service: hassio.host_reboot
+
+octoprint_shutdown:
+  alias: Octoprint Shutdown
+  mode: single
+  sequence:
+    - service: rest_command.octoprint_shutdown

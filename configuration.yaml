@@ -240,6 +240,16 @@ rest:
       - name: "Duco Server"
         value_template: "{{ value_json['server'] }}"
 
+rest_command:
+  ###############################################
+  ## Octoprint Rest Commands
+  ###############################################
+  octoprint_shutdown:
+    url: !secret OCTOPRINT_SHUTDOWN_URL
+    method: POST
+    headers:
+      X-Api-Key: !secret OCTOPRINT_API_KEY
+
 light:
   - platform: artnet_led
     host: !secret ARTNET_DMX_CONTROLLER_IP
