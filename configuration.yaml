@@ -205,6 +205,12 @@ input_button:
   reboot_home_assistant:
     name: Reboot Home Assistant
     icon: mdi:restart
+  3d_printer_power_on:
+    name: 3D Printer Power On
+    icon: mdi:power
+  3d_printer_power_off:
+    name: 3D Printer Power Off
+    icon: mdi:power
 
 ###############################################
 ## Input DateTimes

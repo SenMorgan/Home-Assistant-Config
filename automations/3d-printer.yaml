@@ -107,3 +107,42 @@
         message: |
           🛏️ Температура стола: {{ states('sensor.octoprint_actual_bed_temp') }}°C
           🔥 Температура хотенда: {{ states('sensor.octoprint_actual_tool0_temp') }}°C
+
+###############################################
+## Power control
+###############################################
+- alias: 3D Printer - Power On
+  id: 3d-printer-power-on
+  trigger:
+    - platform: state
+      entity_id: input_button.3d_printer_power_on
+  action:
+    - service: switch.turn_on
+      entity_id: switch.3d_printer_socket
+
+- alias: 3D Printer - Power Off
+  id: 3d-printer-power-off
+  trigger:
+    - platform: state
+      entity_id: input_button.3d_printer_power_off
+  action:
+    - service: script.turn_on
+      entity_id: script.octoprint_shutdown
+    # Wait until server is down
+    - wait_template: "{{ states('sensor.octoprint_current_state') == 'unavailable' }}"
+      timeout: "00:03:00"
+      # If server is still up — send me notification
+    - if:
+        - condition: template
+          value_template: "{{ states('sensor.octoprint_current_state') != 'unavailable' }}"
+      then:
+        - service: notify.mobile_app_sm_s901b
+          data:
+            title: "⚠️ 3D Printer"
+            message: |
+              Не удалось выключить Octoprint сервер.
+              Питания НЕ отключено!
+      else:
+        # If server is down, turn off power socket
+        - service: switch.turn_off
+          entity_id: switch.3d_printer_socket
