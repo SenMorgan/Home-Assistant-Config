@@ -196,14 +196,14 @@ input_button:
   thermostat_10_minutes_heating:
     name: Heat 10 Minutes
     icon: mdi:radiator
-  power_off_server_rack:
-    name: Power Off Server Rack
+  server_rack_power_off:
+    name: Server Rack Power Off
     icon: mdi:power
-  power_off_home_assistant:
-    name: Power Off Home Assistant
+  home_assistant_power_off:
+    name: Home Assistant Power Off
     icon: mdi:power
-  reboot_home_assistant:
-    name: Reboot Home Assistant
+  home_assistant_reboot:
+    name: Home Assistant Reboot
     icon: mdi:restart
   3d_printer_power_on:
     name: 3D Printer Power On

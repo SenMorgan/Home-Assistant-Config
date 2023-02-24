@@ -147,30 +147,30 @@
 ## Other Automations
 ###############################################
 
-- alias: Home Assistant Power Off Action
-  id: home_assistant_power_off_action
+- alias: Home Assistant - Power Off
+  id: home_assistant_power_off
   trigger:
     - platform: state
-      entity_id: input_button.power_off_home_assistant
+      entity_id: input_button.home_assistant_power_off
   action:
     - service: script.turn_on
       entity_id: script.home_assistant_shutdown
 
-- alias: Home Assistant Reboot Action
-  id: home_assistant_reboot_action
+- alias: Home Assistant - Reboot
+  id: home_assistant_reboot
   trigger:
     - platform: state
-      entity_id: input_button.reboot_home_assistant
+      entity_id: input_button.home_assistant_reboot
   action:
     - service: script.turn_on
       entity_id: script.home_assistant_reboot
 
-- alias: Home Assistant Server Rack Power Off Action
-  id: home_assistant_server_rack_power_off_action
+- alias: Home Assistant Server Rack - Power Off
+  id: home_assistant_server_rack_power_off
   mode: restart
   trigger:
     - platform: state
-      entity_id: input_button.power_off_server_rack
+      entity_id: input_button.server_rack_power_off
   action:
     # Check Synology Shutdown button state:
     - if:
