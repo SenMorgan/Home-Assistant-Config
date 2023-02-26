@@ -123,6 +123,7 @@ entity_config:
     type: devices.types.light
   switch.moving_head_power:
     name: Голова
+    room: Зал
     type: devices.types.switch
   input_boolean.yandex_night_mode:
     name: Ночной режим
