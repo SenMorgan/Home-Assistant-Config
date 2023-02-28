@@ -1334,3 +1334,15 @@
               title: "{{ '🚨' }} Монитор питания"
               message: "Напряжение ниже порога: {{ states('sensor.power_monitor_voltage') }} V"
           - delay: 00:05:00
+
+- alias: Solar Panel Power Above 45W
+  id: "Solar_Panel_Power_Above_45W"
+  trigger:
+    - platform: numeric_state
+      entity_id: sensor.solar_panel_power
+      above: 45
+  action:
+    - service: notify.mobile_app_sm_s901b
+      data:
+        title: "{{ '🌞' }} Солнечная панель"
+        message: "Мощность выше порога: {{ states('sensor.solar_panel_power') }} W"
