@@ -121,6 +121,9 @@ input_boolean:
   yandex_night_mode:
     name: Yandex Night Mode
     icon: mdi:volume-off
+  3d_printer_and_octo_power:
+    name: 3D Printer Power
+    icon: mdi:printer-3d
 
 ###############################################
 ## SWITCHES
@@ -209,12 +212,6 @@ input_button:
   home_assistant_reboot:
     name: Home Assistant Reboot
     icon: mdi:restart
-  3d_printer_power_on:
-    name: 3D Printer Power On
-    icon: mdi:power
-  3d_printer_power_off:
-    name: 3D Printer Power Off
-    icon: mdi:power
 
 ###############################################
 ## Input DateTimes

@@ -13,7 +13,7 @@
 ## Remind me when the print is done
 ###############################################
 - alias: "3D Printer - Print Done"
-  id: "3d-printer-print-done"
+  id: "3d_printer_print_done"
   trigger:
     platform: state
     entity_id: binary_sensor.octoprint_printing
@@ -29,7 +29,7 @@
 ## Remind me every 10% of the print
 ###############################################
 - alias: "3D Printer - Print Progress"
-  id: "3d-printer-print-progress"
+  id: "3d_printer_print_progress"
   trigger:
     platform: state
     entity_id: sensor.octoprint_job_percentage
@@ -49,7 +49,7 @@
 ## Remind me when print is paused
 ###############################################
 - alias: "3D Printer - Print Paused"
-  id: "3d-printer-print-paused"
+  id: "3d_printer_print_paused"
   trigger:
     platform: state
     entity_id: sensor.octoprint_current_state
@@ -67,7 +67,7 @@
 ## Remind me when print is resumed
 ###############################################
 - alias: "3D Printer - Print Resumed"
-  id: "3d-printer-print-resumed"
+  id: "3d_printer_print_resumed"
   trigger:
     platform: state
     entity_id: sensor.octoprint_current_state
@@ -85,7 +85,7 @@
 ## Remind me when bed or hotend is overheated
 ###############################################
 - alias: "3D Printer - Overheated"
-  id: "3d-printer-overheated"
+  id: "3d_printer_overheated"
   trigger:
     platform: state
     entity_id:
@@ -112,37 +112,97 @@
 ## Power control
 ###############################################
 - alias: 3D Printer - Power On
-  id: 3d-printer-power-on
+  id: 3d_printer_power_on
+  mode: restart
   trigger:
     - platform: state
-      entity_id: input_button.3d_printer_power_on
+      entity_id: input_boolean.3d_printer_and_octo_power
+      from: "off"
+      to: "on"
+  # Check if new state was not set by «3d_printer_sync_power_state» to awoid infinite loop
+  condition:
+      - condition: state
+        entity_id: switch.3d_printer_socket
+        state: "off"
   action:
     - service: switch.turn_on
       entity_id: switch.3d_printer_socket
 
-- alias: 3D Printer - Power Off
-  id: 3d-printer-power-off
+- alias: 3D Printer - Power Sync
+  id: 3d_printer_power_sync
+  mode: single
   trigger:
     - platform: state
-      entity_id: input_button.3d_printer_power_off
+      entity_id: switch.3d_printer_socket
+  condition:
+    - condition: template
+      value_template: >
+        {{ states('switch.3d_printer_socket') != states('input_boolean.3d_printer_and_octo_power') }}
+      # Check if 3d_printer_power_off automation is not running
+    - condition: template
+      value_template: >
+        {{ is_state_attr('automation.3d_printer_power_off', 'current', 0) }}
+  action:
+    - if:
+        - condition: state
+          entity_id: switch.3d_printer_socket
+          state: "on"
+      then:
+        - service: input_boolean.turn_on
+          entity_id: input_boolean.3d_printer_and_octo_power
+      else:
+        - service: input_boolean.turn_off
+          entity_id: input_boolean.3d_printer_and_octo_power
+
+- alias: 3D Printer - Power Off
+  id: 3d_printer_power_off
+  mode: restart
+  trigger:
+    - platform: state
+      entity_id: input_boolean.3d_printer_and_octo_power
+      from: "on"
+      to: "off"
+  # Check if new state was not set by «3d_printer_sync_power_state» to awoid infinite loop
+  condition:
+      - condition: state
+        entity_id: switch.3d_printer_socket
+        state: "on"
   action:
     - service: script.turn_on
       entity_id: script.octoprint_shutdown
-    # Wait until server is down
-    - wait_template: "{{ states('sensor.octoprint_current_state') == 'unavailable' }}"
-      timeout: "00:03:00"
-      # If server is still up — send me notification
+    # If server is not in state "operational" — send me notification and stop powering off
     - if:
         - condition: template
-          value_template: "{{ states('sensor.octoprint_current_state') != 'unavailable' }}"
+          value_template: "{{ states('sensor.octoprint_current_state') != 'Operational' }}"
       then:
+        - service: input_boolean.turn_on
+          entity_id: input_boolean.3d_printer_and_octo_power
         - service: notify.mobile_app_sm_s901b
           data:
             title: "⚠️ 3D Printer"
             message: |
-              Не удалось выключить Octoprint сервер.
+              Невозможно выключить Octoprint сервер в состонии «{{ states('sensor.octoprint_current_state') }}».
               Питания НЕ отключено!
       else:
-        # If server is down, turn off power socket
-        - service: switch.turn_off
-          entity_id: switch.3d_printer_socket
+        # Wait until server is down
+        - wait_template: "{{ states('sensor.octoprint_current_state') == 'unavailable' }}"
+          timeout: "00:03:00"
+          # If server is still up — send me notification
+        - if:
+            - condition: template
+              value_template: "{{ states('sensor.octoprint_current_state') != 'unavailable' }}"
+          then:
+            - service: input_boolean.turn_on
+              entity_id: input_boolean.3d_printer_and_octo_power
+            - service: notify.mobile_app_sm_s901b
+              data:
+                title: "⚠️ 3D Printer"
+                message: |
+                  Не удалось выключить Octoprint сервер.
+                  Питания НЕ отключено!
+          else:
+            # If server is down, turn off power socket
+            - service: switch.turn_off
+              entity_id: switch.3d_printer_socket
+            - service: input_boolean.turn_off
+              entity_id: input_boolean.3d_printer_and_octo_power
