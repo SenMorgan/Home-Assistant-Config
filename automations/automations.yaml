@@ -1295,6 +1295,21 @@
       value: "{{ states('sensor.solar_panel_energy') }}"
 
 ###############################################
+## Energy Meter Automations
+###############################################
+
+- id: "Save_Energy_Consumed_Value_at_Start_of_the_Day"
+  alias: Save Energy Consumed Value at Start of the Day
+  trigger:
+    platform: time
+    at: "00:00:00"
+  action:
+    service: input_number.set_value
+    data_template:
+      entity_id: input_number.energy_consumed_at_beginning_of_day
+      value: "{{ states('sensor.electricity_meter_energy') }}"
+
+###############################################
 ## Gas Meter by Aqara door sensor and counter
 ###############################################
 

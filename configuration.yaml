@@ -72,6 +72,10 @@ input_number:
     name: Solar Energy Produced at Beginning of Day
     min: 0
     max: 999999999
+  energy_consumed_at_beginning_of_day:
+    name: Energy Consumed at Beginning of Day
+    min: 0
+    max: 999999999
   volume_yandex_station:
     name: Volume Yandex Station
     min: 0
