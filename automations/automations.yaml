@@ -834,6 +834,8 @@
       entity_id: all
     - service: scene.turn_on
       entity_id: scene.good_night
+    - service: script.turn_on
+      entity_id: script.home_night_mode
 
 - id: "Bedroom_Aqara_Switch_Double_Press"
   alias: Bedroom Aqara Switch Double Press
@@ -864,11 +866,8 @@
   action:
     - service: cover.open_cover
       entity_id: cover.bedroom
-    # Change select.7_seg_clock_preset to «Orange Candle»
-    - service: select.select_option
-      data:
-        entity_id: select.7_seg_clock_preset
-        option: Orange Candle
+    - service: script.turn_on
+      entity_id: script.home_day_mode
 
 ###############################################
 ## Floorlamp Tradfri Switch Control
@@ -1118,8 +1117,8 @@
               volume_level: "{{ states('input_number.volume_yandex_station')}}"
           - delay: 1
 
-- id: "Kitchen_Yandex_Night_Mode_ON"
-  alias: Kitchen Yandex Night Mode ON
+- id: "Home_Night_Mode_ON"
+  alias: Home Yandex Night Mode ON
   mode: single
   trigger:
     - platform: state
@@ -1133,25 +1132,11 @@
     - condition: time
       after: "18:00:00"
       before: "03:00:00"
-      # Don not check here «input_boolean.yandex_night_mode» state, because
+      # Don not check here «input_boolean.home_night_mode» state, because
       # we need to ensure that the night mode will be turned ON at 21:00
   action:
-    - repeat:
-        while:
-          - condition: template
-            value_template: "{{ not is_state_attr('media_player.yandex_station', 'volume_level', 0.2) }}"
-          - condition: template
-            value_template: "{{ repeat.index <= 3 }}"
-        sequence:
-          - service: media_player.volume_set
-            data:
-              entity_id: media_player.yandex_station
-              volume_level: 0.2
-          - delay: 0.5
-    - service: input_boolean.turn_on
-      entity_id: input_boolean.yandex_night_mode
-    - service: scene.turn_on
-      entity_id: scene.anita_is_sleeping
+    service: script.turn_on
+    entity_id: script.home_night_mode
 
 - id: "Kitchen_Yandex_Volume_Increased_Trigger"
   alias: Kitchen Yandex Volume Increased Trigger
@@ -1161,7 +1146,7 @@
       entity_id: media_player.yandex_station
   condition:
     - condition: state
-      entity_id: input_boolean.yandex_night_mode
+      entity_id: input_boolean.home_night_mode
       state: "on"
     - condition: template
       value_template: >
@@ -1170,10 +1155,10 @@
         {{ to > from }}
   action:
     - service: automation.trigger
-      entity_id: automation.kitchen_yandex_night_mode_off
+      entity_id: automation.home_night_mode_off
 
-- id: "Kitchen_Yandex_Night_Mode_OFF"
-  alias: Kitchen Yandex Night Mode OFF
+- id: "Home_Night_Mode_OFF"
+  alias: Home Yandex Night Mode OFF
   mode: single
   trigger:
     - platform: state
@@ -1188,7 +1173,7 @@
       to: "open"
   condition:
     - condition: state
-      entity_id: input_boolean.yandex_night_mode
+      entity_id: input_boolean.home_night_mode
       state: "on"
     - condition: time
       after: "06:00:00"
@@ -1197,32 +1182,8 @@
       entity_id: binary_sensor.bedroom_door_contact
       state: "on"
   action:
-    # Rise volume only if bedroom door is actually opened
-    - if:
-        - condition: state
-          entity_id: binary_sensor.bedroom_door_contact
-          state: "on"
-      then:
-        - repeat:
-            while:
-              - condition: template
-                value_template: "{{ not is_state_attr('media_player.yandex_station', 'volume_level', 0.6) }}"
-              - condition: template
-                value_template: "{{ repeat.index <= 3 }}"
-            sequence:
-              - service: media_player.volume_set
-                data:
-                  entity_id: media_player.yandex_station
-                  volume_level: 0.6
-              - delay: 1
-    # Turn off yandex night mode anyway
-    - service: input_boolean.turn_off
-      entity_id: input_boolean.yandex_night_mode
-    # Change select.7_seg_clock_preset to «Orange Candle»
-    - service: select.select_option
-      data:
-        entity_id: select.7_seg_clock_preset
-        option: Orange Candle
+    service: script.turn_on
+    entity_id: script.home_day_mode
 
 # Reduce Yandex Station volume if door was closed and restore if opened during the day time
 - id: "Kitchen_Yandex_Reduce_Volume_If_Bedroom_Door_Closed"
@@ -1236,7 +1197,7 @@
       for: 00:00:30
   condition:
     - condition: state
-      entity_id: input_boolean.yandex_night_mode
+      entity_id: input_boolean.home_night_mode
       state: "off"
   action:
     - repeat:
@@ -1263,7 +1224,7 @@
       for: 00:00:30
   condition:
     - condition: state
-      entity_id: input_boolean.yandex_night_mode
+      entity_id: input_boolean.home_night_mode
       state: "off"
   action:
     - repeat:

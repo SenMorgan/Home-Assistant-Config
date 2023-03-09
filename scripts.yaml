@@ -333,3 +333,54 @@ octoprint_shutdown:
   mode: single
   sequence:
     - service: rest_command.octoprint_shutdown
+
+home_night_mode:
+  alias: Home Night Mode
+  sequence:
+    # Repetedly set Yandex volume
+    - repeat:
+        while:
+          - condition: template
+            value_template: "{{ not is_state_attr('media_player.yandex_station', 'volume_level', 0.2) }}"
+          - condition: template
+            value_template: "{{ repeat.index <= 3 }}"
+        sequence:
+          - service: media_player.volume_set
+            data:
+              entity_id: media_player.yandex_station
+              volume_level: 0.2
+          - delay: 0.5
+    - service: input_boolean.turn_on
+      entity_id: input_boolean.home_night_mode
+    - service: scene.turn_on
+      entity_id: scene.anita_is_sleeping
+
+home_day_mode:
+  alias: Home Day Mode
+  sequence:
+    # Rise volume only if bedroom door is actually opened
+    - if:
+        - condition: state
+          entity_id: binary_sensor.bedroom_door_contact
+          state: "on"
+      then:
+        - repeat:
+            while:
+              - condition: template
+                value_template: "{{ not is_state_attr('media_player.yandex_station', 'volume_level', 0.6) }}"
+              - condition: template
+                value_template: "{{ repeat.index <= 3 }}"
+            sequence:
+              - service: media_player.volume_set
+                data:
+                  entity_id: media_player.yandex_station
+                  volume_level: 0.6
+              - delay: 1
+    # Turn off yandex night mode anyway
+    - service: input_boolean.turn_off
+      entity_id: input_boolean.yandex_night_mode
+    # Change select.7_seg_clock_preset to «Orange Candle»
+    - service: select.select_option
+      data:
+        entity_id: select.7_seg_clock_preset
+        option: Orange Candle
