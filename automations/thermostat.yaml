@@ -379,8 +379,4 @@
       data:
         hvac_mode: "heat"
     - service: automation.turn_off
-      entity_id:
-        - automation.thermostat_eco_mode_when_noone_home_disable
-        # Also disable automations that are waiting for windows to be closed, if any opened
-        - automation.thermostat_eco_mode_by_window_reset
-        - automation.thermostat_eco_mode_by_window_disable
+      entity_id: automation.thermostat_eco_mode_when_noone_home_disable
