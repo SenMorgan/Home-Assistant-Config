@@ -575,28 +575,33 @@
       entity_id: sensor.fr24_aircraft
   condition:
     - condition: template
-      value_template: >
-        {{ state_attr('sensor.fr24_aircraft', 'aircraft') | regex_search('OKBYE|OKJAG') }}
+      value_template: !secret AIRCRAFTS_TO_TRACK_CONDITION_TEMPLATE
+      # Do not forget to add this line to secrets.yaml file and replace OK*** with your aircraft registration number:
+      # AIRCRAFTS_TO_TRACK_CONDITION_TEMPLATE: {{ state_attr('sensor.fr24_aircraft', 'aircraft') | regex_search('OK***|OK***') }}
   action:
     - service: notify.mobile_app_sm_s901b
       data:
         title: "{{ '✈️' }} Пролетает знакомый самолёт"
-        message: |
-          {% set aircraft = namespace(flight='', alt_baro='', gs='') %}
-          {% set aircrafts_list = state_attr('sensor.fr24_aircraft', 'aircraft') %}
-          {% for element in aircrafts_list if element | regex_search('OKBYE|OKJAG') %}
-                  {% set aircraft.flight = element['flight'] %}
-                  {% set aircraft.alt = (((element['alt_baro'] | float) * 0.3048) | int) | string %}
-                  {% set aircraft.gs = (((element['gs'] | float) * 1.852) | int) | string %}
-          {% endfor %}
-          {% if aircraft.flight == '' %}
-                  {{ 'Данные о самолёте не получены' }}
-          {% else %}
-                  {{ 'Номер рейса: ' + aircraft.flight }}
-                  {{ 'Высота: ' + aircraft.alt + ' м' }}
-                  {{ 'Скорость: ' + aircraft.gs + ' км/ч' }}
-          {% endif %}
+        message: !secret AIRCRAFTS_TO_TRACK_MESSAGE_TEMPLATE
 
+        # There is no other way to hide aircrafts registration number from code in secrets.yaml and use it in template,
+        # so I have to save all code in the secrets.yaml file:
+
+        # AIRCRAFTS_TO_TRACK_MESSAGE_TEMPLATE: |
+          # {% set aircraft = namespace(flight='', alt_baro='', gs='') %}
+          # {% set aircrafts_list = state_attr('sensor.fr24_aircraft', 'aircraft') %}
+          # {% for element in aircrafts_list if element | regex_search('OK***|OK***') %} # DO NOT FORGET TO CHANGE AIRCRAFTS REGISTRATION NUMBER
+          #         {% set aircraft.flight = element['flight'] %}
+          #         {% set aircraft.alt = (((element['alt_baro'] | float) * 0.3048) | int) | string %}
+          #         {% set aircraft.gs = (((element['gs'] | float) * 1.852) | int) | string %}
+          # {% endfor %}
+          # {% if aircraft.flight == '' %}
+          #         {{ 'Данные о самолёте не получены' }}
+          # {% else %}
+          #         {{ 'Номер рейса: ' + aircraft.flight }}
+          #         {{ 'Высота: ' + aircraft.alt + ' м' }}
+          #         {{ 'Скорость: ' + aircraft.gs + ' км/ч' }}
+          # {% endif %}
 
 ###############################################
 ## Raven Notifications
