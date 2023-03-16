@@ -586,22 +586,65 @@
 
         # There is no other way to hide aircrafts registration number from code in secrets.yaml and use it in template,
         # so I have to save all code in the secrets.yaml file:
-
         # AIRCRAFTS_TO_TRACK_MESSAGE_TEMPLATE: |
-          # {% set aircraft = namespace(flight='', alt_baro='', gs='') %}
-          # {% set aircrafts_list = state_attr('sensor.fr24_aircraft', 'aircraft') %}
-          # {% for element in aircrafts_list if element | regex_search('OK***|OK***') %} # DO NOT FORGET TO CHANGE AIRCRAFTS REGISTRATION NUMBER
-          #         {% set aircraft.flight = element['flight'] %}
-          #         {% set aircraft.alt = (((element['alt_baro'] | float) * 0.3048) | int) | string %}
-          #         {% set aircraft.gs = (((element['gs'] | float) * 1.852) | int) | string %}
-          # {% endfor %}
-          # {% if aircraft.flight == '' %}
-          #         {{ 'Данные о самолёте не получены' }}
-          # {% else %}
-          #         {{ 'Номер рейса: ' + aircraft.flight }}
-          #         {{ 'Высота: ' + aircraft.alt + ' м' }}
-          #         {{ 'Скорость: ' + aircraft.gs + ' км/ч' }}
-          # {% endif %}
+        # {% set aircraft = namespace(flight='', alt_baro='', gs='') %}
+        # {% set aircrafts_list = state_attr('sensor.fr24_aircraft', 'aircraft') %}
+        # {% for element in aircrafts_list if element | regex_search('OK***|OK***') %} # DO NOT FORGET TO CHANGE AIRCRAFTS REGISTRATION NUMBER
+        #         {% set aircraft.flight = element['flight'] %}
+        #         {% set aircraft.alt = (((element['alt_baro'] | float) * 0.3048) | int) | string %}
+        #         {% set aircraft.gs = (((element['gs'] | float) * 1.852) | int) | string %}
+        # {% endfor %}
+        # {% if aircraft.flight == '' %}
+        #         {{ 'Данные о самолёте не получены' }}
+        # {% else %}
+        #         {{ 'Номер рейса: ' + aircraft.flight }}
+        #         {{ 'Высота: ' + aircraft.alt + ' м' }}
+        #         {{ 'Скорость: ' + aircraft.gs + ' км/ч' }}
+        # {% endif %}
+
+- id: "Notification_Air_Quality_Bad"
+  alias: Notification Air Quality Bad
+  trigger:
+    - platform: numeric_state
+      entity_id: sensor.air_quality_station_iaq
+      above: 100
+      for: 00:02:00
+  action:
+    - service: notify.mobile_app_sm_s901b
+      data:
+        title: "{{ '🌬' }} Качество воздуха"
+        message: >
+          Качество воздуха в доме ухудшилось и составляет {{ states('sensor.air_quality_station_iaq') }}.
+    - service: media_player.play_media
+      entity_id: media_player.yandex_station
+      data:
+        media_content_id: >
+          В доме ухудшилось качество воздуха. Необходимо проветрить помещение.
+        media_content_type: text
+    - service: automation.turn_on
+      entity_id: automation.notification_air_quality_restored
+
+- id: "Notification_Air_Quality_Restored"
+  alias: Notification Air Quality Restored
+  trigger:
+    - platform: numeric_state
+      entity_id: sensor.air_quality_station_iaq
+      below: 70
+      for: 00:02:00
+  action:
+    - service: notify.mobile_app_sm_s901b
+      data:
+        title: "{{ '🌬' }} Качество воздуха"
+        message: >
+          Качество воздуха в доме улучшилось и составляет {{ states('sensor.air_quality_station_iaq') }}.
+    - service: media_player.play_media
+      entity_id: media_player.yandex_station
+      data:
+        media_content_id: >
+          Качество воздуха в доме вернулось в норму.
+        media_content_type: text
+    - service: automation.turn_off
+      entity_id: automation.notification_air_quality_restored
 
 ###############################################
 ## Raven Notifications
