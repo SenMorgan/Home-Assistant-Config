@@ -607,7 +607,7 @@
   trigger:
     - platform: numeric_state
       entity_id: sensor.air_quality_station_iaq
-      above: 100
+      above: 200
       for: 00:02:00
   action:
     - service: notify.mobile_app_sm_s901b
@@ -629,7 +629,7 @@
   trigger:
     - platform: numeric_state
       entity_id: sensor.air_quality_station_iaq
-      below: 70
+      below: 50
       for: 00:02:00
   action:
     - service: notify.mobile_app_sm_s901b
