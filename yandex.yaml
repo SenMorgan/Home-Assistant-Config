@@ -32,7 +32,7 @@ filter:
     - light.bedroom_nightlight
     - vacuum.johnny
     - switch.moving_head_power
-    - input_boolean.yandex_night_mode
+    - input_boolean.home_night_mode
     - switch.wireless_charger
 
 entity_config:
@@ -125,7 +125,7 @@ entity_config:
     name: Голова
     room: Зал
     type: devices.types.switch
-  input_boolean.yandex_night_mode:
+  input_boolean.home_night_mode:
     name: Ночной режим
     room: Дом
   switch.wireless_charger:
