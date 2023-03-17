@@ -630,7 +630,34 @@
         message: >
           Качество воздуха в доме ухудшилось и составляет {{ states('sensor.air_quality_station_iaq') }}.
     - service: automation.turn_on
-      entity_id: automation.notification_air_quality_restored
+      entity_id:
+        - automation.notification_air_quality_restored
+        - automation.notification_air_quality_open_window_greeting
+
+- id: "Notification_Air_Quality_Open_Window_Greeting"
+  alias: Notification Air Quality Open Window Greeting
+  trigger:
+    - platform: state
+      entity_id: binary_sensor.windows
+      from: "off"
+      to: "on"
+  condition:
+    - condition: state
+      entity_id: input_boolean.home_night_mode
+      state: "off"
+  action:
+    - if:
+        condition: template
+        value_template: "{{ not is_state('media_player.yandex_station', 'playing') }}"
+      then:
+        - service: media_player.play_media
+          entity_id: media_player.yandex_station
+          data:
+            media_content_id: >
+              Молодец! Рада, что вы заботитесь о своём здоровье.
+            media_content_type: text
+    - service: automation.turn_off
+      entity_id: automation.notification_air_quality_open_window_greeting
 
 - id: "Notification_Air_Quality_Restored"
   alias: Notification Air Quality Restored
@@ -660,7 +687,9 @@
         message: >
           Качество воздуха в доме улучшилось и составляет {{ states('sensor.air_quality_station_iaq') }}.
     - service: automation.turn_off
-      entity_id: automation.notification_air_quality_restored
+      entity_id:
+        - automation.notification_air_quality_restored
+        - automation.notification_air_quality_open_window_greeting
 
 ###############################################
 ## Raven Notifications
