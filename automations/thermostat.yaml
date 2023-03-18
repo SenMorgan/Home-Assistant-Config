@@ -373,10 +373,22 @@
         message: |
           Термостат переведён в нормальный режим.
           Температура дома: {{ state_attr('climate.family_room', 'current_temperature') }}°C
-    # Set thermostat mode to «heat»
-    - service: climate.set_hvac_mode
-      entity_id: climate.family_room
-      data:
-        hvac_mode: "heat"
+    # If some window is opened, set thermostat mode to «off» mode
+    - if:
+        - condition: state
+          entity_id: binary_sensor.windows
+          state: "on"
+      then:
+        - service: climate.set_hvac_mode
+          entity_id: climate.family_room
+          data:
+            hvac_mode: "off"
+      # If no windows are opened, set thermostat mode to «heat» mode
+      else:
+        - service: climate.set_hvac_mode
+          entity_id: climate.family_room
+          data:
+            hvac_mode: "heat"
+    # Disable this automation
     - service: automation.turn_off
       entity_id: automation.thermostat_eco_mode_when_noone_home_disable
