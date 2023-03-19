@@ -23,6 +23,8 @@ alert: !include alerts.yaml
 yandex_smart_home: !include yandex.yaml
 # Controlling of Yandex Station and TTS
 yandex_station: !include yandex_station.yaml
+# Controlling of Xiaomi Vacuum via Yandex Station
+vacuum_zones: !include vacuum-zones.yaml
 
 recorder:
   db_url: !secret MYSQL_URL

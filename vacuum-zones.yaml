@@ -1,0 +1,12 @@
+entity_id: vacuum.johnny
+zones:
+  Под столом:
+    sequence:
+      - service: media_player.play_media
+        entity_id: media_player.yandex_station
+        data:
+          media_content_id: >
+            Анита могла бы кушать аккуратнее!
+          media_content_type: text
+    # zone: [[28347, 28331, 28813, 28749]] # Develop
+    zone: [[27686, 25583, 30007, 28148]] # Production
