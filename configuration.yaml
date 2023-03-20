@@ -22,7 +22,7 @@ alert: !include alerts.yaml
 # Sharing devices with Yandex Smart Home
 yandex_smart_home: !include yandex.yaml
 # Controlling of Yandex Station and TTS
-yandex_station: !include yandex_station.yaml
+yandex_station: !include yandex-station.yaml
 # Controlling of Xiaomi Vacuum via Yandex Station
 vacuum_zones: !include vacuum-zones.yaml
 

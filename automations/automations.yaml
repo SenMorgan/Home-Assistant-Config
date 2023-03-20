@@ -621,18 +621,47 @@
         - service: media_player.play_media
           entity_id: media_player.yandex_station
           data:
-            media_content_id: >
-              В доме ухудшилось качество воздуха. Необходимо проветрить помещение.
-            media_content_type: text
+            # If some of windows are opened, notify to close exact opened window by telling it's name.
+            # Otherwise, notify to open window.
+            media_content_id: |
+              Замечено плохое качество воздуха в доме,
+              {% if states('binary_sensor.windows') == 'off' %}
+                советую открыть окно.
+              {% else %}
+                советую закрыть окно
+                {% if states('binary_sensor.bedroom_window_contact') == 'on' %}
+                  в спальне
+                {% endif %}
+                {% if states('binary_sensor.kitchen_window_contact') == 'on' %}
+                  {% if states('binary_sensor.bedroom_window_contact') == 'on' %}
+                    {% if states('binary_sensor.living_room_window_contact') == 'on' %}
+                      ,
+                    {% else %}
+                      и
+                    {% endif %}
+                  {% endif %}
+                  на кухне
+                {% endif %}
+                {% if states('binary_sensor.living_room_window_contact') == 'on' %}
+                  {% if states('binary_sensor.bedroom_window_contact') == 'on' or states('binary_sensor.kitchen_window_contact') == 'on' %}
+                    и
+                  {% endif %}
+                  в гостинной.
+                {% endif %}
+              {% endif %}
+
     - service: notify.mobile_app_sm_s901b
       data:
         title: "{{ '🌬' }} Качество воздуха"
         message: >
           Качество воздуха в доме ухудшилось и составляет {{ states('sensor.air_quality_station_iaq') }}.
+
     - service: automation.turn_on
       entity_id:
         - automation.notification_air_quality_restored
         - automation.notification_air_quality_open_window_greeting
+    - service: automation.turn_off
+      entity_id: automation.notification_air_quality_bad
 
 - id: "Notification_Air_Quality_Open_Window_Greeting"
   alias: Notification Air Quality Open Window Greeting
@@ -686,6 +715,8 @@
         title: "{{ '🌬' }} Качество воздуха"
         message: >
           Качество воздуха в доме улучшилось и составляет {{ states('sensor.air_quality_station_iaq') }}.
+    - service: automation.turn_on
+      entity_id: automation.notification_air_quality_bad
     - service: automation.turn_off
       entity_id:
         - automation.notification_air_quality_restored
