@@ -9,4 +9,4 @@ zones:
             Анита могла бы кушать аккуратнее!
           media_content_type: text
     # zone: [[28347, 28331, 28813, 28749]] # Develop
-    zone: [[27686, 25583, 30007, 28148]] # Production
+    zone: [[28310, 26255, 29577, 28127]] # Production
