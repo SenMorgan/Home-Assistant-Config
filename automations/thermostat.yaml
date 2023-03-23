@@ -334,7 +334,7 @@
     - platform: state
       entity_id: binary_sensor.people_home
       to: "off"
-      for: "00:15:00"
+      for: "00:10:00"
   condition:
     - condition: state
       entity_id: input_boolean.heating_season
