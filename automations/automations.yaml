@@ -578,6 +578,9 @@
       value_template: !secret AIRCRAFTS_TO_TRACK_CONDITION_TEMPLATE
       # Do not forget to add this line to secrets.yaml file and replace OK*** with your aircraft registration number:
       # AIRCRAFTS_TO_TRACK_CONDITION_TEMPLATE: {{ state_attr('sensor.fr24_aircraft', 'aircraft') | regex_search('OK***|OK***') }}
+    - condition: template
+      value_template: >
+        {{ now() - state_attr('automation.notification_aircraft_detected', 'last_triggered') > timedelta(minutes=5) }}
   action:
     - service: notify.mobile_app_sm_s901b
       data:
