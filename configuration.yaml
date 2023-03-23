@@ -262,6 +262,7 @@ rest_command:
 light:
   - platform: artnet_led
     host: !secret ARTNET_DMX_CONTROLLER_IP
+    refresh_every: 5
     universes:
       1:
         send_partial_universe: True
