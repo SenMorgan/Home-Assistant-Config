@@ -1,0 +1,63 @@
+- alias: WC Ventilation Start Timer Manually
+  id: wc_ventilation_start_timer_manually
+  trigger:
+    platform: state
+    entity_id: fan.wc_and_bathroom
+    from: "off"
+    to: "on"
+  condition:
+    condition: state
+    entity_id: timer.wc_ventilation_manual
+    state: "idle"
+  action:
+    service: timer.start
+    entity_id: timer.wc_ventilation_manual
+
+- alias: WC Ventilation Stop Timer Manually
+  id: wc_ventilation_stop_timer_manually
+  trigger:
+    platform: state
+    entity_id: fan.wc_and_bathroom
+    from: "on"
+    to: "off"
+  condition:
+    condition: state
+    entity_id: timer.wc_ventilation_manual
+    state: "active"
+  action:
+    service: timer.cancel
+    entity_id: timer.wc_ventilation_manual
+
+- alias: WC Ventilation Restart Timer Manually
+  id: wc_ventilation_restart_timer_manually
+  trigger:
+    platform: state
+    entity_id: fan.wc_and_bathroom
+    from: "off"
+    to: "on"
+  condition:
+    condition: or
+    conditions:
+      - condition: state
+        entity_id: timer.wc_ventilation_manual
+        state: "active"
+      - condition: state
+        entity_id: timer.wc_ventilation_manual
+        state: "paused"
+  action:
+    - service: timer.cancel
+      entity_id: timer.wc_ventilation_manual
+    - service: timer.start
+      entity_id: timer.wc_ventilation_manual
+
+- alias: WC Ventilation Manual Timer Timeout
+  id: wc_ventilation_manual_timer_timeout
+  trigger:
+    platform: event
+    event_type: timer.finished
+    event_data:
+      entity_id: timer.wc_ventilation_manual
+  action:
+    service: fan.turn_off
+    entity_id: fan.wc_and_bathroom
+

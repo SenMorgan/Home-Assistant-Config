@@ -259,6 +259,16 @@ rest_command:
     headers:
       X-Api-Key: !secret OCTOPRINT_API_KEY
 
+###############################################
+## TIMERS
+###############################################
+timer:
+  wc_ventilation_manual:
+    name: WC Ventilation Manual
+    duration: '00:10:00'
+    icon: mdi:fan
+    restore: true
+
 light:
   - platform: artnet_led
     host: !secret ARTNET_DMX_CONTROLLER_IP
