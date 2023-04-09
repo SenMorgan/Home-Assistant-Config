@@ -10,6 +10,7 @@ filter:
     - media_player
     - scene
     - vacuum
+    - fan
   include_entities:
     - binary_sensor.bedroom_window_contact
     - binary_sensor.hall_door_contact
@@ -31,6 +32,9 @@ filter:
     - switch.moving_head_power
     - input_boolean.home_night_mode
     - switch.wireless_charger
+    - sensor.air_quality_station_co2
+    - sensor.air_quality_station_iaq
+    - sensor.air_quality_station_voc
 
 entity_config:
   # type: devices.types.humidifier  # параметр необязательный, вычисляется автоматически!
