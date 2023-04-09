@@ -1,0 +1,120 @@
+- alias: WC Accupancy Set
+  id: wc_accupancy_set
+  trigger:
+    platform: state
+    entity_id: binary_sensor.wc_door_contact
+    from: "on"
+    to: "off"
+    for:
+      seconds: "{{ states('input_number.wc_consider_occupied_after_seconds') | default(0) | float }}"
+  condition:
+    condition: state
+    entity_id: input_boolean.wc_occupied
+    state: "off"
+  action:
+    service: input_boolean.turn_on
+    entity_id: input_boolean.wc_occupied
+
+- alias: WC Accupancy Reset
+  id: wc_accupancy_reset
+  trigger:
+    platform: state
+    entity_id: binary_sensor.wc_door_contact
+    from: "off"
+    to: "on"
+    for:
+      seconds: "{{ states('input_number.wc_consider_unoccupied_after_seconds') | default(0) | float }}"
+  condition:
+    condition: state
+    entity_id: input_boolean.wc_occupied
+    state: "on"
+  action:
+    service: input_boolean.turn_off
+    entity_id: input_boolean.wc_occupied
+
+- alias: WC Ventilation Start Timer Manually
+  id: wc_ventilation_start_timer_manually
+  trigger:
+    platform: state
+    entity_id: fan.wc_and_bathroom
+    from: "off"
+    to: "on"
+  condition:
+    condition: or
+    conditions:
+      - condition: state
+        entity_id: timer.wc_ventilation
+        state: "idle"
+      - condition: state
+        entity_id: timer.wc_ventilation
+        state: "paused"
+  action:
+    service: timer.start
+    data:
+      entity_id: timer.wc_ventilation
+      duration:
+        minutes: "{{ states('input_number.wc_ventilate_for_minutes_after_manual_trigger') | default(0) | float }}"
+
+- alias: WC Ventilation Stop Timer Manually
+  id: wc_ventilation_stop_timer_manually
+  trigger:
+    platform: state
+    entity_id: fan.wc_and_bathroom
+    from: "on"
+    to: "off"
+  condition:
+    condition: state
+    entity_id: timer.wc_ventilation
+    state: "active"
+  action:
+    service: timer.cancel
+    entity_id: timer.wc_ventilation
+
+- alias: WC Ventilation Timeout
+  id: wc_ventilation_timeout
+  trigger:
+    platform: event
+    event_type: timer.finished
+    event_data:
+      entity_id: timer.wc_ventilation
+  action:
+    service: fan.turn_off
+    entity_id: fan.wc_and_bathroom
+
+- alias: WC Ventilation Start when Occupied
+  id: wc_ventilation_start_when_occupied
+  trigger:
+    platform: state
+    entity_id: input_boolean.wc_occupied
+    from: "off"
+    to: "on"
+    for:
+      seconds: "{{ states('input_number.wc_ventilate_after_seconds') | default(0) | float }}"
+  action:
+    - service: fan.turn_on
+      entity_id: fan.wc_and_bathroom
+    - service: timer.start
+      data:
+        entity_id: timer.wc_ventilation
+        duration:
+          minutes: "{{ states('input_number.wc_ventilate_for_minutes_when_occupied') | default(0) | float }}"
+
+- alias: WC Ventilation Restart when Unoccupied if Active
+  id: wc_ventilation_restart_when_unoccupied_if_active
+  trigger:
+    platform: state
+    entity_id: input_boolean.wc_occupied
+    from: "on"
+    to: "off"
+  condition:
+    condition: state
+    entity_id: timer.wc_ventilation
+    state: "active"
+  action:
+    - service: fan.turn_on
+      entity_id: fan.wc_and_bathroom
+    - service: timer.start
+      data:
+        entity_id: timer.wc_ventilation
+        duration:
+          minutes: "{{ states('input_number.wc_ventilate_for_minutes_when_unoccupied') | default(0) | float }}"

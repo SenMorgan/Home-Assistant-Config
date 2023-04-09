@@ -98,6 +98,36 @@ input_number:
     min: 8
     max: 16
     step: 0.1
+  wc_consider_occupied_after_seconds:
+    name: WC Consider Occupied After Seconds
+    min: 0
+    max: 60
+    step: 1.0
+  wc_consider_unoccupied_after_seconds:
+    name: WC Consider Unoccupied After Seconds
+    min: 0
+    max: 60
+    step: 1.0
+  wc_ventilate_for_minutes_after_manual_trigger:
+    name: WC Ventilate for Minutes After Manual Trigger
+    min: 0
+    max: 30
+    step: 1.0
+  wc_ventilate_after_seconds:
+    name: WC Ventilate After Seconds
+    min: 0
+    max: 360
+    step: 1.0
+  wc_ventilate_for_minutes_when_occupied:
+    name: WC Ventilate for Minutes When Occupied
+    min: 0
+    max: 30
+    step: 1.0
+  wc_ventilate_for_minutes_when_unoccupied:
+    name: WC Ventilate for Minutes When Unoccupied
+    min: 0
+    max: 30
+    step: 1.0
 
 ######################## START OF INPUT BOOLEAN SECTION ########################
 
@@ -126,6 +156,9 @@ input_boolean:
   3d_printer_and_octo_power:
     name: 3D Printer Power
     icon: mdi:printer-3d
+  wc_occupied:
+    name: WC Occupied
+    icon: mdi:toilet
 
 ###############################################
 ## SWITCHES
@@ -263,9 +296,8 @@ rest_command:
 ## TIMERS
 ###############################################
 timer:
-  wc_ventilation_manual:
-    name: WC Ventilation Manual
-    duration: '00:10:00'
+  wc_ventilation:
+    name: WC Ventilation Timer
     icon: mdi:fan
     restore: true
 
