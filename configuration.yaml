@@ -298,7 +298,7 @@ rest_command:
 timer:
   wc_ventilation:
     name: WC Ventilation Timer
-    icon: mdi:fan
+    icon: mdi:fan-clock
     restore: true
 
 light:
