@@ -62,5 +62,21 @@ zones:
             ] %}
             {{ responses|random }}
           media_content_type: text
-    # zone: [[28347, 28331, 28813, 28749]] # Develop
-    zone: [[27774, 25472, 30633, 27154]] # Production
+
+  Спальня:
+    room: 17
+
+  Зал:
+    room: 18
+
+  Коридор:
+    room: 19
+
+  Туалет:
+    room: 21
+
+  Кухня:
+    room: 22
+
+  Ванная:
+    room: 16
