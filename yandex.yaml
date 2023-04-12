@@ -7,128 +7,244 @@ filter:
   include_domains:
     - climate
     - cover
-    - media_player
     - vacuum
     - fan
   include_entities:
-    - binary_sensor.bedroom_window_contact
     - binary_sensor.hall_door_contact
+    - binary_sensor.wc_door_contact
+    - binary_sensor.bedroom_door_contact
+    - binary_sensor.bedroom_window_contact
+    - binary_sensor.kitchen_window_contact
+    - binary_sensor.living_room_window_contact
+    - binary_sensor.backyard_motion_alarm
     - input_button.thermostat_10_minutes_heating
-    - input_boolean.flag_spotlight_triggered_by_motion
-    - input_boolean.raven_engine_start_stop
-    - light.floor_lamp
-    - light.gyver_lamp
-    - light.hall_lights
-    - light.kitchen_spotlights
-    - light.living_room_nightlight
-    - light.mi_desk_lamp
-    - light.pc_backlight
-    - light.shelf_lighting
-    - switch.asus_pc
-    - light.bar_light
-    - light.string_lights
-    - light.bedroom_nightlight
-    - switch.moving_head_power
     - input_boolean.home_night_mode
-    - switch.wireless_charger
+    - input_boolean.raven_engine_start_stop
+    - light.hall_lights
+    - light.shelf_lighting
+    - light.floor_lamp
+    - light.mi_desk_lamp
+    - light.gyver_lamp
+    - light.pc_backlight
+    - light.string_lights
+    - light.kitchen_spotlights
+    - light.led_strip_1
+    - light.bedroom_nightlight
+    - light.living_room_nightlight
+    - light.bar_light
+    - light.christmas_tree
+    - media_player.tv
+    - switch.moving_head_power
+    - switch.asus_pc
     - sensor.air_quality_station_co2
     - sensor.air_quality_station_iaq
     - sensor.air_quality_station_voc
+    - sensor.air_quality_station_pressure
+    - sensor.ble_temperature_coffee_tree
+    - sensor.ble_temperature_fikus_benjamin
+    - sensor.ble_temperature_monstera_adansonii
+    - sensor.ble_temperature_yucca
+    - sensor.ble_temperature_xiaomi_ble_temp_and_hum
+    - sensor.ble_humidity_xiaomi_ble_temp_and_hum
+    - sensor.pool_bme280_temperature
+    - sensor.pool_bme280_humidity
+    - sensor.pool_bme280_pressure
+    - sensor.pool_thermometer_bottom_water_temperature
+    - sensor.pool_thermometer_upper_water_temperature
+    - sensor.tuya_temp_hum_sensor_temperature
+    - sensor.tuya_temp_hum_sensor_humidity
+    - sensor.family_room_temperature
+    - sensor.family_room_humidity
+    - sensor.sm_g991b_battery_level
+    - sensor.sm_s901b_battery_level
+    - sensor.electricity_meter_power
+    - sensor.electricity_meter_current
+    - sensor.electricity_meter_voltage
 
 entity_config:
-  # type: devices.types.humidifier  # параметр необязательный, вычисляется автоматически!
-  binary_sensor.bedroom_window_contact:
-    name: Окно
-    room: Спальня
   binary_sensor.hall_door_contact:
-    name: Дверь
-    room: Корридор
+    name: Датчик двери
+    room: Коридор
+  binary_sensor.wc_door_contact:
+    name: Датчик двери
+    room: Туалет
+  binary_sensor.bedroom_door_contact:
+    name: Датчик двери
+    room: Спальня
+  binary_sensor.bedroom_window_contact:
+    name: Датчик окна
+    room: Спальня
+  binary_sensor.kitchen_window_contact:
+    name: Датчик окна
+    room: Кухня
+  binary_sensor.living_room_window_contact:
+    name: Датчик окна
+    room: Зал
+  binary_sensor.backyard_motion_alarm:
+    name: Датчик движения
+    room: Двор
+  input_button.thermostat_10_minutes_heating:
+    name: Подогрев 10 минут
+    room: Дом
+  input_boolean.home_night_mode:
+    name: Ночной режим
+    room: Дом
+  input_boolean.raven_engine_start_stop:
+    name: Запуск двигателя
+    room: Дом
+  light.hall_lights:
+    name: Свет в коридоре
+    room: Коридор
+  light.shelf_lighting:
+    name: Подсветка полки
+    room: Кухня
+  light.floor_lamp:
+    name: Торшер
+    room: Кухня
+  light.mi_desk_lamp:
+    name: Настольная лампа
+    room: Кухня
+  light.gyver_lamp:
+    name: Лампа Гайвера
+    room: Кухня
+  light.pc_backlight:
+    name: Подсветка Компьютера
+    room: Кухня
+  light.string_lights:
+    name: Лампочки
+    room: Кухня
+  light.kitchen_spotlights:
+    name: Подсветка
+    room: Кухня
+  light.led_strip_1:
+    name: Светодиодная лента
+    room: Кухня
+  light.bedroom_nightlight:
+    name: Ночник
+    room: Спальня
+  light.living_room_nightlight:
+    name: Светильник
+    room: Зал
+  light.bar_light:
+    name: Подсветка бара
+    room: Зал
+  light.christmas_tree:
+    name: Ёлка
+    room: Зал
+  media_player.tv:
+    name: Телевизор
+    room: Зал
+  switch.moving_head_power:
+    name: Голова
+    room: Зал
+  switch.asus_pc:
+    name: Компьютер
+    room: Кухня
+  sensor.air_quality_station_co2:
+    name: Датчик CO2
+    room: Кухня
+  sensor.air_quality_station_iaq:
+    name: Датчик качества воздуха
+    room: Кухня
+  sensor.air_quality_station_voc:
+    name: Датчик VOC
+    room: Кухня
+  sensor.air_quality_station_pressure:
+    name: Датчик давления
+    room: Кухня
+  sensor.ble_temperature_coffee_tree:
+    name: Температура Coffee Tree
+    room: Кухня
+  sensor.ble_temperature_fikus_benjamin:
+    name: Температура Fikus
+    room: Зал
+  sensor.ble_temperature_monstera_adansonii:
+    name: Температура Monstera
+    room: Зал
+  sensor.ble_temperature_yucca:
+    name: Температура Yucca
+    room: Зал
+  sensor.ble_temperature_xiaomi_ble_temp_and_hum:
+    name: Датчик температуры
+    room: Ванная
+  sensor.ble_humidity_xiaomi_ble_temp_and_hum:
+    name: Датчик влажности
+    room: Ванная
+  sensor.pool_bme280_temperature:
+    name: Температура воздуха
+    room: Двор
+  sensor.pool_bme280_humidity:
+    name: Влажность воздуха
+    room: Двор
+  sensor.pool_bme280_pressure:
+    name: Давление
+    room: Двор
+  sensor.pool_thermometer_bottom_water_temperature:
+    name: Температура воды снизу
+    room: Бассейн
+  sensor.pool_thermometer_upper_water_temperature:
+    name: Температура воды сверху
+    room: Бассейн
+  sensor.tuya_temp_hum_sensor_temperature:
+    name: Датчик температуры
+    room: Спальня
+  sensor.tuya_temp_hum_sensor_humidity:
+    name: Датчик влажности
+    room: Спальня
+  sensor.family_room_temperature:
+    name: Датчик температуры
+    room: Кухня
+  sensor.family_room_humidity:
+    name: Датчик влажности
+    room: Кухня
+  sensor.sm_g991b_battery_level:
+    name: Батарея телефона Арсений
+    room: Дом
+  sensor.sm_s901b_battery_level:
+    name: Батарея телефона Крис
+    room: Дом
+  sensor.electricity_meter_power:
+    name: Потребляемая мощность
+    room: Дом
+  sensor.electricity_meter_current:
+    name: Потребляемый ток
+    room: Дом
+  sensor.electricity_meter_voltage:
+    name: Потребляемое напряжение
+    room: Дом
   climate.family_room:
     name: Термостат
     room: Кухня
   cover.bedroom:
     name: Штора
     room: Спальня
-  input_boolean.flag_spotlight_triggered_by_motion:
-    name: Таймер кухонного света
-    room: Кухня
-  input_boolean.raven_engine_start_stop:
-    name: Двигатель
-    room: Парковка
-  light.floor_lamp:
-    name: Торшер
-    room: Кухня
-  light.gyver_lamp:
-    name: Лампа Гайвера
-    room: Кухня
-  light.hall_lights:
-    name: Лампы
-    room: Коридор
-  light.kitchen_spotlights:
-    name: Подсветка кухни
-    room: Кухня
-  light.mi_desk_lamp:
-    name: Настольная лампа
-    room: Кухня
-  light.pc_backlight:
-    name: Подсветка монитора
-    room: Кухня
-  light.shelf_lighting:
-    name: Подсветка полки
-    room: Кухня
-  media_player.bathroom_google_home_mini:
-    name: Гугл колонка
-    room: Ванная
-  media_player.kitchen_google_home_mini:
-    name: Гугл колонка
-    room: Кухня
-  media_player.tv:
-    name: Телевизор
-    room: Зал
-  scene.good_night:
-    name: Сцена Доброй Ночи
-    room: Дом
-  scene.movies:
-    name: Сцена Кино
-    room: Дом
-  scene.welcome_home_lights:
-    name: Сцена Добро Пожаловать
-    room: Дом
-  switch.asus_pc:
-    name: Компьютер
-    room: Кухня
-    type: devices.types.switch
-  light.bar_light:
-    name: Подсветка бара
-    room: Зал
-    type: devices.types.light
-  light.string_lights:
-    name: Лампочки
-    room: Кухня
-    type: devices.types.light
-  light.bedroom_nightlight:
-    name: Ночник
-    room: Спальня
-    type: devices.types.light
+  fan.wc_and_bathroom:
+    name: Вентилятор
+    room: Туалет
   vacuum.johnny:
-    name: Джонни
-    room: Спальня
-    type: devices.types.vacuum_cleaner
-  input_button.thermostat_10_minutes_heating:
-    name: Подогрев
-    room: Кухня
-  light.living_room_nightlight:
-    name: Светильник
-    room: Зал
-    type: devices.types.light
-  switch.moving_head_power:
-    name: Голова
-    room: Зал
-    type: devices.types.switch
-  input_boolean.home_night_mode:
-    name: Ночной режим
+    name: Пылесос
     room: Дом
-  switch.wireless_charger:
-    name: Беспроводная зарядка
+  vacuum.koridor:
+    name: Коридор
+    room: Коридор
+  vacuum.kukhnia:
+    name: Кухня
     room: Кухня
-    type: devices.types.switch
+  vacuum.pod_rakovinoi:
+    name: Под раковиной
+    room: Дом
+  vacuum.pod_stolom:
+    name: Под столом
+    room: Дом
+  vacuum.spalnia:
+    name: Спальня
+    room: Спальня
+  vacuum.tualet:
+    name: Туалет
+    room: Туалет
+  vacuum.vannaia:
+    name: Ванная
+    room: Ванная
+  vacuum.zal:
+    name: Зал
+    room: Зал
