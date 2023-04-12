@@ -6,7 +6,7 @@ zones:
       - service: script.turn_on
         entity_id: script.yandex_joke_before_cleaning_kitchen
 
-  Рабочая поверхность:
+  Под раковиной:
     zone: [[27774, 25472, 30633, 27154]] # Production
     sequence:
       - service: script.turn_on
