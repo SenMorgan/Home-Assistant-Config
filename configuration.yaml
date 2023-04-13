@@ -113,20 +113,20 @@ input_number:
     min: 0
     max: 30
     step: 1.0
-  wc_ventilate_after_seconds:
-    name: WC Ventilate After Seconds
+  wc_consider_ventilate_when_finished_if_occupied_for_seconds:
+    name: WC Ventilate When Finished If Occupied For Seconds
     min: 0
     max: 360
     step: 1.0
-  wc_ventilate_for_minutes_when_occupied:
-    name: WC Ventilate for Minutes When Occupied
+  wc_ventilate_for_minutes_when_finished:
+    name: WC Ventilate for Minutes When Finished
     min: 0
     max: 30
     step: 1.0
-  wc_ventilate_for_minutes_when_unoccupied:
-    name: WC Ventilate for Minutes When Unoccupied
+  wc_wait_for_opening_after_considered_to_ventilate_minutes:
+    name: WC Wait for Opening After Considered to Ventilate Minutes
     min: 0
-    max: 30
+    max: 60
     step: 1.0
 
 ######################## START OF INPUT BOOLEAN SECTION ########################
@@ -298,6 +298,10 @@ rest_command:
 timer:
   wc_ventilation:
     name: WC Ventilation Timer
+    icon: mdi:fan-clock
+    restore: true
+  wc_wait_for_open_to_ventilate:
+    name: WC Wait for Open to Ventilate
     icon: mdi:fan-clock
     restore: true
 

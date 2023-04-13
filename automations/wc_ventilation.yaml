@@ -81,23 +81,21 @@
     service: fan.turn_off
     entity_id: fan.wc_and_bathroom
 
-- alias: WC Ventilation Start when Occupied
-  id: wc_ventilation_start_when_occupied
+- alias: WC Ventilation Consider to Ventilate after if Occupied for Seconds
+  id: wc_ventilation_consider_to_ventilate_when_finished
   trigger:
     platform: state
     entity_id: input_boolean.wc_occupied
     from: "off"
     to: "on"
     for:
-      seconds: "{{ states('input_number.wc_ventilate_after_seconds') | default(0) | float }}"
+      seconds: "{{ states('input_number.wc_consider_ventilate_when_finished_if_occupied_for_seconds') | default(0) | float }}"
   action:
-    - service: fan.turn_on
-      entity_id: fan.wc_and_bathroom
     - service: timer.start
       data:
-        entity_id: timer.wc_ventilation
+        entity_id: timer.wc_wait_for_open_to_ventilate
         duration:
-          minutes: "{{ states('input_number.wc_ventilate_for_minutes_when_occupied') | default(0) | float }}"
+          minutes: "{{ states('input_number.wc_wait_for_opening_after_considered_to_ventilate_minutes') | default(0) | float }}"
 
 - alias: WC Ventilation Restart when Unoccupied if Active
   id: wc_ventilation_restart_when_unoccupied_if_active
@@ -107,14 +105,21 @@
     from: "on"
     to: "off"
   condition:
-    condition: state
-    entity_id: timer.wc_ventilation
-    state: "active"
+    - condition: or
+      conditions:
+        - condition: state
+          entity_id: timer.wc_wait_for_open_to_ventilate
+          state: "active"
+        - condition: state
+          entity_id: timer.wc_ventilation
+          state: "active"
   action:
     - service: fan.turn_on
       entity_id: fan.wc_and_bathroom
+    - service: timer.cancel
+      entity_id: timer.wc_wait_for_open_to_ventilate
     - service: timer.start
       data:
         entity_id: timer.wc_ventilation
         duration:
-          minutes: "{{ states('input_number.wc_ventilate_for_minutes_when_unoccupied') | default(0) | float }}"
+          minutes: "{{ states('input_number.wc_ventilate_for_minutes_when_finished') | default(0) | float }}"
