@@ -28,7 +28,7 @@ filter:
     - light.pc_backlight
     - light.string_lights
     - light.kitchen_spotlights
-    - light.led_strip_1
+    - light.kitchen_led_strip
     - light.bedroom_nightlight
     - light.living_room_nightlight
     - light.bar_light
@@ -104,7 +104,7 @@ entity_config:
   light.kitchen_spotlights:
     name: Подсветка
     room: Кухня
-  light.led_strip_1:
+  light.kitchen_led_strip:
     name: Светодиодная лента
     room: Кухня
   light.bedroom_nightlight:
@@ -129,8 +129,8 @@ entity_config:
     name: Компьютер
     room: Кухня
   sensor.family_room_temperature:
-    name: Погода в доме
-    room: Дом
+    name: Погода на кухне
+    room: Кухня
     properties:
       - type: temperature
         entity: sensor.family_room_temperature
@@ -188,7 +188,7 @@ entity_config:
         entity: sensor.tuya_temp_hum_sensor_humidity
   sensor.sm_s901b_battery_level:
     name: Телефон Арсений
-    room: Дом
+    room: Телефоны
     properties:
       - type: battery_level
         entity: sensor.sm_s901b_battery_level
@@ -196,7 +196,7 @@ entity_config:
         entity: sensor.sm_s901b_battery_temperature
   sensor.sm_g991b_battery_level:
     name: Телефон Крис
-    room: Дом
+    room: Телефоны
     properties:
       - type: battery_level
         entity: sensor.sm_g991b_battery_level
@@ -229,27 +229,27 @@ entity_config:
   vacuum.johnny:
     name: Джонни
     room: Дом
-  vacuum.koridor:
-    name: Коридор
-    room: Коридор
-  vacuum.kukhnia:
-    name: Кухня
-    room: Кухня
   vacuum.pod_rakovinoi:
     name: Под раковиной
     room: Дом
   vacuum.pod_stolom:
     name: Под столом
     room: Дом
-  vacuum.spalnia:
+  vacuum.zona_uborki_korridor:
+    name: Коридор
+    room: Коридор
+  vacuum.zona_uborki_kukhnia:
+    name: Кухня
+    room: Кухня
+  vacuum.zona_uborki_spalnia:
     name: Спальня
     room: Спальня
-  vacuum.tualet:
+  vacuum.zona_uborki_tualet:
     name: Туалет
     room: Туалет
-  vacuum.vannaia:
+  vacuum.zona_uborki_vannaia:
     name: Ванная
     room: Ванная
-  vacuum.zal:
+  vacuum.zona_uborki_zal:
     name: Зал
     room: Зал

@@ -12,37 +12,37 @@ zones:
       - service: script.turn_on
         entity_id: script.yandex_joke_before_cleaning_kitchen
 
-  Спальня:
+  Зона уборки спальня:
     sequence:
       - service: script.turn_on
         entity_id: script.yandex_joke_before_cleaning_rooms
     room: 17
 
-  Зал:
+  Зона уборки зал:
     room: 18
     sequence:
       - service: script.turn_on
         entity_id: script.yandex_joke_before_cleaning_rooms
 
-  Коридор:
+  Зона уборки корридор:
     room: 19
     sequence:
       - service: script.turn_on
         entity_id: script.yandex_joke_before_cleaning_rooms
 
-  Туалет:
+  Зона уборки туалет:
     room: 21
     sequence:
       - service: script.turn_on
         entity_id: script.yandex_joke_before_cleaning_rooms
 
-  Кухня:
+  Зона уборки кухня:
     room: 22
     sequence:
       - service: script.turn_on
         entity_id: script.yandex_joke_before_cleaning_rooms
 
-  Ванная:
+  Зона уборки ванная:
     room: 16
     sequence:
       - service: script.turn_on
