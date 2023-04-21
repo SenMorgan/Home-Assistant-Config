@@ -236,20 +236,20 @@ entity_config:
     name: Под столом
     room: Дом
   vacuum.zona_uborki_korridor:
-    name: Коридор
+    name: Зона уборки коридор
     room: Коридор
   vacuum.zona_uborki_kukhnia:
-    name: Кухня
+    name: Зона уборки кухня
     room: Кухня
   vacuum.zona_uborki_spalnia:
-    name: Спальня
+    name: Зона уборки спальня
     room: Спальня
   vacuum.zona_uborki_tualet:
-    name: Туалет
+    name: Зона уборки туалет
     room: Туалет
   vacuum.zona_uborki_vannaia:
-    name: Ванная
+    name: Зона уборки ванная
     room: Ванная
   vacuum.zona_uborki_zal:
-    name: Зал
+    name: Зона уборки зал
     room: Зал
