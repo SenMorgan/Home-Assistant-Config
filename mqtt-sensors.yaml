@@ -170,10 +170,15 @@
   unit_of_measurement: "Wh"
   state_class: total_increasing
 
-- name: "Solar Monitor Signal Strength"
+- name: "Solar Panel Signal Strength"
   state_topic: "/solar-inverter-monitor/state/signal-quality"
   value_template: "{{ value }}"
   unit_of_measurement: "dBm"
+
+- name: "Solar Panel Uptime"
+  state_topic: "/solar-inverter-monitor/state/uptime"
+  value_template: "{{ value }}"
+  state_class: total_increasing
 
 ###############################################
 ## Power Monitor Sensors
