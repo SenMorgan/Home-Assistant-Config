@@ -16,11 +16,15 @@
 ###############################################
 ## Solar Station Buttons
 ###############################################
-- name: "Solar Power Meter Reset"
-  command_topic: "/solar/reset"
+- name: "Solar Inverter Monitor Reset"
+  command_topic: "/solar-inverter-monitor/set/reset"
   payload_press: "1"
   entity_category: "config"
   device_class: "restart"
+- name: "Solar Inverter Monitor Reset Wh"
+  command_topic: "/solar-inverter-monitor/set/wh-reset"
+  payload_press: "1"
+  entity_category: "config"
 
 ###############################################
 ## Electric Heater Controller Buttons

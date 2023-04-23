@@ -108,28 +108,36 @@
 ###############################################
 - name: "Solar Panel Voltage"
   device_class: voltage
-  state_topic: "/solar/solar/volt"
+  # Obsolete topic for another solar panel motitor device
+  # state_topic: "/solar/solar/volt"
+  state_topic: "/solar-inverter-monitor/state/volt"
   value_template: "{{ value }}"
   unit_of_measurement: "V"
   state_class: measurement
 
 - name: "Solar Panel Current"
   device_class: current
-  state_topic: "/solar/solar/amp"
+  # Obsolete topic for another solar panel motitor device
+  # state_topic: "/solar/solar/amp"
+  state_topic: "/solar-inverter-monitor/state/amp"
   value_template: "{{ value }}"
   unit_of_measurement: "A"
   state_class: measurement
 
 - name: "Solar Panel Power"
   device_class: power
-  state_topic: "/solar/solar/watt"
+  # Obsolete topic for another solar panel motitor device
+  # state_topic: "/solar/solar/watt"
+  state_topic: "/solar-inverter-monitor/state/watt"
   value_template: "{{ value }}"
   unit_of_measurement: "W"
   state_class: measurement
 
 - name: "Solar Panel Energy"
   device_class: energy
-  state_topic: "/solar/solar/wh"
+  # Obsolete topic for another solar panel motitor device
+  # state_topic: "/solar/solar/wh"
+  state_topic: "/solar-inverter-monitor/state/wh"
   value_template: "{{ value }}"
   unit_of_measurement: "Wh"
   state_class: total_increasing
@@ -161,6 +169,11 @@
   value_template: "{{ value }}"
   unit_of_measurement: "Wh"
   state_class: total_increasing
+
+- name: "Solar Monitor Signal Strength"
+  state_topic: "/solar-inverter-monitor/state/signal-quality"
+  value_template: "{{ value }}"
+  unit_of_measurement: "dBm"
 
 ###############################################
 ## Power Monitor Sensors
