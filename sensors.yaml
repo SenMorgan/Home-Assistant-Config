@@ -187,3 +187,10 @@
   json_attributes:
     - now
     - aircraft
+
+- platform: template
+  sensors:
+    mikrotik_wireless_clients:
+      friendly_name: "Mikrotik Clients"
+      value_template: "{{ states('sensor.mikrotik_hap_ax_3_wireless_clients') | int }}"
+      unit_of_measurement: "clients"
