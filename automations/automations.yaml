@@ -286,10 +286,16 @@
             states('light.mi_desk_lamp') == 'off' and
             states('light.kitchen_spotlights') == 'off' and
             states('light.bedroom_nightlight') == 'off' }}"
-      timeout: 00:10:00
+      timeout: 01:00:00
       continue_on_timeout: false
-    - service: scene.turn_on
-      entity_id: scene.movies
+    # Check if it's still needed (TV is on)
+    - if:
+        - condition: state
+          entity_id: media_player.tv
+          state: "on"
+      then:
+        - service: scene.turn_on
+          entity_id: scene.movies
 
 - id: "Living_Room_Bar_Lights_by_Sunrise_OFF"
   alias: Living Room Bar Lights by Sunrise OFF
