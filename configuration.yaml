@@ -28,6 +28,7 @@ vacuum_zones: !include vacuum-zones.yaml
 
 recorder:
   db_url: !secret MYSQL_URL
+  purge_keep_days: 30
 
 # Discover some devices automatically
 discovery:
