@@ -1250,8 +1250,8 @@
               volume_level: "{{ states('input_number.volume_yandex_station')}}"
           - delay: 1
 
-- id: "Home_Night_Mode_ON"
-  alias: Home Yandex Night Mode ON
+- id: "Home_Enable_Night_Mode_by_Bedroom_Door"
+  alias: Home Enable Night Mode by Bedroom Door
   mode: single
   trigger:
     - platform: state
@@ -1268,8 +1268,8 @@
       # Don not check here «input_boolean.home_night_mode» state, because
       # we need to ensure that the night mode will be turned ON at 21:00
   action:
-    service: script.turn_on
-    entity_id: script.home_night_mode
+    service: input_boolean.turn_on
+    entity_id: input_boolean.home_night_mode
 
 - id: "Kitchen_Yandex_Volume_Increased_Trigger"
   alias: Kitchen Yandex Volume Increased Trigger
@@ -1287,11 +1287,11 @@
         {% set to = trigger.to_state.attributes.volume_level | float %}
         {{ to > from }}
   action:
-    - service: automation.trigger
-      entity_id: automation.home_night_mode_off
+    service: input_boolean.turn_off
+    entity_id: input_boolean.home_night_mode
 
-- id: "Home_Night_Mode_OFF"
-  alias: Home Yandex Night Mode OFF
+- id: "Home_Disable_Night_Mode_by_Trigger"
+  alias: Home Disable Night Mode by Trigger
   mode: single
   trigger:
     - platform: state
@@ -1314,6 +1314,30 @@
     - condition: state
       entity_id: binary_sensor.bedroom_door_contact
       state: "on"
+  action:
+    service: input_boolean.turn_off
+    entity_id: input_boolean.home_night_mode
+
+- id: "Home_Night_Mode_ON"
+  alias: Home Night Mode ON
+  mode: single
+  trigger:
+    - platform: state
+      entity_id: input_boolean.home_night_mode
+      from: "off"
+      to: "on"
+  action:
+    service: script.turn_on
+    entity_id: script.home_night_mode
+
+- id: "Home_Night_Mode_OFF"
+  alias: Home Night Mode OFF
+  mode: single
+  trigger:
+    - platform: state
+      entity_id: input_boolean.home_night_mode
+      from: "on"
+      to: "off"
   action:
     service: script.turn_on
     entity_id: script.home_day_mode
