@@ -117,8 +117,6 @@
 
 - name: "Solar Panel Current"
   device_class: current
-  # Obsolete topic for another solar panel motitor device
-  # state_topic: "/solar/solar/amp"
   state_topic: "/solar-inverter-monitor/state/amp"
   value_template: "{{ value }}"
   unit_of_measurement: "A"
@@ -126,8 +124,6 @@
 
 - name: "Solar Panel Power"
   device_class: power
-  # Obsolete topic for another solar panel motitor device
-  # state_topic: "/solar/solar/watt"
   state_topic: "/solar-inverter-monitor/state/watt"
   value_template: "{{ value }}"
   unit_of_measurement: "W"
@@ -135,11 +131,27 @@
 
 - name: "Solar Panel Energy"
   device_class: energy
-  # Obsolete topic for another solar panel motitor device
-  # state_topic: "/solar/solar/wh"
   state_topic: "/solar-inverter-monitor/state/wh"
   value_template: "{{ value }}"
   unit_of_measurement: "Wh"
+  state_class: total_increasing
+
+- name: "Solar Panel State"
+  state_topic: "/solar-inverter-monitor/state/mppt"
+  value_template: "{{ value }}"
+
+- name: "Solar Panel Error"
+  state_topic: "/solar-inverter-monitor/state/error"
+  value_template: "{{ value }}"
+
+- name: "Solar Panel Signal Strength"
+  state_topic: "/solar-inverter-monitor/state/signal-quality"
+  value_template: "{{ value }}"
+  unit_of_measurement: "dBm"
+
+- name: "Solar Panel Uptime"
+  state_topic: "/solar-inverter-monitor/state/uptime"
+  value_template: "{{ value }}"
   state_class: total_increasing
 
 - name: "Battery Charging Voltage"
@@ -168,16 +180,6 @@
   state_topic: "/solar/batt/wh"
   value_template: "{{ value }}"
   unit_of_measurement: "Wh"
-  state_class: total_increasing
-
-- name: "Solar Panel Signal Strength"
-  state_topic: "/solar-inverter-monitor/state/signal-quality"
-  value_template: "{{ value }}"
-  unit_of_measurement: "dBm"
-
-- name: "Solar Panel Uptime"
-  state_topic: "/solar-inverter-monitor/state/uptime"
-  value_template: "{{ value }}"
   state_class: total_increasing
 
 ###############################################
