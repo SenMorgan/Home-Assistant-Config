@@ -147,12 +147,14 @@
 - name: "Solar Panel Signal Strength"
   state_topic: "/solar-inverter-monitor/state/signal-quality"
   value_template: "{{ value }}"
-  unit_of_measurement: "dBm"
+  unit_of_measurement: "%"
 
 - name: "Solar Panel Uptime"
   state_topic: "/solar-inverter-monitor/state/uptime"
   value_template: "{{ value }}"
   state_class: total_increasing
+  device_class: duration
+  unit_of_measurement: s
 
 - name: "Battery Charging Voltage"
   device_class: voltage
@@ -220,6 +222,8 @@
   state_topic: "/power-monitor/state/uptime"
   value_template: "{{ value }}"
   state_class: total_increasing
+  device_class: duration
+  unit_of_measurement: s
 
 ###############################################
 ## Raven Sensors
@@ -326,6 +330,9 @@
   payload_not_available: "offline"
   state_topic: "/Raven/uptime"
   value_template: "{{ value }}"
+  state_class: total_increasing
+  device_class: duration
+  unit_of_measurement: s
 
 - name: "Raven Battery Voltage"
   icon: mdi:car-battery
