@@ -13,6 +13,7 @@ tts:
 
 homeassistant:
   customize: !include customize.yaml
+  packages: !include_dir_named packages
 
 automation: !include_dir_merge_list automations
 script: !include scripts.yaml
@@ -99,52 +100,6 @@ input_number:
     min: 8
     max: 16
     step: 0.1
-  wc_consider_occupied_after_seconds:
-    name: WC Consider Occupied After Seconds
-    min: 0
-    max: 60
-    step: 1.0
-  wc_consider_unoccupied_after_seconds:
-    name: WC Consider Unoccupied After Seconds
-    min: 0
-    max: 60
-    step: 1.0
-  wc_ventilate_for_minutes_after_manual_trigger:
-    name: WC Ventilate for Minutes After Manual Trigger
-    min: 0
-    max: 30
-    step: 1.0
-  wc_consider_ventilate_when_finished_if_occupied_for_seconds:
-    name: WC Ventilate When Finished If Occupied For Seconds
-    min: 0
-    max: 360
-    step: 1.0
-  wc_ventilate_for_minutes_when_finished:
-    name: WC Ventilate for Minutes When Finished
-    min: 0
-    max: 30
-    step: 1.0
-  wc_wait_for_opening_after_considered_to_ventilate_minutes:
-    name: WC Wait for Opening After Considered to Ventilate Minutes
-    min: 0
-    max: 60
-    step: 1.0
-  wc_ventilation_start_humidity_threshold:
-    name: WC Ventilation Start Humidity Threshold
-    min: 50
-    max: 100
-    step: 1.0
-  wc_ventilation_stop_humidity_threshold:
-    name: WC Ventilation Stop Humidity Threshold
-    min: 30
-    max: 90
-    step: 1.0
-  wc_max_ventilation_duration:
-    name: WC Max Ventilation Duration
-    min: 0
-    max: 60
-    step: 1.0
-    initial: 60.0
 
 
 ######################## START OF INPUT BOOLEAN SECTION ########################
@@ -174,9 +129,6 @@ input_boolean:
   3d_printer_and_octo_power:
     name: 3D Printer Power
     icon: mdi:printer-3d
-  wc_occupied:
-    name: WC Occupied
-    icon: mdi:toilet
 
 ###############################################
 ## SWITCHES
@@ -309,19 +261,6 @@ rest_command:
     method: POST
     headers:
       X-Api-Key: !secret OCTOPRINT_API_KEY
-
-###############################################
-## TIMERS
-###############################################
-timer:
-  wc_ventilation:
-    name: WC Ventilation Timer
-    icon: mdi:fan-clock
-    restore: true
-  wc_wait_for_open_to_ventilate:
-    name: WC Wait for Open to Ventilate
-    icon: mdi:fan-clock
-    restore: true
 
 light:
   - platform: artnet_led
