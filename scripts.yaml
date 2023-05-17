@@ -316,24 +316,6 @@ tell_what_windows_are_opened:
                 Внимание! Открыты окна: {{ expand('binary_sensor.windows') | selectattr('state','eq','on') | map(attribute='name') | list | join(', ') }}
               {% endif %}
 
-home_assistant_shutdown:
-  alias: Home Assistant Shutdown
-  mode: single
-  sequence:
-    - service: hassio.host_shutdown
-
-home_assistant_reboot:
-  alias: Home Assistant Reboot
-  mode: single
-  sequence:
-    - service: hassio.host_reboot
-
-octoprint_shutdown:
-  alias: Octoprint Shutdown
-  mode: single
-  sequence:
-    - service: rest_command.octoprint_shutdown
-
 home_night_mode:
   alias: Home Night Mode
   sequence:

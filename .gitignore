@@ -5,7 +5,7 @@
 !*.yaml
 !.gitignore
 !*.md
-!automations/
+!packages/
 
 # Ignore folders
 .storage

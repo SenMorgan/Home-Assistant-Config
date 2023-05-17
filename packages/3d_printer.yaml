@@ -1,0 +1,240 @@
+######################################################################
+# File: 3d_printer.yaml                                              #
+# Author: SenMorgan https://github.com/SenMorgan                     #
+# Date: 2023-02-19                                                   #
+#                                                                    #
+# Info: this file contains automations that are associated to the    #
+# 3D printer connected via Octoprint                                 #
+#                                                                    #
+# Copyright (c) 2023 Sen Morgan                                      #
+######################################################################
+
+###############################################
+## INPUT BOOLEANS
+###############################################
+input_boolean:
+  3d_printer_and_octo_power:
+    name: 3D Printer Power
+    icon: mdi:printer-3d
+
+###############################################
+## REST COMMANDS
+###############################################
+rest_command:
+  octoprint_shutdown:
+    url: !secret OCTOPRINT_SHUTDOWN_URL
+    method: POST
+    headers:
+      X-Api-Key: !secret OCTOPRINT_API_KEY
+
+###############################################
+## SCRIPTS
+###############################################
+script:
+  octoprint_shutdown:
+    alias: Octoprint Shutdown
+    mode: single
+    sequence:
+      - service: rest_command.octoprint_shutdown
+
+###############################################
+## AUTOMATIONS
+###############################################
+automation:
+  ###############################################
+  ## Remind me when the print is done
+  ###############################################
+  - alias: "3D Printer - Print Done"
+    id: "3d_printer_print_done"
+    trigger:
+      platform: state
+      entity_id: binary_sensor.octoprint_printing
+      from: "on"
+      to: "off"
+    action:
+      - service: notify.mobile_app_sm_s901b
+        data:
+          title: "3D Printer"
+          message: "🎉 Печать завершена!"
+
+  ###############################################
+  ## Remind me every 10% of the print
+  ###############################################
+  - alias: "3D Printer - Print Progress"
+    id: "3d_printer_print_progress"
+    trigger:
+      platform: state
+      entity_id: sensor.octoprint_job_percentage
+    condition:
+      condition: template
+      value_template: >
+        {{ (trigger.to_state.state | int) > 0 and
+          ((trigger.to_state.state | int) != (trigger.from_state.state | int)) and
+           (trigger.to_state.state | int) % 10 == 0 }}
+    action:
+      - service: notify.mobile_app_sm_s901b
+        data_template:
+          title: "3D Printer"
+          message: "📈 Деталь готова на {{ states('sensor.octoprint_job_percentage') | int }}%"
+
+  ###############################################
+  ## Remind me when print is paused
+  ###############################################
+  - alias: "3D Printer - Print Paused"
+    id: "3d_printer_print_paused"
+    trigger:
+      platform: state
+      entity_id: sensor.octoprint_current_state
+      from: "Printing"
+      to:
+        - "Paused"
+        - "Pausing"
+    action:
+      - service: notify.mobile_app_sm_s901b
+        data:
+          title: "⚠️ 3D Printer"
+          message: "Печать приостановлена!"
+
+  ###############################################
+  ## Remind me when print is resumed
+  ###############################################
+  - alias: "3D Printer - Print Resumed"
+    id: "3d_printer_print_resumed"
+    trigger:
+      platform: state
+      entity_id: sensor.octoprint_current_state
+      from:
+        - "Paused"
+        - "Pausing"
+      to: "Printing"
+    action:
+      - service: notify.mobile_app_sm_s901b
+        data:
+          title: "⚠️ 3D Printer"
+          message: "Печать возобновлена"
+
+  ###############################################
+  ## Remind me when bed or hotend is overheated
+  ###############################################
+  - alias: "3D Printer - Overheated"
+    id: "3d_printer_overheated"
+    trigger:
+      platform: state
+      entity_id:
+        - sensor.octoprint_actual_bed_temp
+        - sensor.octoprint_actual_tool0_temp
+    condition:
+      condition: or
+      conditions:
+        - condition: template
+          value_template: >
+            {{ states('sensor.octoprint_actual_bed_temp') | int > 100 }}
+        - condition: template
+          value_template: >
+            {{ states('sensor.octoprint_actual_tool0_temp') | int > 250 }}
+    action:
+      - service: notify.mobile_app_sm_s901b
+        data:
+          title: "🌡️ 3D Printer перегрелся!"
+          message: |
+            🛏️ Температура стола: {{ states('sensor.octoprint_actual_bed_temp') }}°C
+            🔥 Температура хотенда: {{ states('sensor.octoprint_actual_tool0_temp') }}°C
+
+  ###############################################
+  ## Power control
+  ###############################################
+  - alias: 3D Printer - Power On
+    id: 3d_printer_power_on
+    mode: restart
+    trigger:
+      - platform: state
+        entity_id: input_boolean.3d_printer_and_octo_power
+        from: "off"
+        to: "on"
+    # Check if new state was not set by «3d_printer_sync_power_state» to awoid infinite loop
+    condition:
+      - condition: state
+        entity_id: switch.3d_printer_socket
+        state: "off"
+    action:
+      - service: switch.turn_on
+        entity_id: switch.3d_printer_socket
+
+  - alias: 3D Printer - Power Sync
+    id: 3d_printer_power_sync
+    mode: single
+    trigger:
+      - platform: state
+        entity_id: switch.3d_printer_socket
+    condition:
+      - condition: template
+        value_template: >
+          {{ states('switch.3d_printer_socket') != states('input_boolean.3d_printer_and_octo_power') }}
+        # Check if 3d_printer_power_off automation is not running
+      - condition: template
+        value_template: >
+          {{ is_state_attr('automation.3d_printer_power_off', 'current', 0) }}
+    action:
+      - if:
+          - condition: state
+            entity_id: switch.3d_printer_socket
+            state: "on"
+        then:
+          - service: input_boolean.turn_on
+            entity_id: input_boolean.3d_printer_and_octo_power
+        else:
+          - service: input_boolean.turn_off
+            entity_id: input_boolean.3d_printer_and_octo_power
+
+  - alias: 3D Printer - Power Off
+    id: 3d_printer_power_off
+    mode: restart
+    trigger:
+      - platform: state
+        entity_id: input_boolean.3d_printer_and_octo_power
+        from: "on"
+        to: "off"
+    # Check if new state was not set by «3d_printer_sync_power_state» to awoid infinite loop
+    condition:
+      - condition: state
+        entity_id: switch.3d_printer_socket
+        state: "on"
+    action:
+      - service: script.turn_on
+        entity_id: script.octoprint_shutdown
+      # If server is not in state "operational" — send me notification and stop powering off
+      - if:
+          - condition: template
+            value_template: "{{ states('sensor.octoprint_current_state') != 'Operational' }}"
+        then:
+          - service: input_boolean.turn_on
+            entity_id: input_boolean.3d_printer_and_octo_power
+          - service: notify.mobile_app_sm_s901b
+            data:
+              title: "⚠️ 3D Printer"
+              message: |
+                Невозможно выключить Octoprint сервер в состонии «{{ states('sensor.octoprint_current_state') }}».
+                Питания НЕ отключено!
+        else:
+          # Wait until server is down
+          - wait_template: "{{ states('sensor.octoprint_current_state') == 'unavailable' }}"
+            timeout: "00:03:00"
+            # If server is still up — send me notification
+          - if:
+              - condition: template
+                value_template: "{{ states('sensor.octoprint_current_state') != 'unavailable' }}"
+            then:
+              - service: input_boolean.turn_on
+                entity_id: input_boolean.3d_printer_and_octo_power
+              - service: notify.mobile_app_sm_s901b
+                data:
+                  title: "⚠️ 3D Printer"
+                  message: |
+                    Не удалось выключить Octoprint сервер.
+                    Питания НЕ отключено!
+            else:
+              # If server is down, turn off power socket
+              - service: switch.turn_off
+                entity_id: switch.3d_printer_socket
+              - service: input_boolean.turn_off
+                entity_id: input_boolean.3d_printer_and_octo_power

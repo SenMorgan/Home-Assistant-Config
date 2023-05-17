@@ -15,10 +15,9 @@ homeassistant:
   customize: !include customize.yaml
   packages: !include_dir_named packages
 
-automation: !include_dir_merge_list automations
+automation: !include automations.yaml
 script: !include scripts.yaml
 scene: !include scenes.yaml
-alert: !include alerts.yaml
 
 # Sharing devices with Yandex Smart Home
 yandex_smart_home: !include yandex.yaml
@@ -85,16 +84,6 @@ input_number:
     min: 0
     max: 100
     initial: 0.1
-  thermostat_saved_target_temperature:
-    name: Thermostat Saved Target Temperature
-    min: 15.0
-    max: 30.0
-    initial: 20.0
-  thermostat_new_target_temperature:
-    name: Thermostat New Target Temperature
-    min: 15.0
-    max: 30.0
-    initial: 20.0
   power_monitor_low_voltage_threshold:
     name: Power Monitor Low Voltage Threshold
     min: 8
@@ -126,9 +115,6 @@ input_boolean:
   home_night_mode:
     name: Home Night Mode
     icon: mdi:volume-off
-  3d_printer_and_octo_power:
-    name: 3D Printer Power
-    icon: mdi:printer-3d
 
 ###############################################
 ## SWITCHES
@@ -166,14 +152,6 @@ binary_sensor:
       - binary_sensor.kitchen_window_contact
       - binary_sensor.living_room_window_contact
 
-  # Check if thermostat is heating now
-  - platform: template
-    sensors:
-      thermostat_heating:
-        friendly_name: Thermostat is heating
-        value_template: >
-          {{ is_state_attr('climate.family_room', 'hvac_action', "heating") }}
-
   # ADS-B System / Flightradar 24
   - platform: template
     sensors:
@@ -205,31 +183,9 @@ input_button:
   parking_light:
     name: Parking Light
     icon: mdi:light-flood-down
-  thermostat_10_minutes_heating:
-    name: Heat 10 Minutes
-    icon: mdi:radiator
   server_rack_power_off:
     name: Server Rack Power Off
     icon: mdi:power
-  home_assistant_power_off:
-    name: Home Assistant Power Off
-    icon: mdi:power
-  home_assistant_reboot:
-    name: Home Assistant Reboot
-    icon: mdi:restart
-
-###############################################
-## Input DateTimes
-###############################################
-input_datetime:
-  thermostat_10_minutes_heating_time_end:
-    name: Thermostat 10 Minutes Heating Time End
-    has_date: true
-    has_time: true
-  thermostat_windows_close_delay_time_end:
-    name: Thermostat Windows Close Delay Time End
-    has_date: true
-    has_time: true
 
 ###############################################
 ## Rest Sensors
@@ -251,16 +207,6 @@ rest:
         value_template: "{{ value_json['result']['username'] }}"
       - name: "Duco Server"
         value_template: "{{ value_json['server'] }}"
-
-rest_command:
-  ###############################################
-  ## Octoprint Rest Commands
-  ###############################################
-  octoprint_shutdown:
-    url: !secret OCTOPRINT_SHUTDOWN_URL
-    method: POST
-    headers:
-      X-Api-Key: !secret OCTOPRINT_API_KEY
 
 light:
   - platform: artnet_led

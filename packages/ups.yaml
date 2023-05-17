@@ -1,0 +1,162 @@
+######################################################################
+# File: ups.yaml                                                     #
+# Author: SenMorgan https://github.com/SenMorgan                     #
+# Date: 2022-11-28                                                   #
+#                                                                    #
+# Info: this file contains automations that are associated to the    #
+# UPS.                                                               #
+#                                                                    #
+# Copyright (c) 2022 Sen Morgan                                      #
+######################################################################
+
+###############################################
+## SENSORS
+###############################################
+sensor:
+  - platform: template
+    sensors:
+      ups_power:
+        friendly_name: UPS Power
+        value_template: "{{ states('sensor.ups_load') | int  * 0.01 * 425 | round(2) }}"
+        unit_of_measurement: "W"
+        icon_template: "mdi:gauge"
+        device_class: power
+
+###############################################
+## ALERTS
+###############################################
+alert:
+  ups_lost_power:
+    name: UPS lost power
+    entity_id: sensor.ups_status_data
+    state: "OB DISCHRG"
+    repeat: 1
+    can_acknowledge: false
+    notifiers: mobile_app_sm_s901b
+    title: "{{ '🚨' }} Уведомление от UPS"
+    message: |
+      UPS отключится через {{ states('sensor.ups_battery_runtime') | int | timestamp_custom('%M:%S') }} минут
+      Заряд аккумулятора: {{ states('sensor.ups_battery_charge') }}%
+      Напряжение аккумулятора: {{ states('sensor.ups_battery_voltage') }} В
+      Статус: {{ states('sensor.ups_status') }}
+    done_message: |
+      UPS восстановил питание в {{ states('sensor.time') }}
+      Оставшийся заряд аккумулятора: {{ states('sensor.ups_battery_charge') }}%
+    data:
+      ttl: 0
+      priority: high
+
+###############################################
+## AUTOMATIONS
+###############################################
+automation:
+  - alias: UPS Lost Grid Power Notification
+    id: "ups_lost_grid_power_notification"
+    mode: single
+    trigger:
+      - platform: state
+        entity_id: sensor.ups_status_data
+        to: "OB DISCHRG"
+    action:
+      - service: persistent_notification.create
+        data:
+          title: "{{ '🚨' }} Уведомление от UPS"
+          message: >
+            UPS потерял питание в {{ states('sensor.time') }}
+            Рассчётное время работы: {{ states('sensor.ups_battery_runtime') | int | timestamp_custom('%M:%S') }} минут
+      - service: notify.mobile_app_sm_s901b
+        data:
+          title: "{{ '🚨' }} Уведомление от UPS"
+          message: |
+            UPS потерял питание в {{ states('sensor.time') }}
+            Рассчётное время работы: {{ states('sensor.ups_battery_runtime') | int | timestamp_custom('%M:%S') }} минут
+      - service: automation.turn_on
+        entity_id: automation.ups_grid_power_restored_notification
+
+  - alias: UPS Grid Power Restored Notification
+    id: "ups_grid_power_restored_notification"
+    mode: single
+    trigger:
+      - platform: template
+        value_template: "{{ 'OL' in states('sensor.ups_status_data') }}"
+    action:
+      - service: persistent_notification.create
+        data:
+          title: "{{ '🚨' }} Уведомление от UPS"
+          message: >
+            UPS восстановил питание в {{ states('sensor.time') }}
+      - service: automation.turn_off
+        entity_id: automation.ups_grid_power_restored_notification
+
+  - alias: UPS Low Battery Warning Notification
+    id: "ups_low_battery_warning_notification"
+    mode: single
+    trigger:
+      - platform: numeric_state
+        entity_id: sensor.ups_battery_charge
+        below: 21
+    action:
+      - service: notify.mobile_app_sm_s901b
+        data:
+          title: "{{ '🚨' }} Уведомление от UPS"
+          message: >
+            Низкий заряд аккумулятора UPS: {{ states('sensor.ups_battery_charge') }}%
+
+  - alias: UPS Shutdown Home Assistant Server
+    id: "ups_shutdown_home_assistant_server"
+    mode: single
+    trigger:
+      - platform: numeric_state
+        entity_id: sensor.ups_battery_charge
+        below: 10
+      - platform: numeric_state
+        entity_id: sensor.ups_battery_runtime
+        below: 300
+      - platform: template
+        value_template: "{{ 'OB DISCHRG LB' in states('sensor.ups_status_data') }}"
+    action:
+      - service: notify.mobile_app_sm_s901b
+        data:
+          title: "{{ '🚨' }} Уведомление от UPS"
+          message: |
+            Критически низкий заряд батареи UPS.
+            Немедленное отключение сервера Home Assistant в {{ states('sensor.time') }}
+      - delay: 00:00:05
+      - service: hassio.host_shutdown
+
+  - alias: UPS Lost Grid Power Light Notification
+    id: "ups_lost_grid_power_light_notification"
+    mode: single
+    trigger:
+      - platform: template
+        value_template: "{{ 'OB' in states('sensor.ups_status_data') }}"
+    action:
+      - service: light.turn_on
+        data:
+          entity_id: light.tradfri_bulb
+          brightness: 255
+          effect: "breathe"
+      - service: automation.turn_on
+        entity_id: automation.ups_grid_power_restored_light_notification
+
+  - alias: UPS Grid Power Restored Light Notification
+    id: "ups_grid_power_restored_light_notification"
+    mode: single
+    trigger:
+      - platform: template
+        value_template: "{{ 'OL' in states('sensor.ups_status_data') }}"
+    action:
+      - service: light.turn_on
+        data:
+          entity_id: light.tradfri_bulb
+          brightness: 255
+      - wait_template: "{{ not ('OL' in states('sensor.ups_status_data')) }}"
+        timeout: "00:00:10"
+      - if:
+          - condition: template
+            value_template: "{{ 'OL' in states('sensor.ups_status_data') }}"
+        then:
+          - service: light.turn_off
+            entity_id: light.tradfri_bulb
+      - service: automation.turn_off
+        entity_id: automation.ups_grid_power_restored_light_notification

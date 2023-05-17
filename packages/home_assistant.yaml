@@ -1,0 +1,263 @@
+######################################################################
+# File: home-assistant.yaml                                          #
+# Author: SenMorgan https://github.com/SenMorgan                     #
+# Date: 2022-11-28                                                   #
+#                                                                    #
+# Info: this file contains automations that are associated to the    #
+# Home Assistant system.                                             #
+#                                                                    #
+# Copyright (c) 2022 Sen Morgan                                      #
+######################################################################
+
+###############################################
+## INPUT BUTTONS
+###############################################
+input_button:
+  home_assistant_power_off:
+    name: Home Assistant Power Off
+    icon: mdi:power
+  home_assistant_reboot:
+    name: Home Assistant Reboot
+    icon: mdi:restart
+
+###############################################
+## SCRIPTS
+###############################################
+script:
+  home_assistant_shutdown:
+    alias: Home Assistant Shutdown
+    mode: single
+    sequence:
+      - service: hassio.host_shutdown
+
+  home_assistant_reboot:
+    alias: Home Assistant Reboot
+    mode: single
+    sequence:
+      - service: hassio.host_reboot
+
+###############################################
+## AUTOMATIONS
+###############################################
+automation:
+  ###############################################
+  ## Notifications
+  ###############################################
+
+  - alias: Home Assistant Started Notification
+    id: "home_assistant_started_notification"
+    trigger:
+      - platform: homeassistant
+        event: start
+    action:
+      - service: notify.mobile_app_sm_s901b
+        data:
+          title: "{{ 'ℹ️' }} Системное уведомление"
+          message: Home Assistant started at {{ states('sensor.time') }}
+
+  - alias: Home Assistant Stopped Notification
+    id: "home_assistant_stopped_notification"
+    trigger:
+      - platform: event
+        event_type: homeassistant_stop
+    action:
+      - service: notify.mobile_app_sm_s901b
+        data:
+          title: "{{ 'ℹ️' }} Системное уведомление"
+          message: Home Assistant stopped at {{ states('sensor.time') }}
+
+  - alias: Notification New Device Connected Notification
+    id: "home_assistant_new_device_connected_notification"
+    mode: queued
+    trigger:
+      platform: event
+      event_type: entity_registry_updated
+      event_data:
+        action: create
+    condition: >
+      {{trigger.event.data.entity_id.startswith('device_tracker')}}
+    action:
+      - variables:
+          entity: >
+            {{trigger.event.data.entity_id}}
+      - service: system_log.write
+        data:
+          message: >
+            New device registrered: {{ entity }}
+          level: warning
+          logger: homeassistant.components.device_tracker
+      - service: persistent_notification.create
+        data:
+          title: >
+            New device registered: {{ entity }}
+          message: >
+            Entity: {{entity}}
+            Host: {{state_attr(entity,'host_name')}}
+            Ip: {{state_attr(entity,'ip')}}
+            Mac-address: {{state_attr(entity,'mac')}}
+            Full data: {{trigger.event.data}}
+      - service: notify.mobile_app_sm_s901b
+        data:
+          title: "{{ 'ℹ️' }} Системное уведомление"
+          message: В сети появилось новое устройство {{ entity }}
+      - service: media_player.play_media
+        entity_id: media_player.yandex_station
+        data:
+          media_content_id: >
+            К локальной сети было подключено новое устройство с именем {{ entity }}
+          media_content_type: text
+
+  - alias: Home Assistant Update Available Notification
+    id: "home_assistant_update_available_notification"
+    trigger:
+      - platform: state
+        entity_id: update.home_assistant_core_update
+        from: "off"
+        to: "on"
+    action:
+      - service: notify.mobile_app_sm_s901b
+        data:
+          title: "{{ 'ℹ️' }} Системное уведомление"
+          message: Update! Доступна новая версия {{ states('sensor.home_assistant_versions') }}
+          data:
+            actions:
+              - action: "URI"
+                title: "Open Config"
+                uri: "/config"
+
+  ###############################################
+  ## Low Battery Notifications
+  ###############################################
+
+  - alias: Home Assistant Create Group of Battery Devices
+    id: "home_assistant_create_group_of_battery_devices"
+    trigger:
+      # Trigger on startup
+      - platform: homeassistant
+        event: start
+      # Trigger every 2 hours by time_pattern
+      - platform: time_pattern
+        hours: "/2"
+    action:
+      - service: group.set
+        data:
+          object_id: battery_devices
+          entities: >-
+            {%-
+              for state in states.sensor
+                if is_state_attr(state.entity_id, 'device_class', 'battery') and
+                (state.entity_id.endswith("_battery") or state.entity_id.endswith("_power"))
+            %}
+            {{ state.entity_id }}{%- if not loop.last -%}, {%- endif -%}
+            {%- endfor %}
+
+  - alias: Home Assistant Low Device Battery Notification
+    id: "home_assistant_low_device_battery_notification"
+    trigger:
+      - platform: event
+        event_type: state_changed
+    condition:
+      - condition: template
+        value_template: >-
+          {{ trigger.event.data.entity_id in (expand('group.battery_devices') | map(attribute='entity_id')) }}
+      - condition: template
+        value_template: >-
+          {{ not trigger.event.data.new_state.state in ['unknown', 'unavailable'] }}
+      - condition: template
+        value_template: >-
+          {{ (trigger.event.data.new_state.state | int) < 20 }}
+    action:
+      - service: notify.mobile_app_sm_s901b
+        data:
+          title: "{{ 'ℹ️' }} Системное уведомление"
+          message: |
+            *Внимание, низкий заряд батареи!*
+            {{ trigger.event.data.new_state.attributes.friendly_name }}: {{ trigger.event.data.new_state.state }}%!
+
+  ###############################################
+  ## Other Automations
+  ###############################################
+
+  - alias: Home Assistant - Power Off
+    id: home_assistant_power_off
+    trigger:
+      - platform: state
+        entity_id: input_button.home_assistant_power_off
+    action:
+      - service: script.turn_on
+        entity_id: script.home_assistant_shutdown
+
+  - alias: Home Assistant - Reboot
+    id: home_assistant_reboot
+    trigger:
+      - platform: state
+        entity_id: input_button.home_assistant_reboot
+    action:
+      - service: script.turn_on
+        entity_id: script.home_assistant_reboot
+
+  - alias: Home Assistant Server Rack - Power Off
+    id: home_assistant_server_rack_power_off
+    mode: restart
+    trigger:
+      - platform: state
+        entity_id: input_button.server_rack_power_off
+    action:
+      # Check Synology Shutdown button state:
+      - if:
+          - condition: state
+            entity_id: button.synology_ds220_shutdown
+            state: "unavailable"
+        # If Synology is unavailable, ask for the confirmation
+        then:
+          - variables:
+              # Including an id in the action allows us to identify this script run
+              # and not accidentally trigger for other notification actions
+              action_power_off: "{{ 'action_power_off' ~ context.id }}"
+              action_cancel: "{{ 'action_cancel' ~ context.id }}"
+          - service: notify.mobile_app_sm_s901b
+            data:
+              title: "{{ '❗️' }} Внимание!"
+              message: Synology DS220+ недоступен, продолжить выключение Home Assistant?
+              data:
+                actions:
+                  - action: "{{ action_power_off }}"
+                    title: "Да"
+                  - action: "{{ action_cancel }}"
+                    title: "Отмена"
+          # Waiting for «action_power_off» or «action_cancel» avoids accidentally continuing
+          # for another script/automation's notification action
+          - wait_for_trigger:
+              - platform: event
+                event_type: mobile_app_notification_action
+                event_data:
+                  action: "{{ action_power_off }}"
+              - platform: event
+                event_type: mobile_app_notification_action
+                event_data:
+                  action: "{{ action_cancel }}"
+          # Perform the action
+          - choose:
+              - conditions: "{{ wait.trigger.event.data.action == action_power_off }}"
+                sequence:
+                  # Turn OFF Home Assistant
+                  - service: script.turn_on
+                    entity_id: script.home_assistant_shutdown
+              - conditions: "{{ wait.trigger.event.data.action == action_cancel }}"
+                sequence:
+                  - service: notify.mobile_app_sm_s901b
+                    data:
+                      title: "{{ 'ℹ️' }} Системное уведомление"
+                      message: Отмена выключения серверного шкафа
+        else:
+          - service: notify.mobile_app_sm_s901b
+            data:
+              title: "{{ 'ℹ️' }} Системное уведомление"
+              message: Выключение серверного шкафа
+          # Turn OFF the Synology DS220+
+          - service: button.press
+            entity_id: button.synology_ds220_shutdown
+          - delay: 00:00:10
+          # Turn OFF Home Assistant
+          - service: script.turn_on
+            entity_id: script.home_assistant_shutdown
