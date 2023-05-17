@@ -40,7 +40,7 @@ filter:
     - sensor.ble_temperature_fikus_benjamin
     - sensor.ble_temperature_monstera_adansonii
     - sensor.ble_temperature_yucca
-    - sensor.ble_temperature_xiaomi_ble_temp_and_hum
+    - sensor.ble_temperature_bathroom
     - sensor.pool_bme280_temperature
     - sensor.pool_thermometer_bottom_water_temperature
     - sensor.pool_thermometer_upper_water_temperature
@@ -154,14 +154,14 @@ entity_config:
   sensor.ble_temperature_yucca:
     name: Температура Yucca
     room: Зал
-  sensor.ble_temperature_xiaomi_ble_temp_and_hum:
+  sensor.ble_temperature_bathroom:
     name: Погода в ванной
     room: Ванная
     properties:
       - type: temperature
-        entity: sensor.ble_temperature_xiaomi_ble_temp_and_hum
+        entity: sensor.ble_temperature_bathroom
       - type: humidity
-        entity: sensor.ble_humidity_xiaomi_ble_temp_and_hum
+        entity: sensor.ble_humidity_bathroom
   sensor.pool_bme280_temperature:
     name: Погода во дворе
     room: Двор
