@@ -122,8 +122,6 @@
       continue_on_timeout: false
     - service: light.turn_off
       entity_id: all
-    - service: automation.trigger
-      entity_id: automation.thermostat_eco_mode_when_noone_home_enable
     - service: notify.mobile_app_sm_s901b
       data:
         title: "{{ '👋' }} До свидания"
