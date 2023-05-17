@@ -129,6 +129,23 @@ input_number:
     min: 0
     max: 60
     step: 1.0
+  wc_ventilation_start_humidity_threshold:
+    name: WC Ventilation Start Humidity Threshold
+    min: 50
+    max: 100
+    step: 1.0
+  wc_ventilation_stop_humidity_threshold:
+    name: WC Ventilation Stop Humidity Threshold
+    min: 30
+    max: 90
+    step: 1.0
+  wc_max_ventilation_duration:
+    name: WC Max Ventilation Duration
+    min: 0
+    max: 60
+    step: 1.0
+    initial: 60.0
+
 
 ######################## START OF INPUT BOOLEAN SECTION ########################
 

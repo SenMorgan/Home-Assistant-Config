@@ -123,3 +123,58 @@
         entity_id: timer.wc_ventilation
         duration:
           minutes: "{{ states('input_number.wc_ventilate_for_minutes_when_finished') | default(0) | float }}"
+
+- alias: WC Ventilation Start When Humidity Exceeds Threshold
+  id: wc_ventilation_start_humidity_exceeds_threshold
+  trigger:
+    platform: numeric_state
+    entity_id: sensor.ble_humidity_bathroom
+    above: input_number.wc_ventilation_start_humidity_threshold
+    for: 00:02:00
+  action:
+    - service: fan.turn_on
+      entity_id: fan.wc_and_bathroom
+    - service: timer.cancel
+      entity_id: timer.wc_wait_for_open_to_ventilate
+    - service: automation.turn_on
+      entity_id: automation.wc_ventilation_stop_humidity_below_threshold
+
+- alias: WC Ventilation Stop When Humidity Below Threshold
+  id: wc_ventilation_stop_humidity_below_threshold
+  trigger:
+    platform: numeric_state
+    entity_id: sensor.ble_humidity_bathroom
+    below: input_number.wc_ventilation_stop_humidity_threshold
+    for: 00:02:00
+  action:
+    - service: fan.turn_off
+      entity_id: fan.wc_and_bathroom
+    - service: automation.turn_off
+      entity_id: automation.wc_ventilation_stop_humidity_below_threshold
+
+# Emergency start WC ventilation timer to prevent infinite ventilation
+- alias: WC Ventilation Start Timer Emergency
+  id: wc_ventilation_start_timer_emergency
+  trigger:
+    platform: state
+    entity_id: fan.wc_and_bathroom
+    from: "off"
+    to: "on"
+    for: 00:01:00
+  condition:
+    condition: or
+    conditions:
+      - condition: state
+        entity_id: timer.wc_ventilation
+        state: "idle"
+      - condition: state
+        entity_id: timer.wc_ventilation
+        state: "paused"
+  action:
+    service: timer.start
+    data:
+      entity_id: timer.wc_ventilation
+      duration:
+        minutes: "{{ states('input_number.wc_max_ventilation_duration') | default(0) | float }}"
+
+
