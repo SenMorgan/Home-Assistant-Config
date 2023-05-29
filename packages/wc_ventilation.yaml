@@ -222,6 +222,11 @@ automation:
         entity_id: timer.wc_wait_for_open_to_ventilate
       - service: automation.turn_on
         entity_id: automation.wc_ventilation_stop_humidity_below_threshold
+      - service: timer.start
+        data:
+          entity_id: timer.wc_ventilation
+          duration:
+            minutes: "{{ states('input_number.wc_max_ventilation_duration') | default(0) | float }}"
 
   - alias: WC Ventilation Stop When Humidity Below Threshold
     id: wc_ventilation_stop_humidity_below_threshold
@@ -233,6 +238,8 @@ automation:
     action:
       - service: fan.turn_off
         entity_id: fan.wc_and_bathroom
+      - service: timer.cancel
+        entity_id: timer.wc_ventilation
       - service: automation.turn_off
         entity_id: automation.wc_ventilation_stop_humidity_below_threshold
 
