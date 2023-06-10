@@ -56,10 +56,6 @@
 ###############################################
 - platform: template
   sensors:
-    hall_last_motion:
-      friendly_name: "Hall Last Motion"
-      value_template: >
-        {{ as_timestamp(states.binary_sensor.aqara_hall_motion_sensor_occupancy.last_changed) | timestamp_custom('%d.%m.%Y %H:%M:%S',1) }}
     front_door_last_triggered:
       friendly_name: "Front Door Last Triggered"
       value_template: >
