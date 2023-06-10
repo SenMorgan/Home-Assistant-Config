@@ -15,6 +15,32 @@ input_boolean:
     icon: mdi:toilet
 
 ###############################################
+## INPUT SELECTS
+###############################################
+input_select:
+  wc_ventilation_state:
+    name: WC Ventilation State
+    options:
+      - NONE
+      - MANUAL_ON
+      - MANUAL_OFF
+      - TOILET_ON
+      - HUMIDITY_ON
+      - HUMIDITY_OFF
+      - TIMEOUT
+      - EMERGENCY
+    initial: NONE
+    icon: mdi:fan
+
+# Read only sensor to not allow to change the input_select value from UI
+sensor:
+  - platform: template
+    sensors:
+      wc_ventilation_state_ro:
+        friendly_name: WC Ventilation State RO
+        value_template: "{{ states('input_select.wc_ventilation_state') | replace('_', ' ') }}"
+
+###############################################
 ## TIMERS
 ###############################################
 timer:
@@ -71,8 +97,8 @@ input_number:
     min: 30
     max: 90
     step: 1.0
-  wc_max_ventilation_duration:
-    name: WC Max Ventilation Duration
+  wc_max_ventilation_duration_minutes:
+    name: WC Max Ventilation Duration Minutes
     min: 0
     max: 60
     step: 1.0
@@ -124,20 +150,25 @@ automation:
       from: "off"
       to: "on"
     condition:
-      condition: or
-      conditions:
-        - condition: state
-          entity_id: timer.wc_ventilation
-          state: "idle"
-        - condition: state
-          entity_id: timer.wc_ventilation
-          state: "paused"
+      # Run that only if new timer finish time is greater than the current one or if timer is inactive
+      - condition: template
+        value_template:
+          "{{ ((now() + timedelta(minutes=states('input_number.wc_ventilate_for_minutes_after_manual_trigger') | default(0) | float)).timestamp() >
+          as_timestamp(state_attr('timer.wc_ventilation', 'finishes_at'), 0)) or
+          (states('timer.wc_ventilation') in ['idle', 'paused']) }}"
     action:
-      service: timer.start
-      data:
-        entity_id: timer.wc_ventilation
-        duration:
-          minutes: "{{ states('input_number.wc_ventilate_for_minutes_after_manual_trigger') | default(0) | float }}"
+      - service: timer.start
+        data:
+          entity_id: timer.wc_ventilation
+          duration:
+            minutes: "{{ states('input_number.wc_ventilate_for_minutes_after_manual_trigger') | default(0) | float }}"
+      # Stop waitin to bathroom humidity is below threshold, cause we are ventilating manually
+      - service: input_select.select_option
+        data:
+          entity_id: input_select.wc_ventilation_state
+          option: MANUAL_ON
+      - service: automation.turn_off
+        entity_id: automation.wc_ventilation_stop_humidity_below_threshold
 
   - alias: WC Ventilation Stop Timer Manually
     id: wc_ventilation_stop_timer_manually
@@ -151,8 +182,16 @@ automation:
       entity_id: timer.wc_ventilation
       state: "active"
     action:
-      service: timer.cancel
-      entity_id: timer.wc_ventilation
+      - service: timer.cancel
+        entity_id: timer.wc_ventilation
+      - service: timer.cancel
+        entity_id: timer.wc_wait_for_open_to_ventilate
+      - service: input_select.select_option
+        data:
+          entity_id: input_select.wc_ventilation_state
+          option: MANUAL_OFF
+      - service: automation.turn_off
+        entity_id: automation.wc_ventilation_stop_humidity_below_threshold
 
   - alias: WC Ventilation Timeout
     id: wc_ventilation_timeout
@@ -162,11 +201,19 @@ automation:
       event_data:
         entity_id: timer.wc_ventilation
     action:
-      service: fan.turn_off
-      entity_id: fan.wc_and_bathroom
+      - service: fan.turn_off
+        entity_id: fan.wc_and_bathroom
+      - service: timer.cancel
+        entity_id: timer.wc_wait_for_open_to_ventilate
+      - service: input_select.select_option
+        data:
+          entity_id: input_select.wc_ventilation_state
+          option: TIMEOUT
+      - service: automation.turn_off
+        entity_id: automation.wc_ventilation_stop_humidity_below_threshold
 
-  - alias: WC Ventilation Consider to Ventilate after if Occupied for Seconds
-    id: wc_ventilation_consider_to_ventilate_when_finished
+  - alias: WC Ventilation Start Timeout For Door Open State
+    id: wc_ventilation_start_timeout_for_door_open_state
     trigger:
       platform: state
       entity_id: input_boolean.wc_occupied
@@ -181,22 +228,20 @@ automation:
           duration:
             minutes: "{{ states('input_number.wc_wait_for_opening_after_considered_to_ventilate_minutes') | default(0) | float }}"
 
-  - alias: WC Ventilation Restart when Unoccupied if Active
-    id: wc_ventilation_restart_when_unoccupied_if_active
+  - alias: WC Ventilation Start When Unoccupied
+    id: wc_ventilation_start_when_unoccupied
     trigger:
       platform: state
       entity_id: input_boolean.wc_occupied
       from: "on"
       to: "off"
     condition:
-      - condition: or
-        conditions:
-          - condition: state
-            entity_id: timer.wc_wait_for_open_to_ventilate
-            state: "active"
-          - condition: state
-            entity_id: timer.wc_ventilation
-            state: "active"
+      # Run that only if new timer finish time is greater than the current one or if timer is inactive
+      - condition: template
+        value_template:
+          "{{ ((now() + timedelta(minutes=states('input_number.wc_ventilate_for_minutes_after_manual_trigger') | default(0) | float)).timestamp() >
+          as_timestamp(state_attr('timer.wc_ventilation', 'finishes_at'), 0)) or
+          (states('timer.wc_ventilation') in ['idle', 'paused']) }}"
     action:
       - service: fan.turn_on
         entity_id: fan.wc_and_bathroom
@@ -207,8 +252,12 @@ automation:
           entity_id: timer.wc_ventilation
           duration:
             minutes: "{{ states('input_number.wc_ventilate_for_minutes_when_finished') | default(0) | float }}"
+      - service: input_select.select_option
+        data:
+          entity_id: input_select.wc_ventilation_state
+          option: TOILET_ON
 
-  - alias: WC Ventilation Start When Humidity Exceeds Threshold
+  - alias: WC Ventilation Start Humidity Exceeds Threshold
     id: wc_ventilation_start_humidity_exceeds_threshold
     trigger:
       platform: numeric_state
@@ -216,8 +265,6 @@ automation:
       above: input_number.wc_ventilation_start_humidity_threshold
       for: 00:02:00
     action:
-      - service: fan.turn_on
-        entity_id: fan.wc_and_bathroom
       - service: timer.cancel
         entity_id: timer.wc_wait_for_open_to_ventilate
       - service: automation.turn_on
@@ -226,9 +273,15 @@ automation:
         data:
           entity_id: timer.wc_ventilation
           duration:
-            minutes: "{{ states('input_number.wc_max_ventilation_duration') | default(0) | float }}"
+            minutes: "{{ states('input_number.wc_max_ventilation_duration_minutes') | default(0) | float }}"
+      - service: fan.turn_on
+        entity_id: fan.wc_and_bathroom
+      - service: input_select.select_option
+        data:
+          entity_id: input_select.wc_ventilation_state
+          option: HUMIDITY_ON
 
-  - alias: WC Ventilation Stop When Humidity Below Threshold
+  - alias: WC Ventilation Stop Humidity Below Threshold
     id: wc_ventilation_stop_humidity_below_threshold
     trigger:
       platform: numeric_state
@@ -236,10 +289,14 @@ automation:
       below: input_number.wc_ventilation_stop_humidity_threshold
       for: 00:02:00
     action:
-      - service: fan.turn_off
-        entity_id: fan.wc_and_bathroom
       - service: timer.cancel
         entity_id: timer.wc_ventilation
+      - service: fan.turn_off
+        entity_id: fan.wc_and_bathroom
+      - service: input_select.select_option
+        data:
+          entity_id: input_select.wc_ventilation_state
+          option: HUMIDITY_OFF
       - service: automation.turn_off
         entity_id: automation.wc_ventilation_stop_humidity_below_threshold
 
@@ -262,8 +319,12 @@ automation:
           entity_id: timer.wc_ventilation
           state: "paused"
     action:
-      service: timer.start
-      data:
-        entity_id: timer.wc_ventilation
-        duration:
-          minutes: "{{ states('input_number.wc_max_ventilation_duration') | default(0) | float }}"
+      - service: timer.start
+        data:
+          entity_id: timer.wc_ventilation
+          duration:
+            minutes: "{{ states('input_number.wc_max_ventilation_duration_minutes') | default(0) | float }}"
+      - service: input_select.select_option
+        data:
+          entity_id: input_select.wc_ventilation_state
+          option: EMERGENCY
