@@ -17,7 +17,7 @@ sensor:
     sensors:
       ups_power:
         friendly_name: UPS Power
-        value_template: "{{ states('sensor.ups_load') | int  * 0.01 * 425 | round(2) }}"
+        value_template: "{{ states('sensor.ups_load') | int  * 0.01 * 425 | round(2, default=none) }}"
         unit_of_measurement: "W"
         icon_template: "mdi:gauge"
         device_class: power

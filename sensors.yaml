@@ -17,7 +17,7 @@
   sensors:
     distance_between_kris_and_sen:
       friendly_name: Distance Between Kris and Sen
-      value_template: "{{ (distance(states.person.sen, states.person.kris) * 1000) | round(0) }}"
+      value_template: "{{ (distance(states.person.sen, states.person.kris) * 1000) | round(0, default=none) }}"
       unit_of_measurement: "m"
       icon_template: "mdi:map-marker-distance"
 
@@ -81,8 +81,8 @@
     solar_energy_production_today:
       friendly_name: "Solar Energy Production Today"
       value_template: >
-        {{ (float(states('sensor.solar_panel_energy')) -
-        float(states('input_number.solar_energy_produced_at_beginning_of_day'))) | round(3) }}
+        {{ (float(states('sensor.solar_panel_energy'), 0) -
+        float(states('input_number.solar_energy_produced_at_beginning_of_day'), 0)) | round(3, default=none) }}
       unit_of_measurement: "Wh"
       device_class: energy
 
@@ -95,7 +95,7 @@
       friendly_name: "Energy Consumed Today Cost"
       value_template: >
         {{ ((states('sensor.electricity_meter_energy') | float(0.0) -
-        (states('input_number.energy_consumed_at_beginning_of_day') | float(0.0))) * 10) | round(2) }}
+        (states('input_number.energy_consumed_at_beginning_of_day') | float(0.0))) * 10) | round(2, default=none) }}
       unit_of_measurement: "Kč"
       device_class: monetary
 
@@ -119,18 +119,18 @@
   sensors:
     fr24_feeder_radar_code:
       friendly_name: Radar Code
-      value_template: '{{ states.sensor.fr24_feeder.attributes["feed_alias"] }}'
+      value_template: "{{ state_attr('sensor.fr24_feeder', 'feed_alias') }}"
     fr24_feeder_aircraft_tracked:
       friendly_name: Aircraft Tracked
-      value_template: '{{ states.sensor.fr24_feeder.attributes["d11_map_size"] | round(0) }}'
+      value_template: "{{ state_attr('sensor.fr24_feeder', 'd11_map_size') | round(0, default=none) }}"
       unit_of_measurement: "aircrafts"
     fr24_feeder_aircraft_uploaded:
       friendly_name: Aircraft Uploaded
-      value_template: '{{ states.sensor.fr24_feeder.attributes["feed_num_ac_tracked"] | round(0) }}'
+      value_template: "{{ state_attr('sensor.fr24_feeder', 'feed_num_ac_tracked') | round(0, default=none) }}"
       unit_of_measurement: "aircrafts"
     fr24_feeder_version:
       friendly_name: Version
-      value_template: '{{ states.sensor.fr24_feeder.attributes["build_version"] }}'
+      value_template: "{{ state_attr('sensor.fr24_feeder', 'build_version') }}"
 
 - platform: rest
   name: FR24 Aircraft

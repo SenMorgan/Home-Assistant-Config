@@ -73,7 +73,7 @@
 - name: "Air Quality Station IAQ"
   state_topic: "/air-quality-station/iaq"
   device_class: aqi
-  value_template: "{{ value }}"
+  value_template: "{{ value | default(0) }}"
 
 # The IAQ accuracy is reflects the current state of the background calibration process, such as:
 #
@@ -86,14 +86,14 @@
 
 - name: "Air Quality Station IAQ Accuracy"
   state_topic: "/air-quality-station/iaqAccuracy"
-  value_template: "{{ value }}"
+  value_template: "{{ value | default(0) }}"
   unit_of_measurement: "IAQ Acc"
 
   # CO2 equivalent estimate [ppm]
 - name: "Air Quality Station CO2"
   state_topic: "/air-quality-station/co2Equivalent"
   device_class: carbon_dioxide
-  value_template: "{{ value }}"
+  value_template: "{{ value | default(0)  }}"
   unit_of_measurement: "ppm"
 
   # breath VOC concentration estimate [µg/m]
@@ -101,7 +101,7 @@
   state_topic: "/air-quality-station/breathVocEquivalent"
   device_class: volatile_organic_compounds
   # Sensor value is in ppm, but HA needs it in 'µg/m³', so we convert it by multiplying by 1000
-  value_template: "{{ (value | float * 1000) | round(2, default=none)}}"
+  value_template: "{{ ((value | default(0)) | float * 1000) | round(2, default=0)}}"
   unit_of_measurement: "µg/m³"
 
 ###############################################
@@ -112,28 +112,28 @@
   # Obsolete topic for another solar panel motitor device
   # state_topic: "/solar/solar/volt"
   state_topic: "/solar-inverter-monitor/state/volt"
-  value_template: "{{ value }}"
+  value_template: "{{ value | default(0) }}"
   unit_of_measurement: "V"
   state_class: measurement
 
 - name: "Solar Panel Current"
   device_class: current
   state_topic: "/solar-inverter-monitor/state/amp"
-  value_template: "{{ value }}"
+  value_template: "{{ value | default(0) }}"
   unit_of_measurement: "A"
   state_class: measurement
 
 - name: "Solar Panel Power"
   device_class: power
   state_topic: "/solar-inverter-monitor/state/watt"
-  value_template: "{{ value }}"
+  value_template: "{{ value | default(0) }}"
   unit_of_measurement: "W"
   state_class: measurement
 
 - name: "Solar Panel Energy"
   device_class: energy
   state_topic: "/solar-inverter-monitor/state/wh"
-  value_template: "{{ value }}"
+  value_template: "{{ value | default(0) }}"
   unit_of_measurement: "Wh"
   state_class: total_increasing
 
@@ -152,7 +152,7 @@
 
 - name: "Solar Panel Uptime"
   state_topic: "/solar-inverter-monitor/state/uptime"
-  value_template: "{{ value }}"
+  value_template: "{{ value | default(0) }}"
   state_class: total_increasing
   device_class: duration
   unit_of_measurement: s
