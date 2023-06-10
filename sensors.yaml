@@ -94,8 +94,8 @@
     energy_consumed_today_cost:
       friendly_name: "Energy Consumed Today Cost"
       value_template: >
-        {{ ((float(states('sensor.electricity_meter_energy')) -
-        float(states('input_number.energy_consumed_at_beginning_of_day'))) * 10) | round(2) }}
+        {{ ((states('sensor.electricity_meter_energy') | float(0.0) -
+        (states('input_number.energy_consumed_at_beginning_of_day') | float(0.0))) * 10) | round(2) }}
       unit_of_measurement: "Kč"
       device_class: monetary
 
