@@ -299,6 +299,12 @@ automation:
             data:
               media_content_id: Включен подогрев квартиры на 10 минут
               media_content_type: text
+          # Set thermostat mode to «heat» and wait until 'temperature'attribute will become not "None"
+          - service: climate.set_hvac_mode
+            entity_id: climate.family_room
+            data:
+              hvac_mode: "heat"
+          - wait_template: "{{ state_attr('climate.family_room', 'temperature') != None }}"
           # Save actual thermostat target temperature
           - service: input_number.set_value
             data:
@@ -311,11 +317,7 @@ automation:
               value: "{{ state_attr('climate.family_room', 'current_temperature') + 1 }}"
           - service: script.turn_on
             entity_id: script.tell_what_windows_are_opened
-          # Set thermostat mode to «heat» and increase temperature by 1°C
-          - service: climate.set_hvac_mode
-            entity_id: climate.family_room
-            data:
-              hvac_mode: "heat"
+          # Increase thermostat temperature by 1°C from current temperature
           - service: climate.set_temperature
             entity_id: climate.family_room
             data:
