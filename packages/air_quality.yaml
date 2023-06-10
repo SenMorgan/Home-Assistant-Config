@@ -10,8 +10,8 @@
 ## AUTOMATIONS
 ###############################################
 automation:
-- id: "Notification_Air_Quality_Bad"
-  alias: Notification Air Quality Bad
+- alias: Notification Air Quality Bad
+  id: "notification_air_quality_bad"
   trigger:
     - platform: numeric_state
       entity_id: sensor.air_quality_station_iaq
@@ -70,8 +70,8 @@ automation:
     - service: automation.turn_off
       entity_id: automation.notification_air_quality_bad
 
-- id: "Notification_Air_Quality_Open_Window_Greeting"
-  alias: Notification Air Quality Open Window Greeting
+- alias: Notification Air Quality Open Window Greeting
+  id: "notification_air_quality_open_window_greeting"
   trigger:
     - platform: state
       entity_id: binary_sensor.windows
@@ -95,8 +95,8 @@ automation:
     - service: automation.turn_off
       entity_id: automation.notification_air_quality_open_window_greeting
 
-- id: "Notification_Air_Quality_Restored"
-  alias: Notification Air Quality Restored
+- alias: Notification Air Quality Restored
+  id: "notification_air_quality_restored"
   trigger:
     - platform: numeric_state
       entity_id: sensor.air_quality_station_iaq
