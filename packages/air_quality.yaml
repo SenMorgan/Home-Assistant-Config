@@ -1,0 +1,130 @@
+######################################################################
+# File: air_quality.yaml                                             #
+# Author: SenMorgan https://github.com/SenMorgan                     #
+# Date: 2023-06-10                                                   #
+#                                                                    #                                                                    #
+# Copyright (c) 2023 Sen Morgan                                      #
+######################################################################
+
+###############################################
+## AUTOMATIONS
+###############################################
+automation:
+- id: "Notification_Air_Quality_Bad"
+  alias: Notification Air Quality Bad
+  trigger:
+    - platform: numeric_state
+      entity_id: sensor.air_quality_station_iaq
+      above: 200
+      for: 00:02:00
+  condition:
+    - condition: state
+      entity_id: input_boolean.home_night_mode
+      state: "off"
+  action:
+    - if:
+        condition: template
+        value_template: "{{ not is_state('media_player.yandex_station', 'playing') }}"
+      then:
+        - service: media_player.play_media
+          entity_id: media_player.yandex_station
+          data:
+            # If some of windows are opened, notify to close exact opened window by telling it's name.
+            # Otherwise, notify to open window.
+            media_content_id: |
+              Замечено плохое качество воздуха в доме,
+              {% if states('binary_sensor.windows') == 'off' %}
+                советую открыть окно.
+              {% else %}
+                советую закрыть окно
+                {% if states('binary_sensor.bedroom_window_contact') == 'on' %}
+                  в спальне
+                {% endif %}
+                {% if states('binary_sensor.kitchen_window_contact') == 'on' %}
+                  {% if states('binary_sensor.bedroom_window_contact') == 'on' %}
+                    {% if states('binary_sensor.living_room_window_contact') == 'on' %}
+                      ,
+                    {% else %}
+                      и
+                    {% endif %}
+                  {% endif %}
+                  на кухне
+                {% endif %}
+                {% if states('binary_sensor.living_room_window_contact') == 'on' %}
+                  {% if states('binary_sensor.bedroom_window_contact') == 'on' or states('binary_sensor.kitchen_window_contact') == 'on' %}
+                    и
+                  {% endif %}
+                  в гостинной.
+                {% endif %}
+              {% endif %}
+
+    - service: notify.mobile_app_sm_s901b
+      data:
+        title: "{{ '🌬' }} Качество воздуха"
+        message: >
+          Качество воздуха в доме ухудшилось и составляет {{ states('sensor.air_quality_station_iaq') }}.
+    - service: automation.turn_on
+      entity_id:
+        - automation.notification_air_quality_restored
+        - automation.notification_air_quality_open_window_greeting
+    - service: automation.turn_off
+      entity_id: automation.notification_air_quality_bad
+
+- id: "Notification_Air_Quality_Open_Window_Greeting"
+  alias: Notification Air Quality Open Window Greeting
+  trigger:
+    - platform: state
+      entity_id: binary_sensor.windows
+      from: "off"
+      to: "on"
+  condition:
+    - condition: state
+      entity_id: input_boolean.home_night_mode
+      state: "off"
+  action:
+    - if:
+        condition: template
+        value_template: "{{ not is_state('media_player.yandex_station', 'playing') }}"
+      then:
+        - service: media_player.play_media
+          entity_id: media_player.yandex_station
+          data:
+            media_content_id: >
+              Молодец! Рада, что вы заботитесь о своём здоровье.
+            media_content_type: text
+    - service: automation.turn_off
+      entity_id: automation.notification_air_quality_open_window_greeting
+
+- id: "Notification_Air_Quality_Restored"
+  alias: Notification Air Quality Restored
+  trigger:
+    - platform: numeric_state
+      entity_id: sensor.air_quality_station_iaq
+      below: 50
+      for: 00:02:00
+  condition:
+    - condition: state
+      entity_id: input_boolean.home_night_mode
+      state: "off"
+  action:
+    - if:
+        condition: template
+        value_template: "{{ not is_state('media_player.yandex_station', 'playing') }}"
+      then:
+        - service: media_player.play_media
+          entity_id: media_player.yandex_station
+          data:
+            media_content_id: >
+              Качество воздуха в доме вернулось в норму.
+            media_content_type: text
+    - service: notify.mobile_app_sm_s901b
+      data:
+        title: "{{ '🌬' }} Качество воздуха"
+        message: >
+          Качество воздуха в доме улучшилось и составляет {{ states('sensor.air_quality_station_iaq') }}.
+    - service: automation.turn_on
+      entity_id: automation.notification_air_quality_bad
+    - service: automation.turn_off
+      entity_id:
+        - automation.notification_air_quality_restored
+        - automation.notification_air_quality_open_window_greeting
