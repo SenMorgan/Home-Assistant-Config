@@ -89,19 +89,20 @@
   value_template: "{{ value }}"
   unit_of_measurement: "IAQ Acc"
 
-  # co2 equivalent estimate [ppm]
+  # CO2 equivalent estimate [ppm]
 - name: "Air Quality Station CO2"
   state_topic: "/air-quality-station/co2Equivalent"
   device_class: carbon_dioxide
   value_template: "{{ value }}"
   unit_of_measurement: "ppm"
 
-  # breath VOC concentration estimate [ppm]
+  # breath VOC concentration estimate [µg/m]
 - name: "Air Quality Station VOC"
   state_topic: "/air-quality-station/breathVocEquivalent"
   device_class: volatile_organic_compounds
-  value_template: "{{ value }}"
-  unit_of_measurement: "ppm"
+  # Sensor value is in ppm, but HA needs it in 'µg/m³', so we convert it by multiplying by 1000
+  value_template: "{{ (value | float * 1000) | round(2, default=none)}}"
+  unit_of_measurement: "µg/m³"
 
 ###############################################
 ## Solar Station Sensors
