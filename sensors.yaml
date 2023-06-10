@@ -100,36 +100,6 @@
       device_class: monetary
 
 ###############################################
-## DuinoCoin Statistics Sensors
-###############################################
-- platform: statistics
-  name: "Duco Mined over 5 minutes"
-  entity_id: sensor.duco_balance
-  state_characteristic: change
-  max_age:
-    minutes: 5
-  sampling_size: 10
-  precision: 5
-
-- platform: statistics
-  name: "Duco Mined over 1 hour"
-  entity_id: sensor.duco_balance
-  state_characteristic: change
-  max_age:
-    hours: 1
-  sampling_size: 70
-  precision: 5
-
-- platform: statistics
-  name: "Duco Mined over 1 day"
-  entity_id: sensor.duco_balance
-  state_characteristic: change
-  max_age:
-    days: 1
-  sampling_size: 1500
-  precision: 5
-
-###############################################
 ## ADS-B System / Flightradar 24
 ###############################################
 - platform: rest

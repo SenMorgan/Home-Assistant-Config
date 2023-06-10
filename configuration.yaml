@@ -188,26 +188,8 @@ input_button:
     icon: mdi:power
 
 ###############################################
-## Rest Sensors
+## Lights
 ###############################################
-rest:
-  ###############################################
-  ## DuinoCoin Rest Sensors
-  ###############################################
-  - resource: !secret DUINOCOIN_USER_URI
-    scan_interval: 300
-    sensor:
-      - name: "Duco Balance"
-        value_template: "{{ value_json['result']['balance'] | round(5, default=none) }}"
-        device_class: monetary
-        state_class: measurement
-      - name: "Duco Balance 100 Trigger"
-        value_template: "{{ (value_json['result']['balance'] | float / 100) | round(0, default=none) }}"
-      - name: "Duco Username"
-        value_template: "{{ value_json['result']['username'] }}"
-      - name: "Duco Server"
-        value_template: "{{ value_json['server'] }}"
-
 light:
   - platform: artnet_led
     host: !secret ARTNET_DMX_CONTROLLER_IP
