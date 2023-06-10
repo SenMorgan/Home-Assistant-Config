@@ -33,8 +33,8 @@
             # Check if Kris's state didn't changed after Sen's
             - condition: template
               value_template:
-                "{{ ( as_timestamp(states.person.kris.last_changed) | int(0) ) <
-                ( as_timestamp(states.person.sen.last_changed) | int(0) ) }}"
+                "{{ ( as_timestamp(states.person.kris.last_changed, 0) | int(0) ) <
+                ( as_timestamp(states.person.sen.last_changed, 0) | int(0) ) }}"
           sequence:
             - alias: "Switch on lights and welcome"
               choose:
@@ -65,8 +65,8 @@
             # Check if Sen's state didn't changed after Kris's
             - condition: template
               value_template:
-                "{{ ( as_timestamp(states.person.sen.last_changed) | int(0) ) <
-                ( as_timestamp(states.person.kris.last_changed) | int(0) ) }}"
+                "{{ ( as_timestamp(states.person.sen.last_changed, 0) | int(0) ) <
+                ( as_timestamp(states.person.kris.last_changed, 0) | int(0) ) }}"
           sequence:
             # Do not notify via Yandex Station if it is in playing state
             - if:
@@ -337,11 +337,11 @@
     # If it has been more than 10 minutes since the last time the light was turned on
     - condition: template
       value_template: >
-        {{ (as_timestamp(now()) - as_timestamp(states.automation.kids_playground_by_motion_on.last_changed)) > 600 }}
+        {{ (as_timestamp(now()) - as_timestamp(states.automation.kids_playground_by_motion_on.last_changed, 0)) > 600 }}
     # If it has been more than 10 minutes since the last time floor lamp was triggered
     - condition: template
       value_template: >
-        {{ (as_timestamp(now()) - as_timestamp(states.light.floor_lamp.last_changed)) > 600 }}
+        {{ (as_timestamp(now()) - as_timestamp(states.light.floor_lamp.last_changed, 0)) > 600 }}
   action:
     - service: light.turn_on
       entity_id: light.floor_lamp

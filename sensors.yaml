@@ -59,19 +59,19 @@
     front_door_last_triggered:
       friendly_name: "Front Door Last Triggered"
       value_template: >
-        {{ as_timestamp(states.binary_sensor.hall_door_contact.last_changed) | timestamp_custom('%d.%m.%Y %H:%M:%S',1) }}
+        {{ as_timestamp(states.binary_sensor.hall_door_contact.last_changed, 0) | timestamp_custom('%d.%m.%Y %H:%M:%S',1) }}
     bedroom_window_last_triggered:
       friendly_name: "Bedroom Window Last Triggered"
       value_template: >
-        {{ as_timestamp(states.binary_sensor.bedroom_window_contact.last_changed) | timestamp_custom('%d.%m.%Y %H:%M:%S',1) }}
+        {{ as_timestamp(states.binary_sensor.bedroom_window_contact.last_changed, 0) | timestamp_custom('%d.%m.%Y %H:%M:%S',1) }}
     bedroom_door_last_triggered:
       friendly_name: "Bedroom Door Last Triggered"
       value_template: >
-        {{ as_timestamp(states.binary_sensor.bedroom_door_contact.last_changed) | timestamp_custom('%d.%m.%Y %H:%M:%S',1) }}
+        {{ as_timestamp(states.binary_sensor.bedroom_door_contact.last_changed, 0) | timestamp_custom('%d.%m.%Y %H:%M:%S',1) }}
     raven_last_message_received:
       friendly_name: "Raven Last Message Received"
       value_template: >
-        {{ as_timestamp(states.sensor.raven_rssi.last_changed) | timestamp_custom('%d.%m.%Y %H:%M:%S',1) }}
+        {{ as_timestamp(states.sensor.raven_rssi.last_changed, 0) | timestamp_custom('%d.%m.%Y %H:%M:%S',1) }}
 
 ###############################################
 ## Solar Station Sensors
