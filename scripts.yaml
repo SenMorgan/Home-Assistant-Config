@@ -304,6 +304,8 @@ tell_what_windows_are_opened:
         - condition: state
           entity_id: binary_sensor.windows
           state: "on"
+        - condition: template
+          value_template: "{{ not is_state('media_player.yandex_station', 'playing') }}"
       then:
         - service: media_player.play_media
           entity_id: media_player.yandex_station
