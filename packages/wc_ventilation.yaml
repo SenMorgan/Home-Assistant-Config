@@ -236,10 +236,13 @@ automation:
       from: "on"
       to: "off"
     condition:
+      - condition: state
+        entity_id: timer.wc_wait_for_open_to_ventilate
+        state: "active"
       # Run that only if new timer finish time is greater than the current one or if timer is inactive
       - condition: template
         value_template:
-          "{{ ((now() + timedelta(minutes=states('input_number.wc_ventilate_for_minutes_after_manual_trigger') | default(0) | float)).timestamp() >
+          "{{ ((now() + timedelta(minutes=states('input_number.wc_ventilate_for_minutes_when_finished') | default(0) | float)).timestamp() >
           as_timestamp(state_attr('timer.wc_ventilation', 'finishes_at'), 0)) or
           (states('timer.wc_ventilation') in ['idle', 'paused']) }}"
     action:
