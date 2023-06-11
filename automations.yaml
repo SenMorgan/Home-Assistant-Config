@@ -849,51 +849,43 @@
 ## Aqara Switch Automations
 ###############################################
 
-- id: "Bedroom_Aqara_Switch_Single_Press"
-  alias: Bedroom Aqara Switch Single Press
+- id: "Aqara Switch 1 Handler"
+  alias: Aqara Switch 1 Handler
+  mode: queued
+  max: 20
+  # max_exceeded: silent
   trigger:
-    platform: state
-    entity_id: sensor.aqara_switch_1_action
-    to: "single"
+    - platform: event
+      event_type: zha_event
+      event_data:
+        # Aqara Switch 1
+        device_id: "6559eaaf60c9624465f762290ff9e825"
   action:
-    - service: light.turn_off
-      entity_id: all
-    - service: scene.turn_on
-      entity_id: scene.good_night
-    - service: script.turn_on
-      entity_id: script.home_night_mode
-
-- id: "Bedroom_Aqara_Switch_Double_Press"
-  alias: Bedroom Aqara Switch Double Press
-  trigger:
-    platform: state
-    entity_id: sensor.aqara_switch_1_action
-    to: "double"
-  action:
-    - service: light.turn_on
-      entity_id: light.bedroom_nightlight
-
-- id: "Bedroom_Aqara_Switch_Triple_Press"
-  alias: Bedroom Aqara Switch Triple Press
-  trigger:
-    platform: state
-    entity_id: sensor.aqara_switch_1_action
-    to: "triple"
-  action:
-    - service: switch.turn_off
-      entity_id: switch.asus_pc
-
-- id: "Bedroom_Aqara_Switch_Hold"
-  alias: Bedroom Aqara Switch Hold
-  trigger:
-    platform: state
-    entity_id: sensor.aqara_switch_1_action
-    to: "hold"
-  action:
-    - service: cover.open_cover
-      entity_id: cover.bedroom
-    - service: script.turn_on
-      entity_id: script.home_day_mode
+    - variables:
+        command: "{{ trigger.event.data.command }}"
+    - choose:
+        - conditions:
+            - "{{ command == 'single' }}"
+          sequence:
+            - service: light.turn_off
+              entity_id: all
+            - service: scene.turn_on
+              entity_id: scene.good_night
+            - service: script.turn_on
+              entity_id: script.home_night_mode
+        - conditions:
+            - "{{ command == 'double' }}"
+          sequence:
+            - service: light.toggle
+              entity_id: light.bedroom_nightlight
+        - conditions:
+            - "{{ command == 'hold' }}"
+          sequence:
+            - service: cover.open_cover
+              entity_id: cover.bedroom
+            - service: script.turn_on
+              entity_id: script.home_day_mode
+      default: []
 
 ###############################################
 ## Floorlamp Tradfri Switch Control
