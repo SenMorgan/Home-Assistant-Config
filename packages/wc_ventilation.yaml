@@ -309,7 +309,6 @@ automation:
     trigger:
       platform: state
       entity_id: fan.wc_and_bathroom
-      from: "off"
       to: "on"
       for: 00:01:00
     condition:
