@@ -4,6 +4,12 @@
 # Date: 2023-06-14                                                   #
 #                                                                    #                                                                    #
 # Copyright (c) 2023 Sen Morgan                                      #
+#                                                                    #
+# Note:                                                              #
+# Device IDs are unique and could be found in:                       #
+# Developer Tools → Events → Listen to events → "zha_event".         #
+# After some action with device it must be loged there.              #
+#                                                                    #
 ######################################################################
 
 ###############################################
