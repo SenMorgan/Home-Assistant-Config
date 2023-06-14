@@ -13,8 +13,8 @@ automation:
   ###############################################
   ## Aqara Switch Automations
   ###############################################
-  - id: "Aqara Switch 1 Handler"
-    alias: Aqara Switch 1 Handler
+  - alias: Aqara Switch 1 Handler
+    id: "aqara_switch_1_handler"
     mode: restart
     max_exceeded: silent
     trigger:
@@ -54,8 +54,8 @@ automation:
   ## Aqara Cube Automations
   ###############################################
 
-  - id: "Aqara Cube 1 Handler"
-    alias: Aqara Cube 1 Handler
+  - alias: Aqara Cube 1 Handler
+    id: "aqara_cube_1_handler"
     mode: restart
     max_exceeded: silent
     trigger:
