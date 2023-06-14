@@ -91,14 +91,10 @@ input_number:
     step: 0.1
 
 
-######################## START OF INPUT BOOLEAN SECTION ########################
-
+###############################################
+## INPUT BOOLEANS
+###############################################
 input_boolean:
-  cube_1_control:
-    name: Cube Control
-    icon: mdi:gesture-double-tap
-  light_brightness:
-    name: light_brightness
   presentation_switch:
     name: Presentation
     icon: mdi:presentation-play
@@ -110,8 +106,6 @@ input_boolean:
     icon: mdi:engine-outline
   flag_hall_lights_triggered_by_motion:
     name: Flag - Hall Lights Was Triggered by Motion Sensor
-  heating_season:
-    name: Heating Season
   home_night_mode:
     name: Home Night Mode
     icon: mdi:volume-off
