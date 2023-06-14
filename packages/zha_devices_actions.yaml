@@ -90,9 +90,8 @@ automation:
         then:
           - variables:
               command: "{{ trigger.event.data.command }}"
-              value: "{{ trigger.event.data.args.value }}"
-              flip_degrees: "{{ trigger.event.data.args.flip_degrees }}"
-              relative_degrees: "{{ trigger.event.data.args.relative_degrees }}"
+              flip_degrees: "{{ trigger.event.data.args.flip_degrees if trigger.event.data.args.flip_degrees is defined else 0 }}"
+              relative_degrees: "{{ trigger.event.data.args.relative_degrees if trigger.event.data.args.relative_degrees is defined else 0 }}"
           - choose:
               - conditions:
                   - "{{ flip_degrees == 90 }}"
@@ -121,6 +120,7 @@ automation:
                     entity_id: light.mi_desk_lamp
               - conditions:
                   - "{{ command == 'rotate_left' or command == 'rotate_right' }}"
+                  - "{{ is_state('light.mi_desk_lamp', 'on') }}"
                 sequence:
                   - service: light.turn_on
                     entity_id: light.mi_desk_lamp
