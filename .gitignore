@@ -6,6 +6,8 @@
 !.gitignore
 !*.md
 !packages/
+!python_scripts/
+!*.py
 
 # Ignore folders
 .storage
