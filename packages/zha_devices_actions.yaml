@@ -117,3 +117,56 @@ automation:
                         "{% set suggested = state_attr('light.mi_desk_lamp', 'brightness')\
                         \ | int + \n  relative_degrees | int + 1\
                         \ %}\n{% if suggested > 0 %} {{ suggested }} {% else %} 1 {% endif %}\n"
+
+  ###############################################
+  ## Floorlamp Tradfri Switch Control
+  ###############################################
+  - alias: Tradfri Switch 1 Handler
+    id: "tradfri_switch_1_handler"
+    mode: restart
+    max_exceeded: silent
+    trigger:
+      - platform: event
+        event_type: zha_event
+        event_data:
+          # Tradfri Switch 1
+          device_id: "a64c98fa9b0c36e96ebe42160fcf78b5"
+    action:
+      - variables:
+          command: "{{ trigger.event.data.command }}"
+      - choose:
+          - conditions:
+              - "{{ command == 'on' }}"
+            sequence:
+              - service: light.turn_on
+                entity_id: light.floor_lamp
+          - conditions:
+              - "{{ command == 'off' }}"
+            sequence:
+              - service: light.turn_off
+                entity_id: light.floor_lamp
+          - conditions:
+              - "{{ command == 'move_with_on_off' }}"
+            sequence:
+              - service: input_boolean.turn_on
+                entity_id: input_boolean.light_brightness
+              - service: python_script.change_attribute_light_smoothly
+                data:
+                  light_id: light.floor_lamp
+                  input_boolean: input_boolean.light_brightness
+                  delta: 10
+          - conditions:
+              - "{{ command == 'move' }}"
+            sequence:
+              - service: input_boolean.turn_on
+                entity_id: input_boolean.light_brightness
+              - service: python_script.change_attribute_light_smoothly
+                data:
+                  light_id: light.floor_lamp
+                  input_boolean: input_boolean.light_brightness
+                  delta: -10
+          - conditions:
+              - "{{ command == 'stop_with_on_off' }}"
+            sequence:
+              - service: input_boolean.turn_off
+                entity_id: input_boolean.light_brightness
