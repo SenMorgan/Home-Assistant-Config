@@ -27,7 +27,7 @@ yandex_station: !include yandex-station.yaml
 vacuum_zones: !include vacuum-zones.yaml
 
 recorder:
-  db_url: !secret MYSQL_URL
+  db_url: !secret DATABASE_URL
   purge_keep_days: 30
 
 # Discover some devices automatically
@@ -41,12 +41,6 @@ notify:
 
 # Enables the ability to send magic packets to Wake on LAN capable devices to turn them on
 wake_on_lan:
-# The zabbix integration to connect to a Zabbix monitoring instance via the Zabbix API
-# zabbix:
-#   host: !secret ZABBIX_IP
-#   ssl: false
-#   username: !secret ZABBIX_USER
-#   password: !secret ZABBIX_PASS
 
 # BLE device tracker
 device_tracker:
