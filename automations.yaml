@@ -443,6 +443,7 @@
 
 - id: "Notification_Kris_Is_Near_Me"
   alias: Notification Kris Is Near Me
+  mode: single
   trigger:
     - platform: numeric_state
       entity_id: sensor.distance_between_kris_and_sen
@@ -450,6 +451,10 @@
   condition:
     - condition: template
       value_template: "{{ not states('person.kris') == 'home' }}"
+      # Check if last notification was fired more than 30 minutes ago
+    - condition: template
+      value_template: >
+        {{ now() - state_attr('automation.notification_kris_is_near_me', 'last_triggered') > timedelta(minutes=5) }}
   action:
     - service: notify.mobile_app_sm_s901b
       data:
