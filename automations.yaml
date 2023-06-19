@@ -806,6 +806,7 @@
 
 - id: "Raven_Engine_State_Handler"
   alias: Raven Engine State Handler
+  mode: restart
   trigger:
     - platform: state
       entity_id: sensor.raven_started_by_status
