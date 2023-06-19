@@ -810,26 +810,15 @@
     - platform: state
       entity_id: sensor.raven_started_by_status
   action:
-    - choose:
-        - conditions:
-            - condition: or
-              conditions:
-                - condition: state
-                  entity_id: sensor.raven_started_by_status
-                  state: "KEY"
-                - condition: state
-                  entity_id: sensor.raven_started_by_status
-                  state: "REMOTE"
-          sequence:
-            - service: input_boolean.turn_on
-              entity_id: input_boolean.raven_engine_start_stop
-        - conditions:
-            - condition: state
-              entity_id: sensor.raven_started_by_status
-              state: "OFF"
-          sequence:
-            - service: input_boolean.turn_off
-              entity_id: input_boolean.raven_engine_start_stop
+    - if:
+        condition: template
+        value_template: "{{ states('sensor.raven_started_by_status') in ['KEY', 'REMOTE'] }}"
+      then:
+        - service: input_boolean.turn_on
+          entity_id: input_boolean.raven_engine_start_stop
+      else:
+        - service: input_boolean.turn_off
+          entity_id: input_boolean.raven_engine_start_stop
 
 - id: "Parking_Lights_ON"
   alias: Parking Lights ON
