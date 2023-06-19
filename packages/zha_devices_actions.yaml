@@ -23,6 +23,10 @@ input_boolean:
   light_brightness:
     name: Light Brightness
     icon: mdi:lightbulb-on-outline
+  child_lock:
+    name: Child Lock
+    icon: mdi:lock
+    initial: off
 
 ###############################################
 ## AUTOMATIONS
@@ -48,12 +52,20 @@ automation:
           - conditions:
               - "{{ command == 'single' }}"
             sequence:
-              - service: light.turn_off
-                entity_id: all
-              - service: scene.turn_on
-                entity_id: scene.good_night
-              - service: script.turn_on
-                entity_id: script.home_night_mode
+              - if:
+                  - condition: state
+                    entity_id: input_boolean.child_lock
+                    state: "off"
+                then:
+                  - service: light.turn_off
+                    entity_id: all
+                  - service: scene.turn_on
+                    entity_id: scene.good_night
+                  - service: script.turn_on
+                    entity_id: script.home_night_mode
+                else:
+                  - service: cover.toggle
+                    entity_id: cover.bedroom
           - conditions:
               - "{{ command == 'double' }}"
             sequence:
@@ -64,8 +76,13 @@ automation:
             sequence:
               - service: cover.open_cover
                 entity_id: cover.bedroom
-              - service: script.turn_on
-                entity_id: script.home_day_mode
+              - if:
+                  - condition: state
+                    entity_id: input_boolean.child_lock
+                    state: "off"
+                then:
+                  - service: script.turn_on
+                    entity_id: script.home_day_mode
         default: []
 
   ###############################################
