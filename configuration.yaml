@@ -65,14 +65,6 @@ google_assistant: !include google-assistant.yaml
 ######################## START OF INPUT NUMBER SECTION ########################
 
 input_number:
-  solar_energy_produced_at_beginning_of_day:
-    name: Solar Energy Produced at Beginning of Day
-    min: 0
-    max: 999999999
-  energy_consumed_at_beginning_of_day:
-    name: Energy Consumed at Beginning of Day
-    min: 0
-    max: 999999999
   volume_yandex_station:
     name: Volume Yandex Station
     min: 0
@@ -83,7 +75,6 @@ input_number:
     min: 8
     max: 16
     step: 0.1
-
 
 ###############################################
 ## INPUT BOOLEANS

@@ -74,32 +74,6 @@
     #     {{ as_timestamp(states.sensor.raven_rssi.last_changed, 0) | timestamp_custom('%d.%m.%Y %H:%M:%S',1) }}
 
 ###############################################
-## Solar Station Sensors
-###############################################
-- platform: template
-  sensors:
-    solar_energy_production_today:
-      friendly_name: "Solar Energy Production Today"
-      value_template: >
-        {{ (float(states('sensor.solar_panel_energy'), 0) -
-        float(states('input_number.solar_energy_produced_at_beginning_of_day'), 0)) | round(3, default=none) }}
-      unit_of_measurement: "Wh"
-      device_class: energy
-
-###############################################
-## Energy Sensors
-###############################################
-- platform: template
-  sensors:
-    energy_consumed_today_cost:
-      friendly_name: "Energy Consumed Today Cost"
-      value_template: >
-        {{ ((states('sensor.electricity_meter_energy') | float(0.0) -
-        (states('input_number.energy_consumed_at_beginning_of_day') | float(0.0))) * 10) | round(2, default=none) }}
-      unit_of_measurement: "Kč"
-      device_class: monetary
-
-###############################################
 ## ADS-B System / Flightradar 24
 ###############################################
 - platform: rest
