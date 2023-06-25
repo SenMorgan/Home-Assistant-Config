@@ -74,6 +74,18 @@
     #     {{ as_timestamp(states.sensor.raven_rssi.last_changed, 0) | timestamp_custom('%d.%m.%Y %H:%M:%S',1) }}
 
 ###############################################
+## Energy Sensors
+###############################################
+- platform: template
+  sensors:
+    grid_consumed_today_cost:
+      friendly_name: "Grid Consumed Today Cost"
+      value_template: >
+        {{ ((states('sensor.grid_consumed_today') | float(0.0)) * 6) | round(2, default=0) }}
+      unit_of_measurement: "Kč"
+      device_class: monetary
+
+###############################################
 ## ADS-B System / Flightradar 24
 ###############################################
 - platform: rest
