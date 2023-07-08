@@ -18,7 +18,7 @@
   icon: mdi:temperature-celsius
   device_class: temperature
   state_topic: "/pool-thermometer/ds18b20/bottom-water-temp"
-  value_template: "{{ (value  | float - 0.33)  | round(2, default=none)}}"
+  value_template: "{{ (value  | float(0) - 0.33)  | round(2, default=none)}}"
   unit_of_measurement: "°C"
 
 - name: "Pool BME280 Temperature"
@@ -101,7 +101,7 @@
   state_topic: "/air-quality-station/breathVocEquivalent"
   device_class: volatile_organic_compounds
   # Sensor value is in ppm, but HA needs it in 'µg/m³', so we convert it by multiplying by 1000
-  value_template: "{{ ((value | default(0)) | float * 1000) | round(2, default=0)}}"
+  value_template: "{{ ((value | default(0)) | float(0) * 1000) | round(2, default=0)}}"
   unit_of_measurement: "µg/m³"
 
 ###############################################

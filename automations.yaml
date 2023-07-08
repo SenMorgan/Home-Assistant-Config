@@ -589,7 +589,7 @@
       data:
         title: "{{ '🚗' }} Цена топлива"
         message: >
-          Цена дизеля {{ 'упала' if trigger.from_state.state | float > trigger.to_state.state | float else 'возрасла' }}
+          Цена дизеля {{ 'упала' if trigger.from_state.state | float(0) > trigger.to_state.state | float(0) else 'возрасла' }}
           с {{ trigger.from_state.state }} до {{ trigger.to_state.state }} Kč/L
 
 - id: "Notification_Aircraft_Detected"
@@ -618,8 +618,8 @@
         # {% set aircrafts_list = state_attr('sensor.fr24_aircraft', 'aircraft') %}
         # {% for element in aircrafts_list if element | regex_search('OK***|OK***') %} # DO NOT FORGET TO CHANGE AIRCRAFTS REGISTRATION NUMBER
         #         {% set aircraft.flight = element['flight'] %}
-        #         {% set aircraft.alt = (((element['alt_baro'] | float) * 0.3048) | int) | string %}
-        #         {% set aircraft.gs = (((element['gs'] | float) * 1.852) | int) | string %}
+        #         {% set aircraft.alt = (((element['alt_baro'] | float(0)) * 0.3048) | int(0)) | string %}
+        #         {% set aircraft.gs = (((element['gs'] | float(0)) * 1.852) | int(0)) | string %}
         # {% endfor %}
         # {% if aircraft.flight == '' %}
         #         {{ 'Данные о самолёте не получены' }}
@@ -937,8 +937,8 @@
       state: "on"
     - condition: template
       value_template: >
-        {% set from = trigger.from_state.attributes.volume_level | float %}
-        {% set to = trigger.to_state.attributes.volume_level | float %}
+        {% set from = trigger.from_state.attributes.volume_level | float(0) %}
+        {% set to = trigger.to_state.attributes.volume_level | float(0) %}
         {{ to > from }}
   action:
     service: input_boolean.turn_off

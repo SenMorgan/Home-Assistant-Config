@@ -68,14 +68,14 @@ automation:
     condition:
       condition: template
       value_template: >
-        {{ (trigger.to_state.state | int) > 0 and
-          ((trigger.to_state.state | int) != (trigger.from_state.state | int)) and
-           (trigger.to_state.state | int) % 10 == 0 }}
+        {{ (trigger.to_state.state | int(0)) > 0 and
+          ((trigger.to_state.state | int(0)) != (trigger.from_state.state | int(0))) and
+           (trigger.to_state.state | int(0)) % 10 == 0 }}
     action:
       - service: notify.mobile_app_sm_s901b
         data_template:
           title: "3D Printer"
-          message: "📈 Деталь готова на {{ states('sensor.octoprint_job_percentage') | int }}%"
+          message: "📈 Деталь готова на {{ states('sensor.octoprint_job_percentage') | int(0) }}%"
 
   ###############################################
   ## Remind me when print is paused
@@ -128,10 +128,10 @@ automation:
       conditions:
         - condition: template
           value_template: >
-            {{ states('sensor.octoprint_actual_bed_temp') | int > 100 }}
+            {{ states('sensor.octoprint_actual_bed_temp') | int(0) > 100 }}
         - condition: template
           value_template: >
-            {{ states('sensor.octoprint_actual_tool0_temp') | int > 250 }}
+            {{ states('sensor.octoprint_actual_tool0_temp') | int(0) > 250 }}
     action:
       - service: notify.mobile_app_sm_s901b
         data:

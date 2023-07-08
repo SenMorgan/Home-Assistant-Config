@@ -144,7 +144,7 @@ automation:
                     data_template:
                       brightness:
                         "{% set suggested = state_attr('light.mi_desk_lamp', 'brightness')\
-                        \ | int + \n  relative_degrees | int + 1\
+                        \ | int(0) + \n  relative_degrees | int(0) + 1\
                         \ %}\n{% if suggested > 0 %} {{ suggested }} {% else %} 1 {% endif %}\n"
 
   ###############################################

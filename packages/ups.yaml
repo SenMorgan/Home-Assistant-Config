@@ -17,7 +17,7 @@ sensor:
     sensors:
       ups_power:
         friendly_name: UPS Power
-        value_template: "{{ states('sensor.ups_load') | int  * 0.01 * 425 | round(2, default=none) }}"
+        value_template: "{{ states('sensor.ups_load') | int(0)  * 0.01 * 425 | round(2, default=none) }}"
         unit_of_measurement: "W"
         icon_template: "mdi:gauge"
         device_class: power
@@ -35,7 +35,7 @@ alert:
     notifiers: mobile_app_sm_s901b
     title: "{{ '🚨' }} Уведомление от UPS"
     message: |
-      UPS отключится через {{ states('sensor.ups_battery_runtime') | int | timestamp_custom('%M:%S') }} минут
+      UPS отключится через {{ states('sensor.ups_battery_runtime') | int(0) | timestamp_custom('%M:%S') }} минут
       Заряд аккумулятора: {{ states('sensor.ups_battery_charge') }}%
       Напряжение аккумулятора: {{ states('sensor.ups_battery_voltage') }} В
       Статус: {{ states('sensor.ups_status') }}
@@ -63,13 +63,13 @@ automation:
           title: "{{ '🚨' }} Уведомление от UPS"
           message: >
             UPS потерял питание в {{ states('sensor.time') }}
-            Рассчётное время работы: {{ states('sensor.ups_battery_runtime') | int | timestamp_custom('%M:%S') }} минут
+            Рассчётное время работы: {{ states('sensor.ups_battery_runtime') | int(0) | timestamp_custom('%M:%S') }} минут
       - service: notify.mobile_app_sm_s901b
         data:
           title: "{{ '🚨' }} Уведомление от UPS"
           message: |
             UPS потерял питание в {{ states('sensor.time') }}
-            Рассчётное время работы: {{ states('sensor.ups_battery_runtime') | int | timestamp_custom('%M:%S') }} минут
+            Рассчётное время работы: {{ states('sensor.ups_battery_runtime') | int(0) | timestamp_custom('%M:%S') }} минут
       - service: automation.turn_on
         entity_id: automation.ups_grid_power_restored_notification
 

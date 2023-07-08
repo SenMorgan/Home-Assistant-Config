@@ -5,7 +5,7 @@
   sensors:
     gas_meter:
       friendly_name: Gas Meter
-      value_template: "{{ states ('counter.gas_counter') | float * 0.01}}"
+      value_template: "{{ states ('counter.gas_counter') | float(0) * 0.01}}"
       unit_of_measurement: "m³"
       icon_template: "mdi:fire"
       device_class: gas
@@ -132,5 +132,5 @@
   sensors:
     mikrotik_wireless_clients:
       friendly_name: "Mikrotik Clients"
-      value_template: "{{ states('sensor.mikrotik_hap_ax_3_wireless_clients') | int }}"
+      value_template: "{{ states('sensor.mikrotik_hap_ax_3_wireless_clients') | int(0) }}"
       unit_of_measurement: "clients"

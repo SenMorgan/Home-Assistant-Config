@@ -349,7 +349,7 @@ automation:
           # Wait here until actual target temperature is the same as new target temperature
           - wait_template: |
               {{ state_attr('climate.family_room', 'temperature') ==
-              (states('input_number.thermostat_new_target_temperature') | float) }}
+              (states('input_number.thermostat_new_target_temperature') | float(0)) }}
             timeout: "00:01:00"
             continue_on_timeout: false
           - service: automation.turn_on
@@ -378,7 +378,7 @@ automation:
           - condition: template
             value_template: |
               {{ state_attr('climate.family_room', 'temperature') !=
-              (states('input_number.thermostat_new_target_temperature') | float) }}
+              (states('input_number.thermostat_new_target_temperature') | float(0)) }}
     action:
       - if:
           condition: template
