@@ -17,9 +17,11 @@ filter:
     - binary_sensor.kitchen_window_contact
     - binary_sensor.living_room_window_contact
     - binary_sensor.backyard_motion_alarm
+    - binary_sensor.kitchen_motion_alarm
     - input_button.thermostat_10_minutes_heating
     - input_boolean.home_night_mode
     - input_boolean.child_lock
+    - input_boolean.scooter_charger
     - light.hall_lights
     - light.shelf_lighting
     - light.floor_lamp
@@ -36,10 +38,6 @@ filter:
     - media_player.tv
     - switch.moving_head_power
     - switch.asus_pc
-    - sensor.ble_temperature_coffee_tree
-    - sensor.ble_temperature_fikus_benjamin
-    - sensor.ble_temperature_monstera_adansonii
-    - sensor.ble_temperature_yucca
     - sensor.ble_temperature_bathroom
     - sensor.pool_bme280_temperature
     - sensor.pool_thermometer_bottom_water_temperature
@@ -71,18 +69,25 @@ entity_config:
   binary_sensor.backyard_motion_alarm:
     name: Датчик движения
     room: Двор
+  binary_sensor.kitchen_motion_alarm:
+    name: Датчик движения
+    room: Кухня
   input_button.thermostat_10_minutes_heating:
     name: Подогрев
     room: Дом
+    type: devices.types.switch
   input_boolean.home_night_mode:
     name: Ночной режим
     room: Дом
+    type: devices.types.switch
   input_boolean.child_lock:
     name: Блокировка от детей
     room: Дом
+    type: devices.types.switch
   input_boolean.scooter_charger:
     name: Зарядка самоката
     room: Дом
+    type: devices.types.socket
   light.hall_lights:
     name: Свет в коридоре
     room: Коридор
@@ -128,9 +133,11 @@ entity_config:
   switch.moving_head_power:
     name: Голова
     room: Зал
+    type: devices.types.socket
   switch.asus_pc:
     name: Компьютер
     room: Кухня
+    type: devices.types.socket
   sensor.family_room_temperature:
     name: Погода на кухне
     room: Кухня
@@ -145,18 +152,6 @@ entity_config:
         entity: sensor.air_quality_station_co2
       - type: tvoc
         entity: sensor.air_quality_station_voc
-  sensor.ble_temperature_coffee_tree:
-    name: Температура Coffee Tree
-    room: Кухня
-  sensor.ble_temperature_fikus_benjamin:
-    name: Температура Fikus
-    room: Зал
-  sensor.ble_temperature_monstera_adansonii:
-    name: Температура Monstera
-    room: Зал
-  sensor.ble_temperature_yucca:
-    name: Температура Yucca
-    room: Зал
   sensor.ble_temperature_bathroom:
     name: Погода в ванной
     room: Ванная
