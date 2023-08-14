@@ -1,0 +1,67 @@
+######################################################################
+# File: scooter_charger.yaml                                         #
+# Author: SenMorgan https://github.com/SenMorgan                     #
+# Date: 2023-08-14                                                   #
+#                                                                    #                                                                    #
+# Copyright (c) 2023 Sen Morgan                                      #            #
+#                                                                    #
+######################################################################
+
+###############################################
+## INPUT BOOLEANS
+###############################################
+input_boolean:
+  scooter_charger:
+    name: Scooter Charger
+    icon: mdi:scooter
+
+###############################################
+## AUTOMATIONS
+###############################################
+automation:
+  # When input_boolean.scooter_charger is on - enable charger
+  - alias: Enable Scooter Charger
+    id: "enable_scooter_charger"
+    mode: restart
+    max_exceeded: silent
+    trigger:
+      - platform: state
+        entity_id: input_boolean.scooter_charger
+        to: "on"
+    action:
+      - service: switch.turn_on
+        entity_id: switch.scooter_charger_socket
+      - service: automation.turn_on
+        entity_id: automation.disable_scooter_charger_when_idle
+
+  # When input_boolean.scooter_charger is off - disable charger
+  - alias: Disable Scooter Charger
+    id: "disable_scooter_charger"
+    mode: restart
+    max_exceeded: silent
+    trigger:
+      - platform: state
+        entity_id: input_boolean.scooter_charger
+        to: "off"
+    action:
+      - service: switch.turn_off
+        entity_id: switch.scooter_charger_socket
+      - service: automation.turn_off
+        entity_id: automation.disable_scooter_charger_when_idle
+
+  # When Scooter Charger Consumption is lower than 15W for 10 minutes - disable charger
+  - alias: Disable Scooter Charger When Idle
+    id: "disable_scooter_charger_when_idle"
+    mode: restart
+    max_exceeded: silent
+    trigger:
+      - platform: numeric_state
+        entity_id: sensor.scooter_charger_energy_power
+        below: 15
+        for:
+          minutes: 10
+    action:
+      - service: switch.turn_off
+        entity_id: switch.scooter_charger_socket
+      - service: automation.turn_off
+        entity_id: automation.disable_scooter_charger_when_idle

@@ -81,8 +81,8 @@ entity_config:
   input_boolean.child_lock:
     name: Блокировка от детей
     room: Дом
-  input_boolean.raven_engine_start_stop:
-    name: Запуск двигателя
+  input_boolean.scooter_charger:
+    name: Зарядка самоката
     room: Дом
   light.hall_lights:
     name: Свет в коридоре
