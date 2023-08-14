@@ -16,6 +16,47 @@ input_boolean:
     icon: mdi:scooter
 
 ###############################################
+## INPUT NUMBERS
+###############################################
+input_number:
+  scooter_charger_energy_start:
+    name: Scooter Charger Energy Start
+    min: 0.0
+    max: 100000.0
+    step: 0.001
+    unit_of_measurement: kWh
+    icon: mdi:scooter
+
+###############################################
+## SCRIPTS
+###############################################
+script:
+  scooter_charger_energy_consumed_speak:
+    alias: Scooter Charger Energy Consumed Speak
+    sequence:
+      - service: notify.mobile_app_sm_s901b
+        data:
+          title: 🛴 Зарядка самоката окончена
+          message: >
+            Заряжено
+            {{ ((states('sensor.scooter_charger_energy_total') | float - states('input_number.scooter_charger_energy_start') | float) * 1000) | round }}
+            Вт*ч
+      # Check if yandex station is not playing now
+      - if:
+          condition: template
+          value_template: "{{ not is_state('media_player.yandex_station', 'playing') }}"
+        then:
+          # Play message on yandex station
+          - service: media_player.play_media
+            entity_id: media_player.yandex_station
+            data:
+              media_content_id: >
+                Зарядка электросамоката окончена. Заряжено
+                {{ ((states('sensor.scooter_charger_energy_total') | float - states('input_number.scooter_charger_energy_start') | float) * 1000) | round }}
+                Ватт-часов
+              media_content_type: text
+
+###############################################
 ## AUTOMATIONS
 ###############################################
 automation:
@@ -33,6 +74,11 @@ automation:
         entity_id: switch.scooter_charger_socket
       - service: automation.turn_on
         entity_id: automation.disable_scooter_charger_when_idle
+      # Save current energy consumption
+      - service: input_number.set_value
+        data:
+          entity_id: input_number.scooter_charger_energy_start
+          value: "{{ states('sensor.scooter_charger_energy_total') | float }}"
 
   # When input_boolean.scooter_charger is off - disable charger
   - alias: Disable Scooter Charger
@@ -48,6 +94,8 @@ automation:
         entity_id: switch.scooter_charger_socket
       - service: automation.turn_off
         entity_id: automation.disable_scooter_charger_when_idle
+      - service: script.turn_on
+        entity_id: script.scooter_charger_energy_consumed_speak
 
   # When Scooter Charger Consumption is lower than 15W for 10 minutes - disable charger
   - alias: Disable Scooter Charger When Idle
@@ -65,3 +113,5 @@ automation:
         entity_id: switch.scooter_charger_socket
       - service: automation.turn_off
         entity_id: automation.disable_scooter_charger_when_idle
+      - service: script.turn_on
+        entity_id: script.scooter_charger_energy_consumed_speak
