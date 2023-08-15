@@ -31,7 +31,7 @@ input_number:
 ## SCRIPTS
 ###############################################
 script:
-  scooter_charger_energy_consumed_speak:
+  scooter_charger_energy_consumed_notify:
     alias: Scooter Charger Energy Consumed Speak
     sequence:
       - service: notify.mobile_app_sm_s901b
@@ -61,8 +61,8 @@ script:
 ###############################################
 automation:
   # When input_boolean.scooter_charger is on - enable charger
-  - alias: Enable Scooter Charger
-    id: "enable_scooter_charger"
+  - alias: Scooter Charger Enable
+    id: "scooter_charger_enable"
     mode: restart
     max_exceeded: silent
     trigger:
@@ -73,7 +73,7 @@ automation:
       - service: switch.turn_on
         entity_id: switch.scooter_charger_socket
       - service: automation.turn_on
-        entity_id: automation.disable_scooter_charger_when_idle
+        entity_id: automation.scooter_charger_disable_when_idle
       # Save current energy consumption
       - service: input_number.set_value
         data:
@@ -81,8 +81,8 @@ automation:
           value: "{{ states('sensor.scooter_charger_energy_total') | float }}"
 
   # When input_boolean.scooter_charger is off - disable charger
-  - alias: Disable Scooter Charger
-    id: "disable_scooter_charger"
+  - alias: Scooter Charger Disable
+    id: "scooter_charger_disable"
     mode: restart
     max_exceeded: silent
     trigger:
@@ -93,13 +93,13 @@ automation:
       - service: switch.turn_off
         entity_id: switch.scooter_charger_socket
       - service: script.turn_on
-        entity_id: script.scooter_charger_energy_consumed_speak
+        entity_id: script.scooter_charger_energy_consumed_notify
       - service: automation.turn_off
-        entity_id: automation.disable_scooter_charger_when_idle
+        entity_id: automation.scooter_charger_disable_when_idle
 
   # When Scooter Charger Consumption is lower than 15W for 10 minutes - disable charger
-  - alias: Disable Scooter Charger When Idle
-    id: "disable_scooter_charger_when_idle"
+  - alias: Scooter Charger Disable When Idle
+    id: "scooter_charger_disable_when_idle"
     mode: restart
     max_exceeded: silent
     trigger:
@@ -114,6 +114,6 @@ automation:
       - service: input_boolean.turn_off
         entity_id: input_boolean.scooter_charger
       - service: script.turn_on
-        entity_id: script.scooter_charger_energy_consumed_speak
+        entity_id: script.scooter_charger_energy_consumed_notify
       - service: automation.turn_off
         entity_id: automation.disable_scooter_charger_when_idle
