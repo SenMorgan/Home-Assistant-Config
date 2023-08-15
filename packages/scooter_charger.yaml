@@ -13,7 +13,7 @@
 input_boolean:
   scooter_charger:
     name: Scooter Charger
-    icon: mdi:scooter
+    icon: mdi:scooter-electric
 
 ###############################################
 ## INPUT NUMBERS
@@ -25,7 +25,7 @@ input_number:
     max: 100000.0
     step: 0.001
     unit_of_measurement: kWh
-    icon: mdi:scooter
+    icon: mdi:scooter-electric
 
 ###############################################
 ## SCRIPTS
@@ -92,10 +92,10 @@ automation:
     action:
       - service: switch.turn_off
         entity_id: switch.scooter_charger_socket
-      - service: automation.turn_off
-        entity_id: automation.disable_scooter_charger_when_idle
       - service: script.turn_on
         entity_id: script.scooter_charger_energy_consumed_speak
+      - service: automation.turn_off
+        entity_id: automation.disable_scooter_charger_when_idle
 
   # When Scooter Charger Consumption is lower than 15W for 10 minutes - disable charger
   - alias: Disable Scooter Charger When Idle
@@ -111,7 +111,9 @@ automation:
     action:
       - service: switch.turn_off
         entity_id: switch.scooter_charger_socket
-      - service: automation.turn_off
-        entity_id: automation.disable_scooter_charger_when_idle
+      - service: input_boolean.turn_off
+        entity_id: input_boolean.scooter_charger
       - service: script.turn_on
         entity_id: script.scooter_charger_energy_consumed_speak
+      - service: automation.turn_off
+        entity_id: automation.disable_scooter_charger_when_idle
