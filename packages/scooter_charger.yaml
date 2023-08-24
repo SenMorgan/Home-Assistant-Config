@@ -28,6 +28,15 @@ input_number:
     icon: mdi:scooter-electric
 
 ###############################################
+## INPUT DATETIMES
+###############################################
+input_datetime:
+  scooter_charger_energy_start_time:
+    name: Scooter Charger Energy Start Time
+    has_date: true
+    has_time: true
+
+###############################################
 ## SCRIPTS
 ###############################################
 script:
@@ -40,7 +49,9 @@ script:
           message: >
             Заряжено
             {{ ((states('sensor.scooter_charger_energy_total') | float - states('input_number.scooter_charger_energy_start') | float) * 1000) | round }}
-            Вт*ч
+            Вт*ч за
+            {{ ((as_timestamp(now()) - as_timestamp(states('input_datetime.scooter_charger_energy_start_time'))) / 60) | round }}
+            минут
       # Check if yandex station is not playing now
       - if:
           condition: template
@@ -53,7 +64,9 @@ script:
               media_content_id: >
                 Зарядка электросамоката окончена. Заряжено
                 {{ ((states('sensor.scooter_charger_energy_total') | float - states('input_number.scooter_charger_energy_start') | float) * 1000) | round }}
-                Ватт-часов
+                Ватт-часов за
+                {{ ((as_timestamp(now()) - as_timestamp(states('input_datetime.scooter_charger_energy_start_time'), 0)) / 60) | round }}
+                минут
               media_content_type: text
 
 ###############################################
@@ -79,6 +92,12 @@ automation:
         data:
           entity_id: input_number.scooter_charger_energy_start
           value: "{{ states('sensor.scooter_charger_energy_total') | float }}"
+      # Save current time
+      - service: input_datetime.set_datetime
+        data:
+          entity_id: input_datetime.scooter_charger_energy_start_time
+          datetime: "{{ now().strftime('%Y-%m-%d %H:%M:%S') }}"
+
 
   # When input_boolean.scooter_charger is off - disable charger
   - alias: Scooter Charger Disable
