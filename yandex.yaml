@@ -33,6 +33,7 @@ filter:
     - light.kitchen_led_strip
     - light.bedroom_nightlight
     - light.living_room_nightlight
+    - light.living_room_ceiling_light
     - light.bar_light
     - light.christmas_tree
     - media_player.tv
@@ -120,6 +121,9 @@ entity_config:
     room: Спальня
   light.living_room_nightlight:
     name: Светильник
+    room: Зал
+  light.living_room_ceiling_light:
+    name: Люстра
     room: Зал
   light.bar_light:
     name: Подсветка бара
