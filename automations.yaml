@@ -858,9 +858,7 @@
   mode: single
   trigger:
     - platform: state
-      entity_id: person.sen
-      from: "home"
-      to: "not_home"
+      entity_id: binary_sensor.people_home
   action:
     # Save actual volume
     - service: input_number.set_value
