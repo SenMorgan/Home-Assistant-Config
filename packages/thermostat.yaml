@@ -32,9 +32,6 @@ binary_sensor:
 ## INPUT BUTTONS
 ###############################################
 input_button:
-  parking_light:
-    name: Parking Light
-    icon: mdi:light-flood-down
   thermostat_10_minutes_heating:
     name: Heat 10 Minutes
     icon: mdi:radiator
