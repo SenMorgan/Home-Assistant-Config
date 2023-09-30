@@ -104,6 +104,21 @@
   value_template: "{{ ((value | default(0)) | float(0) * 1000) | round(2, default=0)}}"
   unit_of_measurement: "µg/m³"
 
+  # PM2.5 concentration, got from Ikea Vindriktning air quality sensor
+- name: "Air Quality Station PM2.5"
+  state_topic: "/air-quality-station/pm25"
+  device_class: pm25
+  value_template: "{{ value | default(0) }}"
+  unit_of_measurement: "µg/m³"
+
+  # Boolean value indicating the logical state of the digital inputs
+- name: "Air Quality Station Digital Input 1"
+  state_topic: "/air-quality-station/dig_input_1"
+  value_template: "{{ value | default(0) }}"
+- name: "Air Quality Station Digital Input 2"
+  state_topic: "/air-quality-station/dig_input_2"
+  value_template: "{{ value | default(0) }}"
+
 ###############################################
 ## Solar Station Sensors
 ###############################################
