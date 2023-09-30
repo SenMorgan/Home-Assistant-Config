@@ -1,0 +1,53 @@
+######################################################################
+# File: notify_via_lights.yaml                                       #
+# Author: SenMorgan https://github.com/SenMorgan                     #
+# Date: 2023-09-30                                                   #
+#                                                                    #
+# Copyright (c) 2023 Sen Morgan                                      #
+######################################################################
+
+###############################################
+## INPUT BOOLEANS
+###############################################
+input_boolean:
+  last_kitchen_spotlights_state:
+    name: Last Kitchen Spotlights State
+    icon: mdi:lightbulb
+    initial: off
+
+###############################################
+## SCRIPTS
+###############################################
+script:
+  notify_via_kitchen_spotlights:
+    # Save current light state, blink 3 times, then restore light state
+    sequence:
+      - if:
+          - condition: state
+            entity_id: light.kitchen_spotlights
+            state: "on"
+        then:
+          - service: input_boolean.turn_on
+            entity_id: input_boolean.last_kitchen_spotlights_state
+        else:
+          - service: input_boolean.turn_off
+            entity_id: input_boolean.last_kitchen_spotlights_state
+      - repeat:
+          count: 3
+          sequence:
+            - service: light.turn_on
+              entity_id: light.kitchen_spotlights
+            - delay: 0.5
+            - service: light.turn_off
+              entity_id: light.kitchen_spotlights
+            - delay: 0.5
+      - if:
+          - condition: state
+            entity_id: input_boolean.last_kitchen_spotlights_state
+            state: "on"
+        then:
+          - service: light.turn_on
+            entity_id: light.kitchen_spotlights
+        else:
+          - service: light.turn_off
+            entity_id: light.kitchen_spotlights
