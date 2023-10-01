@@ -48,19 +48,19 @@
   state_topic: "/air-quality-station/temperature"
   icon: mdi:temperature-celsius
   device_class: temperature
-  value_template: "{{ value }}"
+  value_template: "{{ value | default(0) | float(0) }}"
   unit_of_measurement: "°C"
 
 - name: "Air Quality Station Humidity"
   state_topic: "/air-quality-station/humidity"
   device_class: humidity
-  value_template: "{{ value }}"
+  value_template: "{{ value | default(0) | float(0) }}"
   unit_of_measurement: "%"
 
 - name: "Air Quality Station Pressure"
   state_topic: "/air-quality-station/pressure"
   device_class: pressure
-  value_template: "{{ value }}"
+  value_template: "{{ value | default(0) | float(0) }}"
   unit_of_measurement: "hPa"
 
   # From BSEC Software Library:
@@ -73,7 +73,8 @@
 - name: "Air Quality Station IAQ"
   state_topic: "/air-quality-station/iaq"
   device_class: aqi
-  value_template: "{{ value | default(0) }}"
+  value_template: "{{ value | default(0) | float(0) }}"
+  unit_of_measurement: "IAQ"
 
 # The IAQ accuracy is reflects the current state of the background calibration process, such as:
 #
@@ -93,7 +94,7 @@
 - name: "Air Quality Station CO2"
   state_topic: "/air-quality-station/co2Equivalent"
   device_class: carbon_dioxide
-  value_template: "{{ value | default(0)  }}"
+  value_template: "{{ value | default(0) | float(0) }}"
   unit_of_measurement: "ppm"
 
   # breath VOC concentration estimate [µg/m]
