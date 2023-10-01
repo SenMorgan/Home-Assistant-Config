@@ -1104,8 +1104,9 @@
         title: "{{ '🌞' }} Солнечная панель"
         message: "Мощность выше порога: {{ states('sensor.solar_panel_power') }} W"
 
-- alias: Busy Wall Trigger 1
-  id: "busy_wall_trigger_1"
+- alias: Busy Wall Switch 1
+  id: "busy_wall_switch_1"
+  mode: restart
   trigger:
     - platform: state
       entity_id: sensor.air_quality_station_digital_input_1
@@ -1113,8 +1114,9 @@
     - service: light.toggle
       entity_id: light.living_room_ceiling_light
 
-- alias: Busy Wall Trigger 2
-  id: "busy_wall_trigger_2"
+- alias: Busy Wall Switch 2
+  id: "busy_wall_switch_2"
+  mode: restart
   trigger:
     - platform: state
       entity_id: sensor.air_quality_station_digital_input_2
