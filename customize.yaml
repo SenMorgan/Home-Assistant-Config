@@ -22,3 +22,5 @@ sensor.fr24_feeder_aircraft_uploaded:
   icon: mdi:airplane
 sensor.fr24_feeder_radar_code:
   icon: mdi:radar
+sensor.air_quality_station_pm2_5:
+  icon: mdi:blur
