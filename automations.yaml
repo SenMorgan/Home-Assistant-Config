@@ -1109,7 +1109,13 @@
   mode: restart
   trigger:
     - platform: state
-      entity_id: sensor.air_quality_station_digital_input_1
+      entity_id: binary_sensor.air_quality_station_digital_input_1
+      from: "off"
+      to: "on"
+    - platform: state
+      entity_id: binary_sensor.air_quality_station_digital_input_1
+      from: "on"
+      to: "off"
   action:
     - service: light.toggle
       entity_id: light.living_room_ceiling_light
@@ -1119,7 +1125,13 @@
   mode: restart
   trigger:
     - platform: state
-      entity_id: sensor.air_quality_station_digital_input_2
+      entity_id: binary_sensor.air_quality_station_digital_input_2
+      from: "off"
+      to: "on"
+    - platform: state
+      entity_id: binary_sensor.air_quality_station_digital_input_2
+      from: "on"
+      to: "off"
   action:
     - service: light.toggle
       entity_id: light.floor_lamp

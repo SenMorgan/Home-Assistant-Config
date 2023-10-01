@@ -112,14 +112,6 @@
   value_template: "{{ value | default(0) }}"
   unit_of_measurement: "µg/m³"
 
-  # Boolean value indicating the logical state of the digital inputs
-- name: "Air Quality Station Digital Input 1"
-  state_topic: "/air-quality-station/dig_input_1"
-  value_template: "{{ value | default(0) }}"
-- name: "Air Quality Station Digital Input 2"
-  state_topic: "/air-quality-station/dig_input_2"
-  value_template: "{{ value | default(0) }}"
-
 ###############################################
 ## Solar Station Sensors
 ###############################################
