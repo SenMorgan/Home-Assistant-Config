@@ -519,15 +519,19 @@
       entity_id: binary_sensor.fr24_feeder_receiver_connected
       from: "on"
       to: "off"
+      for: "00:05:00"
   action:
+    - variables:
+        timestamp: "{{ trigger.to_state.last_changed.astimezone(now().tzinfo).strftime('%H:%M:%S') }}"
     - service: persistent_notification.create
       data:
         title: "{{ '❗️' }} Системное уведомление"
-        message: Связь с ADS-B приёмником была потеряна в {{ states('sensor.time') }}
+        # Use here the timestamp when the automation was triggered
+        message: Связь с ADS-B приёмником была потеряна в {{ timestamp }}
     - service: notify.mobile_app_sm_s901b
       data:
         title: "{{ '❗️' }} Системное уведомление"
-        message: Связь с ADS-B приёмником была потеряна в {{ states('sensor.time') }}
+        message: Связь с ADS-B приёмником была потеряна в {{ timestamp }}
 
 - id: "Notification_ADS_B_Receiver_Connected"
   alias: Notification ADS-B Receiver Connected
@@ -536,15 +540,18 @@
       entity_id: binary_sensor.fr24_feeder_receiver_connected
       from: "off"
       to: "on"
+      for: "00:01:00"
   action:
+    - variables:
+        timestamp: "{{ trigger.to_state.last_changed.astimezone(now().tzinfo).strftime('%H:%M:%S') }}"
     - service: persistent_notification.create
       data:
         title: "{{ 'ℹ️' }} Системное уведомление"
-        message: Связь с ADS-B приёмником была восстановлена в {{ states('sensor.time') }}
+        message: Связь с ADS-B приёмником была восстановлена в {{ timestamp }}
     - service: notify.mobile_app_sm_s901b
       data:
         title: "{{ 'ℹ️' }} Системное уведомление"
-        message: Связь с ADS-B приёмником была восстановлена в {{ states('sensor.time') }}
+        message: Связь с ADS-B приёмником была восстановлена в {{ timestamp }}
 
 - id: "Notification_Diesel_Price_Changed"
   alias: Notification Diesel Price Changed
