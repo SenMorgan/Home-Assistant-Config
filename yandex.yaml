@@ -82,7 +82,7 @@ entity_config:
     room: Дом
     type: devices.types.switch
   input_boolean.child_lock:
-    name: Блокировка от детей
+    name: Детский замок
     room: Дом
     type: devices.types.switch
   input_boolean.scooter_charger:
