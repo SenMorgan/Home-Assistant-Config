@@ -512,8 +512,8 @@
                 Концентрация газа: {{ states('sensor.co_and_natural_gas_alarm_carbon_monoxide') }} ppm
           - delay: 00:00:10
 
-- id: "Notification_ADS_B_Receiver_Disconnected"
-  alias: Notification ADS-B Receiver Disconnected
+- alias: Notification ADS-B Receiver Disconnected
+  id: notification_ads_b_receiver_disconnected
   trigger:
     - platform: state
       entity_id: binary_sensor.fr24_feeder_receiver_connected
@@ -532,9 +532,11 @@
       data:
         title: "{{ '❗️' }} Системное уведомление"
         message: Связь с ADS-B приёмником была потеряна в {{ timestamp }}
+    - service: automation.turn_on
+      entity_id: automation.notification_ads_b_receiver_connection_restored
 
-- id: "Notification_ADS_B_Receiver_Connected"
-  alias: Notification ADS-B Receiver Connected
+- alias: Notification ADS-B Receiver Connection Restored
+  id: notification_ads_b_receiver_connection_restored
   trigger:
     - platform: state
       entity_id: binary_sensor.fr24_feeder_receiver_connected
@@ -552,6 +554,8 @@
       data:
         title: "{{ 'ℹ️' }} Системное уведомление"
         message: Связь с ADS-B приёмником была восстановлена в {{ timestamp }}
+    - service: automation.turn_off
+      entity_id: automation.notification_ads_b_receiver_connection_restored
 
 - id: "Notification_Diesel_Price_Changed"
   alias: Notification Diesel Price Changed
