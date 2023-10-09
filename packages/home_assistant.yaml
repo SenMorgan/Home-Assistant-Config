@@ -129,22 +129,48 @@ automation:
                 title: "Open Config"
                 uri: "/config"
 
+  # Used blueprint from: https://community.home-assistant.io/t/blueprint-notify-when-zigbee-zwave-any-battery-device-has-gone-offline/537631
   - id: "notification_zigbee_battery_devices_have_gone_offline"
     alias: Notification Zigbee Battery Devices Have Gone Offline
-    description: ""
-    use_blueprint:
-      path: Tahutipai/zigbee_zwave_notify_when_battery_devices_have_fallen_offline.yaml
-      input:
-        time: "21:00:00"
-        actions:
-          - service: notify.mobile_app_sm_s901b
-            data:
-              title: "{{ '❗️' }} Системное уведомление"
-              message: "Обнаружены недоступные Zigbee устройства: {{sensors}}"
-          - service: persistent_notification.create
-            data:
-              title: "{{ '❗️' }} Системное уведомление"
-              message: "Обнаружены недоступные Zigbee устройства: {{sensors}}"
+    mode: single
+    variables:
+      day: 0
+      exclude:
+        entity_id:
+          [
+            "sensor.192_168_1_82_battery_level",
+            "sensor.sm_g991b_battery_level",
+            "sensor.sm_s901b_battery_level",
+          ]
+      sensors: >-
+        {% set result = namespace(sensors=[]) %} {% for state in states.sensor |
+        selectattr('attributes.device_class', 'defined') |
+        selectattr('attributes.device_class', '==', 'battery') %}
+          {% if "unavailable" in state | string  and not state.entity_id in exclude.entity_id %}
+            {% set result.sensors = result.sensors + [state.name.replace(" Battery", "")] %}
+          {% endif %}
+        {% endfor %} {% for state in states.binary_sensor |
+        selectattr('attributes.device_class', 'defined') |
+        selectattr('attributes.device_class', '==', 'battery') %}
+          {% if "unavailable" in state | string and not state.entity_id in exclude.entity_id %}
+            {% set result.sensors = result.sensors + [state.name.replace(" Battery", "")] %}
+          {% endif %}
+        {% endfor %} {{result.sensors|join(', ')}}
+      notify_message: "Обнаружены недоступные Zigbee устройства: {{sensors}}"
+    trigger:
+      - platform: time
+        at: "20:00:00"
+    condition:
+      - "{{ sensors != '' and (day | int == 0 or day | int == now().isoweekday()) }}"
+    action:
+      - service: notify.mobile_app_sm_s901b
+        data:
+          title: "{{ '❗️' }} Системное уведомление"
+          message: "{{ notify_message }}"
+      - service: persistent_notification.create
+        data:
+          title: "{{ '❗️' }} Системное уведомление"
+          message: "{{ notify_message }}"
 
   ###############################################
   ## Low Battery Notifications
