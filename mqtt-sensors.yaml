@@ -72,7 +72,6 @@
   # days) to ensure that IAQ=25 corresponds to typical good air and IAQ=250 indicates typical polluted air.
 - name: "Air Quality Station IAQ"
   state_topic: "/air-quality-station/iaq"
-  device_class: aqi
   value_template: "{{ value | default(0) | float(0) }}"
   unit_of_measurement: "IAQ"
 
