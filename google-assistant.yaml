@@ -42,36 +42,6 @@ entity_config:
     room: Living room
   media_player.lg_webos_tv_551e:
     room: Living room
-  switch.raven_engine:
-    name: Engine
-    room: Backyard
-    aliases:
-      - PASSAT
-      - CAR
-      - ENGINE
-      - MOTOR
-      - VOLKSWAGEN
-      - RAVEN
-  switch.raven_update_sensors:
-    name: Update Ravens Sensors
-    room: Backyard
-    aliases:
-      - UPDATE_SENSORS
-      - UPDATE_PASSAT
-      - UPDATE_RAVEN
-  lock.raven_locks:
-    name: Raven Doors
-    room: Backyard
-    aliases:
-      - PASSAT
-      - CAR
-      - RAVEN
-      - PASSAT_LOCKS
-      - PASSAT_DOORS
-      - RAVEN_LOCKS
-      - RAVEN_DOORS
-      - CAR_LOCKS
-      - CAR_DOORS
   switch.asus_pc:
     name: PC
     room: Kitchen

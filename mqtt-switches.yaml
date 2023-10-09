@@ -1,31 +1,4 @@
 ###############################################
-## Raven Switches
-###############################################
-- name: "Raven Engine"
-  icon: mdi:engine-outline
-  state_topic: "/Raven/engine/engine_running"
-  state_on: "RUNNING"
-  state_off: "STOPPED"
-  command_topic: "/Raven/set/engine"
-  payload_on: "ON"
-  payload_off: "OFF"
-  availability_topic: "/Raven/availability"
-  payload_available: "online"
-  payload_not_available: "offline"
-  optimistic: false
-
-- name: "Raven Udpate Sensors"
-  icon: mdi:update
-  state_topic: "/Raven/sensors_updating"
-  command_topic: "/Raven/set/update_sensors"
-  payload_on: "1"
-  payload_off: "0"
-  availability_topic: "/Raven/availability"
-  payload_available: "online"
-  payload_not_available: "offline"
-  optimistic: false
-
-###############################################
 ## Power Monitor Switches
 ###############################################
 - name: "Power Monitor Sleep Mode"

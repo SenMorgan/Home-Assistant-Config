@@ -80,9 +80,6 @@ input_boolean:
   presentation_switch:
     name: Presentation
     icon: mdi:presentation-play
-  raven_engine_start_stop:
-    name: Raven Engine Start/Stop
-    icon: mdi:engine-outline
   flag_spotlight_triggered_by_motion:
     name: Flag - Spotlight Was Triggered by Motion Sensor
     icon: mdi:engine-outline
@@ -220,19 +217,6 @@ mqtt:
       position_closed: 0
       optimistic: false
       position_template: "{{ value }}"
-
-  ###############################################
-  ## LOCKS
-  ###############################################
-  lock:
-    - name: "Raven Locks"
-      unique_id: "raven_locks"
-      state_topic: "/Raven/locks"
-      command_topic: "/Raven/set/locks"
-      availability_topic: "/Raven/availability"
-      optimistic: false
-      qos: 1
-      retain: false
 
   ###############################################
   ## LIGHTS
