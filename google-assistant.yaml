@@ -94,9 +94,5 @@ entity_config:
     expose: false
   input_boolean.light_brightness:
     expose: false
-  binary_sensor.kalorifer:
-    expose: false
-  sensor.kalorifer_water_temperature:
-    expose: false
   switch.udpate_sensors:
     expose: false

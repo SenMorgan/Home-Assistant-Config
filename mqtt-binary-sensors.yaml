@@ -1,9 +1,3 @@
-- name: Garage Kalorifer
-  device_class: moving
-  state_topic: "/Kalorifer/Status"
-  payload_on: "1"
-  payload_off: "0"
-
 ###############################################
 ## Air Quality Station Sensors
 ###############################################
