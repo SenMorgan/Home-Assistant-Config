@@ -215,13 +215,22 @@ entity_config:
       - type: amperage
         entity: sensor.electricity_meter_current
   climate.family_room:
-    name: Термостат
+    name: Главный термостат
     room: Кухня
     properties:
       - type: temperature
         entity: sensor.family_room_temperature
       - type: humidity
         entity: sensor.family_room_humidity
+  climate.danfoss_etrv0100_bedroom_thermostat:
+    name: Термостат
+    room: Спальня
+  climate.danfoss_etrv0103_kitchen_thermostat:
+    name: Термостат
+    room: Кухня
+  climate.danfoss_etrv0104_living_room_thermostat:
+    name: Термостат
+    room: Зал
   cover.bedroom:
     name: Штора
     room: Спальня
