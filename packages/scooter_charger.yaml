@@ -48,7 +48,7 @@ script:
           title: 🛴 Зарядка самоката окончена
           message: >
             Заряжено
-            {{ ((states('sensor.scooter_charger_energy_total') | float - states('input_number.scooter_charger_energy_start') | float) * 1000) | round }}
+            {{ ((states('sensor.scooter_charger_summation_delivered') | float - states('input_number.scooter_charger_energy_start') | float) * 1000) | round }}
             Вт*ч за
             {{ ((as_timestamp(now()) - as_timestamp(states('input_datetime.scooter_charger_energy_start_time'))) / 60) | round }}
             минут
@@ -63,7 +63,7 @@ script:
             data:
               media_content_id: >
                 Зарядка электросамоката окончена. Заряжено
-                {{ ((states('sensor.scooter_charger_energy_total') | float - states('input_number.scooter_charger_energy_start') | float) * 1000) | round }}
+                {{ ((states('sensor.scooter_charger_summation_delivered') | float - states('input_number.scooter_charger_energy_start') | float) * 1000) | round }}
                 Ватт-часов за
                 {{ ((as_timestamp(now()) - as_timestamp(states('input_datetime.scooter_charger_energy_start_time'), 0)) / 60) | round }}
                 минут
@@ -91,7 +91,7 @@ automation:
       - service: input_number.set_value
         data:
           entity_id: input_number.scooter_charger_energy_start
-          value: "{{ states('sensor.scooter_charger_energy_total') | float }}"
+          value: "{{ states('sensor.scooter_charger_summation_delivered') | float }}"
       # Save current time
       - service: input_datetime.set_datetime
         data:
@@ -123,7 +123,7 @@ automation:
     max_exceeded: silent
     trigger:
       - platform: numeric_state
-        entity_id: sensor.scooter_charger_energy_power
+        entity_id: sensor.scooter_charger_active_power
         below: 15
         for:
           minutes: 10
