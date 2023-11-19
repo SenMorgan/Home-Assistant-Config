@@ -295,10 +295,11 @@
               before_offset: 00:15:00
   action:
     - wait_template: >
-        "{{ states('switch.asus_pc') == 'off' and
-            states('light.mi_desk_lamp') == 'off' and
-            states('light.kitchen_spotlights') == 'off' and
-            states('light.bedroom_nightlight') == 'off' }}"
+        {{ states('switch.asus_pc') == 'off' and
+          states('light.mi_desk_lamp') == 'off' and
+          states('light.kitchen_spotlights') == 'off' and
+          states('light.kitchen_ceiling_light') == 'off' and
+          states('light.bedroom_nightlight') == 'off' }}
       timeout: 01:00:00
       continue_on_timeout: false
     # Check if it's still needed (TV is on)
