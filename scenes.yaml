@@ -19,13 +19,18 @@
     light.hall_lights: off
     media_player.tv: on
     light.kitchen_spotlights: off
+    light.kitchen_ceiling_light: off
     light.bar_light: on
     light.string_lights: off
     light.mi_desk_lamp: off
     light.shelf_lighting: off
     light.floor_lamp: off
     light.bedroom_nightlight: off
-    light.living_room_nightlight: off
+    light.living_room_nightlight:
+      state: on
+      brightness: 120
+      color_temp: 370
+    light.living_room_ceiling_light: off
     light.christmas_tree: on
 
 - name: Good Night
