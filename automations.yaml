@@ -521,17 +521,15 @@
       to: "off"
       for: "00:05:00"
   action:
-    - variables:
-        timestamp: "{{ trigger.to_state.last_changed.astimezone(now().tzinfo).strftime('%H:%M:%S') }}"
     - service: persistent_notification.create
       data:
         title: "{{ '❗️' }} Системное уведомление"
         # Use here the timestamp when the automation was triggered
-        message: Связь с ADS-B приёмником была потеряна в {{ timestamp }}
+        message: Связь с ADS-B приёмником была потеряна в {{ states('sensor.time') }}
     - service: notify.mobile_app_sm_s901b
       data:
         title: "{{ '❗️' }} Системное уведомление"
-        message: Связь с ADS-B приёмником была потеряна в {{ timestamp }}
+        message: Связь с ADS-B приёмником была потеряна в {{ states('sensor.time') }}
     - service: automation.turn_on
       entity_id: automation.notification_ads_b_receiver_connection_restored
 
