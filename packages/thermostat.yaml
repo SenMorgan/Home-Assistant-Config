@@ -28,6 +28,15 @@ binary_sensor:
         value_template: >
           {{ is_state_attr('climate.family_room', 'hvac_action', "heating") }}
 
+  - platform: template
+    sensors:
+      etrvs_requesting_heat:
+        friendly_name: ETRVs are requesting heat
+        value_template: >
+          {{ (is_state_attr('climate.danfoss_etrv0100_bedroom_thermostat', 'hvac_action', "heating") or
+              is_state_attr('climate.danfoss_etrv0103_kitchen_thermostat', 'hvac_action', "heating") or
+              is_state_attr('climate.danfoss_etrv0103_living_room_thermostat', 'hvac_action', "heating")) }}
+
 ###############################################
 ## INPUT BUTTONS
 ###############################################
@@ -315,7 +324,7 @@ automation:
                 data:
                   media_content_id: Включен подогрев квартиры на 10 минут
                   media_content_type: text
-          # Set thermostat mode to «heat» and wait until 'temperature'attribute will become not "None"
+          # Set thermostat mode to «heat» and wait until 'temperature' attribute will become not "None"
           - service: climate.set_hvac_mode
             entity_id: climate.family_room
             data:
@@ -326,7 +335,7 @@ automation:
             data:
               entity_id: input_number.thermostat_saved_target_temperature
               value: "{{ state_attr('climate.family_room', 'temperature') }}"
-          # Save new thermostat target temperature by adding 1°C to the current temperature
+          # Set new thermostat target temperature by adding 1°C to the current temperature
           - service: input_number.set_value
             data:
               entity_id: input_number.thermostat_new_target_temperature
@@ -467,3 +476,134 @@ automation:
       # Disable this automation
       - service: automation.turn_off
         entity_id: automation.thermostat_eco_mode_when_noone_home_disable
+
+  # If one of ETRV is in "heat" state and climate.family_room is not in "heat" state,
+  # and all windows are closed - save current temperature to input_number.thermostat_saved_target_temperature
+  # and set new thermostat target temperature by adding 1°C to the current temperature to force enable heating.
+  # ETRVs entities:
+  # climate.danfoss_etrv0100_bedroom_thermostat
+  # climate.danfoss_etrv0103_kitchen_thermostat
+  # climate.danfoss_etrv0103_living_room_thermostat
+  # Main thermostat entity:
+  # climate.family_room
+  - alias: Thermostat ETRV Heating Enable
+    id: thermostat_etrv_heating_enable
+    mode: single
+    trigger:
+      # Trigger every ETRV state change to "heat"
+      - platform: state
+        entity_id: binary_sensor.etrvs_requesting_heat
+        to: "on"
+      # Trigger every 1 minute
+      - platform: time_pattern
+        minutes: "/1"
+    condition:
+      - condition: state
+        entity_id: input_boolean.heating_season
+        state: "on"
+      # If all windows are closed
+      - condition: state
+        entity_id: binary_sensor.windows
+        state: "off"
+      # If not already heating
+      - condition: state
+        entity_id: binary_sensor.thermostat_heating
+        state: "off"
+    action:
+      # Save actual thermostat target temperature
+      - service: input_number.set_value
+        data:
+          entity_id: input_number.thermostat_saved_target_temperature
+          value: "{{ state_attr('climate.family_room', 'temperature') }}"
+      # Set new thermostat target temperature by adding 2°C to the current temperature
+      - service: input_number.set_value
+        data:
+          entity_id: input_number.thermostat_new_target_temperature
+          value: "{{ state_attr('climate.family_room', 'current_temperature') + 2 }}"
+      # Send new target temperature to thermostat
+      - service: climate.set_temperature
+        entity_id: climate.family_room
+        data:
+          temperature: "{{ states('input_number.thermostat_new_target_temperature') }}"
+      # Wait here until actual target temperature is the same as new target temperature
+      - wait_template: |
+          {{ state_attr('climate.family_room', 'temperature') ==
+          (states('input_number.thermostat_new_target_temperature') | float(0)) }}
+        timeout: "00:01:00"
+        continue_on_timeout: false
+      - service: automation.turn_on
+        entity_id: automation.thermostat_etrv_heating_disable
+      - variables:
+          message: >-
+            Отопление было включено в {{ states('sensor.time') }} потому что в этих комнатах холодно: {%
+            set rooms = [] %}
+            {% if is_state_attr('climate.danfoss_etrv0100_bedroom_thermostat', 'hvac_action', "heating") %}
+              {% set rooms = rooms + ['спальня'] %}
+            {% endif %}
+            {% if is_state_attr('climate.danfoss_etrv0103_kitchen_thermostat', 'hvac_action', "heating") %}
+              {% set rooms = rooms + ['кухня'] %}
+            {% endif %}
+            {% if is_state_attr('climate.danfoss_etrv0103_living_room_thermostat', 'hvac_action', "heating") %}
+              {% set rooms = rooms + ['гостиная'] %}
+            {% endif %}
+            {{ rooms[:-1] | join(', ') }}{% if rooms | length > 1 %} и {% endif %}{{ rooms[-1] if rooms | length > 0 else '' }}
+      - service: persistent_notification.create
+        data:
+          title: "{{ 'ℹ️' }} Системное уведомление"
+          message: { message }
+      - service: notify.mobile_app_sm_s901b
+        data:
+          title: "{{ 'ℹ️' }} Системное уведомление"
+          message:  { message }
+      - service: script.turn_on
+        entity_id: script.tell_what_windows_are_opened
+      - service: automation.turn_on
+        entity_id: automation.thermostat_etrv_heating_disable
+
+  # If all ETRVs are not in "heat" state - restore mate.family_room target temperature.
+  - alias: Thermostat ETRV Heating Disable
+    id: thermostat_etrv_heating_disable
+    mode: single
+    trigger:
+      # Trigger if all ETRVs are not in "heat" state
+      - platform: state
+        entity_id: binary_sensor.etrvs_requesting_heat
+        to: "off"
+      # Trigger every 1 minute
+      - platform: time_pattern
+        minutes: "/1"
+      # Or if thermostat changed it's mode
+      - platform: state
+        entity_id: climate.family_room
+    condition:
+      # If thermostat is in "heat" mode
+      - condition: state
+        entity_id: climate.family_room
+        state: "heat"
+      # Compare new target temperature with actual target temperature to know if the temperature was manually changed
+      - condition: template
+        value_template: |
+          {{ state_attr('climate.family_room', 'temperature') !=
+          (states('input_number.thermostat_new_target_temperature') | float(0)) }}
+    action:
+      - variables:
+          timestamp: "{{ trigger.to_state.last_changed.astimezone(now().tzinfo).strftime('%H:%M:%S') }}"
+      # Restore saved thermostat target temperature
+      - service: climate.set_hvac_mode
+        entity_id: climate.family_room
+        data:
+          hvac_mode: "heat"
+      - service: climate.set_temperature
+        entity_id: climate.family_room
+        data:
+          temperature: "{{ states('input_number.thermostat_saved_target_temperature') }}"
+      - service: persistent_notification.create
+        data:
+          title: "{{ 'ℹ️' }} Системное уведомление"
+          message: Отопление было выключено в {{ timestamp }}
+      - service: notify.mobile_app_sm_s901b
+        data:
+          title: "{{ 'ℹ️' }} Системное уведомление"
+          message: Отопление было выключено в {{ timestamp }}
+      - service: automation.turn_off
+        entity_id: automation.thermostat_etrv_heating_disable
