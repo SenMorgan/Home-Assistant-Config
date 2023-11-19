@@ -334,12 +334,12 @@ automation:
           - service: input_number.set_value
             data:
               entity_id: input_number.thermostat_saved_target_temperature
-              value: "{{ state_attr('climate.family_room', 'temperature') }}"
+              value: "{{ state_attr('climate.family_room', 'temperature') | float(21) }}"
           # Set new thermostat target temperature by adding 1°C to the current temperature
           - service: input_number.set_value
             data:
               entity_id: input_number.thermostat_new_target_temperature
-              value: "{{ state_attr('climate.family_room', 'current_temperature') + 1 }}"
+              value: "{{ (state_attr('climate.family_room', 'current_temperature') | float(23)) + 1  }}"
           - service: script.turn_on
             entity_id: script.tell_what_windows_are_opened
           # Increase thermostat temperature by 1°C from current temperature
@@ -403,7 +403,7 @@ automation:
       - service: climate.set_temperature
         entity_id: climate.family_room
         data:
-          temperature: "{{ states('input_number.thermostat_saved_target_temperature') }}"
+          temperature: "{{ states('input_number.thermostat_saved_target_temperature') | float(21) }}"
       - service: automation.turn_off
         entity_id: automation.thermostat_10_minutes_heating_disable
 
@@ -514,12 +514,12 @@ automation:
       - service: input_number.set_value
         data:
           entity_id: input_number.thermostat_saved_target_temperature
-          value: "{{ state_attr('climate.family_room', 'temperature') }}"
+          value: "{{ state_attr('climate.family_room', 'temperature') | float(21) }}"
       # Set new thermostat target temperature by adding 2°C to the current temperature
       - service: input_number.set_value
         data:
           entity_id: input_number.thermostat_new_target_temperature
-          value: "{{ state_attr('climate.family_room', 'current_temperature') + 2 }}"
+          value: "{{ (state_attr('climate.family_room', 'current_temperature') | float(24)) + 2 }}"
       # Send new target temperature to thermostat
       - service: climate.set_temperature
         entity_id: climate.family_room
@@ -554,7 +554,7 @@ automation:
       - service: notify.mobile_app_sm_s901b
         data:
           title: "{{ 'ℹ️' }} Системное уведомление"
-          message:  { message }
+          message: { message }
       - service: script.turn_on
         entity_id: script.tell_what_windows_are_opened
       - service: automation.turn_on
@@ -587,7 +587,7 @@ automation:
           (states('input_number.thermostat_new_target_temperature') | float(0)) }}
     action:
       - variables:
-          timestamp: "{{ trigger.to_state.last_changed.astimezone(now().tzinfo).strftime('%H:%M:%S') }}"
+          timestamp: "{{ states('sensor.time') }}"
       # Restore saved thermostat target temperature
       - service: climate.set_hvac_mode
         entity_id: climate.family_room
@@ -596,7 +596,7 @@ automation:
       - service: climate.set_temperature
         entity_id: climate.family_room
         data:
-          temperature: "{{ states('input_number.thermostat_saved_target_temperature') }}"
+          temperature: "{{ states('input_number.thermostat_saved_target_temperature') | float(21) }}"
       - service: persistent_notification.create
         data:
           title: "{{ 'ℹ️' }} Системное уведомление"
