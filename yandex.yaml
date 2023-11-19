@@ -41,14 +41,34 @@ filter:
     - media_player.tv
     - switch.moving_head_power
     - switch.asus_pc
-    - sensor.ble_temperature_bathroom
+    - scene.movies
+    - sensor.air_quality_station_pressure
+    - sensor.air_quality_station_pm2_5
+    - sensor.air_quality_station_voc
+    - sensor.air_quality_station_co2
+    - sensor.ble_temperature_atc_bedroom
+    - sensor.ble_humidity_atc_bedroom
+    - sensor.ble_temperature_atc_living_room
+    - sensor.ble_humidity_atc_living_room
+    - sensor.ble_temperature_atc_hall
+    - sensor.ble_humidity_atc_hall
+    - sensor.ble_temperature_atc_bathroom
+    - sensor.ble_humidity_atc_bathroom
+    - sensor.family_room_temperature
+    - sensor.family_room_humidity
     - sensor.pool_bme280_temperature
+    - sensor.pool_bme280_humidity
+    - sensor.pool_bme280_pressure
     - sensor.pool_thermometer_bottom_water_temperature
     - sensor.pool_thermometer_upper_water_temperature
     - sensor.tuya_temp_hum_sensor_temperature
     - sensor.sm_g991b_battery_level
+    - sensor.sm_g991b_battery_temperature
     - sensor.sm_s901b_battery_level
+    - sensor.sm_s901b_battery_temperature
     - sensor.electricity_meter_power
+    - sensor.electricity_meter_voltage
+    - sensor.electricity_meter_current
 
 entity_config:
   binary_sensor.hall_door_contact:
@@ -142,6 +162,9 @@ entity_config:
   media_player.tv:
     name: Телевизор
     room: Зал
+  scene.movies:
+    name: Сцена Кино
+    room: Зал
   switch.moving_head_power:
     name: Голова
     room: Зал
@@ -164,14 +187,40 @@ entity_config:
         entity: sensor.air_quality_station_co2
       - type: tvoc
         entity: sensor.air_quality_station_voc
-  sensor.ble_temperature_bathroom:
+      - type: pm2.5_density
+        entity: sensor.air_quality_station_pm2_5
+  sensor.ble_temperature_atc_bedroom:
+    name: Погода в спальне
+    room: Спальня
+    properties:
+      - type: temperature
+        entity: sensor.ble_temperature_atc_bedroom
+      - type: humidity
+        entity: sensor.ble_humidity_atc_bedroom
+  sensor.ble_temperature_atc_living_room:
+    name: Погода в зале
+    room: Спальня
+    properties:
+      - type: temperature
+        entity: sensor.ble_temperature_atc_living_room
+      - type: humidity
+        entity: sensor.ble_humidity_atc_living_room
+  sensor.ble_temperature_atc_hall:
+    name: Погода в корридоре
+    room: Спальня
+    properties:
+      - type: temperature
+        entity: sensor.ble_temperature_atc_hall
+      - type: humidity
+        entity: sensor.ble_humidity_atc_hall
+  sensor.ble_temperature_atc_bathroom:
     name: Погода в ванной
     room: Ванная
     properties:
       - type: temperature
-        entity: sensor.ble_temperature_bathroom
+        entity: sensor.ble_temperature_atc_bathroom
       - type: humidity
-        entity: sensor.ble_humidity_bathroom
+        entity: sensor.ble_humidity_atc_bathroom
   sensor.pool_bme280_temperature:
     name: Погода во дворе
     room: Двор
@@ -188,14 +237,6 @@ entity_config:
   sensor.pool_thermometer_upper_water_temperature:
     name: Температура воды сверху
     room: Бассейн
-  sensor.tuya_temp_hum_sensor_temperature:
-    name: Погода в спальне
-    room: Спальня
-    properties:
-      - type: temperature
-        entity: sensor.tuya_temp_hum_sensor_temperature
-      - type: humidity
-        entity: sensor.tuya_temp_hum_sensor_humidity
   sensor.sm_s901b_battery_level:
     name: Телефон Арсений
     room: Телефоны
