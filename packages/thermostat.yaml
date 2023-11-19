@@ -37,6 +37,16 @@ binary_sensor:
               is_state_attr('climate.danfoss_etrv0103_kitchen_thermostat', 'hvac_action', "heating") or
               is_state_attr('climate.danfoss_etrv0103_living_room_thermostat', 'hvac_action', "heating")) }}
 
+  - platform: template
+    sensors:
+      freeze_alert_at_night:
+        friendly_name: Temperature is below 19°C at night
+        value_template: >
+          {{ now().hour >= 0 and now().hour < 6 and
+            ((state_attr('climate.family_room', 'current_temperature') | float(0) < 19.0) or
+             (states('sensor.ble_temperature_atc_bedroom') | float(0) < 19.0) or
+             (states('sensor.ble_temperature_atc_living_room') | float(0) < 19.0)) }}
+
 ###############################################
 ## INPUT BUTTONS
 ###############################################
@@ -192,13 +202,12 @@ automation:
   ###############################################
 
   - alias: Thermostat Freeze Alert at Night
-    id: thermostat_freeze_alert_at_night
+    id: thermostat_freeze_alert_at_night_at_night
     mode: single
     trigger:
-      - platform: numeric_state
-        entity_id: climate.family_room
-        attribute: current_temperature
-        below: 19.0
+      - platform: state
+        entity_id: binary_sensor.freeze_alert_at_night
+        to: "on"
         for: "00:05:00"
       - platform: time_pattern
         hours: "/1"
@@ -206,16 +215,12 @@ automation:
       - condition: state
         entity_id: input_boolean.heating_season
         state: "on"
-      - condition: numeric_state
-        entity_id: climate.family_room
-        attribute: current_temperature
-        below: 19.0
+      - condition: state
+        entity_id: binary_sensor.freeze_alert_at_night
+        state: "on"
       - condition: state
         entity_id: binary_sensor.people_home
         state: "on"
-      - condition: time
-        after: "00:00"
-        before: "06:00"
       # If thermostat is in «heat» mode and temperature is below 19°C or if thermostat is in «off» mode
       - condition: template
         value_template: >
