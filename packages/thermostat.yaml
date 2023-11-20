@@ -484,13 +484,7 @@ automation:
 
   # If one of ETRV is in "heat" state and climate.family_room is not in "heat" state,
   # and all windows are closed - save current temperature to input_number.thermostat_saved_target_temperature
-  # and set new thermostat target temperature by adding 1°C to the current temperature to force enable heating.
-  # ETRVs entities:
-  # climate.danfoss_etrv0100_bedroom_thermostat
-  # climate.danfoss_etrv0103_kitchen_thermostat
-  # climate.danfoss_etrv0103_living_room_thermostat
-  # Main thermostat entity:
-  # climate.family_room
+  # and set new thermostat target temperature by adding 2°C to the current temperature to force enable heating.
   - alias: Thermostat ETRV Heating Enable
     id: thermostat_etrv_heating_enable
     mode: single
@@ -506,6 +500,9 @@ automation:
       - condition: state
         entity_id: input_boolean.heating_season
         state: "on"
+      - condition: state
+        entity_id: binary_sensor.people_home
+        state: "on"
       # If all windows are closed
       - condition: state
         entity_id: binary_sensor.windows
@@ -515,6 +512,12 @@ automation:
         entity_id: binary_sensor.thermostat_heating
         state: "off"
     action:
+      # Set thermostat mode to «heat» and wait until 'temperature' attribute will become not "None"
+      - service: climate.set_hvac_mode
+        entity_id: climate.family_room
+        data:
+          hvac_mode: "heat"
+      - wait_template: "{{ state_attr('climate.family_room', 'temperature') != None }}"
       # Save actual thermostat target temperature
       - service: input_number.set_value
         data:
@@ -540,8 +543,7 @@ automation:
         entity_id: automation.thermostat_etrv_heating_disable
       - variables:
           message: >-
-            Отопление было включено в {{ states('sensor.time') }} потому что в этих комнатах холодно: {%
-            set rooms = [] %}
+            {% set rooms = [] %}
             {% if is_state_attr('climate.danfoss_etrv0100_bedroom_thermostat', 'hvac_action', "heating") %}
               {% set rooms = rooms + ['спальня'] %}
             {% endif %}
@@ -551,19 +553,20 @@ automation:
             {% if is_state_attr('climate.danfoss_etrv0103_living_room_thermostat', 'hvac_action', "heating") %}
               {% set rooms = rooms + ['гостиная'] %}
             {% endif %}
+            Отопление было включено в {{ states('sensor.time') }} в комнат{{ 'ах' if rooms | length > 1 else 'е' }}:
             {{ rooms[:-1] | join(', ') }}{% if rooms | length > 1 %} и {% endif %}{{ rooms[-1] if rooms | length > 0 else '' }}
       - service: persistent_notification.create
         data:
           title: "{{ 'ℹ️' }} Системное уведомление"
-          message: { message }
+          message: "{{ message }}"
       - service: notify.mobile_app_sm_s901b
         data:
           title: "{{ 'ℹ️' }} Системное уведомление"
-          message: { message }
-      - service: script.turn_on
-        entity_id: script.tell_what_windows_are_opened
-      - service: automation.turn_on
-        entity_id: automation.thermostat_etrv_heating_disable
+          message: "{{ message }}"
+      # - service: script.turn_on
+      #   entity_id: script.tell_what_windows_are_opened
+      # - service: automation.turn_on
+      #   entity_id: automation.thermostat_etrv_heating_disable
 
   # If all ETRVs are not in "heat" state - restore mate.family_room target temperature.
   - alias: Thermostat ETRV Heating Disable
