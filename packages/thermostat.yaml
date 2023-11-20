@@ -573,26 +573,22 @@ automation:
     id: thermostat_etrv_heating_disable
     mode: single
     trigger:
-      # Trigger if all ETRVs are not in "heat" state
+      # Trigger if all ETRVs are not requesting heat
       - platform: state
         entity_id: binary_sensor.etrvs_requesting_heat
         to: "off"
       # Trigger every 1 minute
       - platform: time_pattern
         minutes: "/1"
-      # Or if thermostat changed it's mode
-      - platform: state
-        entity_id: climate.family_room
     condition:
       # If thermostat is in "heat" mode
       - condition: state
         entity_id: climate.family_room
         state: "heat"
-      # Compare new target temperature with actual target temperature to know if the temperature was manually changed
-      - condition: template
-        value_template: |
-          {{ state_attr('climate.family_room', 'temperature') !=
-          (states('input_number.thermostat_new_target_temperature') | float(0)) }}
+      # If all ETRVs are not requesting heat
+      - condition: state
+        entity_id: binary_sensor.etrvs_requesting_heat
+        state: "off"
     action:
       - variables:
           timestamp: "{{ states('sensor.time') }}"
