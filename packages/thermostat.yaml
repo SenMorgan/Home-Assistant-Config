@@ -32,10 +32,14 @@ binary_sensor:
     sensors:
       etrvs_requesting_heat:
         friendly_name: ETRVs are requesting heat
+        # True if «current_temperature» is less than «temperature» in any of ETRVs
         value_template: >
-          {{ (is_state_attr('climate.danfoss_etrv0100_bedroom_thermostat', 'hvac_action', "heating") or
-              is_state_attr('climate.danfoss_etrv0103_kitchen_thermostat', 'hvac_action', "heating") or
-              is_state_attr('climate.danfoss_etrv0103_living_room_thermostat', 'hvac_action', "heating")) }}
+          {{ state_attr('climate.danfoss_etrv0100_bedroom_thermostat', 'current_temperature') <
+                state_attr('climate.danfoss_etrv0100_bedroom_thermostat', 'temperature') or
+              state_attr('climate.danfoss_etrv0103_kitchen_thermostat', 'current_temperature') <
+                state_attr('climate.danfoss_etrv0103_kitchen_thermostat', 'temperature') or
+             state_attr('climate.danfoss_etrv0103_living_room_thermostat', 'current_temperature') <
+                state_attr('climate.danfoss_etrv0103_living_room_thermostat', 'temperature') }}
 
   - platform: template
     sensors:
