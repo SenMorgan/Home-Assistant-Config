@@ -38,7 +38,7 @@ binary_sensor:
                 state_attr('climate.danfoss_etrv0100_bedroom_thermostat', 'temperature') or
               state_attr('climate.danfoss_etrv0103_kitchen_thermostat', 'current_temperature') <
                 state_attr('climate.danfoss_etrv0103_kitchen_thermostat', 'temperature') or
-             state_attr('climate.danfoss_etrv0103_living_room_thermostat', 'current_temperature') <
+              state_attr('climate.danfoss_etrv0103_living_room_thermostat', 'current_temperature') <
                 state_attr('climate.danfoss_etrv0103_living_room_thermostat', 'temperature') }}
 
   - platform: template
@@ -493,16 +493,19 @@ automation:
     id: thermostat_etrv_heating_enable
     mode: single
     trigger:
-      # Trigger every ETRV state change to "heat"
+      # Trigger with every climate.danfoss_* entity state change
       - platform: state
-        entity_id: binary_sensor.etrvs_requesting_heat
-        to: "on"
-      # Trigger every 1 minute
-      - platform: time_pattern
-        minutes: "/1"
+        entity_id:
+          - climate.danfoss_etrv0100_bedroom_thermostat
+          - climate.danfoss_etrv0103_kitchen_thermostat
+          - climate.danfoss_etrv0103_living_room_thermostat
     condition:
       - condition: state
         entity_id: input_boolean.heating_season
+        state: "on"
+      # If all ETRVs are requesting heat
+      - condition: state
+        entity_id: binary_sensor.etrvs_requesting_heat
         state: "on"
       - condition: state
         entity_id: binary_sensor.people_home
@@ -567,10 +570,8 @@ automation:
         data:
           title: "{{ 'ℹ️' }} Системное уведомление"
           message: "{{ message }}"
-      # - service: script.turn_on
-      #   entity_id: script.tell_what_windows_are_opened
-      # - service: automation.turn_on
-      #   entity_id: automation.thermostat_etrv_heating_disable
+      - service: automation.turn_on
+        entity_id: automation.thermostat_etrv_heating_disable
 
   # If all ETRVs are not in "heat" state - restore mate.family_room target temperature.
   - alias: Thermostat ETRV Heating Disable
