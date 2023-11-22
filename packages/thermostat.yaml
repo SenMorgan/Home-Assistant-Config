@@ -86,6 +86,24 @@ input_number:
     min: 15.0
     max: 30.0
     initial: 20.0
+  etrv_bedroom_target_temperature:
+    name: ETRV Bedroom Target Temperature
+    step: 0.5
+    min: 18.0
+    max: 25.0
+    initial: 21.0
+  etrv_kitchen_target_temperature:
+    name: ETRV Kitchen Target Temperature
+    step: 0.5
+    min: 18.0
+    max: 25.0
+    initial: 21.0
+  etrv_living_room_target_temperature:
+    name: ETRV Living Room Target Temperature
+    step: 0.5
+    min: 18.0
+    max: 25.0
+    initial: 21.0
 
 ###############################################
 ## AUTOMATIONS
@@ -619,3 +637,104 @@ automation:
           message: Отопление было выключено в {{ timestamp }}
       - service: automation.turn_off
         entity_id: automation.thermostat_etrv_heating_disable
+
+  # ETRVs do not have child lock themselves so we need to check if tempature was changed manually
+  # Kitchen
+  - alias: Thermostat ETRV Temp Changed Manually Kitchen
+    id: thermostat_etrv_temp_changed_manually_kitchen
+    mode: single
+    trigger:
+      - platform: state
+        entity_id: climate.danfoss_etrv0103_kitchen_thermostat
+    condition:
+      - condition: template
+        value_template: |
+          {{ state_attr('climate.danfoss_etrv0103_kitchen_thermostat', 'temperature') !=
+          (states('input_number.etrv_kitchen_target_temperature') | float(0)) }}
+    action:
+      - variables:
+          timestamp: "{{ states('sensor.time') }}"
+          target_temperature: "{{ state_attr('climate.danfoss_etrv0103_kitchen_thermostat', 'temperature') }}"
+          set_temperature: "{{ states('input_number.etrv_kitchen_target_temperature') | float(21) }}"
+          message: >-
+            Температура на кухне была изменена вручную в {{ timestamp }} с
+            {{ target_temperature }}°C на {{ set_temperature }}°C
+      - service: climate.set_temperature
+        entity_id: climate.danfoss_etrv0103_kitchen_thermostat
+        data:
+          temperature: "{{ set_temperature }}"
+      - service: persistent_notification.create
+        data:
+          title: "{{ 'ℹ️' }} Системное уведомление"
+          message: "{{ message }}"
+      - service: notify.mobile_app_sm_s901b
+        data:
+          title: "{{ 'ℹ️' }} Системное уведомление"
+          message: "{{ message }}"
+
+  # Bedroom
+  - alias: Thermostat ETRV Temp Changed Manually Bedroom
+    id: thermostat_etrv_temp_changed_manually_bedroom
+    mode: single
+    trigger:
+      - platform: state
+        entity_id: climate.danfoss_etrv0100_bedroom_thermostat
+    condition:
+      - condition: template
+        value_template: |
+          {{ state_attr('climate.danfoss_etrv0100_bedroom_thermostat', 'temperature') !=
+          (states('input_number.etrv_bedroom_target_temperature') | float(0)) }}
+    action:
+      - variables:
+          timestamp: "{{ states('sensor.time') }}"
+          target_temperature: "{{ state_attr('climate.danfoss_etrv0100_bedroom_thermostat', 'temperature') }}"
+          set_temperature: "{{ states('input_number.etrv_bedroom_target_temperature') | float(21) }}"
+          message: >-
+            Температура в спальне была изменена вручную в {{ timestamp }} с
+            {{ target_temperature }}°C на {{ set_temperature }}°C
+      - service: climate.set_temperature
+        entity_id: climate.danfoss_etrv0100_bedroom_thermostat
+        data:
+          temperature: "{{ set_temperature }}"
+      - service: persistent_notification.create
+        data:
+          title: "{{ 'ℹ️' }} Системное уведомление"
+          message: "{{ message }}"
+      - service: notify.mobile_app_sm_s901b
+        data:
+          title: "{{ 'ℹ️' }} Системное уведомление"
+          message: "{{ message }}"
+
+  # Living Room
+  - alias: Thermostat ETRV Temp Changed Manually Living Room
+    id: thermostat_etrv_temp_changed_manually_living_room
+    mode: single
+    trigger:
+      - platform: state
+        entity_id: climate.danfoss_etrv0103_living_room_thermostat
+    condition:
+      - condition: template
+        value_template: |
+          {{ state_attr('climate.danfoss_etrv0103_living_room_thermostat', 'temperature') !=
+          (states('input_number.etrv_living_room_target_temperature') | float(0)) }}
+    action:
+      - variables:
+          timestamp: "{{ states('sensor.time') }}"
+          target_temperature: "{{ state_attr('climate.danfoss_etrv0103_living_room_thermostat', 'temperature') }}"
+          set_temperature: "{{ states('input_number.etrv_living_room_target_temperature') | float(21) }}"
+          message: >-
+            Температура в зале была изменена вручную в {{ timestamp }} с
+            {{ target_temperature }}°C на {{ set_temperature }}°C
+      - service: climate.set_temperature
+        entity_id: climate.danfoss_etrv0103_living_room_thermostat
+        data:
+          temperature: "{{ set_temperature }}"
+      - service: persistent_notification.create
+        data:
+          title: "{{ 'ℹ️' }} Системное уведомление"
+          message: "{{ message }}"
+      - service: notify.mobile_app_sm_s901b
+        data:
+          title: "{{ 'ℹ️' }} Системное уведомление"
+          message: "{{ message }}"
+
