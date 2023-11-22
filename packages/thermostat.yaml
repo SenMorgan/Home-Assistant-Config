@@ -551,13 +551,16 @@ automation:
       - variables:
           message: >-
             {% set rooms = [] %}
-            {% if is_state_attr('climate.danfoss_etrv0100_bedroom_thermostat', 'hvac_action', "heating") %}
+            {% if state_attr('climate.danfoss_etrv0100_bedroom_thermostat', 'current_temperature') <
+                    state_attr('climate.danfoss_etrv0100_bedroom_thermostat', 'temperature') %}
               {% set rooms = rooms + ['спальня'] %}
             {% endif %}
-            {% if is_state_attr('climate.danfoss_etrv0103_kitchen_thermostat', 'hvac_action', "heating") %}
+            {% if state_attr('climate.danfoss_etrv0103_kitchen_thermostat', 'current_temperature') <
+                    state_attr('climate.danfoss_etrv0103_kitchen_thermostat', 'temperature') %}
               {% set rooms = rooms + ['кухня'] %}
             {% endif %}
-            {% if is_state_attr('climate.danfoss_etrv0103_living_room_thermostat', 'hvac_action', "heating") %}
+            {% if state_attr('climate.danfoss_etrv0103_living_room_thermostat', 'current_temperature') <
+                    state_attr('climate.danfoss_etrv0103_living_room_thermostat', 'temperature') %}
               {% set rooms = rooms + ['гостиная'] %}
             {% endif %}
             Отопление было включено в {{ states('sensor.time') }} в комнат{{ 'ах' if rooms | length > 1 else 'е' }}:
