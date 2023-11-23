@@ -446,7 +446,7 @@
     - service: notify.mobile_app_sm_s901b
       data_template:
         title: Уведомление о снеге
-        message: Должно выпасть {{ states('sensor.openweathermap_snow') }} мм снега
+        message: Должно выпадать {{ states('sensor.openweathermap_snow') }} мм/ч снега!
 
 - id: "notification_door_opened"
   alias: Notification Door Opened
