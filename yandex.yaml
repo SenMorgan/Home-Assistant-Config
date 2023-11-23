@@ -268,7 +268,7 @@ entity_config:
     name: Штора
     room: Спальня
   fan.wc_and_bathroom:
-    name: Вентилятор
+    name: Вентиляция
     room: Туалет
   vacuum.johnny:
     name: Джонни
