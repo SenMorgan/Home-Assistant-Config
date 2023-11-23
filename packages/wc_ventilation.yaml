@@ -264,7 +264,7 @@ automation:
     id: wc_ventilation_start_humidity_exceeds_threshold
     trigger:
       platform: numeric_state
-      entity_id: sensor.ble_humidity_bathroom
+      entity_id: sensor.ble_humidity_atc_bathroom
       above: input_number.wc_ventilation_start_humidity_threshold
       for: 00:02:00
     action:
@@ -288,7 +288,7 @@ automation:
     id: wc_ventilation_stop_humidity_below_threshold
     trigger:
       platform: numeric_state
-      entity_id: sensor.ble_humidity_bathroom
+      entity_id: sensor.ble_humidity_atc_bathroom
       below: input_number.wc_ventilation_stop_humidity_threshold
       for: 00:02:00
     action:
