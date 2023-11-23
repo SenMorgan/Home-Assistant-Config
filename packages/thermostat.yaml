@@ -27,22 +27,6 @@ binary_sensor:
         friendly_name: Thermostat is heating
         value_template: >
           {{ is_state_attr('climate.family_room', 'hvac_action', "heating") }}
-
-  - platform: template
-    sensors:
-      etrvs_requesting_heat:
-        friendly_name: ETRVs are requesting heat
-        # True if «current_temperature» is less than «temperature» in any of ETRVs
-        value_template: >
-          {{ state_attr('climate.danfoss_etrv0100_bedroom_thermostat', 'current_temperature') <
-                state_attr('climate.danfoss_etrv0100_bedroom_thermostat', 'temperature') or
-              state_attr('climate.danfoss_etrv0103_kitchen_thermostat', 'current_temperature') <
-                state_attr('climate.danfoss_etrv0103_kitchen_thermostat', 'temperature') or
-              state_attr('climate.danfoss_etrv0103_living_room_thermostat', 'current_temperature') <
-                state_attr('climate.danfoss_etrv0103_living_room_thermostat', 'temperature') }}
-
-  - platform: template
-    sensors:
       freeze_alert_at_night:
         friendly_name: Temperature is below 19°C at night
         value_template: >
@@ -50,6 +34,17 @@ binary_sensor:
             ((state_attr('climate.family_room', 'current_temperature') | float(0) < 19.0) or
              (states('sensor.ble_temperature_atc_bedroom') | float(0) < 19.0) or
              (states('sensor.ble_temperature_atc_living_room') | float(0) < 19.0)) }}
+
+      # ETRVs are requesting heat if «current_temperature» is less than «temperature» on any of ETRVs
+      etrvs_requesting_heat:
+        friendly_name: ETRVs are requesting heat
+        value_template: >
+          {{ state_attr('climate.danfoss_etrv0100_bedroom_thermostat', 'current_temperature') <
+                state_attr('climate.danfoss_etrv0100_bedroom_thermostat', 'temperature') or
+              state_attr('climate.danfoss_etrv0103_kitchen_thermostat', 'current_temperature') <
+                state_attr('climate.danfoss_etrv0103_kitchen_thermostat', 'temperature') or
+              state_attr('climate.danfoss_etrv0103_living_room_thermostat', 'current_temperature') <
+                state_attr('climate.danfoss_etrv0103_living_room_thermostat', 'temperature') }}
 
 ###############################################
 ## INPUT BUTTONS
@@ -86,24 +81,36 @@ input_number:
     min: 15.0
     max: 30.0
     initial: 20.0
-  etrv_bedroom_target_temperature:
-    name: ETRV Bedroom Target Temperature
+  etrv_bedroom_default_temperature:
+    name: ETRV Bedroom Default Temperature
     step: 0.5
     min: 18.0
     max: 25.0
     initial: 21.0
-  etrv_kitchen_target_temperature:
-    name: ETRV Kitchen Target Temperature
+  etrv_kitchen_default_temperature:
+    name: ETRV Kitchen Default Temperature
     step: 0.5
     min: 18.0
     max: 25.0
     initial: 21.0
-  etrv_living_room_target_temperature:
-    name: ETRV Living Room Target Temperature
+  etrv_living_room_default_temperature:
+    name: ETRV Living Room Default Temperature
     step: 0.5
     min: 18.0
     max: 25.0
     initial: 21.0
+  etrv_min_target_temperature:
+    name: ETRV Min Target Temperature
+    step: 0.5
+    min: 17.0
+    max: 21.0
+    initial: 19.0
+  etrv_max_target_temperature:
+    name: ETRV Max Target Temperature
+    step: 0.5
+    min: 21.0
+    max: 25.0
+    initial: 23.0
 
 ###############################################
 ## AUTOMATIONS
@@ -638,10 +645,11 @@ automation:
       - service: automation.turn_off
         entity_id: automation.thermostat_etrv_heating_disable
 
-  # ETRVs do not have child lock themselves so we need to check if tempature was changed manually
+  # ETRVs do not have child lock themselves so we need to check if taget tempature
+  # is in range of min and max target temperature and if not - set it to 21°C
   # Kitchen
-  - alias: Thermostat ETRV Temp Changed Manually Kitchen
-    id: thermostat_etrv_temp_changed_manually_kitchen
+  - alias: Thermostat ETRV Temp Out of Range Kitchen
+    id: thermostat_etrv_temp_out_of_range_kitchen
     mode: single
     trigger:
       - platform: state
@@ -649,16 +657,18 @@ automation:
     condition:
       - condition: template
         value_template: |
-          {{ state_attr('climate.danfoss_etrv0103_kitchen_thermostat', 'temperature') !=
-          (states('input_number.etrv_kitchen_target_temperature') | float(0)) }}
+          {{ (state_attr('climate.danfoss_etrv0103_kitchen_thermostat', 'temperature') <
+          (states('input_number.etrv_min_target_temperature')) | float(17)) or
+          (state_attr('climate.danfoss_etrv0103_kitchen_thermostat', 'temperature') >
+          (states('input_number.etrv_max_target_temperature')) | float(25)) }}
     action:
       - variables:
           timestamp: "{{ states('sensor.time') }}"
           target_temperature: "{{ state_attr('climate.danfoss_etrv0103_kitchen_thermostat', 'temperature') }}"
-          set_temperature: "{{ states('input_number.etrv_kitchen_target_temperature') | float(21) }}"
+          set_temperature: "{{ states('input_number.etrv_kitchen_default_temperature') | float(21) }}"
           message: >-
-            Температура на кухне была изменена вручную в {{ timestamp }} с
-            {{ target_temperature }}°C на {{ set_temperature }}°C
+            Температура на кухне вышла за допустимые пределы в {{ timestamp }}.
+            Возвращаю температуру с {{ target_temperature }}°C на {{ set_temperature }}°C
       - service: climate.set_temperature
         entity_id: climate.danfoss_etrv0103_kitchen_thermostat
         data:
@@ -673,8 +683,8 @@ automation:
           message: "{{ message }}"
 
   # Bedroom
-  - alias: Thermostat ETRV Temp Changed Manually Bedroom
-    id: thermostat_etrv_temp_changed_manually_bedroom
+  - alias: Thermostat ETRV Temp Out of Range Bedroom
+    id: thermostat_etrv_temp_out_of_range_bedroom
     mode: single
     trigger:
       - platform: state
@@ -682,16 +692,18 @@ automation:
     condition:
       - condition: template
         value_template: |
-          {{ state_attr('climate.danfoss_etrv0100_bedroom_thermostat', 'temperature') !=
-          (states('input_number.etrv_bedroom_target_temperature') | float(0)) }}
+          {{ (state_attr('climate.danfoss_etrv0100_bedroom_thermostat', 'temperature') <
+          (states('input_number.etrv_min_target_temperature')) | float(17)) or
+          (state_attr('climate.danfoss_etrv0100_bedroom_thermostat', 'temperature') >
+          (states('input_number.etrv_max_target_temperature')) | float(25)) }}
     action:
       - variables:
           timestamp: "{{ states('sensor.time') }}"
           target_temperature: "{{ state_attr('climate.danfoss_etrv0100_bedroom_thermostat', 'temperature') }}"
-          set_temperature: "{{ states('input_number.etrv_bedroom_target_temperature') | float(21) }}"
+          set_temperature: "{{ states('input_number.etrv_bedroom_default_temperature') | float(21) }}"
           message: >-
-            Температура в спальне была изменена вручную в {{ timestamp }} с
-            {{ target_temperature }}°C на {{ set_temperature }}°C
+            Температура в спальне вышла за допустимые пределы в {{ timestamp }}.
+            Возвращаю температуру с {{ target_temperature }}°C на {{ set_temperature }}°C
       - service: climate.set_temperature
         entity_id: climate.danfoss_etrv0100_bedroom_thermostat
         data:
@@ -706,8 +718,8 @@ automation:
           message: "{{ message }}"
 
   # Living Room
-  - alias: Thermostat ETRV Temp Changed Manually Living Room
-    id: thermostat_etrv_temp_changed_manually_living_room
+  - alias: Thermostat ETRV Temp Out of Range Living Room
+    id: thermostat_etrv_temp_out_of_range_living_room
     mode: single
     trigger:
       - platform: state
@@ -715,16 +727,18 @@ automation:
     condition:
       - condition: template
         value_template: |
-          {{ state_attr('climate.danfoss_etrv0103_living_room_thermostat', 'temperature') !=
-          (states('input_number.etrv_living_room_target_temperature') | float(0)) }}
+          {{ (state_attr('climate.danfoss_etrv0103_living_room_thermostat', 'temperature') <
+          (states('input_number.etrv_min_target_temperature')) | float(17)) or
+          (state_attr('climate.danfoss_etrv0103_living_room_thermostat', 'temperature') >
+          (states('input_number.etrv_max_target_temperature')) | float(25)) }}
     action:
       - variables:
           timestamp: "{{ states('sensor.time') }}"
           target_temperature: "{{ state_attr('climate.danfoss_etrv0103_living_room_thermostat', 'temperature') }}"
-          set_temperature: "{{ states('input_number.etrv_living_room_target_temperature') | float(21) }}"
+          set_temperature: "{{ states('input_number.etrv_living_room_default_temperature') | float(21) }}"
           message: >-
-            Температура в зале была изменена вручную в {{ timestamp }} с
-            {{ target_temperature }}°C на {{ set_temperature }}°C
+            Температура в гостиной вышла за допустимые пределы в {{ timestamp }}.
+            Возвращаю температуру с {{ target_temperature }}°C на {{ set_temperature }}°C
       - service: climate.set_temperature
         entity_id: climate.danfoss_etrv0103_living_room_thermostat
         data:
