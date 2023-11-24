@@ -266,6 +266,9 @@ automation:
         entity_id: climate.family_room
         data:
           hvac_mode: "heat"
+      # Wait till thermostat will be ready to accept new target temperature
+      - wait_template: "{{ state_attr('climate.family_room', 'temperature') != None }}"
+        timeout: "00:30:00"
       # Set temperature to 20°C
       - service: climate.set_temperature
         entity_id: climate.family_room
@@ -307,6 +310,9 @@ automation:
         entity_id: climate.family_room
         data:
           hvac_mode: "heat"
+      # Wait till thermostat will be ready to accept new target temperature
+      - wait_template: "{{ state_attr('climate.family_room', 'temperature') != None }}"
+        timeout: "00:30:00"
       # Set temperature to 20°C
       - service: climate.set_temperature
         entity_id: climate.family_room
@@ -363,7 +369,9 @@ automation:
             entity_id: climate.family_room
             data:
               hvac_mode: "heat"
+          # Wait till thermostat will be ready to accept new target temperature
           - wait_template: "{{ state_attr('climate.family_room', 'temperature') != None }}"
+            timeout: "00:30:00"
           # Save actual thermostat target temperature
           - service: input_number.set_value
             data:
@@ -434,6 +442,9 @@ automation:
         entity_id: climate.family_room
         data:
           hvac_mode: "heat"
+      # Wait till thermostat will be ready to accept new target temperature
+      - wait_template: "{{ state_attr('climate.family_room', 'temperature') != None }}"
+        timeout: "00:30:00"
       - service: climate.set_temperature
         entity_id: climate.family_room
         data:
@@ -549,7 +560,9 @@ automation:
         entity_id: climate.family_room
         data:
           hvac_mode: "heat"
+      # Wait till thermostat will be ready to accept new target temperature
       - wait_template: "{{ state_attr('climate.family_room', 'temperature') != None }}"
+        timeout: "00:30:00"
       # Save actual thermostat target temperature
       - service: input_number.set_value
         data:
@@ -630,6 +643,9 @@ automation:
         entity_id: climate.family_room
         data:
           hvac_mode: "heat"
+      # Wait till thermostat will be ready to accept new target temperature
+      - wait_template: "{{ state_attr('climate.family_room', 'temperature') != None }}"
+        timeout: "00:30:00"
       - service: climate.set_temperature
         entity_id: climate.family_room
         data:
