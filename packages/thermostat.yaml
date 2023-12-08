@@ -603,14 +603,14 @@ automation:
             {% endif %}
             Отопление было включено в {{ states('sensor.time') }} в комнат{{ 'ах' if rooms | length > 1 else 'е' }}:
             {{ rooms[:-1] | join(', ') }}{% if rooms | length > 1 %} и {% endif %}{{ rooms[-1] if rooms | length > 0 else '' }}
-      - service: persistent_notification.create
-        data:
-          title: "{{ 'ℹ️' }} Системное уведомление"
-          message: "{{ message }}"
-      - service: notify.mobile_app_sm_s901b
-        data:
-          title: "{{ 'ℹ️' }} Системное уведомление"
-          message: "{{ message }}"
+    #   - service: persistent_notification.create
+    #     data:
+    #       title: "{{ 'ℹ️' }} Системное уведомление"
+    #       message: "{{ message }}"
+    #   - service: notify.mobile_app_sm_s901b
+    #     data:
+    #       title: "{{ 'ℹ️' }} Системное уведомление"
+    #       message: "{{ message }}"
       - service: automation.turn_on
         entity_id: automation.thermostat_etrv_heating_disable
 
@@ -650,14 +650,14 @@ automation:
         entity_id: climate.family_room
         data:
           temperature: "{{ states('input_number.thermostat_saved_target_temperature') | float(21) }}"
-      - service: persistent_notification.create
-        data:
-          title: "{{ 'ℹ️' }} Системное уведомление"
-          message: Отопление было выключено в {{ timestamp }}
-      - service: notify.mobile_app_sm_s901b
-        data:
-          title: "{{ 'ℹ️' }} Системное уведомление"
-          message: Отопление было выключено в {{ timestamp }}
+    #   - service: persistent_notification.create
+    #     data:
+    #       title: "{{ 'ℹ️' }} Системное уведомление"
+    #       message: Отопление было выключено в {{ timestamp }}
+    #   - service: notify.mobile_app_sm_s901b
+    #     data:
+    #       title: "{{ 'ℹ️' }} Системное уведомление"
+    #       message: Отопление было выключено в {{ timestamp }}
       - service: automation.turn_off
         entity_id: automation.thermostat_etrv_heating_disable
 
