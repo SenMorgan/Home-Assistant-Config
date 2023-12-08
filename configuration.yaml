@@ -28,7 +28,7 @@ vacuum_zones: !include vacuum-zones.yaml
 
 recorder:
   db_url: !secret DATABASE_URL
-  purge_keep_days: 30
+  purge_keep_days: 180
 
 # Write Python scripts that are exposed as services in Home Assistant
 python_script:
