@@ -529,30 +529,31 @@ automation:
     id: thermostat_etrv_heating_enable
     mode: single
     trigger:
-      # Trigger with every climate.danfoss_* entity state change
+      # Trigger if some of ETRVs are requesting heat
       - platform: state
-        entity_id:
-          - climate.danfoss_etrv0100_bedroom_thermostat
-          - climate.danfoss_etrv0103_kitchen_thermostat
-          - climate.danfoss_etrv0103_living_room_thermostat
+        entity_id: binary_sensor.etrvs_requesting_heat
+        to: "off"
+      # Trigger every 2 minutes
+      - platform: time_pattern
+        minutes: "/2"
     condition:
       - condition: state
         entity_id: input_boolean.heating_season
+        state: "on"
+      - condition: state
+        entity_id: binary_sensor.people_home
         state: "on"
       # If all ETRVs are requesting heat
       - condition: state
         entity_id: binary_sensor.etrvs_requesting_heat
         state: "on"
-      - condition: state
-        entity_id: binary_sensor.people_home
-        state: "on"
-      # If all windows are closed
-      - condition: state
-        entity_id: binary_sensor.windows
-        state: "off"
       # If not already heating
       - condition: state
         entity_id: binary_sensor.thermostat_heating
+        state: "off"
+      # If all windows are closed
+      - condition: state
+        entity_id: binary_sensor.windows
         state: "off"
     action:
       # Set thermostat mode to «heat» and wait until 'temperature' attribute will become not "None"
@@ -611,8 +612,6 @@ automation:
     #     data:
     #       title: "{{ 'ℹ️' }} Системное уведомление"
     #       message: "{{ message }}"
-      - service: automation.turn_on
-        entity_id: automation.thermostat_etrv_heating_disable
 
   # If all ETRVs are not in "heat" state - restore mate.family_room target temperature.
   - alias: Thermostat ETRV Heating Disable
@@ -623,22 +622,27 @@ automation:
       - platform: state
         entity_id: binary_sensor.etrvs_requesting_heat
         to: "off"
-      # Trigger every 1 minute
+      # Trigger every 2 minutes
       - platform: time_pattern
-        minutes: "/1"
+        minutes: "/2"
     condition:
-      # If thermostat is in "heat" mode
       - condition: state
-        entity_id: climate.family_room
-        state: "heat"
+        entity_id: input_boolean.heating_season
+        state: "on"
+      - condition: state
+        entity_id: binary_sensor.people_home
+        state: "on"
       # If all ETRVs are not requesting heat
       - condition: state
         entity_id: binary_sensor.etrvs_requesting_heat
         state: "off"
+      # If already heating
+      - condition: state
+        entity_id: binary_sensor.thermostat_heating
+        state: "on"
     action:
       - variables:
           timestamp: "{{ states('sensor.time') }}"
-      # Restore saved thermostat target temperature
       - service: climate.set_hvac_mode
         entity_id: climate.family_room
         data:
@@ -658,8 +662,6 @@ automation:
     #     data:
     #       title: "{{ 'ℹ️' }} Системное уведомление"
     #       message: Отопление было выключено в {{ timestamp }}
-      - service: automation.turn_off
-        entity_id: automation.thermostat_etrv_heating_disable
 
   # ETRVs do not have child lock themselves so we need to check if taget tempature
   # is in range of min and max target temperature and if not - set it to 21°C
