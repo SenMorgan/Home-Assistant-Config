@@ -681,6 +681,7 @@
   trigger:
     - platform: state
       entity_id: binary_sensor.people_home
+      for: 00:05:00
   action:
     # Save actual volume
     - service: input_number.set_value
