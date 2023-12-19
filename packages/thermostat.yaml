@@ -532,7 +532,8 @@ automation:
       # Trigger if some of ETRVs are requesting heat
       - platform: state
         entity_id: binary_sensor.etrvs_requesting_heat
-        to: "off"
+        to: "on"
+        for: 00:01:00
       # Trigger every 2 minutes
       - platform: time_pattern
         minutes: "/2"
@@ -622,6 +623,7 @@ automation:
       - platform: state
         entity_id: binary_sensor.etrvs_requesting_heat
         to: "off"
+        for: 00:01:00
       # Trigger every 2 minutes
       - platform: time_pattern
         minutes: "/2"
