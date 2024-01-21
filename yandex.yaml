@@ -41,6 +41,7 @@ filter:
     - media_player.tv
     - switch.moving_head_power
     - switch.asus_pc
+    - switch.dcc_ex_pwr
     - scene.movies
     - sensor.ble_temperature_atc_bedroom
     - sensor.ble_temperature_atc_living_room
@@ -157,6 +158,10 @@ entity_config:
     name: Компьютер
     room: Кухня
     type: devices.types.socket
+  switch.dcc_ex_pwr:
+    name: Железнодорожный Макет
+    room: Кухня
+    type: devices.types.switch
   sensor.family_room_temperature:
     name: Погода на кухне
     room: Кухня

@@ -1,0 +1,24 @@
+######################################################################
+# File: dcc-ex.yaml                                                  #
+# Author: SenMorgan https://github.com/SenMorgan                     #
+# Date: 2024-01-21                                                   #
+#                                                                    #
+# Info: this file contains entities that are associated to the       #
+# DCC-EX protocol and my model railway layout.                       #
+# More info about DCC-EX API:                                        #
+# https://dcc-ex.com/reference/developers/api.html#gsc.tab=0         #
+#                                                                    #
+# Copyright (c) 2024 Sen Morgan                                      #
+######################################################################
+
+switch:
+  - platform: telnet
+    switches:
+      dcc_ex_pwr:
+        name: "DCC-EX Power"
+        resource: !secret DCC-EX-SERVER-IP
+        port: !secret DCC-EX-SERVER-PORT
+        command_on: "<1>"
+        command_off: "<0>"
+        value_template: "{{ value == '<p1>' }}"
+        timeout: 1
