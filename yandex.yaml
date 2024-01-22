@@ -44,6 +44,7 @@ filter:
     - switch.dcc_ex_pwr
     - switch.dcc_ex_engine_sound
     - switch.dcc_ex_horn
+    - switch.dcc_ex_emergency_stop
     - scene.movies
     - sensor.ble_temperature_atc_bedroom
     - sensor.ble_temperature_atc_living_room
@@ -170,6 +171,10 @@ entity_config:
     type: devices.types.switch
   switch.dcc_ex_horn:
     name: Гудок локомотива
+    room: Макет
+    type: devices.types.switch
+  switch.dcc_ex_emergency_stop:
+    name: Экстренная остановка
     room: Макет
     type: devices.types.switch
   sensor.family_room_temperature:

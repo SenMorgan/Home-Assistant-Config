@@ -11,6 +11,9 @@
 # Copyright (c) 2024 Sen Morgan                                      #
 ######################################################################
 
+###############################################
+## SWITCHES
+###############################################
 switch:
   - platform: telnet
     switches:
@@ -41,3 +44,30 @@ switch:
         # Horn off
         command_off: "<F 4 2 0> <F 4 3 0>"
         timeout: 0.2
+      dcc_ex_emergency_stop:
+        name: "DCC-EX Emergency Stop"
+        resource: !secret DCC-EX-SERVER-IP
+        port: !secret DCC-EX-SERVER-PORT
+        # Emergency stop all locos (without disabling power)
+        command_on: "<!>"
+        command_off: ""
+        timeout: 0.2
+
+###############################################
+## AUTOMATIONS
+###############################################
+automation:
+  # Disable dcc_ex_emergency_stop switch after 1 second to
+  # make it possible to use it as a momentary switch.
+  - alias: Disable DCC-EX Emergency Stop switch
+    id: disable_dcc_ex_emergency_stop
+    mode: restart
+    trigger:
+      - platform: state
+        entity_id: switch.dcc_ex_emergency_stop
+        to: 'on'
+        for:
+          seconds: 1
+    action:
+      - service: switch.turn_off
+        entity_id: switch.dcc_ex_emergency_stop
