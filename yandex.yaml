@@ -42,6 +42,8 @@ filter:
     - switch.moving_head_power
     - switch.asus_pc
     - switch.dcc_ex_pwr
+    - switch.dcc_ex_engine_sound
+    - switch.dcc_ex_horn
     - scene.movies
     - sensor.ble_temperature_atc_bedroom
     - sensor.ble_temperature_atc_living_room
@@ -159,8 +161,16 @@ entity_config:
     room: Кухня
     type: devices.types.socket
   switch.dcc_ex_pwr:
-    name: Железнодорожный Макет
-    room: Кухня
+    name: Питание макета
+    room: Макет
+    type: devices.types.switch
+  switch.dcc_ex_engine_sound:
+    name: Двигатель локомотива
+    room: Макет
+    type: devices.types.switch
+  switch.dcc_ex_horn:
+    name: Гудок локомотива
+    room: Макет
     type: devices.types.switch
   sensor.family_room_temperature:
     name: Погода на кухне

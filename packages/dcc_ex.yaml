@@ -15,10 +15,29 @@ switch:
   - platform: telnet
     switches:
       dcc_ex_pwr:
-        name: "DCC-EX Power"
+        name: "DCC-EX Power and Loco Lights"
         resource: !secret DCC-EX-SERVER-IP
         port: !secret DCC-EX-SERVER-PORT
-        command_on: "<1>"
+        # Power all tracks and enable loco's lights
+        command_on: "<1> <F 4 0 1> <F 5 0 1>"
+        # Power off all tracks
         command_off: "<0>"
-        value_template: "{{ value == '<p1>' }}"
-        timeout: 1
+        timeout: 0.2
+      dcc_ex_engine_sound:
+        name: "DCC-EX Vossloh Engine Sound"
+        resource: !secret DCC-EX-SERVER-IP
+        port: !secret DCC-EX-SERVER-PORT
+        # Ebable engine sound on Loco #4
+        command_on: "<F 4 1 1>"
+        # Disable engine sound
+        command_off: "<F 4 1 0>"
+        timeout: 0.2
+      dcc_ex_horn:
+        name: "DCC-EX Horn"
+        resource: !secret DCC-EX-SERVER-IP
+        port: !secret DCC-EX-SERVER-PORT
+        # Horn on Loco #4 (both LOW and HIGH horns)
+        command_on: "<1> <F 4 2 1> <F 4 3 1>"
+        # Horn off
+        command_off: "<F 4 2 0> <F 4 3 0>"
+        timeout: 0.2
