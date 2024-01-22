@@ -21,8 +21,8 @@ switch:
         name: "DCC-EX Power and Loco Lights"
         resource: !secret DCC-EX-SERVER-IP
         port: !secret DCC-EX-SERVER-PORT
-        # Power all tracks and enable loco's lights
-        command_on: "<1> <F 4 0 1> <F 5 0 1>"
+        # Power all tracks and enable loco's lights (and interior lights)
+        command_on: "<1> <F 4 0 1> <F 5 0 1> <F 4 15 1>"
         # Power off all tracks
         command_off: "<0>"
         timeout: 0.2
