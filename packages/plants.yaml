@@ -24,13 +24,21 @@ automation:
     id: "notify_on_low_plant_moisture_levels"
     mode: single
     trigger:
-      - platform: template
-        value_template: >
-          {% for state in states.sensor if state.entity_id.startswith('sensor.ble_moisture_') %}
-            {% if state.state | float(100) < states('input_number.moisture_low_threshold') | float %}
-              true
-            {% endif %}
-          {% endfor %}
+      - platform: numeric_state
+        entity_id: sensor.ble_moisture_coffee_tree
+        below: input_number.moisture_low_threshold
+        for: 00:10:00
+      - platform: numeric_state
+        entity_id: sensor.ble_moisture_fikus_benjamin
+        below: input_number.moisture_low_threshold
+        for: 00:10:00
+      - platform: numeric_state
+        entity_id: sensor.ble_moisture_monstera_adansonii
+        below: input_number.moisture_low_threshold
+        for: 00:10:00
+      - platform: numeric_state
+        entity_id: sensor.ble_moisture_yucca
+        below: input_number.moisture_low_threshold
         for: 00:10:00
     action:
       - service: persistent_notification.create
