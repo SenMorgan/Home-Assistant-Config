@@ -121,7 +121,7 @@ entity_config:
     name: Лампочки
     room: Кухня
   light.kitchen_spotlights:
-    name: Подсветка
+    name: Подсветка кухни
     room: Кухня
   light.kitchen_led_strip:
     name: Светодиодная лента
