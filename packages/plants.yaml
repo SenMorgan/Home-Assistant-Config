@@ -1,0 +1,44 @@
+######################################################################
+# File: plants.yaml                                                  #
+# Author: SenMorgan https://github.com/SenMorgan                     #
+# Date: 2024-01-28                                                   #
+#                                                                    #                                                                    #
+# Copyright (c) 2024 Sen Morgan                                      #
+######################################################################
+
+###############################################
+## INPUT NUMBERS
+###############################################
+input_number:
+  moisture_low_threshold:
+    name: Moisture Low Threshold
+    min: 0
+    max: 100
+    step: 5.0
+
+###############################################
+## AUTOMATIONS
+###############################################
+automation:
+  - alias: Notify on Low Plant Moisture Levels
+    id: "notify_on_low_plant_moisture_levels"
+    mode: single
+    trigger:
+      - platform: template
+        value_template: >
+          {% for state in states.sensor if state.entity_id.startswith('sensor.ble_moisture_') %}
+            {% if state.state | float(100) < states('input_number.moisture_low_threshold') | float %}
+              true
+            {% endif %}
+          {% endfor %}
+        for: 00:10:00
+    action:
+      - service: persistent_notification.create
+        data:
+          title: "{{ '🪴' }} Домашние цветы"
+          message: Нужно полить {{ trigger.to_state.name }}. Текущая влажность {{ trigger.to_state.state }}%
+      - service: notify.mobile_app_sm_s901b
+        data:
+          title: "{{ '🪴' }} Домашние цветы"
+          message: Нужно полить {{ trigger.to_state.name }}. Текущая влажность {{ trigger.to_state.state }}%
+
