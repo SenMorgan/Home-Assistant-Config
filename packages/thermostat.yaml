@@ -373,10 +373,10 @@ automation:
           - wait_template: "{{ state_attr('climate.family_room', 'temperature') != None }}"
             timeout: "00:30:00"
           # Save actual thermostat target temperature
-          # - service: input_number.set_value
-          #   data:
-          #     entity_id: input_number.thermostat_saved_target_temperature
-          #     value: "{{ state_attr('climate.family_room', 'temperature') | float(21) }}"
+          - service: input_number.set_value
+            data:
+              entity_id: input_number.thermostat_saved_target_temperature
+              value: "{{ state_attr('climate.family_room', 'temperature') | float(21) }}"
           # Set new thermostat target temperature by adding 1°C to the current temperature
           - service: input_number.set_value
             data:
@@ -566,10 +566,10 @@ automation:
       - wait_template: "{{ state_attr('climate.family_room', 'temperature') != None }}"
         timeout: "00:30:00"
       # Save actual thermostat target temperature
-      # - service: input_number.set_value
-      #   data:
-      #     entity_id: input_number.thermostat_saved_target_temperature
-      #     value: "{{ state_attr('climate.family_room', 'temperature') | float(21) }}"
+      - service: input_number.set_value
+        data:
+          entity_id: input_number.thermostat_saved_target_temperature
+          value: "{{ state_attr('climate.family_room', 'temperature') | float(21) }}"
       # Set new thermostat target temperature by adding 2°C to the current temperature
       - service: input_number.set_value
         data:
