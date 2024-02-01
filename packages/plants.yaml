@@ -44,9 +44,9 @@ automation:
       - service: persistent_notification.create
         data:
           title: "{{ '🪴' }} Домашние цветы"
-          message: Нужно полить {{ trigger.to_state.name }}. Текущая влажность {{ trigger.to_state.state }}%
+          message: Нужно полить {{ trigger.to_state.name }}. Текущая влажность {{ trigger.to_state.state | float | round }}%
       - service: notify.mobile_app_sm_s901b
         data:
           title: "{{ '🪴' }} Домашние цветы"
-          message: Нужно полить {{ trigger.to_state.name }}. Текущая влажность {{ trigger.to_state.state }}%
+          message: Нужно полить {{ trigger.to_state.name }}. Текущая влажность {{ trigger.to_state.state | float | round }}%
 
