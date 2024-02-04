@@ -17,36 +17,57 @@ input_number:
     step: 5.0
 
 ###############################################
+## INPUT TEXTS
+###############################################
+input_text:
+  plants_to_water:
+    name: Plants to Water
+    initial: ""
+
+###############################################
 ## AUTOMATIONS
 ###############################################
 automation:
-  - alias: Notify on Low Plant Moisture Levels
-    id: "notify_on_low_plant_moisture_levels"
+  - alias: Update Plants to Water on Sensor Change
+    id: "update_plants_to_water_on_sensor_change"
     mode: single
     trigger:
-      - platform: numeric_state
-        entity_id: sensor.ble_moisture_coffee_tree
-        below: input_number.moisture_low_threshold
-        for: 00:10:00
-      - platform: numeric_state
-        entity_id: sensor.ble_moisture_fikus_benjamin
-        below: input_number.moisture_low_threshold
-        for: 00:10:00
-      - platform: numeric_state
-        entity_id: sensor.ble_moisture_monstera_adansonii
-        below: input_number.moisture_low_threshold
-        for: 00:10:00
-      - platform: numeric_state
-        entity_id: sensor.ble_moisture_yucca
-        below: input_number.moisture_low_threshold
-        for: 00:10:00
+      - platform: time_pattern
+        seconds: "/5"
+    action:
+      - service: python_script.update_plants_to_water
+
+  - alias: Notify on Plants to Water
+    id: "notify_on_plants_to_water"
+    mode: single
+    trigger:
+      - platform: state
+        entity_id: input_text.plants_to_water
+    condition:
+      - condition: template
+        value_template: "{{ states('input_text.plants_to_water') != '' }}"
+      # After 18:00 on weekdays or after 09:00 on weekends
+      - condition: or
+        conditions:
+          - condition: time
+            after: "18:00:00"
+            weekday:
+              - mon
+              - tue
+              - wed
+              - thu
+              - fri
+          - condition: time
+            after: "09:00:00"
+            weekday:
+              - sat
+              - sun
     action:
       - service: persistent_notification.create
         data:
           title: "{{ '🪴' }} Домашние цветы"
-          message: Нужно полить {{ trigger.to_state.name }}. Текущая влажность {{ trigger.to_state.state | float | round }}%
+          message: "Нужно полить следующие растения: {{ states('input_text.plants_to_water') }}"
       - service: notify.mobile_app_sm_s901b
         data:
           title: "{{ '🪴' }} Домашние цветы"
-          message: Нужно полить {{ trigger.to_state.name }}. Текущая влажность {{ trigger.to_state.state | float | round }}%
-
+          message: "Нужно полить следующие растения: {{ states('input_text.plants_to_water') }}"
