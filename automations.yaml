@@ -14,14 +14,21 @@
       id: "KRIS_CAME_HOME"
       entity_id: person.kris
       to: "home"
-  condition:
-    - condition: time
-      after: "6:00:00"
-      before: "22:00:00"
+  #  condition:
+  #    - condition: time
+  #      after: "6:00:00"
+  #      before: "22:00:00"
   action:
     - wait_template: "{{ states('binary_sensor.hall_door_contact') == 'on' }}"
       timeout: 00:15:00
       continue_on_timeout: false
+    # Switch on hall lights immediately after door was opened if Sen came home
+    - if:
+        - condition: trigger
+          id: "SEN_CAME_HOME"
+      then:
+        - service: light.turn_on
+          entity_id: light.hall_lights
     - wait_template: "{{ states('binary_sensor.hall_door_contact') == 'off' }}"
       timeout: 00:10:00
       continue_on_timeout: false
@@ -36,8 +43,6 @@
                 "{{ ( as_timestamp(states.person.kris.last_changed, 0) | int(0) ) <
                 ( as_timestamp(states.person.sen.last_changed, 0) | int(0) ) }}"
           sequence:
-            - service: light.turn_on
-              entity_id: light.hall_lights
             - delay: 00:00:01
             - service: media_player.play_media
               entity_id: media_player.yandex_station
