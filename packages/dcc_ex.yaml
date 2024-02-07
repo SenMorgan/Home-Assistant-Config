@@ -17,6 +17,9 @@
 switch:
   - platform: telnet
     switches:
+      ###############################################
+      ## FUNCTIONS
+      ###############################################
       dcc_ex_pwr:
         name: "DCC-EX Power and Loco Lights"
         resource: !secret DCC-EX-SERVER-IP
@@ -25,7 +28,7 @@ switch:
         command_on: "<1> <F 4 0 1> <F 5 0 1> <F 4 15 1>"
         # Power off all tracks
         command_off: "<0>"
-        timeout: 0.2
+        timeout: &telnet_cmd_timeout 0.2
       dcc_ex_engine_sound:
         name: "DCC-EX Vossloh Engine Sound"
         resource: !secret DCC-EX-SERVER-IP
@@ -34,7 +37,7 @@ switch:
         command_on: "<F 4 1 1>"
         # Disable engine sound
         command_off: "<F 4 1 0>"
-        timeout: 0.2
+        timeout: *telnet_cmd_timeout
       dcc_ex_horn:
         name: "DCC-EX Horn"
         resource: !secret DCC-EX-SERVER-IP
@@ -43,7 +46,7 @@ switch:
         command_on: "<1> <F 4 2 1> <F 4 3 1>"
         # Horn off
         command_off: "<F 4 2 0> <F 4 3 0>"
-        timeout: 0.2
+        timeout: *telnet_cmd_timeout
       dcc_ex_emergency_stop:
         name: "DCC-EX Emergency Stop"
         resource: !secret DCC-EX-SERVER-IP
@@ -51,7 +54,28 @@ switch:
         # Emergency stop all locos (without disabling power)
         command_on: "<!>"
         command_off: ""
-        timeout: 0.2
+        timeout: *telnet_cmd_timeout
+      dcc_ex_pause:
+        name: "DCC-EX Pause"
+        resource: !secret DCC-EX-SERVER-IP
+        port: !secret DCC-EX-SERVER-PORT
+        # Pause all locos
+        command_on: "</ PAUSE>"
+        command_off: "</ RESUME>"
+        timeout: *telnet_cmd_timeout
+      ###############################################
+      ## ROUTES (AUTOMATIONS)
+      ###############################################
+      dcc_ex_route_300:
+        name: "DCC-EX Route 300"
+        resource: !secret DCC-EX-SERVER-IP
+        port: !secret DCC-EX-SERVER-PORT
+        # Route 300
+        command_on: "</ START 300>"
+        command_off: "</ PAUSE>"
+        timeout: *telnet_cmd_timeout
+
+
 
 ###############################################
 ## AUTOMATIONS
