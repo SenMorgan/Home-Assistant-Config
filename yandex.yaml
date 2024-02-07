@@ -11,6 +11,7 @@ filter:
     - fan
   include_entity_globs:
     - switch.dcc_ex_*
+    - sensor.ble_temperature_atc_*
   include_entities:
     - binary_sensor.hall_door_contact
     - binary_sensor.wc_door_contact
@@ -44,10 +45,6 @@ filter:
     - switch.moving_head_power
     - switch.asus_pc
     - scene.movies
-    - sensor.ble_temperature_atc_bedroom
-    - sensor.ble_temperature_atc_living_room
-    - sensor.ble_temperature_atc_hall
-    - sensor.ble_temperature_atc_bathroom
     - sensor.pool_bme280_temperature
     - sensor.pool_thermometer_bottom_water_temperature
     - sensor.pool_thermometer_upper_water_temperature
@@ -231,6 +228,14 @@ entity_config:
         entity: sensor.ble_temperature_atc_bathroom
       - type: humidity
         entity: sensor.ble_humidity_atc_bathroom
+  sensor.ble_temperature_atc_toilet:
+    name: Погода в туалете
+    room: Туалет
+    properties:
+      - type: temperature
+        entity: sensor.ble_temperature_atc_toilet
+      - type: humidity
+        entity: sensor.ble_humidity_atc_toilet
   sensor.pool_bme280_temperature:
     name: Погода во дворе
     room: Двор
