@@ -20,6 +20,15 @@ automation:
       - service: input_boolean.toggle
         target:
           entity_id: input_boolean.show_cameras_in_lovelace
+      - service: notify.mobile_app_sm_s901b
+        data:
+          title: "👁️ Режим камер"
+          message: >-
+            {% if is_state('input_boolean.show_cameras_in_lovelace', 'on') %}
+              Камеры включены
+            {% else %}
+              Камеры выключены
+            {% endif %}
 
   - alias: Reenable Cameras if Hided
     id: reenable_cameras_if_hided
@@ -33,3 +42,7 @@ automation:
       - service: input_boolean.turn_on
         target:
           entity_id: input_boolean.show_cameras_in_lovelace
+      - service: notify.mobile_app_sm_s901b
+        data:
+          title: "👁️ Режим камер"
+          message: "Камеры включены автоматически в {{ states('sensor.time') }}"
