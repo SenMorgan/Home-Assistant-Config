@@ -10,13 +10,26 @@
 ## AUTOMATIONS
 ###############################################
 automation:
-  alias: Tag Near PC is scanned
-  id: tag_near_pc_is_scanned
-  mode: single
-  trigger:
-    - platform: tag
-      tag_id: c45d3b71-2ade-45e3-8663-f0028f52b01d
-  action:
-    - service: input_boolean.toggle
-      target:
+  - alias: Tag Near PC is scanned
+    id: tag_near_pc_is_scanned
+    mode: single
+    trigger:
+      - platform: tag
+        tag_id: c45d3b71-2ade-45e3-8663-f0028f52b01d
+    action:
+      - service: input_boolean.toggle
+        target:
+          entity_id: input_boolean.show_cameras_in_lovelace
+
+  - alias: Reenable Cameras if Hided
+    id: reenable_cameras_if_hided
+    mode: single
+    trigger:
+      - platform: state
         entity_id: input_boolean.show_cameras_in_lovelace
+        to: 'off'
+        for: '01:00:00'
+    action:
+      - service: input_boolean.turn_on
+        target:
+          entity_id: input_boolean.show_cameras_in_lovelace
