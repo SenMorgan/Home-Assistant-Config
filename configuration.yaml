@@ -88,6 +88,9 @@ input_boolean:
   home_night_mode:
     name: Home Night Mode
     icon: mdi:volume-off
+  show_cameras_in_lovelace:
+    name: Show Cameras in Lovelace
+    icon: mdi:camera
 
 ###############################################
 ## SWITCHES

@@ -1,0 +1,22 @@
+######################################################################
+# File: tags.yaml                                                  #
+# Author: SenMorgan https://github.com/SenMorgan                     #
+# Date: 2024-02-08                                                   #
+#                                                                    #                                                                    #
+# Copyright (c) 2024 Sen Morgan                                      #
+######################################################################
+
+###############################################
+## AUTOMATIONS
+###############################################
+automation:
+  alias: Tag Near PC is scanned
+  id: tag_near_pc_is_scanned
+  mode: single
+  trigger:
+    - platform: tag
+      tag_id: c45d3b71-2ade-45e3-8663-f0028f52b01d
+  action:
+    - service: input_boolean.toggle
+      target:
+        entity_id: input_boolean.show_cameras_in_lovelace
