@@ -11,6 +11,7 @@ filter:
     - fan
   include_entity_globs:
     - switch.dcc_ex_*
+    - input_button.dcc_ex_*
     - sensor.ble_temperature_atc_*
   include_entities:
     - binary_sensor.hall_door_contact
@@ -168,8 +169,12 @@ entity_config:
     name: Гудок локомотива
     room: Макет
     type: devices.types.switch
-  switch.dcc_ex_emergency_stop:
+  input_button.dcc_ex_emergency_stop:
     name: Экстренная остановка
+    room: Макет
+    type: devices.types.switch
+  input_button.dcc_ex_reboot:
+    name: Перезагрузка макета
     room: Макет
     type: devices.types.switch
   switch.dcc_ex_pause:
