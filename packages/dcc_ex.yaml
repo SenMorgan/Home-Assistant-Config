@@ -12,6 +12,14 @@
 ######################################################################
 
 ###############################################
+## INPUT BUTTONS
+###############################################
+input_button:
+  dcc_ex_emergency_stop:
+    name: "DCC-EX Emergency Stop"
+    icon: mdi:alert
+
+###############################################
 ## SWITCHES
 ###############################################
 switch:
@@ -47,14 +55,6 @@ switch:
         # Horn off
         command_off: "<F 4 2 0> <F 4 3 0>"
         timeout: *telnet_cmd_timeout
-      dcc_ex_emergency_stop:
-        name: "DCC-EX Emergency Stop"
-        resource: !secret DCC-EX-SERVER-IP
-        port: !secret DCC-EX-SERVER-PORT
-        # Emergency stop all locos (without disabling power)
-        command_on: "<!>"
-        command_off: ""
-        timeout: *telnet_cmd_timeout
       dcc_ex_pause:
         name: "DCC-EX Pause"
         resource: !secret DCC-EX-SERVER-IP
@@ -62,6 +62,14 @@ switch:
         # Pause all locos
         command_on: "</ PAUSE>"
         command_off: "</ RESUME>"
+        timeout: *telnet_cmd_timeout
+      dcc_ex_emergency_stop_cmd:
+        name: "DCC-EX Emergency Stop Command"
+        resource: !secret DCC-EX-SERVER-IP
+        port: !secret DCC-EX-SERVER-PORT
+        # Emergency stop all locos (without disabling power)
+        command_on: "<!>"
+        command_off: ""
         timeout: *telnet_cmd_timeout
       ###############################################
       ## ROUTES (AUTOMATIONS)
@@ -75,23 +83,19 @@ switch:
         command_off: "</ PAUSE>"
         timeout: *telnet_cmd_timeout
 
-
-
 ###############################################
 ## AUTOMATIONS
 ###############################################
 automation:
-  # Disable dcc_ex_emergency_stop switch after 1 second to
-  # make it possible to use it as a momentary switch.
-  - alias: Disable DCC-EX Emergency Stop switch
-    id: disable_dcc_ex_emergency_stop
-    mode: restart
+  # Emergency stop if button pushed
+  - alias: "Enable dcc_ex_emergency_stop_cmd switch"
+    id: enable_dcc_ex_emergency_stop_cmd
     trigger:
-      - platform: state
-        entity_id: switch.dcc_ex_emergency_stop
-        to: 'on'
-        for:
-          seconds: 1
+      platform: state
+      entity_id: input_button.dcc_ex_emergency_stop
     action:
+      - service: switch.turn_on
+        entity_id: switch.dcc_ex_emergency_stop_cmd
+      - delay: 00:00:01
       - service: switch.turn_off
-        entity_id: switch.dcc_ex_emergency_stop
+        entity_id: switch.dcc_ex_emergency_stop_cmd
