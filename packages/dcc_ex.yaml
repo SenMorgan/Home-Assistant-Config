@@ -18,6 +18,9 @@ input_button:
   dcc_ex_emergency_stop:
     name: "DCC-EX Emergency Stop"
     icon: mdi:alert
+  dcc_ex_reboot:
+    name: "DCC-EX Reboot"
+    icon: mdi:restart
 
 ###############################################
 ## SWITCHES
@@ -71,6 +74,14 @@ switch:
         command_on: "<!>"
         command_off: ""
         timeout: *telnet_cmd_timeout
+      dcc_ex_reboot_cmd:
+        name: "DCC-EX Reboot Command"
+        resource: !secret DCC-EX-SERVER-IP
+        port: !secret DCC-EX-SERVER-PORT
+        # Reboot DCC-EX server
+        command_on: "<D RESET>"
+        command_off: ""
+        timeout: *telnet_cmd_timeout
       ###############################################
       ## ROUTES (AUTOMATIONS)
       ###############################################
@@ -99,3 +110,15 @@ automation:
       - delay: 00:00:01
       - service: switch.turn_off
         entity_id: switch.dcc_ex_emergency_stop_cmd
+  # Reboot DCC-EX server if button pushed
+  - alias: "Reboot DCC-EX server"
+    id: reboot_dcc_ex_server
+    trigger:
+      platform: state
+      entity_id: input_button.dcc_ex_reboot
+    action:
+      - service: switch.turn_on
+        entity_id: switch.dcc_ex_reboot_cmd
+      - delay: 00:00:01
+      - service: switch.turn_off
+        entity_id: switch.dcc_ex_reboot_cmd
