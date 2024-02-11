@@ -216,11 +216,16 @@ automation:
       - condition: template
         value_template: "{{ as_timestamp(now()) > as_timestamp(states('input_datetime.thermostat_windows_close_delay_time_end'), 0) }}"
     action:
-      # Set thermostat mode to «heat»
-      - service: climate.set_hvac_mode
-        entity_id: climate.family_room
-        data:
-          hvac_mode: "heat"
+      # Set thermostat mode to «heat» only if someone is home
+      - if:
+          - condition: state
+            entity_id: binary_sensor.people_home
+            state: "on"
+        then:
+          - service: climate.set_hvac_mode
+            entity_id: climate.family_room
+            data:
+              hvac_mode: "heat"
       - service: automation.turn_off
         entity_id:
           - automation.thermostat_eco_mode_by_window_reset
@@ -605,6 +610,7 @@ automation:
             {% endif %}
             Отопление было включено в {{ states('sensor.time') }} в комнат{{ 'ах' if rooms | length > 1 else 'е' }}:
             {{ rooms[:-1] | join(', ') }}{% if rooms | length > 1 %} и {% endif %}{{ rooms[-1] if rooms | length > 0 else '' }}
+
     #   - service: persistent_notification.create
     #     data:
     #       title: "{{ 'ℹ️' }} Системное уведомление"
@@ -613,7 +619,6 @@ automation:
     #     data:
     #       title: "{{ 'ℹ️' }} Системное уведомление"
     #       message: "{{ message }}"
-
   # If all ETRVs are not in "heat" state - restore mate.family_room target temperature.
   - alias: Thermostat ETRV Heating Disable
     id: thermostat_etrv_heating_disable
@@ -656,6 +661,7 @@ automation:
         entity_id: climate.family_room
         data:
           temperature: "{{ states('input_number.thermostat_saved_target_temperature') | float(21) }}"
+
     #   - service: persistent_notification.create
     #     data:
     #       title: "{{ 'ℹ️' }} Системное уведомление"
@@ -664,7 +670,6 @@ automation:
     #     data:
     #       title: "{{ 'ℹ️' }} Системное уведомление"
     #       message: Отопление было выключено в {{ timestamp }}
-
   # ETRVs do not have child lock themselves so we need to check if taget tempature
   # is in range of min and max target temperature and if not - set it to 21°C
   # Kitchen
@@ -771,4 +776,3 @@ automation:
         data:
           title: "{{ 'ℹ️' }} Системное уведомление"
           message: "{{ message }}"
-
