@@ -102,13 +102,10 @@ automation:
   - alias: "Enable dcc_ex_emergency_stop_cmd switch"
     id: enable_dcc_ex_emergency_stop_cmd
     trigger:
-      platform: state
-      entity_id: input_button.dcc_ex_emergency_stop
+      - platform: state
+        entity_id: input_button.dcc_ex_emergency_stop
     action:
       - service: switch.turn_on
-        entity_id: switch.dcc_ex_emergency_stop_cmd
-      - delay: 00:00:01
-      - service: switch.turn_off
         entity_id: switch.dcc_ex_emergency_stop_cmd
   # Reboot DCC-EX server if button pushed
   - alias: "Reboot DCC-EX server"
@@ -119,6 +116,20 @@ automation:
     action:
       - service: switch.turn_on
         entity_id: switch.dcc_ex_reboot_cmd
-      - delay: 00:00:01
+  # Disable DCC-EX momentary telnet switches after 1 second
+  - alias: "Disable DCC-EX momentary telnet switches"
+    id: disable_dcc_ex_momentary_telnet_switches
+    trigger:
+      - platform: state
+        entity_id: switch.dcc_ex_emergency_stop_cmd
+        to: "on"
+        for: "00:00:01"
+      - platform: state
+        entity_id: switch.dcc_ex_reboot_cmd
+        to: "on"
+        for: "00:00:01"
+    action:
+      - service: switch.turn_off
+        entity_id: switch.dcc_ex_emergency_stop_cmd
       - service: switch.turn_off
         entity_id: switch.dcc_ex_reboot_cmd
