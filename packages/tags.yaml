@@ -90,23 +90,27 @@ automation:
       - service: input_boolean.turn_off
         target:
           entity_id: input_boolean.ignore_people_presence
+      - variables:
+          # Including an id in the action allows us to identify this script run
+          # and not accidentally trigger for other notification actions
+          action_enable_back_on: "{{ 'action_enable_back_on' ~ context.id }}"
       - service: notify.mobile_app_sm_s901b
         data:
           title: "👤 Режим присутствия"
           message: "Игнорирование присутствия выключено автоматически в {{ states('sensor.time') }}. Включить обратно?"
           data:
             actions:
-              - action: action_enable_back_on
+              - action: "{{ action_enable_back_on }}"
                 title: Включить снова
                 icon: mdi:account-check
       - wait_for_trigger:
           - platform: event
             event_type: mobile_app_notification_action
             event_data:
-              action: action_enable_back_on
+              action: "{{ action_enable_back_on }}"
       - if:
           - condition: template
-            value_template: "{{ wait.trigger.event.data.action == 'action_enable_back_on' }}"
+            value_template: "{{ wait.trigger.event.data.action == action_enable_back_on }}"
         then:
           - service: input_boolean.turn_on
             target:
