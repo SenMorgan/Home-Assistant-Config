@@ -53,6 +53,7 @@ filter:
     - sensor.sm_g991b_battery_level
     - sensor.sm_s901b_battery_level
     - sensor.electricity_meter_power
+    - sensor.electricity_meter_energy
 
 entity_config:
   binary_sensor.hall_door_contact:
@@ -283,6 +284,12 @@ entity_config:
         entity: sensor.electricity_meter_voltage
       - type: amperage
         entity: sensor.electricity_meter_current
+  sensor.electricity_meter_energy:
+    name: Счётчик электричества
+    room: Дом
+    properties:
+      - type: electricity_meter
+        entity: sensor.electricity_meter_energy
   climate.family_room:
     name: Главный термостат
     room: Кухня
