@@ -12,6 +12,17 @@
 ######################################################################
 
 ###############################################
+## SETTINGS AND VARIABLES
+###############################################
+homeassistant:
+  customize:
+    package.node_anchors:
+      defaults: &defaults
+        resource: !secret DCC-EX-SERVER-IP
+        port: !secret DCC-EX-SERVER-PORT
+        timeout: &telnet_cmd_timeout 0.2
+
+###############################################
 ## INPUT BUTTONS
 ###############################################
 input_button:
@@ -21,6 +32,12 @@ input_button:
   dcc_ex_reboot:
     name: "DCC-EX Reboot"
     icon: mdi:restart
+  dcc_ex_default_volume:
+    name: "DCC-EX Default Volume"
+    icon: mdi:volume-medium
+  dcc_ex_max_volume:
+    name: "DCC-EX Max Volume"
+    icon: mdi:volume-high
 
 ###############################################
 ## SWITCHES
@@ -32,58 +49,58 @@ switch:
       ## FUNCTIONS
       ###############################################
       dcc_ex_pwr:
+        <<: *defaults
         name: "DCC-EX Power and Loco Lights"
-        resource: !secret DCC-EX-SERVER-IP
-        port: !secret DCC-EX-SERVER-PORT
         # Power all tracks and enable loco's lights (and interior lights)
         command_on: "<1> <F 4 0 1> <F 5 0 1> <F 4 15 1>"
         # Power off all tracks
         command_off: "<0>"
         command_state: "<s>"
         value_template: "{{ value.find('<p1 MAIN>') != -1 }}"
-        timeout: &telnet_cmd_timeout 0.2
       dcc_ex_engine_sound:
+        <<: *defaults
         name: "DCC-EX Vossloh Engine Sound"
-        resource: !secret DCC-EX-SERVER-IP
-        port: !secret DCC-EX-SERVER-PORT
         # Ebable engine sound on Loco #4
         command_on: "<F 4 1 1>"
         # Disable engine sound
         command_off: "<F 4 1 0>"
-        timeout: *telnet_cmd_timeout
       dcc_ex_horn:
+        <<: *defaults
         name: "DCC-EX Horn"
-        resource: !secret DCC-EX-SERVER-IP
-        port: !secret DCC-EX-SERVER-PORT
         # Horn on Loco #4 (both LOW and HIGH horns)
         command_on: "<1> <F 4 2 1> <F 4 3 1>"
         # Horn off
         command_off: "<F 4 2 0> <F 4 3 0>"
-        timeout: *telnet_cmd_timeout
       dcc_ex_pause:
+        <<: *defaults
         name: "DCC-EX Pause"
-        resource: !secret DCC-EX-SERVER-IP
-        port: !secret DCC-EX-SERVER-PORT
         # Pause all locos
         command_on: "</ PAUSE>"
         command_off: "</ RESUME>"
-        timeout: *telnet_cmd_timeout
       dcc_ex_emergency_stop_cmd:
+        <<: *defaults
         name: "DCC-EX Emergency Stop Command"
-        resource: !secret DCC-EX-SERVER-IP
-        port: !secret DCC-EX-SERVER-PORT
         # Emergency stop all locos (without disabling power)
         command_on: "<!>"
         command_off: ""
-        timeout: *telnet_cmd_timeout
       dcc_ex_reboot_cmd:
+        <<: *defaults
         name: "DCC-EX Reboot Command"
-        resource: !secret DCC-EX-SERVER-IP
-        port: !secret DCC-EX-SERVER-PORT
         # Reboot DCC-EX server
         command_on: "<D RESET>"
         command_off: ""
-        timeout: *telnet_cmd_timeout
+      dcc_ex_default_volume:
+        <<: *defaults
+        name: "DCC-EX Default Volume"
+        # Set default volume to ~31%
+        command_on: "<w 4 63 20>"
+        command_off: ""
+      dcc_ex_max_volume:
+        <<: *defaults
+        name: "DCC-EX Max Volume"
+        # Set max volume to 100%
+        command_on: "<w 4 63 64>"
+        command_off: ""
       ###############################################
       ## ROUTES (AUTOMATIONS)
       ###############################################
@@ -118,6 +135,24 @@ automation:
     action:
       - service: switch.turn_on
         entity_id: switch.dcc_ex_reboot_cmd
+  # Set default volume if button pushed
+  - alias: "Set DCC-EX default volume"
+    id: set_dcc_ex_default_volume
+    trigger:
+      platform: state
+      entity_id: input_button.dcc_ex_default_volume
+    action:
+      - service: switch.turn_on
+        entity_id: switch.dcc_ex_default_volume
+  # Set max volume if button pushed
+  - alias: "Set DCC-EX max volume"
+    id: set_dcc_ex_max_volume
+    trigger:
+      platform: state
+      entity_id: input_button.dcc_ex_max_volume
+    action:
+      - service: switch.turn_on
+        entity_id: switch.dcc_ex_max_volume
   # Disable DCC-EX momentary telnet switches after 1 second
   - alias: "Disable DCC-EX momentary telnet switches"
     id: disable_dcc_ex_momentary_telnet_switches
@@ -130,8 +165,18 @@ automation:
         entity_id: switch.dcc_ex_reboot_cmd
         to: "on"
         for: "00:00:01"
+      - platform: state
+        entity_id: switch.dcc_ex_default_volume
+        to: "on"
+        for: "00:00:01"
+      - platform: state
+        entity_id: switch.dcc_ex_max_volume
+        to: "on"
+        for: "00:00:01"
     action:
       - service: switch.turn_off
-        entity_id: switch.dcc_ex_emergency_stop_cmd
-      - service: switch.turn_off
-        entity_id: switch.dcc_ex_reboot_cmd
+        entity_id:
+          - switch.dcc_ex_emergency_stop_cmd
+          - switch.dcc_ex_reboot_cmd
+          - switch.dcc_ex_default_volume
+          - switch.dcc_ex_max_volume
