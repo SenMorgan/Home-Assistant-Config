@@ -91,6 +91,9 @@ input_boolean:
   show_cameras_in_lovelace:
     name: Show Cameras in Lovelace
     icon: mdi:camera
+  ignore_people_presence:
+    name: Ignore People Presence
+    icon: mdi:home
 
 ###############################################
 ## SWITCHES

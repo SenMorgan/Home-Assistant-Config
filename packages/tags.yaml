@@ -10,8 +10,8 @@
 ## AUTOMATIONS
 ###############################################
 automation:
-  - alias: Tag Near PC is scanned
-    id: tag_near_pc_is_scanned
+  - alias: Tag Near PC was scanned
+    id: tag_near_pc_was_scanned
     mode: single
     trigger:
       - platform: tag
@@ -36,8 +36,8 @@ automation:
     trigger:
       - platform: state
         entity_id: input_boolean.show_cameras_in_lovelace
-        to: 'off'
-        for: '01:00:00'
+        to: "off"
+        for: "01:00:00"
     action:
       - service: input_boolean.turn_on
         target:
@@ -46,3 +46,72 @@ automation:
         data:
           title: "👁️ Режим камер"
           message: "Камеры включены автоматически в {{ states('sensor.time') }}"
+
+  - alias: Ignore People Presence tag was scanned
+    id: tag_near_pc_is_scanned
+    mode: single
+    trigger:
+      - platform: tag
+        tag_id: 5954e702-f87d-4955-969c-5231af33ece8
+    action:
+      - service: input_boolean.toggle
+        target:
+          entity_id: input_boolean.ignore_people_presence
+      - variables:
+          message: >-
+            {% if is_state('input_boolean.ignore_people_presence', 'on') %}
+              Игнорирование присутствия включено - термостат и свет не будут отключены после ухода.
+            {% else %}
+              Игнорирование присутствия выключено.
+            {% endif %}
+      - service: media_player.play_media
+        entity_id: media_player.yandex_station
+        data:
+          media_content_id: "{{ message }}"
+          media_content_type: text
+      - service: notify.mobile_app_sm_s901b
+        data:
+          title: "👤 Режим присутствия"
+          message: "{{ message }}"
+
+  - alias: Ignore People Presence reset
+    id: ignore_people_presence_reset
+    mode: restart
+    trigger:
+      - platform: state
+        entity_id: binary_sensor.people_home
+        to: "on"
+        for: "00:15:00"
+    condition:
+      - condition: state
+        entity_id: input_boolean.ignore_people_presence
+        state: "on"
+    action:
+      - service: input_boolean.turn_off
+        target:
+          entity_id: input_boolean.ignore_people_presence
+      - service: notify.mobile_app_sm_s901b
+        data:
+          title: "👤 Режим присутствия"
+          message: "Игнорирование присутствия выключено автоматически в {{ states('sensor.time') }}. Включить обратно?"
+          data:
+            actions:
+              - action: action_enable_back_on
+                title: Включить снова
+                icon: mdi:account-check
+      - wait_for_trigger:
+          - platform: event
+            event_type: mobile_app_notification_action
+            event_data:
+              action: action_enable_back_on
+      - if:
+          - condition: template
+            value_template: "{{ wait.trigger.event.data.action == 'action_enable_back_on' }}"
+        then:
+          - service: input_boolean.turn_on
+            target:
+              entity_id: input_boolean.ignore_people_presence
+          - service: notify.mobile_app_sm_s901b
+            data:
+              title: "👤 Режим присутствия"
+              message: "Игнорирование присутствия включено снова в {{ states('sensor.time') }}"
