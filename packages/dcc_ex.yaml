@@ -89,15 +89,15 @@ switch:
         # Reboot DCC-EX server
         command_on: "<D RESET>"
         command_off: ""
-      dcc_ex_default_volume:
+      dcc_ex_default_volume_cmd:
         <<: *defaults
-        name: "DCC-EX Default Volume"
+        name: "DCC-EX Default Volume Command"
         # Set default volume to ~31%
         command_on: "<w 4 63 20>"
         command_off: ""
-      dcc_ex_max_volume:
+      dcc_ex_max_volume_cmd:
         <<: *defaults
-        name: "DCC-EX Max Volume"
+        name: "DCC-EX Max Volume Command"
         # Set max volume to 100%
         command_on: "<w 4 63 64>"
         command_off: ""
@@ -117,66 +117,42 @@ switch:
 ## AUTOMATIONS
 ###############################################
 automation:
-  # Emergency stop if button pushed
-  - alias: "Enable dcc_ex_emergency_stop_cmd switch"
-    id: enable_dcc_ex_emergency_stop_cmd
+  # Enable switches based on button presses
+  - alias: "DCC-EX Handle Button Presses"
+    id: dcc_ex_handle_button_presses
+    variables:
+      button_switch_map:
+        input_button.dcc_ex_emergency_stop: switch.dcc_ex_emergency_stop_cmd
+        input_button.dcc_ex_reboot: switch.dcc_ex_reboot_cmd
+        input_button.dcc_ex_default_volume: switch.dcc_ex_default_volume_cmd
+        input_button.dcc_ex_max_volume: switch.dcc_ex_max_volume_cmd
     trigger:
       - platform: state
-        entity_id: input_button.dcc_ex_emergency_stop
+        entity_id:
+          - input_button.dcc_ex_emergency_stop
+          - input_button.dcc_ex_reboot
+          - input_button.dcc_ex_default_volume
+          - input_button.dcc_ex_max_volume
     action:
       - service: switch.turn_on
-        entity_id: switch.dcc_ex_emergency_stop_cmd
-  # Reboot DCC-EX server if button pushed
-  - alias: "Reboot DCC-EX server"
-    id: reboot_dcc_ex_server
-    trigger:
-      platform: state
-      entity_id: input_button.dcc_ex_reboot
-    action:
-      - service: switch.turn_on
-        entity_id: switch.dcc_ex_reboot_cmd
-  # Set default volume if button pushed
-  - alias: "Set DCC-EX default volume"
-    id: set_dcc_ex_default_volume
-    trigger:
-      platform: state
-      entity_id: input_button.dcc_ex_default_volume
-    action:
-      - service: switch.turn_on
-        entity_id: switch.dcc_ex_default_volume
-  # Set max volume if button pushed
-  - alias: "Set DCC-EX max volume"
-    id: set_dcc_ex_max_volume
-    trigger:
-      platform: state
-      entity_id: input_button.dcc_ex_max_volume
-    action:
-      - service: switch.turn_on
-        entity_id: switch.dcc_ex_max_volume
-  # Disable DCC-EX momentary telnet switches after 1 second
-  - alias: "Disable DCC-EX momentary telnet switches"
-    id: disable_dcc_ex_momentary_telnet_switches
+        data:
+          entity_id: "{{ button_switch_map[trigger.entity_id] }}"
+
+  # Disable command switches after 1 second
+  - alias: "DCC-EX Disable Command Switches"
+    id: dcc_ex_disable_command_switches
     trigger:
       - platform: state
-        entity_id: switch.dcc_ex_emergency_stop_cmd
-        to: "on"
-        for: "00:00:01"
-      - platform: state
-        entity_id: switch.dcc_ex_reboot_cmd
-        to: "on"
-        for: "00:00:01"
-      - platform: state
-        entity_id: switch.dcc_ex_default_volume
-        to: "on"
-        for: "00:00:01"
-      - platform: state
-        entity_id: switch.dcc_ex_max_volume
-        to: "on"
-        for: "00:00:01"
-    action:
-      - service: switch.turn_off
         entity_id:
           - switch.dcc_ex_emergency_stop_cmd
           - switch.dcc_ex_reboot_cmd
-          - switch.dcc_ex_default_volume
-          - switch.dcc_ex_max_volume
+          - switch.dcc_ex_default_volume_cmd
+          - switch.dcc_ex_max_volume_cmd
+        to: "on"
+        for: "00:00:01"
+    variables:
+      switch_entity: "{{ trigger.entity_id }}"
+    action:
+      - service: switch.turn_off
+        target:
+          entity_id: "{{ switch_entity }}"
