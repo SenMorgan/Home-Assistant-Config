@@ -238,7 +238,7 @@ automation:
   ###############################################
 
   - alias: Thermostat Freeze Alert at Night
-    id: thermostat_freeze_alert_at_night_at_night
+    id: thermostat_freeze_alert_at_night
     mode: single
     trigger:
       - platform: state
