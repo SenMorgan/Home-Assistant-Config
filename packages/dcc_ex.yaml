@@ -38,6 +38,9 @@ input_button:
   dcc_ex_max_volume:
     name: "DCC-EX Max Volume"
     icon: mdi:volume-high
+  dcc_ex_route_300:
+    name: "DCC-EX Route 300"
+    icon: mdi:railroad-light
 
 ###############################################
 ## SWITCHES
@@ -104,13 +107,13 @@ switch:
       ###############################################
       ## ROUTES (AUTOMATIONS)
       ###############################################
-      dcc_ex_route_300:
-        name: "DCC-EX Route 300"
+      dcc_ex_route_300_cmd:
+        name: "DCC-EX Route 300 Command"
         resource: !secret DCC-EX-SERVER-IP
         port: !secret DCC-EX-SERVER-PORT
         # Route 300
         command_on: "</ START 300>"
-        command_off: "</ PAUSE>"
+        command_off: ""
         timeout: *telnet_cmd_timeout
 
 ###############################################
@@ -126,6 +129,7 @@ automation:
         input_button.dcc_ex_reboot: switch.dcc_ex_reboot_cmd
         input_button.dcc_ex_default_volume: switch.dcc_ex_default_volume_cmd
         input_button.dcc_ex_max_volume: switch.dcc_ex_max_volume_cmd
+        input_button.dcc_ex_route_300: switch.dcc_ex_route_300_cmd
     trigger:
       - platform: state
         entity_id:
@@ -133,6 +137,7 @@ automation:
           - input_button.dcc_ex_reboot
           - input_button.dcc_ex_default_volume
           - input_button.dcc_ex_max_volume
+          - input_button.dcc_ex_route_300
     action:
       - service: switch.turn_on
         data:
@@ -148,6 +153,7 @@ automation:
           - switch.dcc_ex_reboot_cmd
           - switch.dcc_ex_default_volume_cmd
           - switch.dcc_ex_max_volume_cmd
+          - switch.dcc_ex_route_300_cmd
         to: "on"
         for: "00:00:01"
     variables:

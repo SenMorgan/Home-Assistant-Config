@@ -158,6 +158,18 @@ entity_config:
     name: Компьютер
     room: Кухня
     type: devices.types.socket
+  input_button.dcc_ex_emergency_stop:
+    name: Экстренная остановка
+    room: Макет
+    type: devices.types.switch
+  input_button.dcc_ex_reboot:
+    name: Перезагрузка макета
+    room: Макет
+    type: devices.types.switch
+  input_button.dcc_ex_route_300:
+    name: Маршрут 300
+    room: Макет
+    type: devices.types.switch
   switch.dcc_ex_pwr:
     name: Питание макета
     room: Макет
@@ -170,20 +182,8 @@ entity_config:
     name: Гудок локомотива
     room: Макет
     type: devices.types.switch
-  input_button.dcc_ex_emergency_stop:
-    name: Экстренная остановка
-    room: Макет
-    type: devices.types.switch
-  input_button.dcc_ex_reboot:
-    name: Перезагрузка макета
-    room: Макет
-    type: devices.types.switch
   switch.dcc_ex_pause:
     name: Стоп-кран
-    room: Макет
-    type: devices.types.switch
-  switch.dcc_ex_route_300:
-    name: Маршрут 300
     room: Макет
     type: devices.types.switch
   sensor.family_room_temperature:

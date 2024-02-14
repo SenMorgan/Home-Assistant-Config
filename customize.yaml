@@ -24,3 +24,11 @@ sensor.fr24_feeder_radar_code:
   icon: mdi:radar
 sensor.air_quality_station_pm2_5:
   icon: mdi:blur
+switch.dcc_ex_pwr:
+    icon: mdi:power
+switch.dcc_ex_engine_sound:
+    icon: mdi:engine-outline
+switch.dcc_ex_horn:
+    icon: mdi:bullhorn-outline
+switch.dcc_ex_pause:
+    icon: mdi:play-pause
