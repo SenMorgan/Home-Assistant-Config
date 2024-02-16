@@ -169,6 +169,10 @@ entity_config:
     name: Маршрут 300
     room: Макет
     type: devices.types.switch
+  input_button.dcc_ex_route_301:
+    name: Маршрут 301
+    room: Макет
+    type: devices.types.switch
   switch.dcc_ex_pwr:
     name: Питание макета
     room: Макет
