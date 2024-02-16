@@ -49,7 +49,6 @@ filter:
     - sensor.pool_bme280_temperature
     - sensor.pool_thermometer_bottom_water_temperature
     - sensor.pool_thermometer_upper_water_temperature
-    - sensor.tuya_temp_hum_sensor_temperature
     - sensor.sm_g991b_battery_level
     - sensor.sm_s901b_battery_level
     - sensor.electricity_meter_power
