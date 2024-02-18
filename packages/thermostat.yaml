@@ -16,6 +16,9 @@ input_boolean:
   heating_season:
     name: Heating Season
     icon: mdi:radiator
+  heating_allowed:
+    name: Heating Allowed
+    icon: mdi:radiator
 
 ###############################################
 ## BINARY SENSORS
@@ -152,6 +155,12 @@ automation:
             state: "on"
         # If some window was opened
         then:
+          # Set thermostat default target temperature and disable it
+          - service: script.turn_on
+            entity_id: script.disable_thermostat
+          # Do not allow heating for 30 minutes
+          - service: input_boolean.turn_off
+            entity_id: input_boolean.heating_allowed
           # If «10 minutes heating» automation is enabled now - disable it
           - if:
               - condition: state
@@ -170,12 +179,6 @@ automation:
               # Disable «10 minutes heating» automation
               - service: automation.turn_off
                 entity_id: automation.thermostat_10_minutes_heating_disable
-
-          # Set thermostat mode to «off»
-          - service: climate.set_hvac_mode
-            entity_id: climate.family_room
-            data:
-              hvac_mode: "off"
 
         # If all windows were closed
         else:
@@ -216,6 +219,9 @@ automation:
       - condition: template
         value_template: "{{ as_timestamp(now()) > as_timestamp(states('input_datetime.thermostat_windows_close_delay_time_end'), 0) }}"
     action:
+      # Allow heating
+      - service: input_boolean.turn_on
+        entity_id: input_boolean.heating_allowed
       # Set thermostat mode to «heat» only if someone is home
       - if:
           # Continue if people are home or if presense is ignored
@@ -445,18 +451,9 @@ automation:
             data:
               media_content_id: Подогрев квартиры окончен
               media_content_type: text
-      # Restore saved thermostat target temperature
-      - service: climate.set_hvac_mode
-        entity_id: climate.family_room
-        data:
-          hvac_mode: "heat"
-      # Wait till thermostat will be ready to accept new target temperature
-      - wait_template: "{{ state_attr('climate.family_room', 'temperature') != None }}"
-        timeout: "00:30:00"
-      - service: climate.set_temperature
-        entity_id: climate.family_room
-        data:
-          temperature: "{{ states('input_number.thermostat_default_target_temperature') | float(21) }}"
+      # Set thermostat default target temperature
+      - service: script.turn_on
+        entity_id: script.thermostat_set_default_temperature
       - service: automation.turn_off
         entity_id: automation.thermostat_10_minutes_heating_disable
 
@@ -482,11 +479,9 @@ automation:
         entity_id: input_boolean.ignore_people_presence
         state: "off"
     action:
-      # Set thermostat mode to «off»
-      - service: climate.set_hvac_mode
-        entity_id: climate.family_room
-        data:
-          hvac_mode: "off"
+      # Set thermostat default target temperature and disable it
+      - service: script.turn_on
+        entity_id: script.disable_thermostat
       - service: automation.turn_on
         entity_id: automation.thermostat_eco_mode_when_noone_home_disable
       # Stop all automations that can change thermostat mode
@@ -519,10 +514,9 @@ automation:
             entity_id: binary_sensor.windows
             state: "on"
         then:
-          - service: climate.set_hvac_mode
-            entity_id: climate.family_room
-            data:
-              hvac_mode: "off"
+          # Set thermostat default target temperature and disable it
+          - service: script.turn_on
+            entity_id: script.disable_thermostat
         # If no windows are opened, set thermostat mode to «heat» mode
         else:
           - service: climate.set_hvac_mode
@@ -552,6 +546,10 @@ automation:
       - condition: state
         entity_id: input_boolean.heating_season
         state: "on"
+      # If not waiting after windows were closed
+      - condition: state
+        entity_id: input_boolean.heating_allowed
+        state: "on"
       # Continue if people are home or if presense is ignored
       - condition: template
         value_template: >
@@ -569,9 +567,6 @@ automation:
       - condition: state
         entity_id: binary_sensor.windows
         state: "off"
-      # If not waiting after windows were closed
-      - condition: template
-        value_template: "{{ as_timestamp(now()) > as_timestamp(states('input_datetime.thermostat_windows_close_delay_time_end'), 0) }}"
     action:
       # Set thermostat mode to «heat» and wait until 'temperature' attribute will become not "None"
       - service: climate.set_hvac_mode
@@ -651,19 +646,11 @@ automation:
         entity_id: binary_sensor.thermostat_heating
         state: "on"
     action:
-      - variables:
-          timestamp: "{{ states('sensor.time') }}"
-      - service: climate.set_hvac_mode
-        entity_id: climate.family_room
-        data:
-          hvac_mode: "heat"
-      # Wait till thermostat will be ready to accept new target temperature
-      - wait_template: "{{ state_attr('climate.family_room', 'temperature') != None }}"
-        timeout: "00:30:00"
-      - service: climate.set_temperature
-        entity_id: climate.family_room
-        data:
-          temperature: "{{ states('input_number.thermostat_default_target_temperature') | float(21) }}"
+      # Set thermostat default target temperature
+      - service: script.turn_on
+        entity_id: script.thermostat_set_default_temperature
+      # - variables:
+      #     timestamp: "{{ states('sensor.time') }}"
       # - service: persistent_notification.create
       #   data:
       #     title: "{{ 'ℹ️' }} Системное уведомление"

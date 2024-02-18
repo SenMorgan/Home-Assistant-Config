@@ -392,3 +392,52 @@ yandex_joke_before_cleaning_rooms:
           ] %}
           {{ responses|random }}
         media_content_type: text
+
+thermostat_set_default_temperature:
+  alias: Thermostat Set Default Temperature
+  sequence:
+    # Check if thermostat is ready to accept new target temperature and enable it if not
+    - if:
+        condition: template
+        value_template: "{{ state_attr('climate.family_room', 'temperature') == None }}"
+      then:
+        - service: climate.set_hvac_mode
+          entity_id: climate.family_room
+          data:
+            hvac_mode: "heat"
+        # Wait till thermostat will be ready to accept new target temperature
+        - wait_template: "{{ state_attr('climate.family_room', 'temperature') != None }}"
+          timeout: "00:30:00"
+    # Set thermostat default target temperature
+    - service: climate.set_temperature
+      entity_id: climate.family_room
+      data:
+        temperature: "{{ states('input_number.thermostat_default_target_temperature') | float(21) }}"
+    # Wait here until actual target temperature is the same as new target temperature
+    - wait_template: |
+        {{ state_attr('climate.family_room', 'temperature') ==
+        (states('input_number.thermostat_default_target_temperature') | float(0)) }}
+      timeout: "00:01:00"
+
+disable_thermostat:
+  alias: Disable Thermostat
+  sequence:
+    # Call here the sequence to set default temperature
+    - service: script.turn_on
+      entity_id: script.thermostat_set_default_temperature
+    # Wait for the script to finish
+    - wait_template: "{{ is_state('script.thermostat_set_default_temperature', 'off') }}"
+      timeout: "00:01:00"
+    # Repeat the command to ensure that the volume is muted
+    - repeat:
+        while:
+          - condition: template
+            value_template: "{{ not is_state_attr('climate.family_room', 'hvac_action', 'off') }}"
+          - condition: template
+            value_template: "{{ repeat.index <= (12 * 5) }}"
+        sequence:
+          - service: climate.set_hvac_mode
+            entity_id: climate.family_room
+            data:
+              hvac_mode: "off"
+          - delay: 5
