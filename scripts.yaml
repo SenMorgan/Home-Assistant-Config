@@ -408,15 +408,19 @@ thermostat_set_default_temperature:
         # Wait till thermostat will be ready to accept new target temperature
         - wait_template: "{{ state_attr('climate.family_room', 'temperature') != None }}"
           timeout: "00:30:00"
+    - variables:
+        # Fix the temparature to 21 degrees to avoid any issues
+        default_temperature: 21
+        # thermostat_default_target_temperature: "{{ states('input_number.thermostat_default_target_temperature') | float(21) }}"
     # Set thermostat default target temperature
     - service: climate.set_temperature
       entity_id: climate.family_room
       data:
-        temperature: "{{ states('input_number.thermostat_default_target_temperature') | float(21) }}"
+        temperature: "{{ default_temperature }}"
+
     # Wait here until actual target temperature is the same as new target temperature
     - wait_template: |
-        {{ state_attr('climate.family_room', 'temperature') ==
-        (states('input_number.thermostat_default_target_temperature') | float(0)) }}
+        {{ state_attr('climate.family_room', 'temperature') == default_temperature }}
       timeout: "00:01:00"
 
 disable_thermostat:
