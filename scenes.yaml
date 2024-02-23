@@ -54,6 +54,7 @@
     switch.moving_head_power: off
     light.living_room_nightlight: off
     switch.wireless_charger: off
+    switch.dcc_ex_pwr: off
 
 - name: Anita is Sleeping
   id: anita_is_sleeping
