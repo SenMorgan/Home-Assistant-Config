@@ -55,6 +55,9 @@
     light.living_room_nightlight: off
     switch.wireless_charger: off
     switch.dcc_ex_pwr: off
+    light.wallpanel_screen:
+      state: on
+      brightness: 1
 
 - name: Anita is Sleeping
   id: anita_is_sleeping

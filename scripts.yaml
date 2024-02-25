@@ -288,6 +288,11 @@ tell_what_windows_are_opened:
 home_night_mode:
   alias: Home Night Mode
   sequence:
+    # Set light.wallpanel_screen brightness to 1
+    - service: light.turn_on
+      data:
+        entity_id: light.wallpanel_screen
+        brightness: 1
     # Repeatedly set Yandex volume
     - repeat:
         while:
@@ -312,6 +317,16 @@ home_night_mode:
 home_day_mode:
   alias: Home Day Mode
   sequence:
+    # Set light.wallpanel_screen brightness to default
+    - service: light.turn_on
+      data:
+        entity_id: light.wallpanel_screen
+        brightness: 200
+    # Change select.7_seg_clock_preset to «Orange Candle»
+    - service: select.select_option
+      data:
+        entity_id: select.7_seg_clock_preset
+        option: Orange Candle
     # Rise volume only if bedroom door is actually opened
     - if:
         - condition: state
@@ -333,11 +348,7 @@ home_day_mode:
     # Turn off yandex night mode anyway
     - service: input_boolean.turn_off
       entity_id: input_boolean.home_night_mode
-    # Change select.7_seg_clock_preset to «Orange Candle»
-    - service: select.select_option
-      data:
-        entity_id: select.7_seg_clock_preset
-        option: Orange Candle
+
 
 yandex_joke_before_cleaning_kitchen:
   alias: Yandex Joke Before Cleaning Kitchen
