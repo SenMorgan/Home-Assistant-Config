@@ -273,9 +273,24 @@ automation:
   - id: "kitchen_clock_on_if_people_home"
     alias: Kitchen Clock On if People Home
     trigger:
-      platform: state
-      entity_id: binary_sensor.people_home
-      to: "on"
+      - platform: state
+        entity_id: binary_sensor.people_home
+        to: "on"
+    action:
+      - service: light.turn_on
+        entity_id: light.7_seg_clock
+
+  - id: "kitchen_clock_reenable"
+    alias: Kitchen Clock Reenable
+    trigger:
+      - platform: state
+        entity_id: light.7_seg_clock
+        to: "off"
+        for: 00:00:15
+    condition:
+      - condition: state
+        entity_id: binary_sensor.people_home
+        state: "on"
     action:
       - service: light.turn_on
         entity_id: light.7_seg_clock
