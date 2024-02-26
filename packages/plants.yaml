@@ -34,7 +34,7 @@ automation:
     max_exceeded: silent
     trigger:
       - platform: time_pattern
-        seconds: "/5"
+        minutes: "/10"
     action:
       - service: python_script.update_plants_to_water
 
