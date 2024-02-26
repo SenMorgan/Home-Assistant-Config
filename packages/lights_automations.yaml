@@ -376,3 +376,60 @@ automation:
                 title: "{{ '🚗' }} Системное уведомление"
                 message: Реле освещения парковки было отключено более часа. Автоматическое включение в {{ states('sensor.time') }}
             - delay: 00:01:00
+
+###############################################
+## SCENES
+###############################################
+scene:
+  - name: Movies
+    id: movies
+    entities:
+      light.gyver_lamp: on
+      light.hall_lights: off
+      media_player.tv: on
+      light.kitchen_spotlights: off
+      light.kitchen_ceiling_light: off
+      light.bar_light: on
+      light.string_lights: off
+      light.mi_desk_lamp: off
+      light.shelf_lighting: off
+      light.floor_lamp: off
+      light.bedroom_nightlight: off
+      light.living_room_nightlight:
+        state: on
+        brightness: 120
+        color_temp: 370
+      light.living_room_ceiling_light: off
+      light.christmas_tree: on
+
+  - name: Good Night
+    id: good_night
+    entities:
+      light.kitchen_spotlights: off
+      light.string_lights: off
+      light.7_seg_clock:
+        state: on
+        effect: Solid
+        rgb_color: [255, 0, 0]
+      light.shelf_lighting: off
+      light.hall_lights: off
+      light.gyver_lamp: off
+      media_player.tv: off
+      light.bar_light: off
+      light.bedroom_nightlight: off
+      cover.bedroom: closed
+      switch.moving_head_power: off
+      light.living_room_nightlight: off
+      switch.wireless_charger: off
+      switch.dcc_ex_pwr: off
+      light.wallpanel_screen:
+        state: on
+        brightness: 1
+
+  - name: Anita is Sleeping
+    id: anita_is_sleeping
+    entities:
+      light.7_seg_clock:
+        state: on
+        effect: Solid
+        rgb_color: [255, 0, 0]

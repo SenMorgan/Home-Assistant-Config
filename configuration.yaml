@@ -17,7 +17,6 @@ homeassistant:
 
 automation: !include automations.yaml
 script: !include scripts.yaml
-scene: !include scenes.yaml
 
 # Sharing devices with Yandex Smart Home
 yandex_smart_home: !include yandex.yaml
