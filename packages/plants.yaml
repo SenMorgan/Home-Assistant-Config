@@ -31,6 +31,7 @@ automation:
   - alias: Update Plants to Water on Sensor Change
     id: "update_plants_to_water_on_sensor_change"
     mode: single
+    max_exceeded: silent
     trigger:
       - platform: time_pattern
         seconds: "/5"
