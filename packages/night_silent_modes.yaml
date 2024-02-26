@@ -1,0 +1,240 @@
+######################################################################
+# File: night_silent_modes.yaml                                      #
+# Author: SenMorgan https://github.com/SenMorgan                     #
+# Date: 2024-02-26                                                   #
+#                                                                    #
+# Copyright (c) 2024 Sen Morgan                                      #
+######################################################################
+
+###############################################
+## INPUT BOOLEANS
+###############################################
+input_boolean:
+  silent_mode:
+    name: Silent Mode
+    icon: mdi:volume-off
+
+###############################################
+## SCRIPTS
+###############################################
+script:
+  set_silent_mode:
+    alias: Set Silent Mode
+    sequence:
+      # Lower Yandex volume
+      - service: script.set_yandex_volume_level
+        data:
+          volume_level: 0.2
+      # Notify via 7-Segment Clock that we are in silent mode
+      - service: scene.turn_on
+        entity_id: scene.7_seg_clock_red
+      # Make DCC-EX volume lower
+      - service: input_button.press
+        target:
+          entity_id: input_button.dcc_ex_default_volume
+      # Ensure silent mode is enabled
+      - service: input_boolean.turn_on
+        entity_id: input_boolean.silent_mode
+
+  reset_silent_mode:
+    alias: Reset Silent Mode
+    sequence:
+      # Rise Yandex volume
+      - service: script.set_yandex_volume_level
+        data:
+          volume_level: 0.6
+      # Notify via 7-Segment Clock that we left silent mode
+      - service: select.select_option
+        data:
+          entity_id: select.7_seg_clock_preset
+          option: Orange Candle
+      # Make DCC-EX volume default
+      - service: input_button.press
+        target:
+          entity_id: input_button.dcc_ex_max_volume
+      # Ensure silent mode is disabled
+      - service: input_boolean.turn_off
+        entity_id: input_boolean.silent_mode
+
+  home_night_mode:
+    alias: Home Night Mode
+    sequence:
+      # Decrease WallPanel screen brightness
+      - service: scene.turn_on
+        entity_id: scene.wallpanel_screen_off
+      # Ensure night ans silent modes are enabled
+      - service: input_boolean.turn_on
+        entity_id:
+          - input_boolean.home_night_mode
+          - input_boolean.silent_mode
+
+  home_day_mode:
+    alias: Home Day Mode
+    sequence:
+      # Rise WallPanel screen brightness
+      - service: scene.turn_on
+        entity_id: scene.wallpanel_screen_on
+      # Ensure night mode is disabled, leave silent mode as is
+      - service: input_boolean.turn_off
+        entity_id: input_boolean.home_night_mode
+
+###############################################
+## AUTOMATIONS
+###############################################
+automation:
+  - alias: Silent Mode Handler
+    id: silent_mode_handler
+    trigger:
+      platform: state
+      entity_id: input_boolean.silent_mode
+    action:
+      service_template: >
+        {% if is_state('input_boolean.silent_mode', 'on') %}
+          script.set_silent_mode
+        {% else %}
+          script.reset_silent_mode
+        {% endif %}
+
+  - alias: Night Mode Handler
+    id: night_mode_handler
+    trigger:
+      platform: state
+      entity_id: input_boolean.home_night_mode
+    action:
+      service_template: >
+        {% if is_state('input_boolean.home_night_mode', 'on') %}
+          script.home_night_mode
+        {% else %}
+          script.home_day_mode
+        {% endif %}
+
+  - alias: Home Enable Night Mode at Evening
+    id: home_enable_night_mode_at_evening
+    mode: single
+    trigger:
+      - platform: state
+        entity_id: binary_sensor.bedroom_door_contact
+        from: "on"
+        to: "off"
+        for: 00:00:30
+      - platform: time
+        at: "21:00:00"
+    condition:
+      - condition: time
+        after: "20:00:00"
+        before: "03:00:00"
+    action:
+      service: input_boolean.turn_on
+      entity_id:
+        - input_boolean.home_night_mode
+        - input_boolean.silent_mode
+
+  - alias: Yandex Volume Increased Handler
+    id: yandex_volume_increased_handler
+    mode: single
+    trigger:
+      - platform: state
+        entity_id: media_player.yandex_station
+    condition:
+      - condition: state
+        entity_id: input_boolean.silent_mode
+        state: "on"
+      - condition: template
+        value_template: >
+          {% set from = trigger.from_state.attributes.volume_level | float(0) %}
+          {% set to = trigger.to_state.attributes.volume_level | float(0) %}
+          {{ to > from }}
+    action:
+      service: input_boolean.turn_off
+      entity_id:
+        - input_boolean.home_night_mode
+        - input_boolean.silent_mode
+
+  - alias: Good Morning Handler
+    id: good_morning_handler
+    mode: single
+    trigger:
+      - platform: state
+        entity_id: binary_sensor.bedroom_door_contact
+        from: "off"
+        to: "on"
+        for: 00:00:30
+      - platform: time
+        at: "09:00:00"
+      - platform: state
+        entity_id: cover.bedroom
+        to: "open"
+    condition:
+      - condition: state
+        entity_id: input_boolean.home_night_mode
+        state: "on"
+      - condition: time
+        after: "06:00:00"
+        before: "12:00:00"
+      - condition: state
+        entity_id: binary_sensor.bedroom_door_contact
+        state: "on"
+    action:
+      service: input_boolean.turn_off
+      entity_id:
+        - input_boolean.home_night_mode
+        - input_boolean.silent_mode
+
+  - alias: Silent Mode by Bedroom Door
+    id: silent_mode_by_bedroom_door
+    mode: single
+    trigger:
+      - platform: state
+        entity_id: binary_sensor.bedroom_door_contact
+        for: 00:00:30
+    condition:
+      - condition: state
+        entity_id: input_boolean.home_night_mode
+        state: "off"
+    action:
+      # If bedroom door closed ("off" state), then turn on silent mode, otherwise turn it off
+      service: input_boolean.turn_{{ "on" if trigger.to_state.state == "off" else "off" }}
+      entity_id: input_boolean.silent_mode
+
+###############################################
+## SCENES
+###############################################
+scene:
+  - name: Good Morning
+    id: good_morning
+    entities:
+      # Turning off all lights is called from script.turn_off_all_lights
+      cover.bedroom: open
+      switch.dcc_ex_pwr: on
+
+  - name: Good Night
+    id: good_night
+    entities:
+      # Turning off all lights is called from script.turn_off_all_lights
+      cover.bedroom: closed
+      media_player.tv: off
+      switch.moving_head_power: off
+      switch.wireless_charger: off
+      switch.dcc_ex_pwr: off
+
+  - name: 7 Seg Clock Red
+    id: 7_seg_clock_red
+    entities:
+      light.7_seg_clock:
+        state: on
+        effect: Solid
+        rgb_color: [255, 0, 0]
+
+  - name: WallPanel Screen Off
+    id: wallpanel_screen_off
+    entities:
+      light.wallpanel_screen:
+        state: on
+        brightness: 1
+
+  - name: WallPanel Screen On
+    id: wallpanel_screen_on
+    entities:
+      light.wallpanel_screen:
+        state: on
+        brightness: 255

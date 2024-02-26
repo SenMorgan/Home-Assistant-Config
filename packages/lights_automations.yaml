@@ -154,8 +154,8 @@ automation:
       - wait_template: "{{ states('binary_sensor.people_home') == 'off' }}"
         timeout: "00:30:00"
         continue_on_timeout: false
-      - service: light.turn_off
-        entity_id: all
+      - service: script.turn_on
+        entity_id: script.turn_off_all_lights
       - service: notify.mobile_app_sm_s901b
         data:
           title: "{{ '👋' }} До свидания"
@@ -279,6 +279,8 @@ automation:
     action:
       - service: light.turn_on
         entity_id: light.7_seg_clock
+      - service: scene.turn_on
+        entity_id: scene.wallpanel_screen_on
 
   - id: "kitchen_clock_reenable"
     alias: Kitchen Clock Reenable
@@ -381,8 +383,8 @@ automation:
 ## SCENES
 ###############################################
 scene:
-  - name: Movies
-    id: movies
+  - id: movies
+    name: Movies
     entities:
       light.gyver_lamp: on
       light.hall_lights: off
@@ -401,35 +403,3 @@ scene:
         color_temp: 370
       light.living_room_ceiling_light: off
       light.christmas_tree: on
-
-  - name: Good Night
-    id: good_night
-    entities:
-      light.kitchen_spotlights: off
-      light.string_lights: off
-      light.7_seg_clock:
-        state: on
-        effect: Solid
-        rgb_color: [255, 0, 0]
-      light.shelf_lighting: off
-      light.hall_lights: off
-      light.gyver_lamp: off
-      media_player.tv: off
-      light.bar_light: off
-      light.bedroom_nightlight: off
-      cover.bedroom: closed
-      switch.moving_head_power: off
-      light.living_room_nightlight: off
-      switch.wireless_charger: off
-      switch.dcc_ex_pwr: off
-      light.wallpanel_screen:
-        state: on
-        brightness: 1
-
-  - name: Anita is Sleeping
-    id: anita_is_sleeping
-    entities:
-      light.7_seg_clock:
-        state: on
-        effect: Solid
-        rgb_color: [255, 0, 0]

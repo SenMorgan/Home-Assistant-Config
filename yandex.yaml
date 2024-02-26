@@ -24,6 +24,7 @@ filter:
     - binary_sensor.kitchen_motion_alarm
     - input_button.thermostat_10_minutes_heating
     - input_boolean.home_night_mode
+    - input_boolean.silent_mode
     - input_boolean.child_lock
     - input_boolean.scooter_charger
     - light.hall_lights
@@ -85,6 +86,10 @@ entity_config:
     type: devices.types.switch
   input_boolean.home_night_mode:
     name: Ночной режим
+    room: Дом
+    type: devices.types.switch
+  input_boolean.silent_mode:
+    name: Тихий режим
     room: Дом
     type: devices.types.switch
   input_boolean.child_lock:

@@ -285,70 +285,35 @@ tell_what_windows_are_opened:
                 Внимание! Открыты окна: {{ expand('binary_sensor.windows') | selectattr('state','eq','on') | map(attribute='name') | list | join(', ') }}
               {% endif %}
 
-home_night_mode:
-  alias: Home Night Mode
+turn_off_all_lights:
+  alias: Turn Off All Lights
   sequence:
-    # Set light.wallpanel_screen brightness to 1
-    - service: light.turn_on
-      data:
-        entity_id: light.wallpanel_screen
-        brightness: 1
-    # Repeatedly set Yandex volume
+    - service: light.turn_off
+      entity_id: all
+    - service: scene.turn_on
+      entity_id: scene.wallpanel_screen_off
+
+set_yandex_volume_level:
+  alias: Set Yandex Volume Level
+  mode: single
+  max_exceeded: silent
+  sequence:
     - repeat:
         while:
           - condition: template
-            value_template: "{{ not is_state_attr('media_player.yandex_station', 'volume_level', 0.2) }}"
+            value_template: "{{ not is_state_attr('media_player.yandex_station', 'volume_level', volume_level) }}"
           - condition: template
             value_template: "{{ repeat.index <= 3 }}"
         sequence:
           - service: media_player.volume_set
             data:
               entity_id: media_player.yandex_station
-              volume_level: 0.2
+              volume_level: "{{ volume_level }}"
           - delay: 0.5
-    - service: input_button.press
-      target:
-        entity_id: input_button.dcc_ex_default_volume
-    - service: input_boolean.turn_on
-      entity_id: input_boolean.home_night_mode
-    - service: scene.turn_on
-      entity_id: scene.anita_is_sleeping
-
-home_day_mode:
-  alias: Home Day Mode
-  sequence:
-    # Set light.wallpanel_screen brightness to default
-    - service: light.turn_on
-      data:
-        entity_id: light.wallpanel_screen
-        brightness: 200
-    # Change select.7_seg_clock_preset to «Orange Candle»
-    - service: select.select_option
-      data:
-        entity_id: select.7_seg_clock_preset
-        option: Orange Candle
-    # Rise volume only if bedroom door is actually opened
-    - if:
-        - condition: state
-          entity_id: binary_sensor.bedroom_door_contact
-          state: "on"
-      then:
-        - repeat:
-            while:
-              - condition: template
-                value_template: "{{ not is_state_attr('media_player.yandex_station', 'volume_level', 0.6) }}"
-              - condition: template
-                value_template: "{{ repeat.index <= 3 }}"
-            sequence:
-              - service: media_player.volume_set
-                data:
-                  entity_id: media_player.yandex_station
-                  volume_level: 0.6
-              - delay: 1
-    # Turn off yandex night mode anyway
-    - service: input_boolean.turn_off
-      entity_id: input_boolean.home_night_mode
-
+  fields:
+    volume_level:
+      description: The volume level to set
+      example: 0.2
 
 yandex_joke_before_cleaning_kitchen:
   alias: Yandex Joke Before Cleaning Kitchen
