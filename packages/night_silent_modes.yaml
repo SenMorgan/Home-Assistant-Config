@@ -217,6 +217,15 @@ scene:
       switch.wireless_charger: off
       switch.dcc_ex_pwr: off
 
+  - name: No People Home
+    id: no_people_home
+    entities:
+      # Turning off all lights is called from script.turn_off_all_lights
+      media_player.tv: off
+      switch.moving_head_power: off
+      switch.wireless_charger: off
+      switch.dcc_ex_pwr: off
+
   - name: 7 Seg Clock Red
     id: 7_seg_clock_red
     entities:

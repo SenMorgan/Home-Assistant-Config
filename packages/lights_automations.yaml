@@ -156,6 +156,8 @@ automation:
         continue_on_timeout: false
       - service: script.turn_on
         entity_id: script.turn_off_all_lights
+      - service: scene.turn_on
+        entity_id: scene.no_people_home
       - service: notify.mobile_app_sm_s901b
         data:
           title: "{{ '👋' }} До свидания"
