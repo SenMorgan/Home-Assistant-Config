@@ -310,6 +310,18 @@ set_yandex_volume_level:
               entity_id: media_player.yandex_station
               volume_level: "{{ volume_level }}"
           - delay: 0.5
+    - repeat:
+        while:
+          - condition: template
+            value_template: "{{ not is_state_attr('media_player.yandex_station_midi', 'volume_level', volume_level) }}"
+          - condition: template
+            value_template: "{{ repeat.index <= 3 }}"
+        sequence:
+          - service: media_player.volume_set
+            data:
+              entity_id: media_player.yandex_station_midi
+              volume_level: "{{ volume_level }}"
+          - delay: 0.5
   fields:
     volume_level:
       description: The volume level to set

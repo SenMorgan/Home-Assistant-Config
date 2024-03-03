@@ -135,6 +135,8 @@ automation:
     trigger:
       - platform: state
         entity_id: media_player.yandex_station
+      - platform: state
+        entity_id: media_player.yandex_station_midi
     condition:
       - condition: state
         entity_id: input_boolean.silent_mode
