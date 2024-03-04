@@ -42,7 +42,7 @@ script:
       # Rise Yandex volume
       - service: script.set_yandex_volume_level
         data:
-          volume_level: 0.6
+          volume_level: 0.5
       # Notify via 7-Segment Clock that we left silent mode
       - service: select.select_option
         data:
