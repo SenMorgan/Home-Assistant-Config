@@ -62,7 +62,7 @@ script:
       # Decrease WallPanel screen brightness
       - service: scene.turn_on
         entity_id: scene.wallpanel_screen_off
-      # Ensure night ans silent modes are enabled
+      # Ensure night and silent modes are enabled
       - service: input_boolean.turn_on
         entity_id:
           - input_boolean.home_night_mode
@@ -76,7 +76,9 @@ script:
         entity_id: scene.wallpanel_screen_on
       # Ensure night mode is disabled, leave silent mode as is
       - service: input_boolean.turn_off
-        entity_id: input_boolean.home_night_mode
+        entity_id:
+          - input_boolean.home_night_mode
+          - input_boolean.silent_mode
 
 ###############################################
 ## AUTOMATIONS
