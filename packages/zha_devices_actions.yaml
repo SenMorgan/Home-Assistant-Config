@@ -76,6 +76,10 @@ automation:
           - conditions:
               - "{{ command == 'hold' }}"
             sequence:
+              # Allow to turn on bedroom lights and open cover
+              - service: input_boolean.turn_off
+                entity_id: input_boolean.bedroom_lights_and_cover_safety_switch
+              # Open cover and make another actions
               - service: cover.open_cover
                 entity_id: cover.bedroom
               - if:
