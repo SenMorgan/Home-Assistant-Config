@@ -221,6 +221,9 @@ automation:
       - condition: state
         entity_id: input_boolean.bedroom_lights_and_cover_safety_switch
         state: "on"
+      # Allow the light to be turned on if it was done manually (trigger.to_state.context.user_id is null)
+      - condition: template
+        value_template: "{{ trigger.to_state.context.user_id != None }}"
     action:
       - service: light.turn_off
         data:
@@ -236,6 +239,9 @@ automation:
       - condition: state
         entity_id: input_boolean.bedroom_lights_and_cover_safety_switch
         state: "on"
+      # Allow the cover to be opened if it was done manually (trigger.to_state.context.user_id is null)
+      - condition: template
+        value_template: "{{ trigger.to_state.context.user_id != None }}"
     action:
       - service: cover.close_cover
         data:
