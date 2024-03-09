@@ -43,11 +43,11 @@ binary_sensor:
         friendly_name: ETRVs are requesting heat
         value_template: >
           {{ state_attr('climate.danfoss_etrv0100_bedroom_thermostat', 'current_temperature') <
-                state_attr('climate.danfoss_etrv0100_bedroom_thermostat', 'temperature') - 0.1 or
+                state_attr('climate.danfoss_etrv0100_bedroom_thermostat', 'temperature') or
             state_attr('climate.danfoss_etrv0103_kitchen_thermostat', 'current_temperature') <
-                state_attr('climate.danfoss_etrv0103_kitchen_thermostat', 'temperature') - 0.1 | float or
+                state_attr('climate.danfoss_etrv0103_kitchen_thermostat', 'temperature') | float or
             state_attr('climate.danfoss_etrv0103_living_room_thermostat', 'current_temperature') <
-                state_attr('climate.danfoss_etrv0103_living_room_thermostat', 'temperature') - 0.1 | float }}
+                state_attr('climate.danfoss_etrv0103_living_room_thermostat', 'temperature') | float }}
 
 ###############################################
 ## INPUT BUTTONS
