@@ -149,6 +149,9 @@ automation:
       - platform: state
         entity_id: media_player.yandex_station_midi
     condition:
+      - condition: time
+        after: "06:00:00"
+        before: "12:00:00"
       - condition: state
         entity_id: input_boolean.silent_mode
         state: "on"
