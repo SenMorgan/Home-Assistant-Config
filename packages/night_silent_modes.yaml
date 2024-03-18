@@ -253,6 +253,28 @@ automation:
         data:
           entity_id: "{{ trigger.entity_id }}"
 
+  - alias: Prevent Accidental Yandex Volume Increase
+    id: prevent_accidental_yandex_volume_increase
+    trigger:
+      - platform: state
+        entity_id: media_player.yandex_station
+      - platform: state
+        entity_id: media_player.yandex_station_midi
+    condition:
+      - condition: state
+        entity_id: input_boolean.silent_mode
+        state: "on"
+      - condition: template
+        value_template: >
+          {% set from = trigger.from_state.attributes.volume_level | float(0) %}
+          {% set to = trigger.to_state.attributes.volume_level | float(0) %}
+          {{ to > from and to > 0.4 }}
+    action:
+      # Lower Yandex volume
+      - service: script.set_yandex_volume_level
+        data:
+          volume_level: 0.2
+
 ###############################################
 ## SCENES
 ###############################################
