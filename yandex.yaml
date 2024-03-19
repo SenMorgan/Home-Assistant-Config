@@ -14,9 +14,6 @@ filter:
     - input_button.dcc_ex_*
     - sensor.ble_temperature_atc_*
   include_entities:
-    - binary_sensor.hall_door_contact
-    - binary_sensor.wc_door_contact
-    - binary_sensor.bedroom_door_contact
     - binary_sensor.bedroom_window_contact
     - binary_sensor.kitchen_window_contact
     - binary_sensor.living_room_window_contact
@@ -56,15 +53,6 @@ filter:
     - sensor.electricity_meter_energy
 
 entity_config:
-  binary_sensor.hall_door_contact:
-    name: Датчик двери
-    room: Коридор
-  binary_sensor.wc_door_contact:
-    name: Датчик двери
-    room: Туалет
-  binary_sensor.bedroom_door_contact:
-    name: Датчик двери
-    room: Спальня
   binary_sensor.bedroom_window_contact:
     name: Датчик окна
     room: Спальня
