@@ -253,8 +253,9 @@ automation:
         data:
           entity_id: "{{ trigger.entity_id }}"
 
-  - alias: Prevent Accidental Yandex Volume Increase
-    id: prevent_accidental_yandex_volume_increase
+  # Prevent accidental volume increase on all Yandex devices in silent mode.
+  - alias: Prevent Accidental Yandex Volume Increase at Silent Mode
+    id: prevent_accidental_yandex_volume_increase_at_silent_mode
     trigger:
       - platform: state
         entity_id: media_player.yandex_station
@@ -274,6 +275,25 @@ automation:
       - service: script.set_yandex_volume_level
         data:
           volume_level: 0.2
+
+  # Prevent accidental volume increase on Yandex Mini in normal conditions (not in silent mode).
+  # Used to save ears from loud music when children play with the volume buttons.
+  - alias: Prevent Accidental Yandex Mini Volume Increase
+    id: prevent_accidental_yandex_mini_volume_increase
+    trigger:
+      - platform: state
+        entity_id: media_player.yandex_station
+    condition:
+      - condition: template
+        value_template: >
+          {% set from = trigger.from_state.attributes.volume_level | float(0) %}
+          {% set to = trigger.to_state.attributes.volume_level | float(0) %}
+          {{ to > from and to > 0.6 }}
+    action:
+      # Lower Yandex volume
+      - service: script.set_yandex_volume_level
+        data:
+          volume_level: 0.6
 
 ###############################################
 ## SCENES
