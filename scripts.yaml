@@ -293,35 +293,44 @@ turn_off_all_lights:
     - service: scene.turn_on
       entity_id: scene.wallpanel_screen_off
 
-set_yandex_volume_level:
-  alias: Set Yandex Volume Level
-  mode: single
+set_volume_level_repeatedly:
+  alias: Set Volume Level Repeatedly
+  mode: restart
   max_exceeded: silent
   sequence:
     - repeat:
         while:
           - condition: template
-            value_template: "{{ not is_state_attr('media_player.yandex_station', 'volume_level', volume_level) }}"
+            value_template: "{{ not is_state_attr(media_player, 'volume_level', volume_level) }}"
           - condition: template
             value_template: "{{ repeat.index <= 3 }}"
         sequence:
           - service: media_player.volume_set
             data:
-              entity_id: media_player.yandex_station
+              entity_id: "{{ media_player }}"
               volume_level: "{{ volume_level }}"
           - delay: 0.5
-    - repeat:
-        while:
-          - condition: template
-            value_template: "{{ not is_state_attr('media_player.yandex_station_midi', 'volume_level', volume_level) }}"
-          - condition: template
-            value_template: "{{ repeat.index <= 3 }}"
-        sequence:
-          - service: media_player.volume_set
-            data:
-              entity_id: media_player.yandex_station_midi
-              volume_level: "{{ volume_level }}"
-          - delay: 0.5
+  fields:
+    volume_level:
+      description: The volume level to set
+      example: 0.2
+    media_player:
+      description: The media player to set volume for
+      example: media_player.yandex_station
+
+set_all_yandex_stations_volume_level:
+  alias: Set All Yandex Stations Volume Level
+  mode: restart
+  max_exceeded: silent
+  sequence:
+    - service: script.set_volume_level_repeatedly
+      data:
+        media_player: media_player.yandex_station
+        volume_level: "{{ volume_level }}"
+    - service: script.set_volume_level_repeatedly
+      data:
+        media_player: media_player.yandex_station_midi
+        volume_level: "{{ volume_level }}"
   fields:
     volume_level:
       description: The volume level to set

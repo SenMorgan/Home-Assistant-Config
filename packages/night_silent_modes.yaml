@@ -25,7 +25,7 @@ script:
     alias: Set Silent Mode
     sequence:
       # Lower Yandex volume
-      - service: script.set_yandex_volume_level
+      - service: script.set_all_yandex_stations_volume_level
         data:
           volume_level: 0.2
       # Notify via 7-Segment Clock that we are in silent mode
@@ -46,7 +46,7 @@ script:
     alias: Reset Silent Mode
     sequence:
       # Rise Yandex volume
-      - service: script.set_yandex_volume_level
+      - service: script.set_all_yandex_stations_volume_level
         data:
           volume_level: 0.5
       # Notify via 7-Segment Clock that we left silent mode
@@ -272,7 +272,7 @@ automation:
           {{ to > from and to > 0.4 }}
     action:
       # Lower Yandex volume
-      - service: script.set_yandex_volume_level
+      - service: script.set_all_yandex_stations_volume_level
         data:
           volume_level: 0.2
 
@@ -284,6 +284,9 @@ automation:
       - platform: state
         entity_id: media_player.yandex_station
     condition:
+      # Allow volume to be changed externally (not by buttons on the device)
+      - condition: template
+        value_template: "{{ trigger.to_state.context.user_id == None }}"
       - condition: template
         value_template: >
           {% set from = trigger.from_state.attributes.volume_level | float(0) %}
@@ -291,8 +294,9 @@ automation:
           {{ to > from and to > 0.6 }}
     action:
       # Lower Yandex volume
-      - service: script.set_yandex_volume_level
+      - service: script.set_volume_level_repeatedly
         data:
+          media_player: media_player.yandex_station
           volume_level: 0.6
 
 ###############################################
