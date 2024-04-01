@@ -37,7 +37,7 @@
 ###############################################
 ## Other Switches
 ###############################################
-- name: "Backyard Socket"
+- name: "Sonoff Socket"
   icon: mdi:power-socket-fr
   state_topic: "/Sonoff-Socket_01/Status"
   command_topic: "/Sonoff-Socket_01/Switch"
