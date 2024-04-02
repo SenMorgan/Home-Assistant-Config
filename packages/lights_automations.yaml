@@ -272,17 +272,25 @@ automation:
           - light.gyver_lamp
           - light.shelf_lighting
 
-  - id: "kitchen_clock_on_if_people_home"
-    alias: Kitchen Clock On if People Home
+  - id: "kitchen_clock_control_based_on_people_presence"
+    alias: Kitchen Clock Control Based on People Presence
     trigger:
       - platform: state
         entity_id: binary_sensor.people_home
-        to: "on"
+        for: 00:00:30
     action:
-      - service: light.turn_on
-        entity_id: light.7_seg_clock
-      - service: scene.turn_on
-        entity_id: scene.wallpanel_screen_on
+      - if:
+          - condition: template
+            value_template: >
+              {{ trigger.to_state.state == 'on' }}
+        then:
+          - service: light.turn_on
+            entity_id: light.7_seg_clock
+          - service: scene.turn_on
+            entity_id: scene.wallpanel_screen_on
+        else:
+          - service: light.turn_off
+            entity_id: light.7_seg_clock
 
   - id: "kitchen_clock_reenable"
     alias: Kitchen Clock Reenable
