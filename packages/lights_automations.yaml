@@ -56,7 +56,7 @@ automation:
             sequence:
               - delay: 00:00:01
               - service: media_player.play_media
-                entity_id: media_player.yandex_station
+                entity_id: media_player.yandex_station_midi
                 data:
                   media_content_id: >
                     Добро пожаловать домой мистер Морган!
@@ -84,20 +84,15 @@ automation:
                   "{{ ( as_timestamp(states.person.sen.last_changed, 0) | int(0) ) <
                   ( as_timestamp(states.person.kris.last_changed, 0) | int(0) ) }}"
             sequence:
-              # Do not notify via Yandex Station if it is in playing state
-              - if:
-                  condition: template
-                  value_template: "{{ not is_state('media_player.yandex_station', 'playing') }}"
-                then:
-                  - alias: "Only welcome"
-                    service: media_player.play_media
-                    entity_id: media_player.yandex_station
-                    data:
-                      media_content_id: >
-                        Добро пожаловать домой миссис Морган
-                      media_content_type: dialog
-                      extra:
-                        volume_level: 0.6
+              - alias: "Only welcome"
+                service: media_player.play_media
+                entity_id: media_player.yandex_station_midi
+                data:
+                  media_content_id: >
+                    Добро пожаловать домой миссис Морган
+                  media_content_type: dialog
+                  extra:
+                    volume_level: 0.6
           # Bouth came home
           - conditions:
               - condition: state
@@ -116,20 +111,15 @@ automation:
                     sequence:
                       - service: light.turn_on
                         entity_id: light.string_lights
-              # Do not notify via Yandex Station if it is in playing state
-              - if:
-                  condition: template
-                  value_template: "{{ not is_state('media_player.yandex_station', 'playing') }}"
-                then:
-                  - alias: "Welcome everybody"
-                    service: media_player.play_media
-                    entity_id: media_player.yandex_station
-                    data:
-                      media_content_id: >
-                        Добро пожаловать домой мистер и миссис Морган
-                      media_content_type: dialog
-                      extra:
-                        volume_level: 0.6
+              - alias: "Welcome everybody"
+                service: media_player.play_media
+                entity_id: media_player.yandex_station_midi
+                data:
+                  media_content_id: >
+                    Добро пожаловать домой мистер и миссис Морган
+                  media_content_type: dialog
+                  extra:
+                    volume_level: 0.6
         default:
           - service: notify.mobile_app_sm_s901b
             data:

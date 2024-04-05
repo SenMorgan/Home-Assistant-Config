@@ -297,7 +297,7 @@
           state: "off"
       then:
         - service: media_player.play_media
-          entity_id: media_player.yandex_station
+          entity_id: media_player.yandex_station_midi
           data:
             media_content_type: text
             media_content_id: "Часы Кристины полностью заряжены"

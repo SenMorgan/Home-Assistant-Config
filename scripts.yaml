@@ -271,11 +271,9 @@ tell_what_windows_are_opened:
         - condition: state
           entity_id: binary_sensor.windows
           state: "on"
-        - condition: template
-          value_template: "{{ not is_state('media_player.yandex_station', 'playing') }}"
       then:
         - service: media_player.play_media
-          entity_id: media_player.yandex_station
+          entity_id: media_player.yandex_station_midi
           data:
             media_content_type: text
             media_content_id: >
@@ -340,7 +338,7 @@ yandex_joke_before_cleaning_kitchen:
   alias: Yandex Joke Before Cleaning Kitchen
   sequence:
     - service: media_player.play_media
-      entity_id: media_player.yandex_station
+      entity_id: media_player.yandex_station_midi
       data:
         media_content_id: >-
           {% set responses = [
@@ -369,7 +367,7 @@ yandex_joke_before_cleaning_rooms:
   alias: Yandex Joke Before Cleaning Rooms
   sequence:
     - service: media_player.play_media
-      entity_id: media_player.yandex_station
+      entity_id: media_player.yandex_station_midi
       data:
         media_content_id: >-
           {% set responses = [

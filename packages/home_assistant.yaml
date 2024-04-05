@@ -100,16 +100,12 @@ automation:
         data:
           title: "{{ 'ℹ️' }} Системное уведомление"
           message: В сети появилось новое устройство {{ entity }}
-      - if:
-          condition: template
-          value_template: "{{ not is_state('media_player.yandex_station', 'playing') }}"
-        then:
-          - service: media_player.play_media
-            entity_id: media_player.yandex_station
-            data:
-              media_content_id: >
-                К локальной сети было подключено новое устройство с именем {{ entity }}
-              media_content_type: text
+      - service: media_player.play_media
+        entity_id: media_player.yandex_station_midi
+        data:
+          media_content_id: >
+            К локальной сети было подключено новое устройство с именем {{ entity }}
+          media_content_type: text
 
   - id: "home_assistant_update_available_notification"
     alias: Home Assistant Update Available Notification

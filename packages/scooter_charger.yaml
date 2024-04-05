@@ -52,22 +52,17 @@ script:
             Вт*ч за
             {{ ((as_timestamp(now()) - as_timestamp(states('input_datetime.scooter_charger_energy_start_time'))) / 60) | round }}
             минут
-      # Check if yandex station is not playing now
-      - if:
-          condition: template
-          value_template: "{{ not is_state('media_player.yandex_station', 'playing') }}"
-        then:
-          # Play message on yandex station
-          - service: media_player.play_media
-            entity_id: media_player.yandex_station
-            data:
-              media_content_id: >
-                Зарядка электросамоката окончена. Заряжено
-                {{ ((states('sensor.scooter_charger_summation_delivered') | float - states('input_number.scooter_charger_energy_start') | float) * 1000) | round }}
-                Ватт-часов за
-                {{ ((as_timestamp(now()) - as_timestamp(states('input_datetime.scooter_charger_energy_start_time'), 0)) / 60) | round }}
-                минут
-              media_content_type: text
+      # Play message on yandex station
+      - service: media_player.play_media
+        entity_id: media_player.yandex_station_midi
+        data:
+          media_content_id: >
+            Зарядка электросамоката окончена. Заряжено
+            {{ ((states('sensor.scooter_charger_summation_delivered') | float - states('input_number.scooter_charger_energy_start') | float) * 1000) | round }}
+            Ватт-часов за
+            {{ ((as_timestamp(now()) - as_timestamp(states('input_datetime.scooter_charger_energy_start_time'), 0)) / 60) | round }}
+            минут
+          media_content_type: text
 
 ###############################################
 ## AUTOMATIONS

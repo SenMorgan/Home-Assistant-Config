@@ -34,10 +34,10 @@ automation:
       # Check if yandex station is not playing now
       - if:
           condition: template
-          value_template: "{{ not is_state('media_player.yandex_station', 'playing') }}"
+          value_template: "{{ not is_state('media_player.yandex_station_midi', 'playing') }}"
         then:
           - service: media_player.play_media
-            entity_id: media_player.yandex_station
+            entity_id: media_player.yandex_station_midi
             data:
               # If some of windows are opened, notify to close exact opened window by telling it's name.
               # Otherwise, notify to open window.
@@ -104,10 +104,10 @@ automation:
             value_template: "{{ as_timestamp(now()) < as_timestamp(states('input_datetime.air_quality_open_window_greeting_timeout'), 0) }}"
           # Check if yandex station is not playing now
           - condition: template
-            value_template: "{{ not is_state('media_player.yandex_station', 'playing') }}"
+            value_template: "{{ not is_state('media_player.yandex_station_midi', 'playing') }}"
         then:
           - service: media_player.play_media
-            entity_id: media_player.yandex_station
+            entity_id: media_player.yandex_station_midi
             data:
               media_content_type: text
               media_content_id: Молодец! Рада, что вы заботитесь о своём здоровье.
@@ -129,10 +129,10 @@ automation:
       # Check if yandex station is not playing now
       - if:
           condition: template
-          value_template: "{{ not is_state('media_player.yandex_station', 'playing') }}"
+          value_template: "{{ not is_state('media_player.yandex_station_midi', 'playing') }}"
         then:
           - service: media_player.play_media
-            entity_id: media_player.yandex_station
+            entity_id: media_player.yandex_station_midi
             data:
               media_content_type: text
               media_content_id: Качество воздуха в доме вернулось в норму.

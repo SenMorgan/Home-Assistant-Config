@@ -167,15 +167,11 @@ automation:
                 entity_id: automation.thermostat_10_minutes_heating_disable
                 state: "on"
             then:
-              - if:
-                  condition: template
-                  value_template: "{{ not is_state('media_player.yandex_station', 'playing') }}"
-                then:
-                  - service: media_player.play_media
-                    entity_id: media_player.yandex_station
-                    data:
-                      media_content_id: Подогрев квартиры окончен раньше, потому что было открыто окно
-                      media_content_type: text
+              - service: media_player.play_media
+                entity_id: media_player.yandex_station_midi
+                data:
+                  media_content_id: Подогрев квартиры окончен раньше, потому что было открыто окно
+                  media_content_type: text
               # Disable «10 minutes heating» automation
               - service: automation.turn_off
                 entity_id: automation.thermostat_10_minutes_heating_disable
@@ -354,15 +350,11 @@ automation:
                 entity_id: automation.thermostat_10_minutes_heating_disable
                 state: "on"
         then:
-          - if:
-              condition: template
-              value_template: "{{ not is_state('media_player.yandex_station', 'playing') }}"
-            then:
-              - service: media_player.play_media
-                entity_id: media_player.yandex_station
-                data:
-                  media_content_id: Подогрев квартиры уже включен
-                  media_content_type: text
+          - service: media_player.play_media
+            entity_id: media_player.yandex_station_midi
+            data:
+              media_content_id: Подогрев квартиры уже включен
+              media_content_type: text
         else:
           # If «ECO mode by windows» automation is enabled now - disable it
           - if:
@@ -374,15 +366,11 @@ automation:
                 entity_id:
                   - automation.thermostat_eco_mode_by_window_reset
                   - automation.thermostat_eco_mode_by_window_disable
-          - if:
-              condition: template
-              value_template: "{{ not is_state('media_player.yandex_station', 'playing') }}"
-            then:
-              - service: media_player.play_media
-                entity_id: media_player.yandex_station
-                data:
-                  media_content_id: Включен подогрев квартиры на 10 минут
-                  media_content_type: text
+          - service: media_player.play_media
+            entity_id: media_player.yandex_station_midi
+            data:
+              media_content_id: Включен подогрев квартиры на 10 минут
+              media_content_type: text
           # Turn on the heating flag. This prevents the heating from being blocked if
           # the `thermostat_eco_mode_by_window_enable` automation has already turned off the heating.
           - service: input_boolean.turn_on
@@ -446,15 +434,11 @@ automation:
               {{ state_attr('climate.family_room', 'temperature') !=
               (states('input_number.thermostat_new_target_temperature') | float(0)) }}
     action:
-      - if:
-          condition: template
-          value_template: "{{ not is_state('media_player.yandex_station', 'playing') }}"
-        then:
-          - service: media_player.play_media
-            entity_id: media_player.yandex_station
-            data:
-              media_content_id: Подогрев квартиры окончен
-              media_content_type: text
+      - service: media_player.play_media
+        entity_id: media_player.yandex_station
+        data:
+          media_content_id: Подогрев квартиры окончен
+          media_content_type: text
       # Set thermostat default target temperature
       - service: script.turn_on
         entity_id: script.thermostat_set_default_temperature
