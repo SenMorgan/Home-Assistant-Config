@@ -174,3 +174,13 @@ automation:
       - service: switch.turn_off
         target:
           entity_id: "{{ switch_entity }}"
+
+  - alias: "DCC-EX Enable Power on Sunset"
+    id: dcc_ex_enable_power_on_sunset
+    trigger:
+    - platform: sun
+      event: sunset
+    action:
+      service: switch.turn_on
+      target:
+        entity_id: switch.dcc_ex_pwr

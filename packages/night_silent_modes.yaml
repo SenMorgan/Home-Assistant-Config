@@ -308,7 +308,6 @@ scene:
     entities:
       # Turning off all lights is called from script.turn_off_all_lights
       cover.bedroom: open
-      switch.dcc_ex_pwr: on
 
   - name: Good Night
     id: good_night
