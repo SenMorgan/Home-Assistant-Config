@@ -180,6 +180,10 @@ automation:
     trigger:
     - platform: sun
       event: sunset
+    condition:
+      - condition: state
+        entity_id: binary_sensor.people_home
+        state: "on"
     action:
       service: switch.turn_on
       target:
