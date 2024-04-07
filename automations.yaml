@@ -295,6 +295,9 @@
         - condition: state
           entity_id: input_boolean.silent_mode
           state: "off"
+        - condition: state
+          entity_id: binary_sensor.people_home
+          state: "on"
       then:
         - service: media_player.play_media
           entity_id: media_player.yandex_station_midi
