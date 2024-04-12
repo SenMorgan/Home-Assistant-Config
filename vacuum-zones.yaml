@@ -1,13 +1,13 @@
 entity_id: vacuum.johnny
 zones:
   Под столом:
-    zone: [[28310, 26255, 29577, 28127]] # Production
+    zone: [[28713, 26924, 30501, 28996]]
     sequence:
       - service: script.turn_on
         entity_id: script.yandex_joke_before_cleaning_kitchen
 
   Под раковиной:
-    zone: [[27774, 25472, 30633, 27154]] # Production
+    zone: [[27774, 25472, 30633, 27154]]
     sequence:
       - service: script.turn_on
         entity_id: script.yandex_joke_before_cleaning_kitchen
