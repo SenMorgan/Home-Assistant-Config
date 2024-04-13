@@ -279,8 +279,14 @@ automation:
           - service: scene.turn_on
             entity_id: scene.wallpanel_screen_on
         else:
-          - service: light.turn_off
-            entity_id: light.7_seg_clock
+          # Turn off only if people presence ignoring is off
+          - if:
+              - condition: state
+                entity_id: input_boolean.ignore_people_presence
+                state: "off"
+            then:
+              - service: light.turn_off
+                entity_id: light.7_seg_clock
 
   - id: "kitchen_clock_reenable"
     alias: Kitchen Clock Reenable
