@@ -134,9 +134,9 @@ automation:
       exclude:
         entity_id:
           [
-            "sensor.192_168_1_82_battery_level",
             "sensor.sm_g991b_battery_level",
             "sensor.sm_s901b_battery_level",
+            "sensor.galaxy_watch6_fegx_battery_level",
           ]
       sensors: >-
         {% set result = namespace(sensors=[]) %} {% for state in states.sensor |
