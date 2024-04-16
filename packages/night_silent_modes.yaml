@@ -83,7 +83,7 @@ script:
       # Rise WallPanel screen brightness
       - service: scene.turn_on
         entity_id: scene.wallpanel_screen_on
-      # Ensure night mode is disabled, leave silent mode as is
+      # Ensure night and silent mode are disabled
       - service: input_boolean.turn_off
         entity_id:
           - input_boolean.home_night_mode
