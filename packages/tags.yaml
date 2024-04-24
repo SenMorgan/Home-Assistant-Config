@@ -55,8 +55,10 @@ automation:
         tag_id: 5954e702-f87d-4955-969c-5231af33ece8
     action:
       - service: input_boolean.toggle
-        target:
-          entity_id: input_boolean.ignore_people_presence
+        entity_id: input_boolean.ignore_people_presence
+      # Turn off the script that could be running at this moment
+      - service: script.turn_off
+        entity_id: script.turn_off_lights_after_people_leave
       - variables:
           message: >-
             {% if is_state('input_boolean.ignore_people_presence', 'on') %}

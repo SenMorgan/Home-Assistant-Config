@@ -7,6 +7,30 @@
 ######################################################################
 
 ###############################################
+## SCRIPTS
+###############################################
+script:
+  turn_off_lights_after_people_leave:
+    alias: Turn off lights after people leave
+    sequence:
+      - wait_template: "{{ states('binary_sensor.people_home') == 'off' }}"
+        timeout: "00:30:00"
+        continue_on_timeout: false
+      - service: script.turn_on
+        entity_id: script.turn_off_all_lights
+      - service: scene.turn_on
+        entity_id: scene.no_people_home
+      - service: notify.mobile_app_sm_s901b
+        data:
+          title: "{{ '👋' }} До свидания"
+          message: >
+            {% if is_state('input_boolean.heating_season', 'on') %}
+              Термостат и свет были отключены
+            {% else %}
+              Весь свет был отключен
+            {% endif %}
+
+###############################################
 ## AUTOMATIONS
 ###############################################
 automation:
@@ -16,6 +40,7 @@ automation:
   - id: "hall_lights_and_alice_greeting"
     alias: Hall Lights and Alice Greeting
     mode: single
+    max_exceeded: silent
     trigger:
       - platform: state
         id: "SEN_CAME_HOME"
@@ -128,6 +153,7 @@ automation:
 
   - id: "home_all_lights_off"
     alias: Home All Lights OFF
+    mode: restart
     trigger:
       - platform: state
         entity_id: binary_sensor.hall_door_contact
@@ -141,22 +167,8 @@ automation:
         entity_id: input_boolean.ignore_people_presence
         state: "off"
     action:
-      - wait_template: "{{ states('binary_sensor.people_home') == 'off' }}"
-        timeout: "00:30:00"
-        continue_on_timeout: false
       - service: script.turn_on
-        entity_id: script.turn_off_all_lights
-      - service: scene.turn_on
-        entity_id: scene.no_people_home
-      - service: notify.mobile_app_sm_s901b
-        data:
-          title: "{{ '👋' }} До свидания"
-          message: >
-            {% if is_state('input_boolean.heating_season', 'on') %}
-              Термостат и свет были отключены
-            {% else %}
-              Весь свет был отключен
-            {% endif %}
+        entity_id: script.turn_off_lights_after_people_leave
 
   - id: "hall_lights_by_motion_on"
     alias: Hall Lights by Motion ON
