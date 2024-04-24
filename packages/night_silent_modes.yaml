@@ -280,6 +280,7 @@ automation:
   # Used to save ears from loud music when children play with the volume buttons.
   - alias: Prevent Accidental Yandex Mini Volume Increase
     id: prevent_accidental_yandex_mini_volume_increase
+    mode: restart
     trigger:
       - platform: state
         entity_id: media_player.yandex_station
