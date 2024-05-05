@@ -10,6 +10,16 @@
 ######################################################################
 
 ###############################################
+## SETTINGS AND VARIABLES
+###############################################
+homeassistant:
+  customize:
+    package.node_anchors:
+      sys_notify_title_info: &sys_notify_title_info "📢 Системное уведомление"
+      sys_notify_title_warning: &sys_notify_title_warning "⚠️ Системное уведомление"
+      sys_notify_title_critical: &sys_notify_title_critical "🚨 Системное уведомление"
+
+###############################################
 ## SENSORS
 ###############################################
 sensor:
@@ -35,7 +45,7 @@ alert:
     repeat: 1
     can_acknowledge: false
     notifiers: mobile_app_sm_s901b
-    title: "{{ '🚨' }} Уведомление от UPS"
+    title: *sys_notify_title_critical
     message: |
       UPS отключится через {{ states('sensor.ups_battery_runtime') | int(0) | timestamp_custom('%M:%S') }} минут
       Заряд аккумулятора: {{ states('sensor.ups_battery_charge') }}%
@@ -62,13 +72,13 @@ automation:
     action:
       - service: persistent_notification.create
         data:
-          title: "{{ '🚨' }} Уведомление от UPS"
+          title: *sys_notify_title_critical
           message: >
             UPS потерял питание в {{ states('sensor.time') }}
             Рассчётное время работы: {{ states('sensor.ups_battery_runtime') | int(0) | timestamp_custom('%M:%S') }} минут
       - service: notify.mobile_app_sm_s901b
         data:
-          title: "{{ '🚨' }} Уведомление от UPS"
+          title: *sys_notify_title_critical
           message: |
             UPS потерял питание в {{ states('sensor.time') }}
             Рассчётное время работы: {{ states('sensor.ups_battery_runtime') | int(0) | timestamp_custom('%M:%S') }} минут
@@ -84,7 +94,7 @@ automation:
     action:
       - service: persistent_notification.create
         data:
-          title: "{{ '🚨' }} Уведомление от UPS"
+          title: *sys_notify_title_critical
           message: >
             UPS восстановил питание в {{ states('sensor.time') }}
       - service: automation.turn_off
@@ -100,7 +110,7 @@ automation:
     action:
       - service: notify.mobile_app_sm_s901b
         data:
-          title: "{{ '🚨' }} Уведомление от UPS"
+          title: *sys_notify_title_critical
           message: >
             Низкий заряд аккумулятора UPS: {{ states('sensor.ups_battery_charge') }}%
 
@@ -119,7 +129,7 @@ automation:
     action:
       - service: notify.mobile_app_sm_s901b
         data:
-          title: "{{ '🚨' }} Уведомление от UPS"
+          title: *sys_notify_title_critical
           message: |
             Критически низкий заряд батареи UPS.
             Немедленное отключение сервера Home Assistant в {{ states('sensor.time') }}

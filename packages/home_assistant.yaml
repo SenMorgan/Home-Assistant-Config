@@ -10,6 +10,16 @@
 ######################################################################
 
 ###############################################
+## SETTINGS AND VARIABLES
+###############################################
+homeassistant:
+  customize:
+    package.node_anchors:
+      sys_notify_title_info: &sys_notify_title_info "📢 Системное уведомление"
+      sys_notify_title_warning: &sys_notify_title_warning "⚠️ Системное уведомление"
+      sys_notify_title_critical: &sys_notify_title_critical "🚨 Системное уведомление"
+
+###############################################
 ## INPUT BUTTONS
 ###############################################
 input_button:
@@ -50,35 +60,21 @@ automation:
       - platform: homeassistant
         event: start
     action:
-      - variables:
-          notify_title: "⚠️ Системное уведомление"
-          notify_message: Home Assistant запущен в {{ states('sensor.time') }}
-      - service: notify.mobile_app_sm_s901b
+      - service: script.notify_and_create_persistent_notification
         data:
-          title: "{{ notify_title }}"
-          message: "{{ notify_message }}"
-      - service: persistent_notification.create
-        data:
-          title: "{{ notify_title }}"
-          message: "{{ notify_message }}"
+          title: *sys_notify_title_info
+          message: Home Assistant запущен в {{ states('sensor.time') }}
 
   - id: "home_assistant_shutdown_notification"
     alias: Home Assistant Shutdown Notification
     trigger:
       - platform: homeassistant
         event: shutdown
-          action:
-      - variables:
-          notify_title: "⚠️ Системное уведомление"
-          notify_message: Home Assistant начал процесс выключения в {{ states('sensor.time') }}
-      - service: notify.mobile_app_sm_s901b
+    action:
+      - service: script.notify_and_create_persistent_notification
         data:
-          title: "{{ notify_title }}"
-          message: "{{ notify_message }}"
-      - service: persistent_notification.create
-        data:
-          title: "{{ notify_title }}"
-          message: "{{ notify_message }}"
+          title: *sys_notify_title_warning
+          message: Home Assistant начал процесс выключения в {{ states('sensor.time') }}
 
   - id: "home_assistant_new_device_connected_notification"
     alias: Notification New Device Connected Notification
@@ -92,28 +88,27 @@ automation:
       {{trigger.event.data.entity_id.startswith('device_tracker')}}
     action:
       - variables:
-          entity: >
-            {{trigger.event.data.entity_id}}
+          entity: "{{trigger.event.data.entity_id}}"
+          notify_title: 📡 В сети обнаружено новое устройство
+          notify_message: |
+            Entity: {{entity}}
+            Host: {{state_attr(entity,'host_name')}}
+            Ip: {{state_attr(entity,'ip')}}
+            Mac-address: {{state_attr(entity,'mac')}}
+            Full data: {{trigger.event.data}}
+      # Notify via mobile app and create persistent notification
+      - service: script.notify_and_create_persistent_notification
+        data:
+          title: "{{ notify_title }}"
+          message: "{{ notify_message }}"
+      # Write to system log
       - service: system_log.write
         data:
           message: >
             New device registrered: {{ entity }}
           level: warning
           logger: homeassistant.components.device_tracker
-      - service: persistent_notification.create
-        data:
-          title: >
-            New device registered: {{ entity }}
-          message: >
-            Entity: {{entity}}
-            Host: {{state_attr(entity,'host_name')}}
-            Ip: {{state_attr(entity,'ip')}}
-            Mac-address: {{state_attr(entity,'mac')}}
-            Full data: {{trigger.event.data}}
-      - service: notify.mobile_app_sm_s901b
-        data:
-          title: "{{ 'ℹ️' }} Системное уведомление"
-          message: В сети появилось новое устройство {{ entity }}
+      # Notify via Yandex Station
       - service: media_player.play_media
         entity_id: media_player.yandex_station_midi
         data:
@@ -131,8 +126,8 @@ automation:
     action:
       - service: notify.mobile_app_sm_s901b
         data:
-          title: "{{ 'ℹ️' }} Системное уведомление"
-          message: Update! Доступна новая версия {{ states('sensor.home_assistant_versions') }}
+          title: *sys_notify_title_info
+          message: Update!🎉 Доступна новая версия {{ states('sensor.home_assistant_versions') }}
           data:
             actions:
               - action: "URI"
@@ -158,7 +153,7 @@ automation:
             {% endfor %}
       - service: notify.mobile_app_sm_s901b
         data:
-          title: "{{ 'ℹ️' }} Системное уведомление"
+          title: *sys_notify_title_info
           message: "{{ message }}"
           data:
             actions:
@@ -167,7 +162,7 @@ automation:
                 uri: "/hacs"
       - service: persistent_notification.create
         data:
-          title: "{{ '❗️' }} Системное уведомление"
+          title: *sys_notify_title_info
           message: "{{ message }}"
 
   # Used blueprint from: https://community.home-assistant.io/t/blueprint-notify-when-zigbee-zwave-any-battery-device-has-gone-offline/537631
@@ -204,14 +199,10 @@ automation:
     condition:
       - "{{ sensors != '' and (day | int == 0 or day | int == now().isoweekday()) }}"
     action:
-      - service: notify.mobile_app_sm_s901b
+      - service: script.notify_and_create_persistent_notification
         data:
-          title: "{{ '❗️' }} Системное уведомление"
-          message: "{{ notify_message }}"
-      - service: persistent_notification.create
-        data:
-          title: "{{ '❗️' }} Системное уведомление"
-          message: "{{ notify_message }}"
+          title: *sys_notify_title_warning
+          message: "{{ message }}"
 
   ###############################################
   ## Low Battery Notifications
@@ -274,9 +265,9 @@ automation:
         value_template: >-
           {{ (trigger.event.data.new_state.state | int(0)) < 20 }}
     action:
-      - service: notify.mobile_app_sm_s901b
+      - service: script.notify_and_create_persistent_notification
         data:
-          title: "{{ '❗️' }} Внимание!"
+          title: *sys_notify_title_warning
           message: |
             Устройство {{ trigger.event.data.new_state.attributes.friendly_name }}
             имеет низкий уровень заряда батареи: {{ trigger.event.data.new_state.state }}%
@@ -324,7 +315,7 @@ automation:
               action_cancel: "{{ 'action_cancel' ~ context.id }}"
           - service: notify.mobile_app_sm_s901b
             data:
-              title: "{{ '❗️' }} Внимание!"
+              title: *sys_notify_title_critical
               message: Synology DS220+ недоступен, продолжить выключение Home Assistant?
               data:
                 actions:
@@ -352,15 +343,15 @@ automation:
                     entity_id: script.home_assistant_shutdown
               - conditions: "{{ wait.trigger.event.data.action == action_cancel }}"
                 sequence:
-                  - service: notify.mobile_app_sm_s901b
+                  - service: script.notify_and_create_persistent_notification
                     data:
-                      title: "{{ 'ℹ️' }} Системное уведомление"
+                      title: *sys_notify_title_info
                       message: Отмена выключения серверного шкафа
         else:
-          - service: notify.mobile_app_sm_s901b
+          - service: script.notify_and_create_persistent_notification
             data:
-              title: "{{ 'ℹ️' }} Системное уведомление"
-              message: Выключение серверного шкафа
+              title: *sys_notify_title_warning
+              message: Выключение серверного шкафа началось в {{ states('sensor.time') }}
           # Turn OFF the Synology DS220+
           - service: button.press
             entity_id: button.synology_ds220_shutdown

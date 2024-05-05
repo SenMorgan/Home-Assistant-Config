@@ -10,6 +10,16 @@
 ######################################################################
 
 ###############################################
+## SETTINGS AND VARIABLES
+###############################################
+homeassistant:
+  customize:
+    package.node_anchors:
+      sys_notify_title_info: &sys_notify_title_info "📢 Системное уведомление"
+      sys_notify_title_warning: &sys_notify_title_warning "⚠️ Системное уведомление"
+      sys_notify_title_critical: &sys_notify_title_critical "🚨 Системное уведомление"
+
+###############################################
 ## INPUT BOOLEANS
 ###############################################
 input_boolean:
@@ -270,7 +280,7 @@ automation:
     action:
       - service: notify.mobile_app_sm_s901b
         data:
-          title: "{{ 'ℹ️' }} Системное уведомление"
+          title: *sys_notify_title_info
           message: Термостат был снова включен в {{ states('sensor.time') }}, чтобы вы не замёрзли
       # Set thermostat mode to «heat»
       - service: climate.set_hvac_mode
@@ -311,10 +321,10 @@ automation:
           {{ states('climate.family_room') == 'heat' and
               state_attr('climate.family_room', 'temperature') >= 25.0 }}
     action:
-      - service: notify.mobile_app_sm_s901b
+      - service: script.notify_and_create_persistent_notification
         data:
-          title: "{{ '🚨' }} Превышение температуры!"
-          message: >
+          title: *sys_notify_title_warning
+          message:  >
             Термостат был переведён в автоматический режим по причине высокой температуры в квартире в {{ states('sensor.time') }}
       # Set thermostat mode to «heat»
       - service: climate.set_hvac_mode
@@ -497,7 +507,7 @@ automation:
     action:
       - service: notify.mobile_app_sm_s901b
         data:
-          title: "{{ 'ℹ️' }} Системное уведомление"
+          title: *sys_notify_title_info
           message: |
             Термостат переведён в нормальный режим.
             Температура дома: {{ state_attr('climate.family_room', 'current_temperature') }}°C
@@ -604,13 +614,9 @@ automation:
       #       {% endif %}
       #       Отопление было включено в {{ states('sensor.time') }} в комнат{{ 'ах' if rooms | length > 1 else 'е' }}:
       #       {{ rooms[:-1] | join(', ') }}{% if rooms | length > 1 %} и {% endif %}{{ rooms[-1] if rooms | length > 0 else '' }}
-      # - service: persistent_notification.create
+      # - service: script.notify_and_create_persistent_notification
       #   data:
-      #     title: "{{ 'ℹ️' }} Системное уведомление"
-      #     message: "{{ message }}"
-      # - service: notify.mobile_app_sm_s901b
-      #   data:
-      #     title: "{{ 'ℹ️' }} Системное уведомление"
+      #     title: *sys_notify_title_info
       #     message: "{{ message }}"
 
   # If all ETRVs are not in "heat" state - restore mate.family_room target temperature.
@@ -642,16 +648,10 @@ automation:
       # Set thermostat default target temperature
       - service: script.turn_on
         entity_id: script.thermostat_set_default_temperature
-      # - variables:
-      #     timestamp: "{{ states('sensor.time') }}"
-      # - service: persistent_notification.create
+      # - service: script.notify_and_create_persistent_notification
       #   data:
-      #     title: "{{ 'ℹ️' }} Системное уведомление"
-      #     message: Отопление было выключено в {{ timestamp }}
-      # - service: notify.mobile_app_sm_s901b
-      #   data:
-      #     title: "{{ 'ℹ️' }} Системное уведомление"
-      #     message: Отопление было выключено в {{ timestamp }}
+      #     title: *sys_notify_title_info
+      #     message: Отопление было выключено в {{ states('sensor.time') }}
 
   # ETRVs do not have child lock themselves so we need to check if taget tempature
   # is in range of min and max target temperature and if not - set it to 21°C
@@ -675,19 +675,15 @@ automation:
           target_temperature: "{{ state_attr('climate.danfoss_etrv0103_kitchen_thermostat', 'temperature') }}"
           set_temperature: "{{ states('input_number.etrv_kitchen_default_temperature') | float(21) }}"
           message: >-
-            Температура на кухне вышла за допустимые пределы в {{ timestamp }}.
+            Установленная температура на кухне вышла за допустимые пределы в {{ timestamp }}.
             Возвращаю температуру с {{ target_temperature }}°C на {{ set_temperature }}°C
       - service: climate.set_temperature
         entity_id: climate.danfoss_etrv0103_kitchen_thermostat
         data:
           temperature: "{{ set_temperature }}"
-      - service: persistent_notification.create
+      - service: script.notify_and_create_persistent_notification
         data:
-          title: "{{ 'ℹ️' }} Системное уведомление"
-          message: "{{ message }}"
-      - service: notify.mobile_app_sm_s901b
-        data:
-          title: "{{ 'ℹ️' }} Системное уведомление"
+          title: *sys_notify_title_info
           message: "{{ message }}"
 
   # Bedroom
@@ -710,19 +706,15 @@ automation:
           target_temperature: "{{ state_attr('climate.danfoss_etrv0100_bedroom_thermostat', 'temperature') }}"
           set_temperature: "{{ states('input_number.etrv_bedroom_default_temperature') | float(21) }}"
           message: >-
-            Температура в спальне вышла за допустимые пределы в {{ timestamp }}.
+            Установленная температура в спальне вышла за допустимые пределы в {{ timestamp }}.
             Возвращаю температуру с {{ target_temperature }}°C на {{ set_temperature }}°C
       - service: climate.set_temperature
         entity_id: climate.danfoss_etrv0100_bedroom_thermostat
         data:
           temperature: "{{ set_temperature }}"
-      - service: persistent_notification.create
+      - service: script.notify_and_create_persistent_notification
         data:
-          title: "{{ 'ℹ️' }} Системное уведомление"
-          message: "{{ message }}"
-      - service: notify.mobile_app_sm_s901b
-        data:
-          title: "{{ 'ℹ️' }} Системное уведомление"
+          title: *sys_notify_title_info
           message: "{{ message }}"
 
   # Living Room
@@ -745,17 +737,13 @@ automation:
           target_temperature: "{{ state_attr('climate.danfoss_etrv0103_living_room_thermostat', 'temperature') }}"
           set_temperature: "{{ states('input_number.etrv_living_room_default_temperature') | float(21) }}"
           message: >-
-            Температура в гостиной вышла за допустимые пределы в {{ timestamp }}.
+            Установленная температура в гостиной вышла за допустимые пределы в {{ timestamp }}.
             Возвращаю температуру с {{ target_temperature }}°C на {{ set_temperature }}°C
       - service: climate.set_temperature
         entity_id: climate.danfoss_etrv0103_living_room_thermostat
         data:
           temperature: "{{ set_temperature }}"
-      - service: persistent_notification.create
+      - service: script.notify_and_create_persistent_notification
         data:
-          title: "{{ 'ℹ️' }} Системное уведомление"
-          message: "{{ message }}"
-      - service: notify.mobile_app_sm_s901b
-        data:
-          title: "{{ 'ℹ️' }} Системное уведомление"
+          title: *sys_notify_title_info
           message: "{{ message }}"

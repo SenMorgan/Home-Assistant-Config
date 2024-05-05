@@ -7,6 +7,32 @@
 ######################################################################
 
 ###############################################
+## SETTINGS AND VARIABLES
+###############################################
+homeassistant:
+  customize:
+    package.node_anchors:
+      sys_notify_title_info: &sys_notify_title_info "📢 Системное уведомление"
+      sys_notify_title_warning: &sys_notify_title_warning "⚠️ Системное уведомление"
+      sys_notify_title_critical: &sys_notify_title_critical "🚨 Системное уведомление"
+
+###############################################
+## SCRIPTS
+###############################################
+script:
+  notify_and_create_persistent_notification:
+    alias: Notify and Create Persistent Notification
+    sequence:
+      - service: notify.mobile_app_sm_s901b
+        data:
+          title: "{{ title }}"
+          message: "{{ message }}"
+      - service: persistent_notification.create
+        data:
+          title: "{{ title }}"
+          message: "{{ message }}"
+
+###############################################
 ## AUTOMATIONS
 ###############################################
 automation:
@@ -86,7 +112,7 @@ automation:
     action:
       - service: notify.mobile_app_sm_s901b
         data_template:
-          title: Уведомление о снеге
+          title: ❄️ Уведомление о снеге
           message: Должно выпадать {{ states('sensor.openweathermap_snow') }} мм/ч снега!
 
   - id: "notification_door_opened"
@@ -102,7 +128,7 @@ automation:
     action:
       - service: notify.mobile_app_sm_s901b
         data:
-          title: "{{ 'ℹ️' }} Системное уведомление"
+          title: *sys_notify_title_info
           message: Входная дверь была открыта в {{ states('sensor.time') }}
 
   - id: "notification_gas_leakage_detected"
@@ -120,7 +146,7 @@ automation:
           sequence:
             - service: notify.mobile_app_sm_s901b
               data:
-                title: "{{ '🚨' }} Системное уведомление"
+                title: *sys_notify_title_critical
                 message: >
                   Обнаружена утечка газа в {{ states('sensor.time') }}
                   Концентрация газа: {{ states('sensor.co_and_natural_gas_alarm_gas') }} ppm
@@ -148,7 +174,7 @@ automation:
           sequence:
             - service: notify.mobile_app_sm_s901b
               data:
-                title: "{{ '🚨' }} Системное уведомление"
+                title: *sys_notify_title_critical
                 message: >
                   Обнаружена высокая концентрация угарного газа в {{ states('sensor.time') }}
                   Концентрация газа: {{ states('sensor.co_and_natural_gas_alarm_carbon_monoxide') }} ppm
@@ -163,15 +189,12 @@ automation:
         to: "off"
         for: "00:05:00"
     action:
-      - service: persistent_notification.create
+      - variables:
+          timestamp: "{{ trigger.to_state.last_changed.astimezone(now().tzinfo).strftime('%H:%M:%S') }}"
+      - service: script.notify_and_create_persistent_notification
         data:
-          title: "{{ '❗️' }} Системное уведомление"
-          # Use here the timestamp when the automation was triggered
-          message: Связь с ADS-B приёмником была потеряна в {{ states('sensor.time') }}
-      - service: notify.mobile_app_sm_s901b
-        data:
-          title: "{{ '❗️' }} Системное уведомление"
-          message: Связь с ADS-B приёмником была потеряна в {{ states('sensor.time') }}
+          title: *sys_notify_title_warning
+          message: Связь с ADS-B приёмником была потеряна в {{ timestamp }}
       - service: automation.turn_on
         entity_id: automation.notification_ads_b_receiver_connection_restored
 
@@ -186,13 +209,9 @@ automation:
     action:
       - variables:
           timestamp: "{{ trigger.to_state.last_changed.astimezone(now().tzinfo).strftime('%H:%M:%S') }}"
-      - service: persistent_notification.create
+      - service: script.notify_and_create_persistent_notification
         data:
-          title: "{{ 'ℹ️' }} Системное уведомление"
-          message: Связь с ADS-B приёмником была восстановлена в {{ timestamp }}
-      - service: notify.mobile_app_sm_s901b
-        data:
-          title: "{{ 'ℹ️' }} Системное уведомление"
+          title: *sys_notify_title_info
           message: Связь с ADS-B приёмником была восстановлена в {{ timestamp }}
       - service: automation.turn_off
         entity_id: automation.notification_ads_b_receiver_connection_restored
@@ -210,9 +229,9 @@ automation:
         value_template: >
           {{ is_number(trigger.from_state.state) and is_number(trigger.to_state.state) }}
     action:
-      - service: notify.mobile_app_sm_s901b
+      - service: script.notify_and_create_persistent_notification
         data:
-          title: "{{ '🚗' }} Цена топлива"
+          title: *sys_notify_title_info
           message: >
             Цена дизеля {{ 'упала' if trigger.from_state.state | float(0) > trigger.to_state.state | float(0) else 'возрасла' }}
             с {{ trigger.from_state.state }} до {{ trigger.to_state.state }} Kč/L
