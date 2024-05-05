@@ -44,27 +44,41 @@ automation:
   ## Notifications
   ###############################################
 
-  - id: "home_assistant_started_notification"
-    alias: Home Assistant Started Notification
+  - id: "home_assistant_start_notification"
+    alias: Home Assistant Start Notification
     trigger:
       - platform: homeassistant
         event: start
     action:
+      - variables:
+          notify_title: "⚠️ Системное уведомление"
+          notify_message: Home Assistant запущен в {{ states('sensor.time') }}
       - service: notify.mobile_app_sm_s901b
         data:
-          title: "{{ 'ℹ️' }} Системное уведомление"
-          message: Home Assistant started at {{ states('sensor.time') }}
+          title: "{{ notify_title }}"
+          message: "{{ notify_message }}"
+      - service: persistent_notification.create
+        data:
+          title: "{{ notify_title }}"
+          message: "{{ notify_message }}"
 
-  - id: "home_assistant_stopped_notification"
-    alias: Home Assistant Stopped Notification
+  - id: "home_assistant_shutdown_notification"
+    alias: Home Assistant Shutdown Notification
     trigger:
-      - platform: event
-        event_type: homeassistant_stop
-    action:
+      - platform: homeassistant
+        event: shutdown
+          action:
+      - variables:
+          notify_title: "⚠️ Системное уведомление"
+          notify_message: Home Assistant начал процесс выключения в {{ states('sensor.time') }}
       - service: notify.mobile_app_sm_s901b
         data:
-          title: "{{ 'ℹ️' }} Системное уведомление"
-          message: Home Assistant stopped at {{ states('sensor.time') }}
+          title: "{{ notify_title }}"
+          message: "{{ notify_message }}"
+      - service: persistent_notification.create
+        data:
+          title: "{{ notify_title }}"
+          message: "{{ notify_message }}"
 
   - id: "home_assistant_new_device_connected_notification"
     alias: Notification New Device Connected Notification
