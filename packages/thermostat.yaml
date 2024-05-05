@@ -15,9 +15,9 @@
 homeassistant:
   customize:
     package.node_anchors:
-      sys_notify_title_info: &sys_notify_title_info "📢 Системное уведомление"
-      sys_notify_title_warning: &sys_notify_title_warning "⚠️ Системное уведомление"
-      sys_notify_title_critical: &sys_notify_title_critical "🚨 Системное уведомление"
+      sys_notify_title_info: &sys_notify_title_info "💬 Системное уведомление"
+      sys_notify_title_warning: &sys_notify_title_warning "⚠️ Системное предупреждение"
+      sys_notify_title_critical: &sys_notify_title_critical "🚨 Внимание!"
 
 ###############################################
 ## INPUT BOOLEANS
