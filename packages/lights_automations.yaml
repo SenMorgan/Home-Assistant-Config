@@ -409,6 +409,22 @@ automation:
                 message: Реле освещения парковки было отключено более часа. Автоматическое включение в {{ states('sensor.time') }}
             - delay: 00:01:00
 
+  # Turn off all lights if tv was turned off for 10 seconds in the evening (21:00 ~ 02:00)
+  - id: "tv_off_all_lights_off"
+    alias: TV OFF All Lights OFF
+    trigger:
+      - platform: state
+        entity_id: media_player.tv
+        to: "off"
+        for: 00:00:10
+    condition:
+      - condition: time
+        after: "21:00:00"
+        before: "02:00:00"
+    action:
+      - service: script.turn_on
+        entity_id: script.turn_off_all_lights
+
 ###############################################
 ## SCENES
 ###############################################
