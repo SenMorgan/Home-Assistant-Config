@@ -125,6 +125,37 @@ automation:
                 title: "Open Config"
                 uri: "/config"
 
+  - id: "hacs_update_available_notification"
+    alias: HACS Update Available Notification
+    trigger:
+      - platform: state
+        entity_id: sensor.hacs
+    condition:
+      - condition: numeric_state
+        entity_id: sensor.hacs
+        above: 0
+    action:
+      - variables:
+          message: |
+            Доступно {{ states('sensor.hacs') }} обновлений в HACS.
+            Список обновлений:
+            {% for repo in states.sensor.hacs.attributes.repositories %}
+              - {{ repo.name }}: {{ repo.installed_version }} -> {{ repo.available_version }}
+            {% endfor %}
+      - service: notify.mobile_app_sm_s901b
+        data:
+          title: "{{ 'ℹ️' }} Системное уведомление"
+          message: "{{ message }}"
+          data:
+            actions:
+              - action: "URI"
+                title: "Open HACS"
+                uri: "/hacs"
+      - service: persistent_notification.create
+        data:
+          title: "{{ '❗️' }} Системное уведомление"
+          message: "{{ message }}"
+
   # Used blueprint from: https://community.home-assistant.io/t/blueprint-notify-when-zigbee-zwave-any-battery-device-has-gone-offline/537631
   - id: "notification_zigbee_battery_devices_have_gone_offline"
     alias: Notification Zigbee Battery Devices Have Gone Offline
