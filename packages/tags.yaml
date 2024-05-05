@@ -49,32 +49,52 @@ automation:
 
   - alias: Ignore People Presence tag was scanned
     id: tag_near_pc_is_scanned
-    mode: single
+    mode: restart
     trigger:
       - platform: tag
         tag_id: 5954e702-f87d-4955-969c-5231af33ece8
     action:
-      - service: input_boolean.toggle
+      - service: input_boolean.turn_on
         entity_id: input_boolean.ignore_people_presence
       # Turn off the script that could be running at this moment
       - service: script.turn_off
         entity_id: script.turn_off_lights_after_people_leave
       - variables:
-          message: >-
-            {% if is_state('input_boolean.ignore_people_presence', 'on') %}
-              Игнорирование присутствия включено - термостат и свет не будут отключены после ухода.
-            {% else %}
-              Игнорирование присутствия выключено.
-            {% endif %}
+          message: Игнорирование присутствия включено - термостат и свет не будут отключены после ухода.
       - service: media_player.play_media
         entity_id: media_player.yandex_station_midi
         data:
           media_content_id: "{{ message }}"
           media_content_type: text
+      - variables:
+          # Including an id in the action allows us to identify this script run
+          # and not accidentally trigger for other notification actions
+          action_disable: "{{ 'action_disable' ~ context.id }}"
       - service: notify.mobile_app_sm_s901b
         data:
           title: "👤 Режим присутствия"
           message: "{{ message }}"
+          data:
+            actions:
+              - action: "{{ action_disable }}"
+                title: ❌ Отключить обратно
+                icon: mdi:account-off
+      - wait_for_trigger:
+          - platform: event
+            event_type: mobile_app_notification_action
+            event_data:
+              action: "{{ action_disable }}"
+      - if:
+          - condition: template
+            value_template: "{{ wait.trigger.event.data.action == action_disable }}"
+        then:
+          - service: input_boolean.turn_off
+            target:
+              entity_id: input_boolean.ignore_people_presence
+          - service: notify.mobile_app_sm_s901b
+            data:
+              title: "👤 Режим присутствия"
+              message: "Игнорирование присутствия было отключено"
 
   - alias: Ignore People Presence reset
     id: ignore_people_presence_reset
@@ -103,7 +123,7 @@ automation:
           data:
             actions:
               - action: "{{ action_enable_back_on }}"
-                title: Включить снова
+                title: ↻ Включить снова
                 icon: mdi:account-check
       - wait_for_trigger:
           - platform: event
