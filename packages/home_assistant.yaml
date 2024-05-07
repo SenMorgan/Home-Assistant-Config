@@ -192,7 +192,7 @@ automation:
             {% set result.sensors = result.sensors + [state.name.replace(" Battery", "")] %}
           {% endif %}
         {% endfor %} {{result.sensors|join(', ')}}
-      notify_message: "Обнаружены недоступные Zigbee устройства: {{sensors}}"
+      message: "Обнаружены недоступные Zigbee устройства: {{sensors}}"
     trigger:
       - platform: time
         at: "20:00:00"
