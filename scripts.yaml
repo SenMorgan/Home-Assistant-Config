@@ -290,6 +290,8 @@ turn_off_all_lights:
       entity_id: all
     - service: scene.turn_on
       entity_id: scene.wallpanel_screen_off
+    - service: switch.turn_off
+      entity_id: switch.dcc_ex_pwr
 
 set_volume_level_repeatedly:
   alias: Set Volume Level Repeatedly
