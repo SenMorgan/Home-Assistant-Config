@@ -166,18 +166,13 @@ automation:
           message: "{{ message }}"
 
   # Used blueprint from: https://community.home-assistant.io/t/blueprint-notify-when-zigbee-zwave-any-battery-device-has-gone-offline/537631
-  - id: "notification_zigbee_battery_devices_have_gone_offline"
-    alias: Notification Zigbee Battery Devices Have Gone Offline
+  - id: "notification_battery_device_gone_offline"
+    alias: Notification Battery Device Gone Offline
     mode: single
     variables:
       day: 0
       exclude:
-        entity_id:
-          [
-            "sensor.sm_g991b_battery_level",
-            "sensor.sm_s901b_battery_level",
-            "sensor.galaxy_watch6_fegx_battery_level",
-          ]
+        entity_id: !secret EXCLUDED_BATTERY_DEVICES
       sensors: >-
         {% set result = namespace(sensors=[]) %} {% for state in states.sensor |
         selectattr('attributes.device_class', 'defined') |
