@@ -139,13 +139,15 @@ automation:
     trigger:
       - platform: state
         entity_id: sensor.hacs
+      - platform: time
+        at: "09:00:00"
     condition:
       - condition: numeric_state
         entity_id: sensor.hacs
         above: 0
     action:
       - variables:
-          message: |
+          message: >-
             Доступно {{ states('sensor.hacs') }} обновлений в HACS.
             Список обновлений:
             {% for repo in states.sensor.hacs.attributes.repositories %}
