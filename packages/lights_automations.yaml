@@ -328,6 +328,23 @@ automation:
       - service: light.turn_on
         entity_id: light.7_seg_clock
 
+  - id: "kitchen_clock_enable_at_morning_by_motion"
+    alias: Kitchen Clock Enable at Morning by Motion
+    trigger:
+      - platform: state
+        entity_id: binary_sensor.kitchen_motion_alarm
+        to: "on"
+    condition:
+      - condition: state
+        entity_id: binary_sensor.people_home
+        state: "on"
+      - condition: sun
+        after: sunrise
+        before_offset: 00:15:00
+    action:
+      - service: light.turn_on
+        entity_id: light.7_seg_clock
+
   - id: "living_room_bar_lights_by_sunset_or_tv_on"
     alias: Living Room Bar Lights by Sunset or TV ON
     trigger:
