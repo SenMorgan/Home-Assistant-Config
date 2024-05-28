@@ -341,6 +341,9 @@ automation:
       - condition: sun
         after: sunrise
         before_offset: 00:15:00
+      - condition: time
+        after: "04:00:00"
+        before: "12:00:00"
     action:
       - service: light.turn_on
         entity_id: light.7_seg_clock
