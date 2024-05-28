@@ -36,73 +36,6 @@ script:
 ## AUTOMATIONS
 ###############################################
 automation:
-  - id: "notification_kris_srrived"
-    alias: Notification Kris Arrived
-    trigger:
-      - platform: state
-        entity_id: person.kris
-        to: "home"
-    action:
-      - service: notify.mobile_app_sm_s901b
-        data:
-          title: "{{ '👩‍🦰' }} Семейное уведомление"
-          message: Кристина пришла домой в {{ states('sensor.time') }}
-      - if:
-          - condition: template
-            value_template: "{{ is_state('person.sen', 'home') }}"
-        then:
-          - service: script.turn_on
-            entity_id: script.notify_via_kitchen_spotlights
-          - if:
-              - condition: state
-                entity_id: switch.asus_pc
-                state: "on"
-            then:
-              - service: select.select_option
-                target:
-                  entity_id: select.pc_backlight_preset
-                data:
-                  option: "Alarm"
-              - delay: 00:00:10
-              - service: select.select_option
-                target:
-                  entity_id: select.pc_backlight_preset
-                data:
-                  option: "Gender"
-
-  - id: "notification_kris_leaved"
-    alias: Notification Kris Leaved
-    trigger:
-      - platform: state
-        entity_id: person.kris
-        from: "home"
-        to: "not_home"
-    action:
-      - service: notify.mobile_app_sm_s901b
-        data:
-          title: "{{ '👩‍🦰' }} Семейное уведомление"
-          message: Кристина ушла в {{ states('sensor.time') }}
-
-  - id: "notification_kris_is_near_me"
-    alias: Notification Kris Is Near Me
-    mode: single
-    trigger:
-      - platform: numeric_state
-        entity_id: sensor.distance_between_kris_and_sen
-        below: 200
-    condition:
-      - condition: template
-        value_template: "{{ not states('person.kris') == 'home' }}"
-        # Check if last notification was fired more than 30 minutes ago
-      - condition: template
-        value_template: >
-          {{ now() - state_attr('automation.notification_kris_is_near_me', 'last_triggered') > timedelta(minutes=5) }}
-    action:
-      - service: notify.mobile_app_sm_s901b
-        data:
-          title: "{{ '👩‍🦰' }} Семейное уведомление"
-          message: Кристина в {{ states('sensor.distance_between_kris_and_sen') }} метрах от Вас в {{ states('sensor.time') }}
-
   - id: "notification_snow"
     alias: Notification Snow
     trigger:
@@ -236,42 +169,39 @@ automation:
             Цена дизеля {{ 'упала' if trigger.from_state.state | float(0) > trigger.to_state.state | float(0) else 'возрасла' }}
             с {{ trigger.from_state.state }} до {{ trigger.to_state.state }} Kč/L
 
-  - id: "notification_aircraft_detected"
-    alias: Notification Aircraft Detected
-    trigger:
-      - platform: state
-        entity_id: sensor.fr24_aircraft
-    condition:
-      - condition: template
-        value_template: !secret AIRCRAFTS_TO_TRACK_CONDITION_TEMPLATE
-        # Do not forget to add this line to secrets.yaml file and replace OK*** with your aircraft registration number:
-        # AIRCRAFTS_TO_TRACK_CONDITION_TEMPLATE: {{ state_attr('sensor.fr24_aircraft', 'aircraft') | regex_search('OK***|OK***') }}
-      - condition: template
-        value_template: >
-          {{ now() - state_attr('automation.notification_aircraft_detected', 'last_triggered') > timedelta(minutes=5) }}
-    action:
-      - service: notify.mobile_app_sm_s901b
-        data:
-          title: "{{ '✈️' }} Пролетает знакомый самолёт"
-          message: !secret AIRCRAFTS_TO_TRACK_MESSAGE_TEMPLATE
-
-          # There is no other way to hide aircrafts registration number from code in secrets.yaml and use it in template,
-          # so I have to save all code in the secrets.yaml file:
-          # AIRCRAFTS_TO_TRACK_MESSAGE_TEMPLATE: |
-          # {% set aircraft = namespace(flight='', alt_baro='', gs='') %}
-          # {% set aircrafts_list = state_attr('sensor.fr24_aircraft', 'aircraft') %}
-          # {% for element in aircrafts_list if element | regex_search('OK***|OK***') %} # DO NOT FORGET TO CHANGE AIRCRAFTS REGISTRATION NUMBER
-          #         {% set aircraft.flight = element['flight'] %}
-          #         {% set aircraft.alt = (((element['alt_baro'] | float(0)) * 0.3048) | int(0)) | string %}
-          #         {% set aircraft.gs = (((element['gs'] | float(0)) * 1.852) | int(0)) | string %}
-          # {% endfor %}
-          # {% if aircraft.flight == '' %}
-          #         {{ 'Данные о самолёте не получены' }}
-          # {% else %}
-          #         {{ 'Номер рейса: ' + aircraft.flight }}
-          #         {{ 'Высота: ' + aircraft.alt + ' м' }}
-          #         {{ 'Скорость: ' + aircraft.gs + ' км/ч' }}
-          # {% endif %}
+  # This automation in define in my private.yaml, so here is only a snippet
+  # - id: "notification_aircraft_detected"
+  #   alias: Notification Aircraft Detected
+  #   trigger:
+  #     - platform: state
+  #       entity_id: sensor.fr24_aircraft
+  #   condition:
+  #     - condition: template
+  #       value_template: "{{ state_attr('sensor.fr24_aircraft', 'aircraft') | regex_search('AIRCRAFT1|AIRCRAFT2|AIRCRAFT3') }}"
+  #     - condition: template
+  #       value_template: >
+  #         {{ now() - state_attr('automation.notification_aircraft_detected', 'last_triggered') > timedelta(minutes=5) }}
+  #   action:
+  #     - variables:
+  #         aircrafts_to_track: 'AIRCRAFT1|AIRCRAFT2|AIRCRAFT3'
+  #     - service: notify.mobile_app_sm_s901b
+  #       data:
+  #         title: "{{ '✈️' }} Known Aircraft Detected"
+  #         message: |
+  #           {% set aircraft = namespace(flight='', alt_baro='', gs='') %}
+  #           {% set aircrafts_list = state_attr('sensor.fr24_aircraft', 'aircraft') %}
+  #           {% for element in aircrafts_list if element | regex_search(aircrafts_to_track) %}
+  #                   {% set aircraft.flight = element['flight'] %}
+  #                   {% set aircraft.alt = (((element['alt_baro'] | float) * 0.3048) | int(0)) | string %}
+  #                   {% set aircraft.gs = (((element['gs'] | float) * 1.852) | int(0)) | string %}
+  #           {% endfor %}
+  #           {% if aircraft.flight == '' %}
+  #                   {{ 'Aircraft data not received' }}
+  #           {% else %}
+  #                   {{ 'Flight number: ' + aircraft.flight }}
+  #                   {{ 'Altitude: ' + aircraft.alt + ' m' }}
+  #                   {{ 'Speed: ' + aircraft.gs + ' km/h' }}
+  #           {% endif %}
 
   - id: "notification_solar_panel_power_above_threshold"
     alias: Notification Solar Panel Power Above Threshold
@@ -284,29 +214,3 @@ automation:
         data:
           title: "{{ '🌞' }} Солнечная панель"
           message: "Мощность выше порога: {{ states('sensor.solar_panel_power') }} W"
-
-  - id: "notification_kris_watch_charged"
-    alias: Notification Kris Watch Charged
-    trigger:
-      - platform: state
-        entity_id: sensor.galaxy_watch6_fegx_battery_state
-        to: "full"
-    action:
-      - service: notify.mobile_app_sm_g991b
-        data:
-          title: "{{ '🔋' }} Часы заряжены"
-          message: "Твои Galaxy Watch полностью заряжены"
-      # If silent mode is not enabled, then notify via Yandex also
-      - if:
-          - condition: state
-            entity_id: input_boolean.silent_mode
-            state: "off"
-          - condition: state
-            entity_id: binary_sensor.people_home
-            state: "on"
-        then:
-          - service: media_player.play_media
-            entity_id: media_player.yandex_station_midi
-            data:
-              media_content_type: text
-              media_content_id: "Часы Кристины полностью заряжены"
