@@ -28,6 +28,7 @@ ip_bans.yaml
 secrets.yaml
 known_devices.yaml
 yandex-station.yaml
+private.yaml
 *.log*
 *.xml
 *.db*
