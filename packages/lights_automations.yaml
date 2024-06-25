@@ -442,6 +442,9 @@ automation:
       - condition: time
         after: "21:00:00"
         before: "02:00:00"
+      - condition: state
+        entity_id: switch.asus_pc
+        state: "off"
     action:
       - service: script.turn_on
         entity_id: script.turn_off_all_lights
