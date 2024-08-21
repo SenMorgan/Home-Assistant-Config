@@ -116,8 +116,6 @@
 ###############################################
 - name: "Solar Panel Voltage"
   device_class: voltage
-  # Obsolete topic for another solar panel motitor device
-  # state_topic: "/solar/solar/volt"
   state_topic: "/solar-inverter-monitor/state/volt"
   value_template: "{{ value | default(0) }}"
   unit_of_measurement: "V"
@@ -163,34 +161,6 @@
   state_class: total_increasing
   device_class: duration
   unit_of_measurement: s
-
-- name: "Battery Charging Voltage"
-  device_class: voltage
-  state_topic: "/solar/batt/volt"
-  value_template: "{{ value }}"
-  unit_of_measurement: "V"
-  state_class: measurement
-
-- name: "Battery Charging Current"
-  device_class: current
-  state_topic: "/solar/batt/amp"
-  value_template: "{{ value }}"
-  unit_of_measurement: "A"
-  state_class: measurement
-
-- name: "Battery Charging Power"
-  device_class: power
-  state_topic: "/solar/batt/watt"
-  value_template: "{{ value }}"
-  unit_of_measurement: "W"
-  state_class: measurement
-
-- name: "Battery Charging Energy"
-  device_class: energy
-  state_topic: "/solar/batt/wh"
-  value_template: "{{ value }}"
-  unit_of_measurement: "Wh"
-  state_class: total_increasing
 
 ###############################################
 ## Power Monitor Sensors
