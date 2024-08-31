@@ -113,6 +113,34 @@ automation:
                   Концентрация газа: {{ states('sensor.co_and_natural_gas_alarm_carbon_monoxide') }} ppm
             - delay: 00:00:10
 
+- id: "notification_water_leakage_detected"
+    alias: Notification Water Leakage Detected
+    mode: parallel
+    trigger:
+      - platform: state
+        entity_id:
+          - binary_sensor.water_leakage_bathroom_moisture
+          - binary_sensor.water_leakage_kitchen_moisture
+        to: "on"
+    action:
+      - service: notify.mobile_app_sm_s901b
+        data: &notify_data
+          title: "🚨 Внимание! Утечка воды"
+          message: >
+            {% set rooms = {
+              'binary_sensor.water_leakage_bathroom_moisture': 'в ванной',
+              'binary_sensor.water_leakage_kitchen_moisture': 'на кухне'
+            } %}
+            {% set room = rooms[trigger.entity_id] %}
+            Обнаружена утечка воды {{ room }} в {{ states('sensor.time') }}.
+          data:
+            ttl: 0
+            priority: high
+            channel: alarm_stream
+      # Notify Kris phone with the same message
+      - service: notify.mobile_app_sm_g991b
+        data: *notify_data
+
   - id: "notification_ads_b_receiver_disconnected"
     alias: Notification ADS-B Receiver Disconnected
     trigger:
