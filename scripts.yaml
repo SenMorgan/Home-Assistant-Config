@@ -251,7 +251,7 @@ update_shopping_list:
   alias: Update Shopping List
   sequence:
     - service: media_player.play_media
-      entity_id: media_player.yandex_station
+      entity_id: media_player.yandex_station_midi
       data:
         media_content_id: update
         media_content_type: shopping_list
@@ -316,7 +316,7 @@ set_volume_level_repeatedly:
       example: 0.2
     media_player:
       description: The media player to set volume for
-      example: media_player.yandex_station
+      example: media_player.yandex_station_midi
 
 set_all_yandex_stations_volume_level:
   alias: Set All Yandex Stations Volume Level

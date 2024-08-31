@@ -445,7 +445,7 @@ automation:
               (states('input_number.thermostat_new_target_temperature') | float(0)) }}
     action:
       - service: media_player.play_media
-        entity_id: media_player.yandex_station
+        entity_id: media_player.yandex_station_midi
         data:
           media_content_id: Подогрев квартиры окончен
           media_content_type: text
