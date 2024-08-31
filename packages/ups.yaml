@@ -70,19 +70,19 @@ automation:
         entity_id: sensor.ups_status_data
         to: "OB DISCHRG"
     action:
-      - service: persistent_notification.create
+      - action: persistent_notification.create
         data:
           title: *sys_notify_title_critical
           message: >
             UPS потерял питание в {{ states('sensor.time') }}
             Рассчётное время работы: {{ states('sensor.ups_battery_runtime') | int(0) | timestamp_custom('%M:%S') }} минут
-      - service: notify.mobile_app_sm_s901b
+      - action: notify.mobile_app_sm_s901b
         data:
           title: *sys_notify_title_critical
           message: |
             UPS потерял питание в {{ states('sensor.time') }}
             Рассчётное время работы: {{ states('sensor.ups_battery_runtime') | int(0) | timestamp_custom('%M:%S') }} минут
-      - service: automation.turn_on
+      - action: automation.turn_on
         entity_id: automation.ups_grid_power_restored_notification
 
   - alias: UPS Grid Power Restored Notification
@@ -92,12 +92,12 @@ automation:
       - platform: template
         value_template: "{{ 'OL' in states('sensor.ups_status_data') }}"
     action:
-      - service: persistent_notification.create
+      - action: persistent_notification.create
         data:
           title: *sys_notify_title_critical
           message: >
             UPS восстановил питание в {{ states('sensor.time') }}
-      - service: automation.turn_off
+      - action: automation.turn_off
         entity_id: automation.ups_grid_power_restored_notification
 
   - alias: UPS Low Battery Warning Notification
@@ -108,7 +108,7 @@ automation:
         entity_id: sensor.ups_battery_charge
         below: 21
     action:
-      - service: notify.mobile_app_sm_s901b
+      - action: notify.mobile_app_sm_s901b
         data:
           title: *sys_notify_title_critical
           message: >
@@ -127,14 +127,14 @@ automation:
       - platform: template
         value_template: "{{ 'OB DISCHRG LB' in states('sensor.ups_status_data') }}"
     action:
-      - service: notify.mobile_app_sm_s901b
+      - action: notify.mobile_app_sm_s901b
         data:
           title: *sys_notify_title_critical
           message: |
             Критически низкий заряд батареи UPS.
             Немедленное отключение сервера Home Assistant в {{ states('sensor.time') }}
       - delay: 00:00:05
-      - service: hassio.host_shutdown
+      - action: hassio.host_shutdown
 
   - alias: UPS Lost Grid Power Light Notification
     id: "ups_lost_grid_power_light_notification"
@@ -143,12 +143,12 @@ automation:
       - platform: template
         value_template: "{{ 'OB' in states('sensor.ups_status_data') }}"
     action:
-      - service: light.turn_on
+      - action: light.turn_on
         data:
           entity_id: light.tradfri_bulb
           brightness: 255
           effect: "breathe"
-      - service: automation.turn_on
+      - action: automation.turn_on
         entity_id: automation.ups_grid_power_restored_light_notification
 
   - alias: UPS Grid Power Restored Light Notification
@@ -158,7 +158,7 @@ automation:
       - platform: template
         value_template: "{{ 'OL' in states('sensor.ups_status_data') }}"
     action:
-      - service: light.turn_on
+      - action: light.turn_on
         data:
           entity_id: light.tradfri_bulb
           brightness: 255
@@ -168,7 +168,7 @@ automation:
           - condition: template
             value_template: "{{ 'OL' in states('sensor.ups_status_data') }}"
         then:
-          - service: light.turn_off
+          - action: light.turn_off
             entity_id: light.tradfri_bulb
-      - service: automation.turn_off
+      - action: automation.turn_off
         entity_id: automation.ups_grid_power_restored_light_notification

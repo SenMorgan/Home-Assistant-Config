@@ -43,7 +43,7 @@ script:
   scooter_charger_energy_consumed_notify:
     alias: Scooter Charger Energy Consumed Speak
     sequence:
-      - service: notify.mobile_app_sm_s901b
+      - action: notify.mobile_app_sm_s901b
         data:
           title: 🛴 Зарядка самоката окончена
           message: >
@@ -53,7 +53,7 @@ script:
             {{ ((as_timestamp(now()) - as_timestamp(states('input_datetime.scooter_charger_energy_start_time'))) / 60) | round }}
             минут
       # Play message on yandex station
-      - service: media_player.play_media
+      - action: media_player.play_media
         entity_id: media_player.yandex_station_midi
         data:
           media_content_id: >
@@ -78,17 +78,17 @@ automation:
         entity_id: input_boolean.scooter_charger
         to: "on"
     action:
-      - service: switch.turn_on
+      - action: switch.turn_on
         entity_id: switch.scooter_charger_socket
-      - service: automation.turn_on
+      - action: automation.turn_on
         entity_id: automation.scooter_charger_disable_when_idle
       # Save current energy consumption
-      - service: input_number.set_value
+      - action: input_number.set_value
         data:
           entity_id: input_number.scooter_charger_energy_start
           value: "{{ states('sensor.scooter_charger_summation_delivered') | float }}"
       # Save current time
-      - service: input_datetime.set_datetime
+      - action: input_datetime.set_datetime
         data:
           entity_id: input_datetime.scooter_charger_energy_start_time
           datetime: "{{ now().strftime('%Y-%m-%d %H:%M:%S') }}"
@@ -104,11 +104,11 @@ automation:
         entity_id: input_boolean.scooter_charger
         to: "off"
     action:
-      - service: switch.turn_off
+      - action: switch.turn_off
         entity_id: switch.scooter_charger_socket
-      - service: script.turn_on
+      - action: script.turn_on
         entity_id: script.scooter_charger_energy_consumed_notify
-      - service: automation.turn_off
+      - action: automation.turn_off
         entity_id: automation.scooter_charger_disable_when_idle
 
   # When Scooter Charger Consumption is lower than 15W for 10 minutes - disable charger
@@ -123,11 +123,11 @@ automation:
         for:
           minutes: 10
     action:
-      - service: switch.turn_off
+      - action: switch.turn_off
         entity_id: switch.scooter_charger_socket
-      - service: input_boolean.turn_off
+      - action: input_boolean.turn_off
         entity_id: input_boolean.scooter_charger
-      - service: script.turn_on
+      - action: script.turn_on
         entity_id: script.scooter_charger_energy_consumed_notify
-      - service: automation.turn_off
+      - action: automation.turn_off
         entity_id: automation.disable_scooter_charger_when_idle

@@ -26,11 +26,11 @@ script:
       - wait_template: "{{ states('binary_sensor.people_home') == 'off' }}"
         timeout: "00:30:00"
         continue_on_timeout: false
-      - service: script.turn_on
+      - action: script.turn_on
         entity_id: script.turn_off_all_lights
-      - service: scene.turn_on
+      - action: scene.turn_on
         entity_id: scene.no_people_home
-      - service: notify.mobile_app_sm_s901b
+      - action: notify.mobile_app_sm_s901b
         data:
           title: "{{ '👋' }} До свидания"
           message: >
@@ -73,7 +73,7 @@ automation:
           - condition: trigger
             id: "SEN_CAME_HOME"
         then:
-          - service: light.turn_on
+          - action: light.turn_on
             entity_id: light.hall_lights
       - wait_template: "{{ states('binary_sensor.hall_door_contact') == 'off' }}"
         timeout: 00:10:00
@@ -90,7 +90,7 @@ automation:
                   ( as_timestamp(states.person.sen.last_changed, 0) | int(0) ) }}"
             sequence:
               - delay: 00:00:01
-              - service: media_player.play_media
+              - action: media_player.play_media
                 entity_id: media_player.yandex_station_midi
                 data:
                   media_content_id: >
@@ -104,10 +104,10 @@ automation:
                         after: sunset
                         before_offset: 00:15:00
                     sequence:
-                      - service: light.turn_on
+                      - action: light.turn_on
                         entity_id: light.string_lights
                       - delay: 00:00:01
-                      - service: light.turn_on
+                      - action: light.turn_on
                         entity_id: light.kitchen_ceiling_light
           # Only Kris came home
           - conditions:
@@ -120,7 +120,7 @@ automation:
                   ( as_timestamp(states.person.kris.last_changed, 0) | int(0) ) }}"
             sequence:
               - alias: "Only welcome"
-                service: media_player.play_media
+                action: media_player.play_media
                 entity_id: media_player.yandex_station_midi
                 data:
                   media_content_id: >
@@ -144,10 +144,10 @@ automation:
                         after: sunset
                         before_offset: 00:15:00
                     sequence:
-                      - service: light.turn_on
+                      - action: light.turn_on
                         entity_id: light.string_lights
               - alias: "Welcome everybody"
-                service: media_player.play_media
+                action: media_player.play_media
                 entity_id: media_player.yandex_station_midi
                 data:
                   media_content_id: >
@@ -156,7 +156,7 @@ automation:
                   extra:
                     volume_level: 0.6
         default:
-          - service: script.notify_and_create_persistent_notification
+          - action: script.notify_and_create_persistent_notification
             data:
               title: *sys_notify_title_warning
               message: Автоматизация приветствия не смогла определить кто пришел домой
@@ -177,7 +177,7 @@ automation:
         entity_id: input_boolean.ignore_people_presence
         state: "off"
     action:
-      - service: script.turn_on
+      - action: script.turn_on
         entity_id: script.turn_off_lights_after_people_leave
 
   - id: "hall_lights_by_motion_on"
@@ -194,9 +194,9 @@ automation:
         entity_id: light.hall_lights
         state: "off"
     action:
-      - service: light.turn_on
+      - action: light.turn_on
         entity_id: light.hall_lights
-      - service: input_boolean.turn_on
+      - action: input_boolean.turn_on
         entity_id: input_boolean.flag_hall_lights_triggered_by_motion
 
   - id: "hall_lights_by_motion_off"
@@ -210,9 +210,9 @@ automation:
         entity_id: input_boolean.flag_hall_lights_triggered_by_motion
         state: "on"
     action:
-      - service: light.turn_off
+      - action: light.turn_off
         entity_id: light.hall_lights
-      - service: input_boolean.turn_off
+      - action: input_boolean.turn_off
         entity_id: input_boolean.flag_hall_lights_triggered_by_motion
 
   ###############################################
@@ -251,7 +251,7 @@ automation:
     #              after: sunset
     #              after_offset: -00:25:00
     action:
-      - service: light.turn_on
+      - action: light.turn_on
         entity_id:
           - light.gyver_lamp
       - if:
@@ -259,15 +259,15 @@ automation:
             value_template: >
               {{ states('person.kris') == 'home'}}
         then:
-          - service: switch.turn_off
+          - action: switch.turn_off
             entity_id:
               - switch.pc_backlight_sync_send
         else:
-          - service: light.turn_on
+          - action: light.turn_on
             entity_id:
               - light.shelf_lighting
               - light.pc_backlight
-          - service: switch.turn_on
+          - action: switch.turn_on
             entity_id:
               - switch.pc_backlight_sync_send
 
@@ -279,7 +279,7 @@ automation:
         from: "on"
         to: "off"
     action:
-      - service: light.turn_off
+      - action: light.turn_off
         entity_id:
           - light.gyver_lamp
           - light.shelf_lighting
@@ -296,9 +296,9 @@ automation:
             value_template: >
               {{ trigger.to_state.state == 'on' }}
         then:
-          - service: light.turn_on
+          - action: light.turn_on
             entity_id: light.7_seg_clock
-          - service: scene.turn_on
+          - action: scene.turn_on
             entity_id: scene.wallpanel_screen_on
         else:
           # Turn off only if people presence ignoring is off
@@ -307,7 +307,7 @@ automation:
                 entity_id: input_boolean.ignore_people_presence
                 state: "off"
             then:
-              - service: light.turn_off
+              - action: light.turn_off
                 entity_id: light.7_seg_clock
 
   - id: "kitchen_clock_reenable"
@@ -325,7 +325,7 @@ automation:
         entity_id: input_boolean.home_night_mode
         state: "off"
     action:
-      - service: light.turn_on
+      - action: light.turn_on
         entity_id: light.7_seg_clock
 
   - id: "kitchen_clock_enable_at_morning_by_motion"
@@ -345,7 +345,7 @@ automation:
         after: "04:00:00"
         before: "12:00:00"
     action:
-      - service: light.turn_on
+      - action: light.turn_on
         entity_id: light.7_seg_clock
 
   - id: "living_room_bar_lights_by_sunset_or_tv_on"
@@ -394,7 +394,7 @@ automation:
             entity_id: media_player.tv
             state: "on"
         then:
-          - service: scene.turn_on
+          - action: scene.turn_on
             entity_id: scene.movies
 
   - id: "living_room_bar_lights_by_sunrise_off"
@@ -404,7 +404,7 @@ automation:
         event: sunrise
         offset: -01:00:00
     action:
-      - service: light.turn_off
+      - action: light.turn_off
         entity_id: light.bar_light
 
   # Send me notification if switch.parking_light is turned off for more than 1 hour and turn it ON
@@ -422,9 +422,9 @@ automation:
               entity_id: switch.parking_light
               state: "on"
           sequence:
-            - service: switch.turn_on
+            - action: switch.turn_on
               entity_id: switch.parking_light
-            - service: notify.mobile_app_sm_s901b
+            - action: notify.mobile_app_sm_s901b
               data:
                 title: *sys_notify_title_info
                 message: Реле освещения парковки было отключено более часа. Автоматическое включение в {{ states('sensor.time') }}
@@ -446,7 +446,7 @@ automation:
         entity_id: switch.asus_pc
         state: "off"
     action:
-      - service: script.turn_on
+      - action: script.turn_on
         entity_id: script.turn_off_all_lights
 
 ###############################################

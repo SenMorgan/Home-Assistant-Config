@@ -57,39 +57,39 @@ automation:
                     entity_id: input_boolean.child_lock
                     state: "off"
                 then:
-                  - service: script.turn_on
+                  - action: script.turn_on
                     entity_id: script.turn_off_all_lights
-                  - service: scene.turn_on
+                  - action: scene.turn_on
                     entity_id: scene.good_night
-                  - service: input_boolean.turn_on
+                  - action: input_boolean.turn_on
                     entity_id:
                       - input_boolean.home_night_mode
                       - input_boolean.silent_mode
                 else:
-                  - service: cover.toggle
+                  - action: cover.toggle
                     entity_id: cover.bedroom
           - conditions:
               - "{{ command == 'double' }}"
             sequence:
-              - service: light.toggle
+              - action: light.toggle
                 entity_id: light.bedroom_nightlight
           - conditions:
               - "{{ command == 'hold' }}"
             sequence:
               # Allow to turn on bedroom lights and open cover
-              - service: input_boolean.turn_off
+              - action: input_boolean.turn_off
                 entity_id: input_boolean.bedroom_lights_and_cover_safety_switch
               # Open cover and make another actions
-              - service: cover.open_cover
+              - action: cover.open_cover
                 entity_id: cover.bedroom
               - if:
                   - condition: state
                     entity_id: input_boolean.child_lock
                     state: "off"
                 then:
-                  - service: scene.turn_on
+                  - action: scene.turn_on
                     entity_id: scene.good_morning
-                  - service: input_boolean.turn_off
+                  - action: input_boolean.turn_off
                     entity_id:
                       - input_boolean.home_night_mode
                       - input_boolean.silent_mode
@@ -123,33 +123,33 @@ automation:
               - conditions:
                   - "{{ flip_degrees == 90 }}"
                 sequence:
-                  - service: light.toggle
+                  - action: light.toggle
                     entity_id: light.string_lights
               - conditions:
                   - "{{ flip_degrees == 180 }}"
                 sequence:
-                  - service: light.toggle
+                  - action: light.toggle
                     entity_id: light.floor_lamp
               - conditions:
                   - "{{ command == 'shake' }}"
                 sequence:
-                  - service: script.turn_on
+                  - action: script.turn_on
                     entity_id: script.turn_off_all_lights
               - conditions:
                   - "{{ command == 'tap' }}"
                 sequence:
-                  - service: scene.turn_on
+                  - action: scene.turn_on
                     entity_id: scene.movies
               - conditions:
                   - "{{ command == 'slide' }}"
                 sequence:
-                  - service: light.toggle
+                  - action: light.toggle
                     entity_id: light.mi_desk_lamp
               - conditions:
                   - "{{ command == 'rotate_left' or command == 'rotate_right' }}"
                   - "{{ is_state('light.mi_desk_lamp', 'on') }}"
                 sequence:
-                  - service: light.turn_on
+                  - action: light.turn_on
                     entity_id: light.mi_desk_lamp
                     data_template:
                       brightness:
@@ -177,10 +177,10 @@ automation:
           - conditions:
               - "{{ command == 'on' }}"
             sequence:
-              - service: input_boolean.turn_on
+              - action: input_boolean.turn_on
                 entity_id: input_boolean.scooter_charger
           - conditions:
               - "{{ command == 'off' }}"
             sequence:
-              - service: input_boolean.turn_off
+              - action: input_boolean.turn_off
                 entity_id: input_boolean.scooter_charger

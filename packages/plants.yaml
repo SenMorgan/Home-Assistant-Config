@@ -36,7 +36,7 @@ automation:
       - platform: time_pattern
         minutes: "/10"
     action:
-      - service: python_script.update_plants_to_water
+      - action: python_script.update_plants_to_water
 
   - alias: Notify on Plants to Water
     id: "notify_on_plants_to_water"
@@ -64,11 +64,11 @@ automation:
               - sat
               - sun
     action:
-      - service: persistent_notification.create
+      - action: persistent_notification.create
         data:
           title: "{{ '🪴' }} Домашние цветы"
           message: "Нужно полить следующие растения: {{ states('input_text.plants_to_water') }}"
-      - service: notify.mobile_app_sm_s901b
+      - action: notify.mobile_app_sm_s901b
         data:
           title: "{{ '🪴' }} Домашние цветы"
           message: "Нужно полить следующие растения: {{ states('input_text.plants_to_water') }}"

@@ -3,47 +3,47 @@ zones:
   Под столом:
     zone: [[28713, 26924, 30501, 28996]]
     sequence:
-      - service: script.turn_on
+      - action: script.turn_on
         entity_id: script.yandex_joke_before_cleaning_kitchen
 
   Под раковиной:
     zone: [[27774, 25472, 30633, 27154]]
     sequence:
-      - service: script.turn_on
+      - action: script.turn_on
         entity_id: script.yandex_joke_before_cleaning_kitchen
 
   Зона уборки спальня:
     sequence:
-      - service: script.turn_on
+      - action: script.turn_on
         entity_id: script.yandex_joke_before_cleaning_rooms
     room: 17
 
   Зона уборки зал:
     room: 18
     sequence:
-      - service: script.turn_on
+      - action: script.turn_on
         entity_id: script.yandex_joke_before_cleaning_rooms
 
   Зона уборки корридор:
     room: 19
     sequence:
-      - service: script.turn_on
+      - action: script.turn_on
         entity_id: script.yandex_joke_before_cleaning_rooms
 
   Зона уборки туалет:
     room: 21
     sequence:
-      - service: script.turn_on
+      - action: script.turn_on
         entity_id: script.yandex_joke_before_cleaning_rooms
 
   Зона уборки кухня:
     room: 22
     sequence:
-      - service: script.turn_on
+      - action: script.turn_on
         entity_id: script.yandex_joke_before_cleaning_rooms
 
   Зона уборки ванная:
     room: 16
     sequence:
-      - service: script.turn_on
+      - action: script.turn_on
         entity_id: script.yandex_joke_before_cleaning_rooms

@@ -122,7 +122,7 @@ automation:
       entity_id: input_boolean.wc_occupied
       state: "off"
     action:
-      service: input_boolean.turn_on
+      action: input_boolean.turn_on
       entity_id: input_boolean.wc_occupied
 
   - alias: WC Accupancy Reset
@@ -139,7 +139,7 @@ automation:
       entity_id: input_boolean.wc_occupied
       state: "on"
     action:
-      service: input_boolean.turn_off
+      action: input_boolean.turn_off
       entity_id: input_boolean.wc_occupied
 
   - alias: WC Ventilation Start Timer Manually
@@ -157,17 +157,17 @@ automation:
           as_timestamp(state_attr('timer.wc_ventilation', 'finishes_at'), 0)) or
           (states('timer.wc_ventilation') in ['idle', 'paused']) }}"
     action:
-      - service: timer.start
+      - action: timer.start
         data:
           entity_id: timer.wc_ventilation
           duration:
             minutes: "{{ states('input_number.wc_ventilate_for_minutes_after_manual_trigger') | default(0) | float(0) }}"
       # Stop waitin to bathroom humidity is below threshold, cause we are ventilating manually
-      - service: input_select.select_option
+      - action: input_select.select_option
         data:
           entity_id: input_select.wc_ventilation_state
           option: MANUAL_ON
-      - service: automation.turn_off
+      - action: automation.turn_off
         entity_id: automation.wc_ventilation_stop_humidity_below_threshold
 
   - alias: WC Ventilation Stop Timer Manually
@@ -182,15 +182,15 @@ automation:
       entity_id: timer.wc_ventilation
       state: "active"
     action:
-      - service: timer.cancel
+      - action: timer.cancel
         entity_id: timer.wc_ventilation
-      - service: timer.cancel
+      - action: timer.cancel
         entity_id: timer.wc_wait_for_open_to_ventilate
-      - service: input_select.select_option
+      - action: input_select.select_option
         data:
           entity_id: input_select.wc_ventilation_state
           option: MANUAL_OFF
-      - service: automation.turn_off
+      - action: automation.turn_off
         entity_id: automation.wc_ventilation_stop_humidity_below_threshold
 
   - alias: WC Ventilation Timeout
@@ -201,15 +201,15 @@ automation:
       event_data:
         entity_id: timer.wc_ventilation
     action:
-      - service: fan.turn_off
+      - action: fan.turn_off
         entity_id: fan.wc_and_bathroom
-      - service: timer.cancel
+      - action: timer.cancel
         entity_id: timer.wc_wait_for_open_to_ventilate
-      - service: input_select.select_option
+      - action: input_select.select_option
         data:
           entity_id: input_select.wc_ventilation_state
           option: TIMEOUT
-      - service: automation.turn_off
+      - action: automation.turn_off
         entity_id: automation.wc_ventilation_stop_humidity_below_threshold
 
   - alias: WC Ventilation Start Timeout For Door Open State
@@ -222,7 +222,7 @@ automation:
       for:
         seconds: "{{ states('input_number.wc_consider_ventilate_when_finished_if_occupied_for_seconds') | default(0) | float(0) }}"
     action:
-      - service: timer.start
+      - action: timer.start
         data:
           entity_id: timer.wc_wait_for_open_to_ventilate
           duration:
@@ -246,16 +246,16 @@ automation:
           as_timestamp(state_attr('timer.wc_ventilation', 'finishes_at'), 0)) or
           (states('timer.wc_ventilation') in ['idle', 'paused']) }}"
     action:
-      - service: fan.turn_on
+      - action: fan.turn_on
         entity_id: fan.wc_and_bathroom
-      - service: timer.cancel
+      - action: timer.cancel
         entity_id: timer.wc_wait_for_open_to_ventilate
-      - service: timer.start
+      - action: timer.start
         data:
           entity_id: timer.wc_ventilation
           duration:
             minutes: "{{ states('input_number.wc_ventilate_for_minutes_when_finished') | default(0) | float(0) }}"
-      - service: input_select.select_option
+      - action: input_select.select_option
         data:
           entity_id: input_select.wc_ventilation_state
           option: TOILET_ON
@@ -268,18 +268,18 @@ automation:
       above: input_number.wc_ventilation_start_humidity_threshold
       for: 00:02:00
     action:
-      - service: timer.cancel
+      - action: timer.cancel
         entity_id: timer.wc_wait_for_open_to_ventilate
-      - service: automation.turn_on
+      - action: automation.turn_on
         entity_id: automation.wc_ventilation_stop_humidity_below_threshold
-      - service: timer.start
+      - action: timer.start
         data:
           entity_id: timer.wc_ventilation
           duration:
             minutes: "{{ states('input_number.wc_max_ventilation_duration_minutes') | default(0) | float(0) }}"
-      - service: fan.turn_on
+      - action: fan.turn_on
         entity_id: fan.wc_and_bathroom
-      - service: input_select.select_option
+      - action: input_select.select_option
         data:
           entity_id: input_select.wc_ventilation_state
           option: HUMIDITY_ON
@@ -292,15 +292,15 @@ automation:
       below: input_number.wc_ventilation_stop_humidity_threshold
       for: 00:02:00
     action:
-      - service: timer.cancel
+      - action: timer.cancel
         entity_id: timer.wc_ventilation
-      - service: fan.turn_off
+      - action: fan.turn_off
         entity_id: fan.wc_and_bathroom
-      - service: input_select.select_option
+      - action: input_select.select_option
         data:
           entity_id: input_select.wc_ventilation_state
           option: HUMIDITY_OFF
-      - service: automation.turn_off
+      - action: automation.turn_off
         entity_id: automation.wc_ventilation_stop_humidity_below_threshold
 
   # Emergency start WC ventilation timer to prevent infinite ventilation
@@ -321,12 +321,12 @@ automation:
           entity_id: timer.wc_ventilation
           state: "paused"
     action:
-      - service: timer.start
+      - action: timer.start
         data:
           entity_id: timer.wc_ventilation
           duration:
             minutes: "{{ states('input_number.wc_max_ventilation_duration_minutes') | default(0) | float(0) }}"
-      - service: input_select.select_option
+      - action: input_select.select_option
         data:
           entity_id: input_select.wc_ventilation_state
           option: EMERGENCY

@@ -36,7 +36,7 @@ automation:
           condition: template
           value_template: "{{ not is_state('media_player.yandex_station_midi', 'playing') }}"
         then:
-          - service: media_player.play_media
+          - action: media_player.play_media
             entity_id: media_player.yandex_station_midi
             data:
               # If some of windows are opened, notify to close exact opened window by telling it's name.
@@ -68,22 +68,22 @@ automation:
                     в гостинной.
                   {% endif %}
                 {% endif %}
-      - service: notify.mobile_app_sm_s901b
+      - action: notify.mobile_app_sm_s901b
         data:
           title: "{{ '🌬' }} Качество воздуха"
           message: >
             Качество воздуха в доме ухудшилось и составляет {{ states('sensor.air_quality_station_iaq') }}.
-      - service: automation.turn_on
+      - action: automation.turn_on
         entity_id:
           - automation.notification_air_quality_restored
           - automation.notification_air_quality_open_window_greeting
       # Set timeout for open window greeting notification
-      - service: input_datetime.set_datetime
+      - action: input_datetime.set_datetime
         data:
           entity_id: input_datetime.air_quality_open_window_greeting_timeout
           datetime: "{{ now() + timedelta(minutes=2) }}"
       # Disable bad air quality notification till it will be restored
-      - service: automation.turn_off
+      - action: automation.turn_off
         entity_id: automation.notification_air_quality_bad
 
   - alias: Notification Air Quality Open Window Greeting
@@ -106,12 +106,12 @@ automation:
           - condition: template
             value_template: "{{ not is_state('media_player.yandex_station_midi', 'playing') }}"
         then:
-          - service: media_player.play_media
+          - action: media_player.play_media
             entity_id: media_player.yandex_station_midi
             data:
               media_content_type: text
               media_content_id: Молодец! Рада, что вы заботитесь о своём здоровье.
-      - service: automation.turn_off
+      - action: automation.turn_off
         entity_id: automation.notification_air_quality_open_window_greeting
 
   - alias: Notification Air Quality Restored
@@ -131,19 +131,19 @@ automation:
           condition: template
           value_template: "{{ not is_state('media_player.yandex_station_midi', 'playing') }}"
         then:
-          - service: media_player.play_media
+          - action: media_player.play_media
             entity_id: media_player.yandex_station_midi
             data:
               media_content_type: text
               media_content_id: Качество воздуха в доме вернулось в норму.
-      - service: notify.mobile_app_sm_s901b
+      - action: notify.mobile_app_sm_s901b
         data:
           title: "{{ '🌬' }} Качество воздуха"
           message: >
             Качество воздуха в доме улучшилось и составляет {{ states('sensor.air_quality_station_iaq') }}.
-      - service: automation.turn_on
+      - action: automation.turn_on
         entity_id: automation.notification_air_quality_bad
-      - service: automation.turn_off
+      - action: automation.turn_off
         entity_id:
           - automation.notification_air_quality_restored
           - automation.notification_air_quality_open_window_greeting

@@ -38,13 +38,13 @@ script:
     alias: Home Assistant Shutdown
     mode: single
     sequence:
-      - service: hassio.host_shutdown
+      - action: hassio.host_shutdown
 
   home_assistant_reboot:
     alias: Home Assistant Reboot
     mode: single
     sequence:
-      - service: hassio.host_reboot
+      - action: hassio.host_reboot
 
 ###############################################
 ## AUTOMATIONS
@@ -60,7 +60,7 @@ automation:
       - platform: homeassistant
         event: start
     action:
-      - service: script.notify_and_create_persistent_notification
+      - action: script.notify_and_create_persistent_notification
         data:
           title: *sys_notify_title_info
           message: Home Assistant запущен в {{ states('sensor.time') }}
@@ -71,7 +71,7 @@ automation:
       - platform: homeassistant
         event: shutdown
     action:
-      - service: script.notify_and_create_persistent_notification
+      - action: script.notify_and_create_persistent_notification
         data:
           title: *sys_notify_title_warning
           message: Home Assistant начал процесс выключения в {{ states('sensor.time') }}
@@ -97,19 +97,19 @@ automation:
             Mac-address: {{state_attr(entity,'mac')}}
             Full data: {{trigger.event.data}}
       # Notify via mobile app and create persistent notification
-      - service: script.notify_and_create_persistent_notification
+      - action: script.notify_and_create_persistent_notification
         data:
           title: "{{ notify_title }}"
           message: "{{ notify_message }}"
       # Write to system log
-      - service: system_log.write
+      - action: system_log.write
         data:
           message: >
             New device registrered: {{ entity }}
           level: warning
           logger: homeassistant.components.device_tracker
       # Notify via Yandex Station
-      - service: media_player.play_media
+      - action: media_player.play_media
         entity_id: media_player.yandex_station_midi
         data:
           media_content_id: >
@@ -124,7 +124,7 @@ automation:
         from: "off"
         to: "on"
     action:
-      - service: notify.mobile_app_sm_s901b
+      - action: notify.mobile_app_sm_s901b
         data:
           title: *sys_notify_title_info
           message: Update!🎉 Доступна новая версия {{ states('sensor.home_assistant_versions') }}
@@ -163,7 +163,7 @@ automation:
     condition:
       - "{{ sensors != '' and (day | int == 0 or day | int == now().isoweekday()) }}"
     action:
-      - service: script.notify_and_create_persistent_notification
+      - action: script.notify_and_create_persistent_notification
         data:
           title: *sys_notify_title_warning
           message: "{{ message }}"
@@ -182,7 +182,7 @@ automation:
       - platform: time_pattern
         hours: "/2"
     action:
-      - service: group.set
+      - action: group.set
         data:
           object_id: battery_devices
           entities: >-
@@ -229,7 +229,7 @@ automation:
         value_template: >-
           {{ (trigger.event.data.new_state.state | int(0)) < 20 }}
     action:
-      - service: script.notify_and_create_persistent_notification
+      - action: script.notify_and_create_persistent_notification
         data:
           title: *sys_notify_title_warning
           message: |
@@ -246,7 +246,7 @@ automation:
       - platform: state
         entity_id: input_button.home_assistant_power_off
     action:
-      - service: script.turn_on
+      - action: script.turn_on
         entity_id: script.home_assistant_shutdown
 
   - alias: Home Assistant - Reboot
@@ -255,7 +255,7 @@ automation:
       - platform: state
         entity_id: input_button.home_assistant_reboot
     action:
-      - service: script.turn_on
+      - action: script.turn_on
         entity_id: script.home_assistant_reboot
 
   - alias: Home Assistant Server Rack - Power Off
@@ -277,7 +277,7 @@ automation:
               # and not accidentally trigger for other notification actions
               action_power_off: "{{ 'action_power_off' ~ context.id }}"
               action_cancel: "{{ 'action_cancel' ~ context.id }}"
-          - service: notify.mobile_app_sm_s901b
+          - action: notify.mobile_app_sm_s901b
             data:
               title: *sys_notify_title_critical
               message: Synology DS220+ недоступен, продолжить выключение Home Assistant?
@@ -303,23 +303,23 @@ automation:
               - conditions: "{{ wait.trigger.event.data.action == action_power_off }}"
                 sequence:
                   # Turn OFF Home Assistant
-                  - service: script.turn_on
+                  - action: script.turn_on
                     entity_id: script.home_assistant_shutdown
               - conditions: "{{ wait.trigger.event.data.action == action_cancel }}"
                 sequence:
-                  - service: script.notify_and_create_persistent_notification
+                  - action: script.notify_and_create_persistent_notification
                     data:
                       title: *sys_notify_title_info
                       message: Отмена выключения серверного шкафа
         else:
-          - service: script.notify_and_create_persistent_notification
+          - action: script.notify_and_create_persistent_notification
             data:
               title: *sys_notify_title_warning
               message: Выключение серверного шкафа началось в {{ states('sensor.time') }}
           # Turn OFF the Synology DS220+
-          - service: button.press
+          - action: button.press
             entity_id: button.synology_ds220_shutdown
           - delay: 00:00:10
           # Turn OFF Home Assistant
-          - service: script.turn_on
+          - action: script.turn_on
             entity_id: script.home_assistant_shutdown

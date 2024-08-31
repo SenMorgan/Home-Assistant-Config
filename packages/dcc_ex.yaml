@@ -150,7 +150,7 @@ automation:
           - input_button.dcc_ex_route_300
           - input_button.dcc_ex_route_301
     action:
-      - service: switch.turn_on
+      - action: switch.turn_on
         data:
           entity_id: "{{ button_switch_map[trigger.entity_id] }}"
 
@@ -171,7 +171,7 @@ automation:
     variables:
       switch_entity: "{{ trigger.entity_id }}"
     action:
-      - service: switch.turn_off
+      - action: switch.turn_off
         target:
           entity_id: "{{ switch_entity }}"
 
@@ -185,6 +185,6 @@ automation:
         entity_id: binary_sensor.people_home
         state: "on"
     action:
-      service: switch.turn_on
+      action: switch.turn_on
       target:
         entity_id: switch.dcc_ex_pwr

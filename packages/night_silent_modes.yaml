@@ -25,54 +25,54 @@ script:
     alias: Set Silent Mode
     sequence:
       # Lower Yandex volume
-      - service: script.set_all_yandex_stations_volume_level
+      - action: script.set_all_yandex_stations_volume_level
         data:
           volume_level: 0.2
       # Notify via 7-Segment Clock that we are in silent mode
-      - service: scene.turn_on
+      - action: scene.turn_on
         entity_id: scene.7_seg_clock_red
       # Make DCC-EX volume lower
-      - service: input_button.press
+      - action: input_button.press
         target:
           entity_id: input_button.dcc_ex_default_volume
       # Ensure silent mode is enabled
-      - service: input_boolean.turn_on
+      - action: input_boolean.turn_on
         entity_id: input_boolean.silent_mode
       # Do not allow to turn on bedroom lights and open cover
-      - service: input_boolean.turn_on
+      - action: input_boolean.turn_on
         entity_id: input_boolean.bedroom_lights_and_cover_safety_switch
 
   reset_silent_mode:
     alias: Reset Silent Mode
     sequence:
       # Rise Yandex volume
-      - service: script.set_all_yandex_stations_volume_level
+      - action: script.set_all_yandex_stations_volume_level
         data:
           volume_level: 0.5
       # Notify via 7-Segment Clock that we left silent mode
-      - service: select.select_option
+      - action: select.select_option
         data:
           entity_id: select.7_seg_clock_preset
           option: Orange Candle
       # Make DCC-EX volume default
-      - service: input_button.press
+      - action: input_button.press
         target:
           entity_id: input_button.dcc_ex_max_volume
       # Ensure silent mode is disabled
-      - service: input_boolean.turn_off
+      - action: input_boolean.turn_off
         entity_id: input_boolean.silent_mode
       # Allow to turn on bedroom lights and open cover
-      - service: input_boolean.turn_off
+      - action: input_boolean.turn_off
         entity_id: input_boolean.bedroom_lights_and_cover_safety_switch
 
   home_night_mode:
     alias: Home Night Mode
     sequence:
       # Decrease WallPanel screen brightness
-      - service: scene.turn_on
+      - action: scene.turn_on
         entity_id: scene.wallpanel_screen_off
       # Ensure night and silent modes are enabled
-      - service: input_boolean.turn_on
+      - action: input_boolean.turn_on
         entity_id:
           - input_boolean.home_night_mode
           - input_boolean.silent_mode
@@ -81,10 +81,10 @@ script:
     alias: Home Day Mode
     sequence:
       # Rise WallPanel screen brightness
-      - service: scene.turn_on
+      - action: scene.turn_on
         entity_id: scene.wallpanel_screen_on
       # Ensure night and silent mode are disabled
-      - service: input_boolean.turn_off
+      - action: input_boolean.turn_off
         entity_id:
           - input_boolean.home_night_mode
           - input_boolean.silent_mode
@@ -135,7 +135,7 @@ automation:
         after: "20:00:00"
         before: "03:00:00"
     action:
-      service: input_boolean.turn_on
+      action: input_boolean.turn_on
       entity_id:
         - input_boolean.home_night_mode
         - input_boolean.silent_mode
@@ -161,7 +161,7 @@ automation:
           {% set to = trigger.to_state.attributes.volume_level | float(0) %}
           {{ to > from }}
     action:
-      service: input_boolean.turn_off
+      action: input_boolean.turn_off
       entity_id:
         - input_boolean.home_night_mode
         - input_boolean.silent_mode
@@ -191,7 +191,7 @@ automation:
         entity_id: binary_sensor.bedroom_door_contact
         state: "on"
     action:
-      service: input_boolean.turn_off
+      action: input_boolean.turn_off
       entity_id:
         - input_boolean.home_night_mode
         - input_boolean.silent_mode
@@ -209,7 +209,7 @@ automation:
         state: "off"
     action:
       # If bedroom door closed ("off" state), then turn on silent mode, otherwise turn it off
-      service: input_boolean.turn_{{ "on" if trigger.to_state.state == "off" else "off" }}
+      action: input_boolean.turn_{{ "on" if trigger.to_state.state == "off" else "off" }}
       entity_id: input_boolean.silent_mode
 
   - alias: Prevent Accidental Bedroom Lights ON
@@ -228,7 +228,7 @@ automation:
       - condition: template
         value_template: "{{ trigger.to_state.context.user_id != None }}"
     action:
-      - service: light.turn_off
+      - action: light.turn_off
         data:
           entity_id: "{{ trigger.entity_id }}"
 
@@ -249,7 +249,7 @@ automation:
       - condition: template
         value_template: !secret TEMPLATE_NOT_A_YANDEX_USER_ID
     action:
-      - service: cover.close_cover
+      - action: cover.close_cover
         data:
           entity_id: "{{ trigger.entity_id }}"
 
@@ -272,7 +272,7 @@ automation:
           {{ to > from and to > 0.4 }}
     action:
       # Lower Yandex volume
-      - service: script.set_all_yandex_stations_volume_level
+      - action: script.set_all_yandex_stations_volume_level
         data:
           volume_level: 0.2
 
@@ -295,7 +295,7 @@ automation:
           {{ to > from and to > 0.6 }}
     action:
       # Lower Yandex volume
-      - service: script.set_volume_level_repeatedly
+      - action: script.set_volume_level_repeatedly
         data:
           media_player: media_player.yandex_station
           volume_level: 0.6

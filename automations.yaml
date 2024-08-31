@@ -16,7 +16,7 @@
     #   entity_id: binary_sensor.bedroom_window_contact
     #   state: "off"
   action:
-    - service: cover.close_cover
+    - action: cover.close_cover
       entity_id: cover.bedroom
 
 ###############################################
@@ -30,7 +30,7 @@
     - platform: webostv.turn_on
       entity_id: media_player.tv
   action:
-    - service: script.turn_on
+    - action: script.turn_on
       entity_id: script.wake_tv
 
 ###############################################
@@ -44,7 +44,7 @@
     - platform: state
       entity_id: input_button.parking_light
   action:
-    - service: script.turn_on
+    - action: script.turn_on
       target:
         entity_id: script.switch_on_parking_light
 
@@ -59,10 +59,10 @@
       entity_id: script.presentation
       state: "off"
   action:
-    - service: script.turn_on
+    - action: script.turn_on
       target:
         entity_id: script.presentation
-    - service: input_boolean.turn_off
+    - action: input_boolean.turn_off
       entity_id: input_boolean.presentation_switch
 
 ###############################################
@@ -79,7 +79,7 @@
       for: 00:05:00
   action:
     # Save actual volume
-    - service: input_number.set_value
+    - action: input_number.set_value
       target:
         entity_id: input_number.volume_yandex_station
       data:
@@ -92,15 +92,15 @@
           - condition: template
             value_template: "{{ repeat.index <= 3 }}"
         sequence:
-          - service: media_player.volume_set
+          - action: media_player.volume_set
             data:
               entity_id: media_player.yandex_station_midi
               volume_level: 0.01
           - delay: 0.5
-    - service: script.turn_on
+    - action: script.turn_on
       entity_id: script.update_shopping_list
     - delay: 1
-    - service: media_player.play_media
+    - action: media_player.play_media
       entity_id: media_player.yandex_station_midi
       data:
         media_content_id: stop
@@ -114,7 +114,7 @@
           - condition: template
             value_template: "{{ repeat.index <= 3 }}"
         sequence:
-          - service: media_player.volume_set
+          - action: media_player.volume_set
             data:
               entity_id: media_player.yandex_station_midi
               volume_level: "{{ states('input_number.volume_yandex_station')}}"
@@ -133,7 +133,7 @@
       from: "off"
       to: "on"
   action:
-    - service: counter.increment
+    - action: counter.increment
       target:
         entity_id: counter.gas_counter
   mode: single
@@ -155,7 +155,7 @@
             entity_id: sensor.power_monitor_voltage
             below: input_number.power_monitor_low_voltage_threshold
         sequence:
-          - service: notify.mobile_app_sm_s901b
+          - action: notify.mobile_app_sm_s901b
             data:
               title: "{{ '🚨' }} Монитор питания"
               message: "Напряжение ниже порога: {{ states('sensor.power_monitor_voltage') }} V"
@@ -174,7 +174,7 @@
       from: "on"
       to: "off"
   action:
-    - service: light.toggle
+    - action: light.toggle
       entity_id: light.living_room_ceiling_light
 
 - id: "busy_wall_switch_2"
@@ -190,5 +190,5 @@
       from: "on"
       to: "off"
   action:
-    - service: light.toggle
+    - action: light.toggle
       entity_id: light.floor_lamp

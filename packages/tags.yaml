@@ -17,10 +17,10 @@ automation:
       - platform: tag
         tag_id: c45d3b71-2ade-45e3-8663-f0028f52b01d
     action:
-      - service: input_boolean.toggle
+      - action: input_boolean.toggle
         target:
           entity_id: input_boolean.show_cameras_in_lovelace
-      - service: notify.mobile_app_sm_s901b
+      - action: notify.mobile_app_sm_s901b
         data:
           title: "👁️ Режим камер"
           message: >-
@@ -39,10 +39,10 @@ automation:
         to: "off"
         for: "01:00:00"
     action:
-      - service: input_boolean.turn_on
+      - action: input_boolean.turn_on
         target:
           entity_id: input_boolean.show_cameras_in_lovelace
-      - service: notify.mobile_app_sm_s901b
+      - action: notify.mobile_app_sm_s901b
         data:
           title: "👁️ Режим камер"
           message: "Камеры включены автоматически в {{ states('sensor.time') }}"
@@ -54,22 +54,22 @@ automation:
       - platform: tag
         tag_id: 5954e702-f87d-4955-969c-5231af33ece8
     action:
-      - service: input_boolean.turn_on
+      - action: input_boolean.turn_on
         entity_id: input_boolean.ignore_people_presence
       # Turn off the script that could be running at this moment
-      - service: script.turn_off
+      - action: script.turn_off
         entity_id: script.turn_off_lights_after_people_leave
       - variables:
           message: Игнорирование присутствия включено - термостат и свет не будут отключены после ухода.
           # Including an id in the action allows us to identify this script run
           # and not accidentally trigger for other notification actions
           action_disable: "{{ 'action_disable' ~ context.id }}"
-      - service: media_player.play_media
+      - action: media_player.play_media
         entity_id: media_player.yandex_station_midi
         data:
           media_content_id: "{{ message }}"
           media_content_type: text
-      - service: notify.mobile_app_sm_s901b
+      - action: notify.mobile_app_sm_s901b
         data:
           title: "👤 Режим присутствия"
           message: "{{ message }}"
@@ -87,10 +87,10 @@ automation:
           - condition: template
             value_template: "{{ wait.trigger.event.data.action == action_disable }}"
         then:
-          - service: input_boolean.turn_off
+          - action: input_boolean.turn_off
             target:
               entity_id: input_boolean.ignore_people_presence
-          - service: notify.mobile_app_sm_s901b
+          - action: notify.mobile_app_sm_s901b
             data:
               title: "👤 Режим присутствия"
               message: "Игнорирование присутствия было отключено"
@@ -108,14 +108,14 @@ automation:
         entity_id: input_boolean.ignore_people_presence
         state: "on"
     action:
-      - service: input_boolean.turn_off
+      - action: input_boolean.turn_off
         target:
           entity_id: input_boolean.ignore_people_presence
       - variables:
           # Including an id in the action allows us to identify this script run
           # and not accidentally trigger for other notification actions
           action_enable_back_on: "{{ 'action_enable_back_on' ~ context.id }}"
-      - service: notify.mobile_app_sm_s901b
+      - action: notify.mobile_app_sm_s901b
         data:
           title: "👤 Режим присутствия"
           message: "Игнорирование присутствия выключено автоматически в {{ states('sensor.time') }}. Включить обратно?"
@@ -133,10 +133,10 @@ automation:
           - condition: template
             value_template: "{{ wait.trigger.event.data.action == action_enable_back_on }}"
         then:
-          - service: input_boolean.turn_on
+          - action: input_boolean.turn_on
             target:
               entity_id: input_boolean.ignore_people_presence
-          - service: notify.mobile_app_sm_s901b
+          - action: notify.mobile_app_sm_s901b
             data:
               title: "👤 Режим присутствия"
               message: "Игнорирование присутствия включено снова в {{ states('sensor.time') }}"

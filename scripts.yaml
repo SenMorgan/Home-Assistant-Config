@@ -1,7 +1,7 @@
 switch_on_parking_light:
   alias: Switch On Parking Light
   sequence:
-    - service: switch.turn_off
+    - action: switch.turn_off
       target:
         entity_id: switch.parking_light
     - delay:
@@ -15,7 +15,7 @@ switch_on_parking_light:
           - condition: template
             value_template: "{{ repeat.index <= 300 }}"
         sequence:
-          - service: switch.turn_on
+          - action: switch.turn_on
             target:
               entity_id: switch.parking_light
           - delay:
@@ -24,7 +24,7 @@ switch_on_parking_light:
 cover_correct_up:
   alias: Cover Correct Zero Pozition Up
   sequence:
-    service: mqtt.publish
+    action: mqtt.publish
     data:
       topic: /blinds/set
       payload: "CORRECT_UP"
@@ -32,7 +32,7 @@ cover_correct_up:
 cover_correct_down:
   alias: Cover Correct Zero Pozition Down
   sequence:
-    service: mqtt.publish
+    action: mqtt.publish
     data:
       topic: /blinds/set
       payload: "CORRECT_DOWN"
@@ -42,83 +42,83 @@ presentation:
   sequence:
     # *****************************SEQUENCE START*************************************
     # Switch OFF all lights and TV
-    #   - service: media_player.turn_off
+    #   - action: media_player.turn_off
     #     entity_id: media_player.tv
-    - service: light.turn_off
+    - action: light.turn_off
       entity_id: all
     - delay:
         seconds: 4
 
     # Switch ON light in Hall
-    - service: light.turn_on
+    - action: light.turn_on
       entity_id: light.tradfri_bulb
     - delay:
         seconds: 2
 
     # Switch OFF light in Hall
-    - service: light.turn_off
+    - action: light.turn_off
       entity_id: light.tradfri_bulb
     - delay:
         seconds: 2
 
     # Switch ON Kitchen Spotlighs
-    - service: light.turn_on
+    - action: light.turn_on
       entity_id: light.kitchen_spotlights
     - delay:
         seconds: 2
 
     # Switch OFF Kitchen Spotlighs
-    - service: light.turn_off
+    - action: light.turn_off
       entity_id: light.kitchen_spotlights
     - delay:
         seconds: 2
 
     # Close Cover
-    - service: cover.close_cover
+    - action: cover.close_cover
       entity_id: cover.bedroom
     - delay:
         seconds: 5
 
     # Stop Cover
-    - service: cover.stop_cover
+    - action: cover.stop_cover
       entity_id: cover.bedroom
     - delay:
         seconds: 5
 
     # Switch ON Retro Lamp
-    - service: light.turn_on
+    - action: light.turn_on
       entity_id: light.retro_lampa
     - delay:
         seconds: 5
 
     # Switch OFF Retro Lamp
-    - service: light.turn_off
+    - action: light.turn_off
       entity_id: light.retro_lampa
     - delay:
         seconds: 3
 
     # Switch ON Bar Light
-    - service: light.turn_on
+    - action: light.turn_on
       entity_id: light.bar_light
     - delay:
         seconds: 2
 
     # Switch ON TV
-    - service: media_player.turn_on
+    - action: media_player.turn_on
       entity_id: media_player.tv
     - delay:
         seconds: 5
 
     # Switch OFF Bar Light and TV
-    - service: media_player.turn_off
+    - action: media_player.turn_off
       entity_id: media_player.tv
-    - service: light.turn_off
+    - action: light.turn_off
       entity_id: light.bar_light
     - delay:
         seconds: 2
 
     # Switch ON Floor Lamp Half Brightness
-    - service: light.turn_on
+    - action: light.turn_on
       target:
         entity_id: light.floor_lamp
       data:
@@ -127,7 +127,7 @@ presentation:
         seconds: 2
 
     # Switch ON Floor Lamp FULL Brightness
-    - service: light.turn_on
+    - action: light.turn_on
       target:
         entity_id: light.floor_lamp
       data:
@@ -136,13 +136,13 @@ presentation:
         seconds: 2
 
     # Switch OFF Floor Lamp
-    - service: light.turn_off
+    - action: light.turn_off
       entity_id: light.floor_lamp
     - delay:
         seconds: 2
 
     # Switch ON Desk Lamp FULL Brightness with COLD White
-    - service: light.turn_on
+    - action: light.turn_on
       target:
         entity_id: light.mi_desk_lamp
       data:
@@ -152,7 +152,7 @@ presentation:
         seconds: 2
 
     # Switch ON Desk Lamp FULL Brightness with WARM White
-    - service: light.turn_on
+    - action: light.turn_on
       target:
         entity_id: light.mi_desk_lamp
       data:
@@ -162,13 +162,13 @@ presentation:
         seconds: 2
 
     # Switch OFF Desk Lamp
-    - service: light.turn_off
+    - action: light.turn_off
       entity_id: light.mi_desk_lamp
     - delay:
         seconds: 3
 
     # Flash ON Shelf Lighting with GREEN Color
-    - service: light.turn_on
+    - action: light.turn_on
       target:
         entity_id: light.shelf_lighting
       data:
@@ -177,13 +177,13 @@ presentation:
         rgb_color: [0, 255, 0]
     - delay:
         seconds: 0.5
-    - service: light.turn_off
+    - action: light.turn_off
       entity_id: light.shelf_lighting
     - delay:
         seconds: 1
 
     # Flash ON PC Backlight with RED Color
-    - service: light.turn_on
+    - action: light.turn_on
       target:
         entity_id: light.pc_backlight
       data:
@@ -192,20 +192,20 @@ presentation:
         rgb_color: [255, 0, 0]
     - delay:
         seconds: 0.5
-    - service: light.turn_off
+    - action: light.turn_off
       entity_id: light.pc_backlight
     - delay:
         seconds: 5
 
     # Switch ON Lightning Scene
-    - service: light.turn_on
+    - action: light.turn_on
       target:
         entity_id:
           - light.shelf_lighting
           - light.pc_backlight
       data:
         rgb_color: [255, 255, 255]
-    - service: wled.effect
+    - action: wled.effect
       target:
         entity_id:
           - light.shelf_lighting
@@ -219,13 +219,13 @@ presentation:
         seconds: 5
 
     # Switch OFF All Lights for a while
-    - service: light.turn_off
+    - action: light.turn_off
       entity_id: all
     - delay:
         seconds: 3
 
     # Switch ON Shelf Lighting and PC Backlight with ORANGE Color
-    - service: light.turn_on
+    - action: light.turn_on
       target:
         entity_id:
           - light.shelf_lighting
@@ -242,15 +242,15 @@ presentation:
     # Show road cameras "Ну и чисто по-приколу я подключился к дорожным камерам, дабы следить за траффиком"
 
     # Switch ON Daytime Lights Scene and Open Cover
-    - service: scene.turn_on
+    - action: scene.turn_on
       entity_id: scene.daytime_lights_enabled
-    - service: cover.open_cover
+    - action: cover.open_cover
       entity_id: cover.bedroom
 
 update_shopping_list:
   alias: Update Shopping List
   sequence:
-    - service: media_player.play_media
+    - action: media_player.play_media
       entity_id: media_player.yandex_station_midi
       data:
         media_content_id: update
@@ -260,7 +260,7 @@ update_shopping_list:
 wake_tv:
   alias: Wake TV
   sequence:
-    - service: wake_on_lan.send_magic_packet
+    - action: wake_on_lan.send_magic_packet
       data:
         mac: !secret TV_MAC
 
@@ -272,7 +272,7 @@ tell_what_windows_are_opened:
           entity_id: binary_sensor.windows
           state: "on"
       then:
-        - service: media_player.play_media
+        - action: media_player.play_media
           entity_id: media_player.yandex_station_midi
           data:
             media_content_type: text
@@ -286,11 +286,11 @@ tell_what_windows_are_opened:
 turn_off_all_lights:
   alias: Turn Off All Lights
   sequence:
-    - service: light.turn_off
+    - action: light.turn_off
       entity_id: all
-    - service: scene.turn_on
+    - action: scene.turn_on
       entity_id: scene.wallpanel_screen_off
-    - service: switch.turn_off
+    - action: switch.turn_off
       entity_id: switch.dcc_ex_pwr
 
 set_volume_level_repeatedly:
@@ -305,7 +305,7 @@ set_volume_level_repeatedly:
           - condition: template
             value_template: "{{ repeat.index <= 3 }}"
         sequence:
-          - service: media_player.volume_set
+          - action: media_player.volume_set
             data:
               entity_id: "{{ media_player }}"
               volume_level: "{{ volume_level }}"
@@ -323,11 +323,11 @@ set_all_yandex_stations_volume_level:
   mode: restart
   max_exceeded: silent
   sequence:
-    - service: script.set_volume_level_repeatedly
+    - action: script.set_volume_level_repeatedly
       data:
         media_player: media_player.yandex_station
         volume_level: "{{ volume_level }}"
-    - service: script.set_volume_level_repeatedly
+    - action: script.set_volume_level_repeatedly
       data:
         media_player: media_player.yandex_station_midi
         volume_level: "{{ volume_level }}"
@@ -339,7 +339,7 @@ set_all_yandex_stations_volume_level:
 yandex_joke_before_cleaning_kitchen:
   alias: Yandex Joke Before Cleaning Kitchen
   sequence:
-    - service: media_player.play_media
+    - action: media_player.play_media
       entity_id: media_player.yandex_station_midi
       data:
         media_content_id: >-
@@ -368,7 +368,7 @@ yandex_joke_before_cleaning_kitchen:
 yandex_joke_before_cleaning_rooms:
   alias: Yandex Joke Before Cleaning Rooms
   sequence:
-    - service: media_player.play_media
+    - action: media_player.play_media
       entity_id: media_player.yandex_station_midi
       data:
         media_content_id: >-
@@ -411,7 +411,7 @@ thermostat_set_default_temperature:
               - condition: template
                 value_template: "{{ repeat.index <= (12 * 5) }}"
             sequence:
-              - service: climate.set_hvac_mode
+              - action: climate.set_hvac_mode
                 entity_id: climate.family_room
                 data:
                   hvac_mode: "heat"
@@ -425,7 +425,7 @@ thermostat_set_default_temperature:
           - condition: template
             value_template: "{{ repeat.index <= (12 * 5) }}"
         sequence:
-          - service: climate.set_temperature
+          - action: climate.set_temperature
             entity_id: climate.family_room
             data:
               temperature: "{{ default_temperature }}"
@@ -440,7 +440,7 @@ disable_thermostat:
   alias: Disable Thermostat
   sequence:
     # Call here the sequence to set default temperature
-    - service: script.turn_on
+    - action: script.turn_on
       entity_id: script.thermostat_set_default_temperature
     # Wait for the script to finish
     - wait_template: "{{ is_state('script.thermostat_set_default_temperature', 'off') }}"
@@ -453,7 +453,7 @@ disable_thermostat:
           - condition: template
             value_template: "{{ repeat.index <= (12 * 5) }}"
         sequence:
-          - service: climate.set_hvac_mode
+          - action: climate.set_hvac_mode
             entity_id: climate.family_room
             data:
               hvac_mode: "off"
