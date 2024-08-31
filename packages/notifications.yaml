@@ -113,6 +113,7 @@ automation:
   - id: "notification_water_leakage_detected"
     alias: Notification Water Leakage Detected
     mode: parallel
+    max: 5
     trigger:
       - platform: state
         entity_id:
