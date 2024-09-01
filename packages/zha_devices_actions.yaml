@@ -98,7 +98,6 @@ automation:
   ###############################################
   ## Aqara Cube Automations
   ###############################################
-
   - alias: Aqara Cube 1 Handler
     id: "aqara_cube_1_handler"
     mode: restart
@@ -184,3 +183,41 @@ automation:
             sequence:
               - action: input_boolean.turn_off
                 entity_id: input_boolean.scooter_charger
+
+  ###############################################
+  ## Ikea RODRET Dimmer Automations
+  ###############################################
+  - alias: Rodret Dimmer 1 Handler
+    id: "rodret_dimmer_1_handler"
+    use_blueprint:
+      path: damru/ikea-rodret_E2201_ZHA-Z2M_control-anything.yaml
+      input:
+        remote_device: 51724530dc1fcac3561d2fcb39f40048
+        on_press_action:
+        - action: light.turn_on
+          target:
+            entity_id: light.living_room_nightlight
+        - action: light.turn_on
+          target:
+            entity_id: light.bar_light
+        off_press_action:
+        - action: light.turn_off
+          target:
+            entity_id: light.living_room_nightlight
+        - action: light.turn_off
+          target:
+            entity_id: light.bar_light
+        on_hold_action:
+        - action: light.turn_on
+          data:
+            brightness_step_pct: 4
+          target:
+            entity_id: light.living_room_nightlight
+        off_hold_action:
+        - action: light.turn_on
+          data:
+            brightness_step_pct: -4
+          target:
+            entity_id: light.living_room_nightlight
+        helper_hold_delay: 200
+        helper_max_loops: 20
