@@ -117,21 +117,21 @@
 - name: "Solar Panel Voltage"
   device_class: voltage
   state_topic: "/solar-inverter-monitor/state/volt"
-  value_template: "{{ value | default(0) }}"
+  value_template: "{{ value | default(0) | round(2) }}"
   unit_of_measurement: "V"
   state_class: measurement
 
 - name: "Solar Panel Current"
   device_class: current
   state_topic: "/solar-inverter-monitor/state/amp"
-  value_template: "{{ value | default(0) }}"
+  value_template: "{{ value | default(0) | round(2) }}"
   unit_of_measurement: "A"
   state_class: measurement
 
 - name: "Solar Panel Power"
   device_class: power
   state_topic: "/solar-inverter-monitor/state/watt"
-  value_template: "{{ value | default(0) }}"
+  value_template: "{{ value | default(0) | round(2) }}"
   unit_of_measurement: "W"
   state_class: measurement
 
@@ -145,7 +145,7 @@
 - name: "Solar Panel Inverter Temperature"
   device_class: temperature
   state_topic: "/solar-inverter-monitor/state/temp"
-  value_template: "{{ value | default(0) }}"
+  value_template: "{{ value | default(0) | round(2) }}"
   unit_of_measurement: "°C"
   state_class: measurement
 
