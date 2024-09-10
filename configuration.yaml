@@ -310,21 +310,9 @@ mqtt:
       icon: "mdi:radiator"
 
   ###############################################
-  ## BUTTONS
+  ## MQTT ENTITIES
   ###############################################
-  button: !include mqtt-buttons.yaml
-
-  ###############################################
-  ## SWITCHES
-  ###############################################
-  switch: !include mqtt-switches.yaml
-
-  ###############################################
-  ## MQTT BINARY SENSORS
-  ###############################################
-  binary_sensor: !include mqtt-binary-sensors.yaml
-
-  ###############################################
-  ## MQTT SENSORS
-  ###############################################
-  sensor: !include mqtt-sensors.yaml
+  binary_sensor: !include mqtt/mqtt-binary-sensors.yaml
+  button: !include mqtt/mqtt-buttons.yaml
+  sensor: !include mqtt/mqtt-sensors.yaml
+  switch: !include mqtt/mqtt-switches.yaml

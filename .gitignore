@@ -5,9 +5,10 @@
 !*.yaml
 !.gitignore
 !*.md
+!*.py
 !packages/
 !python_scripts/
-!*.py
+!mqtt/
 
 # Ignore folders
 .storage
