@@ -57,7 +57,7 @@ switch:
       dcc_ex_pwr:
         <<: *defaults
         name: "DCC-EX Power and Loco Lights"
-        # Power all tracks and enable loco's lights (and interior lights)
+        # Power all tracks and enable loco's lights (outdoor + interior)
         command_on: "<1> <F 4 0 1> <F 5 0 1> <F 4 15 1>"
         # Power off all tracks
         command_off: "<0>"
@@ -66,7 +66,7 @@ switch:
       dcc_ex_engine_sound:
         <<: *defaults
         name: "DCC-EX Vossloh Engine Sound"
-        # Ebable engine sound on Loco #4
+        # Enable engine sound on Loco #4
         command_on: "<F 4 1 1>"
         # Disable engine sound
         command_off: "<F 4 1 0>"
