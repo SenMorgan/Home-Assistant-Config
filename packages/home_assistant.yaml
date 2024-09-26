@@ -201,21 +201,23 @@ automation:
         event_type: state_changed
     condition:
       # Notify only from 18 till 21 by workdays and from 10 till 21 by weekends
-      - condition: time
-        after: "18:00:00"
-        before: "21:00:00"
-        weekday:
-          - mon
-          - tue
-          - wed
-          - thu
-          - fri
-      - condition: time
-        after: "10:00:00"
-        before: "21:00:00"
-        weekday:
-          - sat
-          - sun
+      - condition: or
+        conditions:
+          - condition: time
+            after: "18:00:00"
+            before: "21:00:00"
+            weekday:
+              - mon
+              - tue
+              - wed
+              - thu
+              - fri
+          - condition: time
+            after: "10:00:00"
+            before: "21:00:00"
+            weekday:
+              - sat
+              - sun
       # Notify only if the device is in the group
       - condition: template
         value_template: >-
