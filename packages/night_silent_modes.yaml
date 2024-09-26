@@ -45,7 +45,7 @@ script:
   reset_silent_mode:
     alias: Reset Silent Mode
     sequence:
-      # Rise Yandex volume
+      # Rase Yandex volume
       - action: script.set_all_yandex_stations_volume_level
         data:
           volume_level: 0.5
@@ -54,7 +54,7 @@ script:
         data:
           entity_id: select.7_seg_clock_preset
           option: Orange Candle
-      # Make DCC-EX volume default
+      # Set DCC-EX max volume
       - action: input_button.press
         target:
           entity_id: input_button.dcc_ex_max_volume
