@@ -108,3 +108,23 @@
       friendly_name: "Mikrotik Clients"
       value_template: "{{ states('sensor.mikrotik_hap_ax_3_wireless_clients') | int(0) }}"
       unit_of_measurement: "clients"
+
+
+###############################################
+## History Stats
+###############################################
+- platform: history_stats
+  name: Heating Today
+  entity_id: binary_sensor.thermostat_heating
+  state: "on"
+  type: time
+  start: "{{ today_at('00:00:00') }}"
+  end: "{{ now() }}"
+- platform: history_stats
+  name: Heating Yesterday
+  entity_id: binary_sensor.thermostat_heating
+  state: "on"
+  type: time
+  end: "{{ today_at('00:00:00') }}"
+  duration:
+    days: 1
