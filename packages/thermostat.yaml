@@ -45,19 +45,29 @@ binary_sensor:
         value_template: >
           {{ now().hour >= 0 and now().hour < 6 and
             ((state_attr('climate.family_room', 'current_temperature') | float(0) < 19.0) or
-             (states('sensor.ble_temperature_atc_bedroom') | float(0) < 19.0) or
-             (states('sensor.ble_temperature_atc_living_room') | float(0) < 19.0)) }}
-
-      # ETRVs are requesting heat if «current_temperature» is less than «temperature» on any of ETRVs
+            (states('sensor.ble_temperature_atc_bedroom') | float(0) < 19.0) or
+            (states('sensor.ble_temperature_atc_living_room') | float(0) < 19.0)) }}
+      heating_request_bedroom:
+        friendly_name: Heating Request Bedroom
+        value_template: >
+          {{ state_attr('climate.danfoss_etrv0100_bedroom_thermostat', 'current_temperature') | float <
+            state_attr('climate.danfoss_etrv0100_bedroom_thermostat', 'temperature') | float }}
+      heating_request_kitchen:
+        friendly_name: Heating Request Kitchen
+        value_template: >
+          {{ state_attr('climate.danfoss_etrv0103_kitchen_thermostat', 'current_temperature') | float <
+            state_attr('climate.danfoss_etrv0103_kitchen_thermostat', 'temperature') | float }}
+      heating_request_living_room:
+        friendly_name: Heating Request Living Room
+        value_template: >
+          {{ state_attr('climate.danfoss_etrv0103_living_room_thermostat', 'current_temperature') | float <
+            state_attr('climate.danfoss_etrv0103_living_room_thermostat', 'temperature') | float }}
       etrvs_requesting_heat:
         friendly_name: ETRVs are requesting heat
         value_template: >
-          {{ state_attr('climate.danfoss_etrv0100_bedroom_thermostat', 'current_temperature') <
-                state_attr('climate.danfoss_etrv0100_bedroom_thermostat', 'temperature') or
-            state_attr('climate.danfoss_etrv0103_kitchen_thermostat', 'current_temperature') <
-                state_attr('climate.danfoss_etrv0103_kitchen_thermostat', 'temperature') | float or
-            state_attr('climate.danfoss_etrv0103_living_room_thermostat', 'current_temperature') <
-                state_attr('climate.danfoss_etrv0103_living_room_thermostat', 'temperature') | float }}
+          {{ is_state('binary_sensor.heating_request_bedroom', 'on') or
+            is_state('binary_sensor.heating_request_kitchen', 'on') or
+            is_state('binary_sensor.heating_request_living_room', 'on') }}
 
 ###############################################
 ## INPUT BUTTONS
@@ -324,7 +334,7 @@ automation:
       - action: script.notify_and_create_persistent_notification
         data:
           title: *sys_notify_title_warning
-          message:  >
+          message: >
             Термостат был переведён в автоматический режим по причине высокой температуры в квартире в {{ states('sensor.time') }}
       # Set thermostat mode to «heat»
       - action: climate.set_hvac_mode
