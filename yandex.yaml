@@ -10,47 +10,49 @@ filter:
     - vacuum
     - fan
   include_entity_globs:
-    - switch.dcc_ex_*
     - input_button.dcc_ex_*
     - sensor.ble_temperature_atc_*
   include_entities:
+    - binary_sensor.backyard_motion_alarm
     - binary_sensor.bedroom_window_contact
+    - binary_sensor.kitchen_motion_alarm
     - binary_sensor.kitchen_window_contact
     - binary_sensor.living_room_window_contact
-    - binary_sensor.backyard_motion_alarm
-    - binary_sensor.kitchen_motion_alarm
-    - input_button.thermostat_10_minutes_heating
-    - input_boolean.home_night_mode
-    - input_boolean.silent_mode
     - input_boolean.child_lock
+    - input_boolean.home_night_mode
     - input_boolean.scooter_charger
-    - light.hall_lights
-    - light.shelf_lighting
-    - light.floor_lamp
-    - light.mi_desk_lamp
-    - light.gyver_lamp
-    - light.pc_backlight
-    - light.string_lights
-    - light.kitchen_spotlights
-    - light.kitchen_led_strip
-    - light.bedroom_nightlight
-    - light.living_room_nightlight
-    - light.living_room_ceiling_light
-    - light.bedroom_ceiling_light
-    - light.kitchen_ceiling_light
+    - input_boolean.silent_mode
+    - input_button.thermostat_10_minutes_heating
     - light.bar_light
+    - light.bedroom_ceiling_light
+    - light.bedroom_nightlight
     - light.christmas_tree
+    - light.floor_lamp
+    - light.gyver_lamp
+    - light.hall_lights
+    - light.kitchen_ceiling_light
+    - light.kitchen_led_strip
+    - light.kitchen_spotlights
+    - light.living_room_ceiling_light
+    - light.living_room_nightlight
+    - light.mi_desk_lamp
+    - light.pc_backlight
+    - light.shelf_lighting
+    - light.string_lights
     - media_player.tv
-    - switch.moving_head_power
-    - switch.asus_pc
     - scene.movies
+    - sensor.electricity_meter_energy
+    - sensor.electricity_meter_power
     - sensor.pool_bme280_temperature
     - sensor.pool_thermometer_bottom_water_temperature
     - sensor.pool_thermometer_upper_water_temperature
     - sensor.sm_g991b_battery_level
     - sensor.sm_s901b_battery_level
-    - sensor.electricity_meter_power
-    - sensor.electricity_meter_energy
+    - switch.asus_pc
+    - switch.dcc_ex_engine_sound
+    - switch.dcc_ex_horn
+    - switch.dcc_ex_pwr
+    - switch.moving_head_power
 
 entity_config:
   binary_sensor.bedroom_window_contact:
@@ -110,7 +112,7 @@ entity_config:
     name: Лампочки
     room: Кухня
   light.kitchen_spotlights:
-    name: Подсветка кухни
+    name: Подсветка
     room: Кухня
   light.kitchen_led_strip:
     name: Светодиодная лента
@@ -150,6 +152,14 @@ entity_config:
     name: Компьютер
     room: Кухня
     type: devices.types.socket
+  input_button.dcc_ex_default_volume:
+    name: Стандартная громкость
+    room: Макет
+    type: devices.types.switch
+  input_button.dcc_ex_max_volume:
+    name: Максимальная громкость
+    room: Макет
+    type: devices.types.switch
   input_button.dcc_ex_emergency_stop:
     name: Экстренная остановка
     room: Макет
@@ -178,10 +188,6 @@ entity_config:
     name: Гудок локомотива
     room: Макет
     type: devices.types.switch
-  switch.dcc_ex_pause:
-    name: Стоп-кран
-    room: Макет
-    type: devices.types.switch
   sensor.family_room_temperature:
     name: Погода на кухне
     room: Кухня
@@ -208,7 +214,7 @@ entity_config:
         entity: sensor.ble_humidity_atc_bedroom
   sensor.ble_temperature_atc_living_room:
     name: Погода в зале
-    room: Спальня
+    room: Зал
     properties:
       - type: temperature
         entity: sensor.ble_temperature_atc_living_room
@@ -216,7 +222,7 @@ entity_config:
         entity: sensor.ble_humidity_atc_living_room
   sensor.ble_temperature_atc_hall:
     name: Погода в корридоре
-    room: Спальня
+    room: Коридор
     properties:
       - type: temperature
         entity: sensor.ble_temperature_atc_hall
@@ -300,7 +306,7 @@ entity_config:
   climate.danfoss_etrv0103_kitchen_thermostat:
     name: Термостат
     room: Кухня
-  climate.danfoss_etrv0104_living_room_thermostat:
+  climate.danfoss_etrv0103_living_room_thermostat:
     name: Термостат
     room: Зал
   cover.bedroom:
