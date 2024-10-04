@@ -40,6 +40,7 @@ filter:
     - light.shelf_lighting
     - light.string_lights
     - media_player.tv
+    - scene.evening
     - scene.movies
     - sensor.electricity_meter_energy
     - sensor.electricity_meter_power
@@ -141,6 +142,9 @@ entity_config:
   media_player.tv:
     name: Телевизор
     room: Зал
+  scene.evening:
+    name: Вечернее Освещение
+    room: Дом
   scene.movies:
     name: Сцена Кино
     room: Зал
