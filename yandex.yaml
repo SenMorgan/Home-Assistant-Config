@@ -36,7 +36,6 @@ filter:
     - light.living_room_ceiling_light
     - light.living_room_nightlight
     - light.mi_desk_lamp
-    - light.pc_backlight
     - light.shelf_lighting
     - light.string_lights
     - media_player.tv
@@ -105,9 +104,6 @@ entity_config:
     room: Кухня
   light.gyver_lamp:
     name: Лампа Гайвера
-    room: Кухня
-  light.pc_backlight:
-    name: Подсветка компьютера
     room: Кухня
   light.string_lights:
     name: Лампочки
