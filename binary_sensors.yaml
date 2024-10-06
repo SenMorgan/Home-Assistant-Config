@@ -27,3 +27,10 @@
       friendly_name: Link Connected
       value_template: '{{ is_state_attr("sensor.fr24_feeder", "feed_status", "connected") }}'
       device_class: connectivity
+
+- platform: trend
+  sensors:
+    diesel_price_ono_trend:
+      friendly_name: "Diesel Price ONO Trend"
+      entity_id: sensor.diesel_price_ono
+      min_samples: 1
