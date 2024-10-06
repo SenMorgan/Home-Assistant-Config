@@ -38,10 +38,12 @@ binary_sensor:
     sensors:
       thermostat_heating:
         friendly_name: Thermostat is heating
+        device_class: heat
         value_template: >
           {{ is_state_attr('climate.family_room', 'hvac_action', "heating") }}
       freeze_alert_at_night:
         friendly_name: Temperature is below 19°C at night
+        device_class: cold
         value_template: >
           {{ now().hour >= 0 and now().hour < 6 and
             ((state_attr('climate.family_room', 'current_temperature') | float(0) < 19.0) or
@@ -49,21 +51,25 @@ binary_sensor:
             (states('sensor.ble_temperature_atc_living_room') | float(0) < 19.0)) }}
       heating_request_bedroom:
         friendly_name: Heating Request Bedroom
+        device_class: heat
         value_template: >
           {{ state_attr('climate.danfoss_etrv0100_bedroom_thermostat', 'current_temperature') | float <
             state_attr('climate.danfoss_etrv0100_bedroom_thermostat', 'temperature') | float }}
       heating_request_kitchen:
         friendly_name: Heating Request Kitchen
+        device_class: heat
         value_template: >
           {{ state_attr('climate.danfoss_etrv0103_kitchen_thermostat', 'current_temperature') | float <
             state_attr('climate.danfoss_etrv0103_kitchen_thermostat', 'temperature') | float }}
       heating_request_living_room:
         friendly_name: Heating Request Living Room
+        device_class: heat
         value_template: >
           {{ state_attr('climate.danfoss_etrv0103_living_room_thermostat', 'current_temperature') | float <
             state_attr('climate.danfoss_etrv0103_living_room_thermostat', 'temperature') | float }}
       etrvs_requesting_heat:
         friendly_name: ETRVs are requesting heat
+        device_class: heat
         value_template: >
           {{ is_state('binary_sensor.heating_request_bedroom', 'on') or
             is_state('binary_sensor.heating_request_kitchen', 'on') or
