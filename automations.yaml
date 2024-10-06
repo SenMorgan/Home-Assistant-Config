@@ -121,24 +121,6 @@
           - delay: 1
 
 ###############################################
-## Gas Meter by Aqara door sensor and counter
-###############################################
-
-- id: "gas_counting"
-  alias: Gas Counting
-  initial_state: true
-  trigger:
-    - platform: state
-      entity_id: binary_sensor.bedroom_window_contact
-      from: "off"
-      to: "on"
-  action:
-    - action: counter.increment
-      target:
-        entity_id: counter.gas_counter
-  mode: single
-
-###############################################
 ## Other Automatations
 ###############################################
 

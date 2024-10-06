@@ -58,7 +58,8 @@ camera:
 
 google_assistant: !include google-assistant.yaml
 
-######################## START OF INPUT NUMBER SECTION ########################
+binary_sensor: !include binary_sensors.yaml
+sensor: !include sensors.yaml
 
 input_number:
   volume_yandex_station:
@@ -72,9 +73,6 @@ input_number:
     max: 16
     step: 0.1
 
-###############################################
-## INPUT BOOLEANS
-###############################################
 input_boolean:
   presentation_switch:
     name: Presentation
@@ -94,9 +92,6 @@ input_boolean:
     name: Ignore People Presence
     icon: mdi:home
 
-###############################################
-## SWITCHES
-###############################################
 switch:
   - platform: wake_on_lan
     mac: !secret ASUS_PC_MAC
@@ -108,55 +103,6 @@ switch:
         addon: core_rpc_shutdown
         input: ASUS-PC
 
-###############################################
-## Binary Sensors
-###############################################
-binary_sensor:
-  - platform: template
-    sensors:
-      people_home:
-        friendly_name: People Home
-        device_class: presence
-        value_template: >
-          {{ is_state('person.sen', 'home') or
-          is_state('person.kris', 'home') }}
-
-  # Check if any window is open
-  - platform: group
-    name: Windows
-    device_class: opening
-    entities:
-      - binary_sensor.bedroom_window_contact
-      - binary_sensor.kitchen_window_contact
-      - binary_sensor.living_room_window_contact
-
-  # ADS-B System / Flightradar 24
-  - platform: template
-    sensors:
-      fr24_feeder_receiver_connected:
-        friendly_name: Receiver Connected
-        value_template: '{{ is_state_attr("sensor.fr24_feeder", "rx_connected", "1") }}'
-        device_class: connectivity
-      fr24_feeder_link_connected:
-        friendly_name: Link Connected
-        value_template: '{{ is_state_attr("sensor.fr24_feeder", "feed_status", "connected") }}'
-        device_class: connectivity
-
-counter:
-  ###############################################
-  ## Counter for Gas Meter
-  ###############################################
-  gas_counter:
-    name: Gas Counter
-
-###############################################
-## Sensors
-###############################################
-sensor: !include sensors.yaml
-
-###############################################
-## Input Buttons
-###############################################
 input_button:
   parking_light:
     name: Parking Light
@@ -165,9 +111,6 @@ input_button:
     name: Server Rack Power Off
     icon: mdi:power
 
-###############################################
-## Lights
-###############################################
 light:
   - platform: artnet_led
     host: !secret ARTNET_DMX_CONTROLLER_IP
@@ -199,13 +142,12 @@ light:
           - channel: 11
             name: Moving Head Mode
 
-###############################################
-## MQTT stuff
-###############################################
 mqtt:
-  ###############################################
-  ## COVERS
-  ###############################################
+  binary_sensor: !include mqtt/mqtt-binary-sensors.yaml
+  button: !include mqtt/mqtt-buttons.yaml
+  sensor: !include mqtt/mqtt-sensors.yaml
+  switch: !include mqtt/mqtt-switches.yaml
+
   cover:
     - name: "Bedroom"
       unique_id: "bedroom_cover"
@@ -223,9 +165,6 @@ mqtt:
       optimistic: false
       position_template: "{{ value }}"
 
-  ###############################################
-  ## LIGHTS
-  ###############################################
   light:
     - name: "Kitchen Spotlights"
       unique_id: "kitchen_spotlights"
@@ -237,30 +176,3 @@ mqtt:
       payload_available: "online"
       payload_not_available: "offline"
       optimistic: false
-
-  number:
-    ###############################################
-    ## Electric Heater Controller PWMs
-    ###############################################
-    - name: "Electric Heater Controller PWM"
-      unique_id: "electric_heater_controller_pwm"
-      state_topic: "/electric-heater-controller/state/pwm/all"
-      command_topic: "/electric-heater-controller/set/pwm/all"
-      availability_topic: "/electric-heater-controller/availability"
-      payload_available: "online"
-      payload_not_available: "offline"
-      min: 0
-      max: 255
-      step: 1
-      retain: true
-      optimistic: false
-      qos: 0
-      icon: "mdi:radiator"
-
-  ###############################################
-  ## MQTT ENTITIES
-  ###############################################
-  binary_sensor: !include mqtt/mqtt-binary-sensors.yaml
-  button: !include mqtt/mqtt-buttons.yaml
-  sensor: !include mqtt/mqtt-sensors.yaml
-  switch: !include mqtt/mqtt-switches.yaml
