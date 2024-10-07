@@ -38,11 +38,11 @@ script:
 automation:
   - id: "notification_snow"
     alias: Notification Snow
-    trigger:
-      - platform: numeric_state
+    triggers:
+      - trigger: numeric_state
         entity_id: sensor.openweathermap_snow
         above: 0
-    action:
+    actions:
       - action: notify.mobile_app_sm_s901b
         data_template:
           title: ❄️ Уведомление о снеге
@@ -50,15 +50,15 @@ automation:
 
   - id: "notification_door_opened"
     alias: Notification Door Opened
-    trigger:
-      - platform: state
+    triggers:
+      - trigger: state
         entity_id: binary_sensor.hall_door_contact
         to: "on"
-    condition:
+    conditions:
       - condition: template
         value_template: >
           {{ not states('person.sen') == 'home'}}
-    action:
+    actions:
       - action: notify.mobile_app_sm_s901b
         data:
           title: *sys_notify_title_info
@@ -66,11 +66,11 @@ automation:
 
   - id: "notification_gas_leakage_detected"
     alias: Notification Gas Leakage Detected
-    trigger:
-      - platform: state
+    triggers:
+      - trigger: state
         entity_id: binary_sensor.co_and_natural_gas_alarm_gas
         to: "on"
-    action:
+    actions:
       - repeat:
           while:
             - condition: state
@@ -91,11 +91,11 @@ automation:
 
   - id: "notification_carbon_monoxide_detected"
     alias: Notification Carbon Monoxide Detected
-    trigger:
-      - platform: state
+    triggers:
+      - trigger: state
         entity_id: binary_sensor.co_and_natural_gas_alarm_carbon_monoxide
         to: "on"
-    action:
+    actions:
       - repeat:
           while:
             - condition: state
@@ -114,13 +114,13 @@ automation:
     alias: Notification Water Leakage Detected
     mode: parallel
     max: 5
-    trigger:
-      - platform: state
+    triggers:
+      - trigger: state
         entity_id:
           - binary_sensor.water_leakage_bathroom_moisture
           - binary_sensor.water_leakage_kitchen_moisture
         to: "on"
-    action:
+    actions:
       - action: notify.mobile_app_sm_s901b
         data: &notify_data
           title: "🚨 Внимание! Утечка воды"
@@ -141,13 +141,13 @@ automation:
 
   - id: "notification_ads_b_receiver_disconnected"
     alias: Notification ADS-B Receiver Disconnected
-    trigger:
-      - platform: state
+    triggers:
+      - trigger: state
         entity_id: binary_sensor.fr24_feeder_receiver_connected
         from: "on"
         to: "off"
         for: "00:05:00"
-    action:
+    actions:
       - variables:
           timestamp: "{{ trigger.to_state.last_changed.astimezone(now().tzinfo).strftime('%H:%M:%S') }}"
       - action: script.notify_and_create_persistent_notification
@@ -159,13 +159,13 @@ automation:
 
   - id: "notification_ads_b_receiver_connection_restored"
     alias: Notification ADS-B Receiver Connection Restored
-    trigger:
-      - platform: state
+    triggers:
+      - trigger: state
         entity_id: binary_sensor.fr24_feeder_receiver_connected
         from: "off"
         to: "on"
         for: "00:01:00"
-    action:
+    actions:
       - variables:
           timestamp: "{{ trigger.to_state.last_changed.astimezone(now().tzinfo).strftime('%H:%M:%S') }}"
       - action: script.notify_and_create_persistent_notification
@@ -177,17 +177,17 @@ automation:
 
   - id: "notification_diesel_price_changed"
     alias: Notification Diesel Price Changed
-    trigger:
-      - platform: state
+    triggers:
+      - trigger: state
         entity_id: sensor.diesel_price_ono
-    condition:
+    conditions:
       - condition: template
         value_template: >
           {{ trigger.from_state.state != trigger.to_state.state }}
       - condition: template
         value_template: >
           {{ is_number(trigger.from_state.state) and is_number(trigger.to_state.state) }}
-    action:
+    actions:
       - action: script.notify_and_create_persistent_notification
         data:
           title: *sys_notify_title_info
@@ -198,16 +198,16 @@ automation:
   # This automation in define in my private.yaml, so here is only a snippet
   # - id: "notification_aircraft_detected"
   #   alias: Notification Aircraft Detected
-  #   trigger:
-  #     - platform: state
+  #   triggers:
+  #     - trigger: state
   #       entity_id: sensor.fr24_aircraft
-  #   condition:
+  #   conditions:
   #     - condition: template
   #       value_template: "{{ state_attr('sensor.fr24_aircraft', 'aircraft') | regex_search('AIRCRAFT1|AIRCRAFT2|AIRCRAFT3') }}"
   #     - condition: template
   #       value_template: >
   #         {{ now() - state_attr('automation.notification_aircraft_detected', 'last_triggered') > timedelta(minutes=5) }}
-  #   action:
+  #   actions:
   #     - variables:
   #         aircrafts_to_track: 'AIRCRAFT1|AIRCRAFT2|AIRCRAFT3'
   #     - action: notify.mobile_app_sm_s901b
@@ -231,11 +231,11 @@ automation:
 
   - id: "notification_solar_panel_power_above_threshold"
     alias: Notification Solar Panel Power Above Threshold
-    trigger:
-      - platform: numeric_state
+    triggers:
+      - trigger: numeric_state
         entity_id: sensor.solar_panel_power
         above: 45
-    action:
+    actions:
       - action: notify.mobile_app_sm_s901b
         data:
           title: "{{ '🌞' }} Солнечная панель"

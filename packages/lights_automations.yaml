@@ -51,20 +51,20 @@ automation:
     alias: Hall Lights and Alice Greeting
     mode: single
     max_exceeded: silent
-    trigger:
-      - platform: state
+    triggers:
+      - trigger: state
         id: "SEN_CAME_HOME"
         entity_id: person.sen
         to: "home"
-      - platform: state
+      - trigger: state
         id: "KRIS_CAME_HOME"
         entity_id: person.kris
         to: "home"
-    #  condition:
+    #  conditions:
     #    - condition: time
     #      after: "6:00:00"
     #      before: "22:00:00"
-    action:
+    actions:
       - wait_template: "{{ states('binary_sensor.hall_door_contact') == 'on' }}"
         timeout: 00:15:00
         continue_on_timeout: false
@@ -119,8 +119,8 @@ automation:
                   "{{ ( as_timestamp(states.person.sen.last_changed, 0) | int(0) ) <
                   ( as_timestamp(states.person.kris.last_changed, 0) | int(0) ) }}"
             sequence:
-              - alias: "Only welcome"
-                action: media_player.play_media
+              - action: media_player.play_media
+                alias: "Only welcome"
                 entity_id: media_player.yandex_station_midi
                 data:
                   media_content_id: >
@@ -146,8 +146,8 @@ automation:
                     sequence:
                       - action: light.turn_on
                         entity_id: light.string_lights
-              - alias: "Welcome everybody"
-                action: media_player.play_media
+              - action: media_player.play_media
+                alias: "Welcome everybody"
                 entity_id: media_player.yandex_station_midi
                 data:
                   media_content_id: >
@@ -164,36 +164,36 @@ automation:
   - id: "home_all_lights_off"
     alias: Home All Lights OFF
     mode: restart
-    trigger:
-      - platform: state
+    triggers:
+      - trigger: state
         entity_id: binary_sensor.hall_door_contact
         from: "on"
         to: "off"
-    condition:
+    conditions:
       - condition: state
         entity_id: binary_sensor.people_home
         state: "on"
       - condition: state
         entity_id: input_boolean.ignore_people_presence
         state: "off"
-    action:
+    actions:
       - action: script.turn_on
         entity_id: script.turn_off_lights_after_people_leave
 
   - id: "hall_lights_by_motion_on"
     alias: Hall Lights by Motion ON
-    trigger:
-      - platform: state
+    triggers:
+      - trigger: state
         entity_id: binary_sensor.hall_door_contact
         to: "on"
-      - platform: state
+      - trigger: state
         entity_id: binary_sensor.aqara_hall_motion_sensor_occupancy
         to: "on"
-    condition:
+    conditions:
       - condition: state
         entity_id: light.hall_lights
         state: "off"
-    action:
+    actions:
       - action: light.turn_on
         entity_id: light.hall_lights
       - action: input_boolean.turn_on
@@ -201,15 +201,15 @@ automation:
 
   - id: "hall_lights_by_motion_off"
     alias: Hall Lights by Motion OFF
-    trigger:
-      - platform: state
+    triggers:
+      - trigger: state
         entity_id: binary_sensor.aqara_hall_motion_sensor_occupancy
         to: "off"
-    condition:
+    conditions:
       - condition: state
         entity_id: input_boolean.flag_hall_lights_triggered_by_motion
         state: "on"
-    action:
+    actions:
       - action: light.turn_off
         entity_id: light.hall_lights
       - action: input_boolean.turn_off
@@ -220,37 +220,31 @@ automation:
   ###############################################
   - id: "kitchen_asus_pc_background_lights_on"
     alias: Kitchen Asus PC Background Lights ON
-    trigger:
-      - platform: sun
+    triggers:
+      - trigger: sun
         id: "SUNSET"
         event: sunset
         offset: -00:25:00
-      - platform: state
+      - trigger: state
         id: "PC_ON"
         entity_id: switch.asus_pc
         from: "off"
         to: "on"
-    condition:
+    conditions:
       - condition: state
         entity_id: person.sen
         state: "home"
-      - condition: or
-        conditions:
-          - condition: and
-            conditions:
+      - or:
+          - and:
               - condition: trigger
                 id: "SUNSET"
               - condition: state
                 entity_id: switch.asus_pc
                 state: "on"
-          - condition: and
-            conditions:
+          - and:
               - condition: trigger
                 id: "PC_ON"
-    #            - condition: sun
-    #              after: sunset
-    #              after_offset: -00:25:00
-    action:
+    actions:
       - action: light.turn_on
         entity_id:
           - light.gyver_lamp
@@ -273,12 +267,12 @@ automation:
 
   - id: "kitchen_asus_pc_background_lights_off"
     alias: Kitchen Asus PC Background Lights OFF
-    trigger:
-      - platform: state
+    triggers:
+      - trigger: state
         entity_id: switch.asus_pc
         from: "on"
         to: "off"
-    action:
+    actions:
       - action: light.turn_off
         entity_id:
           - light.gyver_lamp
@@ -286,11 +280,11 @@ automation:
 
   - id: "kitchen_clock_control_based_on_people_presence"
     alias: Kitchen Clock Control Based on People Presence
-    trigger:
-      - platform: state
+    triggers:
+      - trigger: state
         entity_id: binary_sensor.people_home
         for: 00:00:30
-    action:
+    actions:
       - if:
           - condition: template
             value_template: >
@@ -312,29 +306,29 @@ automation:
 
   - id: "kitchen_clock_reenable"
     alias: Kitchen Clock Reenable
-    trigger:
-      - platform: state
+    triggers:
+      - trigger: state
         entity_id: light.7_seg_clock
         to: "off"
         for: 00:00:15
-    condition:
+    conditions:
       - condition: state
         entity_id: binary_sensor.people_home
         state: "on"
       - condition: state
         entity_id: input_boolean.home_night_mode
         state: "off"
-    action:
+    actions:
       - action: light.turn_on
         entity_id: light.7_seg_clock
 
   - id: "kitchen_clock_enable_at_morning_by_motion"
     alias: Kitchen Clock Enable at Morning by Motion
-    trigger:
-      - platform: state
+    triggers:
+      - trigger: state
         entity_id: binary_sensor.kitchen_motion_alarm
         to: "on"
-    condition:
+    conditions:
       - condition: state
         entity_id: binary_sensor.people_home
         state: "on"
@@ -344,42 +338,39 @@ automation:
       - condition: time
         after: "04:00:00"
         before: "12:00:00"
-    action:
+    actions:
       - action: light.turn_on
         entity_id: light.7_seg_clock
 
   - id: "living_room_bar_lights_by_sunset_or_tv_on"
     alias: Living Room Bar Lights by Sunset or TV ON
-    trigger:
-      - platform: sun
+    triggers:
+      - trigger: sun
         id: "SUNSET"
         event: sunset
         offset: -00:15:00
-      - platform: state
+      - trigger: state
         id: "TV_ON"
         entity_id: media_player.tv
         to: "on"
-    condition:
+    conditions:
       - condition: state
         entity_id: person.sen
         state: "home"
-      - condition: or
-        conditions:
-          - condition: and
-            conditions:
+      - or:
+          - and:
               - condition: trigger
                 id: "SUNSET"
               - condition: state
                 entity_id: media_player.tv
                 state: "on"
-          - condition: and
-            conditions:
+          - and:
               - condition: trigger
                 id: "TV_ON"
               - condition: sun
                 after: sunset
                 before_offset: 00:15:00
-    action:
+    actions:
       - wait_template: >
           {{ states('switch.asus_pc') == 'off' and
             states('light.mi_desk_lamp') == 'off' and
@@ -399,23 +390,23 @@ automation:
 
   - id: "living_room_bar_lights_by_sunrise_off"
     alias: Living Room Bar Lights by Sunrise OFF
-    trigger:
-      - platform: sun
+    triggers:
+      - trigger: sun
         event: sunrise
         offset: -01:00:00
-    action:
+    actions:
       - action: light.turn_off
         entity_id: light.bar_light
 
   # Send me notification if switch.parking_light is turned off for more than 1 hour and turn it ON
   - id: "parking_light_emergency_on"
     alias: Parking Light Emergency On
-    trigger:
-      - platform: state
+    triggers:
+      - trigger: state
         entity_id: switch.parking_light
         to: "off"
         for: 1:00:00
-    action:
+    actions:
       - repeat:
           until:
             - condition: state
@@ -433,19 +424,19 @@ automation:
   # Turn off all lights if tv was turned off for 10 seconds in the evening (21:00 ~ 02:00)
   - id: "tv_off_all_lights_off"
     alias: TV OFF All Lights OFF
-    trigger:
-      - platform: state
+    triggers:
+      - trigger: state
         entity_id: media_player.tv
         to: "off"
         for: 00:00:10
-    condition:
+    conditions:
       - condition: time
         after: "21:00:00"
         before: "02:00:00"
       - condition: state
         entity_id: switch.asus_pc
         state: "off"
-    action:
+    actions:
       - action: script.turn_on
         entity_id: script.turn_off_all_lights
 

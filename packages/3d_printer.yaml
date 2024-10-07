@@ -46,12 +46,12 @@ automation:
   ###############################################
   - alias: "3D Printer - Print Done"
     id: "3d_printer_print_done"
-    trigger:
-      platform: state
-      entity_id: binary_sensor.octoprint_printing
-      from: "on"
-      to: "off"
-    action:
+    triggers:
+      - trigger: state
+        entity_id: binary_sensor.octoprint_printing
+        from: "on"
+        to: "off"
+    actions:
       - action: notify.mobile_app_sm_s901b
         data:
           title: "3D Printer"
@@ -62,16 +62,16 @@ automation:
   ###############################################
   - alias: "3D Printer - Print Progress"
     id: "3d_printer_print_progress"
-    trigger:
-      platform: state
-      entity_id: sensor.octoprint_job_percentage
-    condition:
-      condition: template
-      value_template: >
-        {{ (trigger.to_state.state | int(0)) > 0 and
-          ((trigger.to_state.state | int(0)) != (trigger.from_state.state | int(0))) and
-           (trigger.to_state.state | int(0)) % 10 == 0 }}
-    action:
+    triggers:
+      - trigger: state
+        entity_id: sensor.octoprint_job_percentage
+    conditions:
+      - condition: template
+        value_template: >
+          {{ (trigger.to_state.state | int(0)) > 0 and
+            ((trigger.to_state.state | int(0)) != (trigger.from_state.state | int(0))) and
+            (trigger.to_state.state | int(0)) % 10 == 0 }}
+    actions:
       - action: notify.mobile_app_sm_s901b
         data_template:
           title: "3D Printer"
@@ -82,14 +82,14 @@ automation:
   ###############################################
   - alias: "3D Printer - Print Paused"
     id: "3d_printer_print_paused"
-    trigger:
-      platform: state
-      entity_id: sensor.octoprint_current_state
-      from: "Printing"
-      to:
-        - "Paused"
-        - "Pausing"
-    action:
+    triggers:
+      - trigger: state
+        entity_id: sensor.octoprint_current_state
+        from: "Printing"
+        to:
+          - "Paused"
+          - "Pausing"
+    actions:
       - action: notify.mobile_app_sm_s901b
         data:
           title: "⚠️ 3D Printer"
@@ -100,14 +100,14 @@ automation:
   ###############################################
   - alias: "3D Printer - Print Resumed"
     id: "3d_printer_print_resumed"
-    trigger:
-      platform: state
-      entity_id: sensor.octoprint_current_state
-      from:
-        - "Paused"
-        - "Pausing"
-      to: "Printing"
-    action:
+    triggers:
+      - trigger: state
+        entity_id: sensor.octoprint_current_state
+        from:
+          - "Paused"
+          - "Pausing"
+        to: "Printing"
+    actions:
       - action: notify.mobile_app_sm_s901b
         data:
           title: "⚠️ 3D Printer"
@@ -118,21 +118,20 @@ automation:
   ###############################################
   - alias: "3D Printer - Overheated"
     id: "3d_printer_overheated"
-    trigger:
-      platform: state
-      entity_id:
-        - sensor.octoprint_actual_bed_temp
-        - sensor.octoprint_actual_tool0_temp
-    condition:
-      condition: or
-      conditions:
-        - condition: template
-          value_template: >
-            {{ states('sensor.octoprint_actual_bed_temp') | int(0) > 100 }}
-        - condition: template
-          value_template: >
-            {{ states('sensor.octoprint_actual_tool0_temp') | int(0) > 250 }}
-    action:
+    triggers:
+      - trigger: state
+        entity_id:
+          - sensor.octoprint_actual_bed_temp
+          - sensor.octoprint_actual_tool0_temp
+    conditions:
+      - or:
+          - condition: template
+            value_template: >
+              {{ states('sensor.octoprint_actual_bed_temp') | int(0) > 100 }}
+          - condition: template
+            value_template: >
+              {{ states('sensor.octoprint_actual_tool0_temp') | int(0) > 250 }}
+    actions:
       - action: notify.mobile_app_sm_s901b
         data:
           title: "🌡️ 3D Printer перегрелся!"
@@ -146,27 +145,27 @@ automation:
   - alias: 3D Printer - Power On
     id: 3d_printer_power_on
     mode: restart
-    trigger:
-      - platform: state
+    triggers:
+      - trigger: state
         entity_id: input_boolean.3d_printer_and_octo_power
         from: "off"
         to: "on"
     # Check if new state was not set by «3d_printer_sync_power_state» to awoid infinite loop
-    condition:
+    conditions:
       - condition: state
         entity_id: switch.3d_printer_socket
         state: "off"
-    action:
+    actions:
       - action: switch.turn_on
         entity_id: switch.3d_printer_socket
 
   - alias: 3D Printer - Power Sync
     id: 3d_printer_power_sync
     mode: single
-    trigger:
-      - platform: state
+    triggers:
+      - trigger: state
         entity_id: switch.3d_printer_socket
-    condition:
+    conditions:
       - condition: template
         value_template: >
           {{ states('switch.3d_printer_socket') != states('input_boolean.3d_printer_and_octo_power') }}
@@ -174,7 +173,7 @@ automation:
       - condition: template
         value_template: >
           {{ is_state_attr('automation.3d_printer_power_off', 'current', 0) }}
-    action:
+    actions:
       - if:
           - condition: state
             entity_id: switch.3d_printer_socket
@@ -189,17 +188,17 @@ automation:
   - alias: 3D Printer - Power Off
     id: 3d_printer_power_off
     mode: restart
-    trigger:
-      - platform: state
+    triggers:
+      - trigger: state
         entity_id: input_boolean.3d_printer_and_octo_power
         from: "on"
         to: "off"
     # Check if new state was not set by «3d_printer_sync_power_state» to awoid infinite loop
-    condition:
+    conditions:
       - condition: state
         entity_id: switch.3d_printer_socket
         state: "on"
-    action:
+    actions:
       - action: script.turn_on
         entity_id: script.octoprint_shutdown
       # If server is not in state "operational" — send me notification and stop powering off

@@ -73,11 +73,11 @@ automation:
     id: "scooter_charger_enable"
     mode: restart
     max_exceeded: silent
-    trigger:
-      - platform: state
+    triggers:
+      - trigger: state
         entity_id: input_boolean.scooter_charger
         to: "on"
-    action:
+    actions:
       - action: switch.turn_on
         entity_id: switch.scooter_charger_socket
       - action: automation.turn_on
@@ -93,17 +93,16 @@ automation:
           entity_id: input_datetime.scooter_charger_energy_start_time
           datetime: "{{ now().strftime('%Y-%m-%d %H:%M:%S') }}"
 
-
   # When input_boolean.scooter_charger is off - disable charger
   - alias: Scooter Charger Disable
     id: "scooter_charger_disable"
     mode: restart
     max_exceeded: silent
-    trigger:
-      - platform: state
+    triggers:
+      - trigger: state
         entity_id: input_boolean.scooter_charger
         to: "off"
-    action:
+    actions:
       - action: switch.turn_off
         entity_id: switch.scooter_charger_socket
       - action: script.turn_on
@@ -116,13 +115,13 @@ automation:
     id: "scooter_charger_disable_when_idle"
     mode: restart
     max_exceeded: silent
-    trigger:
-      - platform: numeric_state
+    triggers:
+      - trigger: numeric_state
         entity_id: sensor.scooter_charger_active_power
         below: 15
         for:
           minutes: 10
-    action:
+    actions:
       - action: switch.turn_off
         entity_id: switch.scooter_charger_socket
       - action: input_boolean.turn_off

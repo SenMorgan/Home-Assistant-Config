@@ -56,10 +56,10 @@ automation:
 
   - id: "home_assistant_start_notification"
     alias: Home Assistant Start Notification
-    trigger:
-      - platform: homeassistant
+    triggers:
+      - trigger: homeassistant
         event: start
-    action:
+    actions:
       - action: script.notify_and_create_persistent_notification
         data:
           title: *sys_notify_title_info
@@ -67,10 +67,10 @@ automation:
 
   - id: "home_assistant_shutdown_notification"
     alias: Home Assistant Shutdown Notification
-    trigger:
-      - platform: homeassistant
+    triggers:
+      - trigger: homeassistant
         event: shutdown
-    action:
+    actions:
       - action: script.notify_and_create_persistent_notification
         data:
           title: *sys_notify_title_warning
@@ -79,14 +79,14 @@ automation:
   - id: "home_assistant_new_device_connected_notification"
     alias: Notification New Device Connected Notification
     mode: queued
-    trigger:
-      platform: event
-      event_type: entity_registry_updated
-      event_data:
-        action: create
-    condition: >
-      {{trigger.event.data.entity_id.startswith('device_tracker')}}
-    action:
+    triggers:
+      - trigger: event
+        event_type: entity_registry_updated
+        event_data:
+          action: create
+    conditions:
+      - "{{trigger.event.data.entity_id.startswith('device_tracker')}}"
+    actions:
       - variables:
           entity: "{{trigger.event.data.entity_id}}"
           notify_title: 📡 В сети обнаружено новое устройство
@@ -118,12 +118,12 @@ automation:
 
   - id: "home_assistant_update_available_notification"
     alias: Home Assistant Update Available Notification
-    trigger:
-      - platform: state
+    triggers:
+      - trigger: state
         entity_id: update.home_assistant_core_update
         from: "off"
         to: "on"
-    action:
+    actions:
       - action: notify.mobile_app_sm_s901b
         data:
           title: *sys_notify_title_info
@@ -157,12 +157,12 @@ automation:
           {% endif %}
         {% endfor %} {{result.sensors|join(', ')}}
       message: "Обнаружены недоступные Zigbee устройства: {{sensors}}"
-    trigger:
-      - platform: time
+    triggers:
+      - trigger: time
         at: "20:00:00"
-    condition:
+    conditions:
       - "{{ sensors != '' and (day | int == 0 or day | int == now().isoweekday()) }}"
-    action:
+    actions:
       - action: script.notify_and_create_persistent_notification
         data:
           title: *sys_notify_title_warning
@@ -174,14 +174,14 @@ automation:
 
   - id: "home_assistant_create_group_of_battery_devices"
     alias: Home Assistant Create Group of Battery Devices
-    trigger:
+    triggers:
       # Trigger on startup
-      - platform: homeassistant
+      - trigger: homeassistant
         event: start
       # Trigger every 2 hours by time_pattern
-      - platform: time_pattern
+      - trigger: time_pattern
         hours: "/2"
-    action:
+    actions:
       - action: group.set
         data:
           object_id: battery_devices
@@ -196,13 +196,12 @@ automation:
 
   - id: "home_assistant_low_device_battery_notification"
     alias: Home Assistant Low Device Battery Notification
-    trigger:
-      - platform: event
+    triggers:
+      - trigger: event
         event_type: state_changed
-    condition:
+    conditions:
       # Notify only from 18 till 21 by workdays and from 10 till 21 by weekends
-      - condition: or
-        conditions:
+      - or:
           - condition: time
             after: "18:00:00"
             before: "21:00:00"
@@ -230,7 +229,7 @@ automation:
       - condition: template
         value_template: >-
           {{ (trigger.event.data.new_state.state | int(0)) < 20 }}
-    action:
+    actions:
       - action: script.notify_and_create_persistent_notification
         data:
           title: *sys_notify_title_warning
@@ -244,29 +243,29 @@ automation:
 
   - id: home_assistant_power_off
     alias: Home Assistant - Power Off
-    trigger:
-      - platform: state
+    triggers:
+      - trigger: state
         entity_id: input_button.home_assistant_power_off
-    action:
+    actions:
       - action: script.turn_on
         entity_id: script.home_assistant_shutdown
 
   - alias: Home Assistant - Reboot
     id: home_assistant_reboot
-    trigger:
-      - platform: state
+    triggers:
+      - trigger: state
         entity_id: input_button.home_assistant_reboot
-    action:
+    actions:
       - action: script.turn_on
         entity_id: script.home_assistant_reboot
 
   - alias: Home Assistant Server Rack - Power Off
     id: home_assistant_server_rack_power_off
     mode: restart
-    trigger:
-      - platform: state
+    triggers:
+      - trigger: state
         entity_id: input_button.server_rack_power_off
-    action:
+    actions:
       # Check Synology Shutdown button state:
       - if:
           - condition: state
@@ -292,11 +291,11 @@ automation:
           # Waiting for «action_power_off» or «action_cancel» avoids accidentally continuing
           # for another script/automation's notification action
           - wait_for_trigger:
-              - platform: event
+              - trigger: event
                 event_type: mobile_app_notification_action
                 event_data:
                   action: "{{ action_power_off }}"
-              - platform: event
+              - trigger: event
                 event_type: mobile_app_notification_action
                 event_data:
                   action: "{{ action_cancel }}"

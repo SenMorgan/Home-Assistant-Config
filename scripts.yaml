@@ -24,18 +24,18 @@ switch_on_parking_light:
 cover_correct_up:
   alias: Cover Correct Zero Pozition Up
   sequence:
-    action: mqtt.publish
-    data:
-      topic: /blinds/set
-      payload: "CORRECT_UP"
+    - action: mqtt.publish
+      data:
+        topic: /blinds/set
+        payload: "CORRECT_UP"
 
 cover_correct_down:
   alias: Cover Correct Zero Pozition Down
   sequence:
-    action: mqtt.publish
-    data:
-      topic: /blinds/set
-      payload: "CORRECT_DOWN"
+    - action: mqtt.publish
+      data:
+        topic: /blinds/set
+        payload: "CORRECT_DOWN"
 
 presentation:
   alias: Presentation
@@ -400,8 +400,8 @@ thermostat_set_default_temperature:
 
     # Check if thermostat is ready to accept new target temperature and enable it if not
     - if:
-        condition: template
-        value_template: "{{ state_attr('climate.family_room', 'temperature') == None }}"
+        - condition: template
+          value_template: "{{ state_attr('climate.family_room', 'temperature') == None }}"
       then:
         # Repeat the command to ensure that the thermostat is enabled
         - repeat:

@@ -110,53 +110,53 @@ input_number:
 automation:
   - alias: WC Accupancy Set
     id: wc_accupancy_set
-    trigger:
-      platform: state
-      entity_id: binary_sensor.wc_door_contact
-      from: "on"
-      to: "off"
-      for:
-        seconds: "{{ states('input_number.wc_consider_occupied_after_seconds') | default(0) | float(0) }}"
-    condition:
-      condition: state
-      entity_id: input_boolean.wc_occupied
-      state: "off"
-    action:
-      action: input_boolean.turn_on
-      entity_id: input_boolean.wc_occupied
+    triggers:
+      - trigger: state
+        entity_id: binary_sensor.wc_door_contact
+        from: "on"
+        to: "off"
+        for:
+          seconds: "{{ states('input_number.wc_consider_occupied_after_seconds') | default(0) | float(0) }}"
+    conditions:
+      - condition: state
+        entity_id: input_boolean.wc_occupied
+        state: "off"
+    actions:
+      - action: input_boolean.turn_on
+        entity_id: input_boolean.wc_occupied
 
   - alias: WC Accupancy Reset
     id: wc_accupancy_reset
-    trigger:
-      platform: state
-      entity_id: binary_sensor.wc_door_contact
-      from: "off"
-      to: "on"
-      for:
-        seconds: "{{ states('input_number.wc_consider_unoccupied_after_seconds') | default(0) | float(0) }}"
-    condition:
-      condition: state
-      entity_id: input_boolean.wc_occupied
-      state: "on"
-    action:
-      action: input_boolean.turn_off
-      entity_id: input_boolean.wc_occupied
+    triggers:
+      - trigger: state
+        entity_id: binary_sensor.wc_door_contact
+        from: "off"
+        to: "on"
+        for:
+          seconds: "{{ states('input_number.wc_consider_unoccupied_after_seconds') | default(0) | float(0) }}"
+    conditions:
+      - condition: state
+        entity_id: input_boolean.wc_occupied
+        state: "on"
+    actions:
+      - action: input_boolean.turn_off
+        entity_id: input_boolean.wc_occupied
 
   - alias: WC Ventilation Start Timer Manually
     id: wc_ventilation_start_timer_manually
-    trigger:
-      platform: state
-      entity_id: fan.wc_and_bathroom
-      from: "off"
-      to: "on"
-    condition:
+    triggers:
+      - trigger: state
+        entity_id: fan.wc_and_bathroom
+        from: "off"
+        to: "on"
+    conditions:
       # Run that only if new timer finish time is greater than the current one or if timer is inactive
       - condition: template
         value_template:
           "{{ ((now() + timedelta(minutes=states('input_number.wc_ventilate_for_minutes_after_manual_trigger') | default(0) | float(0))).timestamp() >
           as_timestamp(state_attr('timer.wc_ventilation', 'finishes_at'), 0)) or
           (states('timer.wc_ventilation') in ['idle', 'paused']) }}"
-    action:
+    actions:
       - action: timer.start
         data:
           entity_id: timer.wc_ventilation
@@ -172,16 +172,16 @@ automation:
 
   - alias: WC Ventilation Stop Timer Manually
     id: wc_ventilation_stop_timer_manually
-    trigger:
-      platform: state
-      entity_id: fan.wc_and_bathroom
-      from: "on"
-      to: "off"
-    condition:
-      condition: state
-      entity_id: timer.wc_ventilation
-      state: "active"
-    action:
+    triggers:
+      - trigger: state
+        entity_id: fan.wc_and_bathroom
+        from: "on"
+        to: "off"
+    conditions:
+      - condition: state
+        entity_id: timer.wc_ventilation
+        state: "active"
+    actions:
       - action: timer.cancel
         entity_id: timer.wc_ventilation
       - action: timer.cancel
@@ -195,12 +195,12 @@ automation:
 
   - alias: WC Ventilation Timeout
     id: wc_ventilation_timeout
-    trigger:
-      platform: event
-      event_type: timer.finished
-      event_data:
-        entity_id: timer.wc_ventilation
-    action:
+    triggers:
+      - trigger: event
+        event_type: timer.finished
+        event_data:
+          entity_id: timer.wc_ventilation
+    actions:
       - action: fan.turn_off
         entity_id: fan.wc_and_bathroom
       - action: timer.cancel
@@ -214,14 +214,14 @@ automation:
 
   - alias: WC Ventilation Start Timeout For Door Open State
     id: wc_ventilation_start_timeout_for_door_open_state
-    trigger:
-      platform: state
-      entity_id: input_boolean.wc_occupied
-      from: "off"
-      to: "on"
-      for:
-        seconds: "{{ states('input_number.wc_consider_ventilate_when_finished_if_occupied_for_seconds') | default(0) | float(0) }}"
-    action:
+    triggers:
+      - trigger: state
+        entity_id: input_boolean.wc_occupied
+        from: "off"
+        to: "on"
+        for:
+          seconds: "{{ states('input_number.wc_consider_ventilate_when_finished_if_occupied_for_seconds') | default(0) | float(0) }}"
+    actions:
       - action: timer.start
         data:
           entity_id: timer.wc_wait_for_open_to_ventilate
@@ -230,12 +230,12 @@ automation:
 
   - alias: WC Ventilation Start When Unoccupied
     id: wc_ventilation_start_when_unoccupied
-    trigger:
-      platform: state
-      entity_id: input_boolean.wc_occupied
-      from: "on"
-      to: "off"
-    condition:
+    triggers:
+      - trigger: state
+        entity_id: input_boolean.wc_occupied
+        from: "on"
+        to: "off"
+    conditions:
       - condition: state
         entity_id: timer.wc_wait_for_open_to_ventilate
         state: "active"
@@ -245,7 +245,7 @@ automation:
           "{{ ((now() + timedelta(minutes=states('input_number.wc_ventilate_for_minutes_when_finished') | default(0) | float(0))).timestamp() >
           as_timestamp(state_attr('timer.wc_ventilation', 'finishes_at'), 0)) or
           (states('timer.wc_ventilation') in ['idle', 'paused']) }}"
-    action:
+    actions:
       - action: fan.turn_on
         entity_id: fan.wc_and_bathroom
       - action: timer.cancel
@@ -262,12 +262,12 @@ automation:
 
   - alias: WC Ventilation Start Humidity Exceeds Threshold
     id: wc_ventilation_start_humidity_exceeds_threshold
-    trigger:
-      platform: numeric_state
-      entity_id: sensor.ble_humidity_atc_bathroom
-      above: input_number.wc_ventilation_start_humidity_threshold
-      for: 00:02:00
-    action:
+    triggers:
+      - trigger: numeric_state
+        entity_id: sensor.ble_humidity_atc_bathroom
+        above: input_number.wc_ventilation_start_humidity_threshold
+        for: 00:02:00
+    actions:
       - action: timer.cancel
         entity_id: timer.wc_wait_for_open_to_ventilate
       - action: automation.turn_on
@@ -286,12 +286,12 @@ automation:
 
   - alias: WC Ventilation Stop Humidity Below Threshold
     id: wc_ventilation_stop_humidity_below_threshold
-    trigger:
-      platform: numeric_state
-      entity_id: sensor.ble_humidity_atc_bathroom
-      below: input_number.wc_ventilation_stop_humidity_threshold
-      for: 00:02:00
-    action:
+    triggers:
+      - trigger: numeric_state
+        entity_id: sensor.ble_humidity_atc_bathroom
+        below: input_number.wc_ventilation_stop_humidity_threshold
+        for: 00:02:00
+    actions:
       - action: timer.cancel
         entity_id: timer.wc_ventilation
       - action: fan.turn_off
@@ -306,21 +306,20 @@ automation:
   # Emergency start WC ventilation timer to prevent infinite ventilation
   - alias: WC Ventilation Start Timer Emergency
     id: wc_ventilation_start_timer_emergency
-    trigger:
-      platform: state
-      entity_id: fan.wc_and_bathroom
-      to: "on"
-      for: 00:01:00
-    condition:
-      condition: or
-      conditions:
-        - condition: state
-          entity_id: timer.wc_ventilation
-          state: "idle"
-        - condition: state
-          entity_id: timer.wc_ventilation
-          state: "paused"
-    action:
+    triggers:
+      - trigger: state
+        entity_id: fan.wc_and_bathroom
+        to: "on"
+        for: 00:01:00
+    conditions:
+      - or:
+          - condition: state
+            entity_id: timer.wc_ventilation
+            state: "idle"
+          - condition: state
+            entity_id: timer.wc_ventilation
+            state: "paused"
+    actions:
       - action: timer.start
         data:
           entity_id: timer.wc_ventilation

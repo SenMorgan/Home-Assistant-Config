@@ -140,8 +140,8 @@ automation:
         input_button.dcc_ex_max_volume: switch.dcc_ex_max_volume_cmd
         input_button.dcc_ex_route_300: switch.dcc_ex_route_300_cmd
         input_button.dcc_ex_route_301: switch.dcc_ex_route_301_cmd
-    trigger:
-      - platform: state
+    triggers:
+      - trigger: state
         entity_id:
           - input_button.dcc_ex_emergency_stop
           - input_button.dcc_ex_reboot
@@ -149,7 +149,7 @@ automation:
           - input_button.dcc_ex_max_volume
           - input_button.dcc_ex_route_300
           - input_button.dcc_ex_route_301
-    action:
+    actions:
       - action: switch.turn_on
         data:
           entity_id: "{{ button_switch_map[trigger.entity_id] }}"
@@ -157,8 +157,8 @@ automation:
   # Disable command switches after 1 second
   - alias: "DCC-EX Disable Command Switches"
     id: dcc_ex_disable_command_switches
-    trigger:
-      - platform: state
+    triggers:
+      - trigger: state
         entity_id:
           - switch.dcc_ex_emergency_stop_cmd
           - switch.dcc_ex_reboot_cmd
@@ -170,21 +170,21 @@ automation:
         for: "00:00:01"
     variables:
       switch_entity: "{{ trigger.entity_id }}"
-    action:
+    actions:
       - action: switch.turn_off
         target:
           entity_id: "{{ switch_entity }}"
 
   - alias: "DCC-EX Enable Power on Sunset"
     id: dcc_ex_enable_power_on_sunset
-    trigger:
-    - platform: sun
-      event: sunset
-    condition:
+    triggers:
+      - trigger: sun
+        event: sunset
+    conditions:
       - condition: state
         entity_id: binary_sensor.people_home
         state: "on"
-    action:
-      action: switch.turn_on
-      target:
-        entity_id: switch.dcc_ex_pwr
+    actions:
+      - action: switch.turn_on
+        target:
+          entity_id: switch.dcc_ex_pwr

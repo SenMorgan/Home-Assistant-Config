@@ -4,18 +4,18 @@
 
 - id: "bedroom_blinds_by_sunset_close"
   alias: Bedroom Blinds by Sunset Close
-  trigger:
-    - platform: sun
+  triggers:
+    - trigger: sun
       event: sunset
       offset: 00:20:00
-  condition:
+  conditions:
     - condition: state
       entity_id: cover.bedroom
       state: open
     # - condition: state
     #   entity_id: binary_sensor.bedroom_window_contact
     #   state: "off"
-  action:
+  actions:
     - action: cover.close_cover
       entity_id: cover.bedroom
 
@@ -26,10 +26,10 @@
 - id: "living_room_tv_by_wol_on"
   alias: Living Room TV by WoL ON
   mode: restart
-  trigger:
-    - platform: webostv.turn_on
+  triggers:
+    - trigger: webostv.turn_on
       entity_id: media_player.tv
-  action:
+  actions:
     - action: script.turn_on
       entity_id: script.wake_tv
 
@@ -40,25 +40,25 @@
 - id: "parking_lights_on"
   alias: Parking Lights ON
   mode: queued
-  trigger:
-    - platform: state
+  triggers:
+    - trigger: state
       entity_id: input_button.parking_light
-  action:
+  actions:
     - action: script.turn_on
       target:
         entity_id: script.switch_on_parking_light
 
 - id: "kitchen_presentation_on"
   alias: Kitchen Presentation ON
-  trigger:
-    - platform: state
+  triggers:
+    - trigger: state
       entity_id: input_boolean.presentation_switch
       to: "on"
-  condition:
+  conditions:
     - condition: state
       entity_id: script.presentation
       state: "off"
-  action:
+  actions:
     - action: script.turn_on
       target:
         entity_id: script.presentation
@@ -72,12 +72,12 @@
 - id: "sync_shopping_list"
   alias: Sync Shopping List
   mode: single
-  trigger:
-    - platform: state
+  triggers:
+    - trigger: state
       entity_id: binary_sensor.people_home
       to: "off"
       for: 00:05:00
-  action:
+  actions:
     # Save actual volume
     - action: input_number.set_value
       target:
@@ -126,11 +126,11 @@
 
 - id: "power_monitor_crossed_low_threshold_notification"
   alias: Power Monitor Crossed Low Threshold Notification
-  trigger:
-    - platform: numeric_state
+  triggers:
+    - trigger: numeric_state
       entity_id: sensor.power_monitor_voltage
       below: input_number.power_monitor_low_voltage_threshold
-  action:
+  actions:
     - repeat:
         while:
           - condition: numeric_state
@@ -146,31 +146,31 @@
 - id: "busy_wall_switch_1"
   alias: Busy Wall Switch 1
   mode: restart
-  trigger:
-    - platform: state
+  triggers:
+    - trigger: state
       entity_id: binary_sensor.air_quality_station_digital_input_1
       from: "off"
       to: "on"
-    - platform: state
+    - trigger: state
       entity_id: binary_sensor.air_quality_station_digital_input_1
       from: "on"
       to: "off"
-  action:
+  actions:
     - action: light.toggle
       entity_id: light.living_room_ceiling_light
 
 - id: "busy_wall_switch_2"
   alias: Busy Wall Switch 2
   mode: restart
-  trigger:
-    - platform: state
+  triggers:
+    - trigger: state
       entity_id: binary_sensor.air_quality_station_digital_input_2
       from: "off"
       to: "on"
-    - platform: state
+    - trigger: state
       entity_id: binary_sensor.air_quality_station_digital_input_2
       from: "on"
       to: "off"
-  action:
+  actions:
     - action: light.toggle
       entity_id: light.floor_lamp

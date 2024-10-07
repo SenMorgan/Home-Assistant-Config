@@ -98,10 +98,10 @@ switch:
     name: ASUS-PC
     host: !secret ASUS_PC_LOCAL_IP
     turn_off:
-      action: hassio.addon_stdin
-      data:
-        addon: core_rpc_shutdown
-        input: ASUS-PC
+      - action: hassio.addon_stdin
+        data:
+          addon: core_rpc_shutdown
+          input: ASUS-PC
 
 input_button:
   parking_light:

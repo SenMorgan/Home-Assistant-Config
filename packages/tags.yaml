@@ -13,10 +13,10 @@ automation:
   - alias: Tag Near PC was scanned
     id: tag_near_pc_was_scanned
     mode: single
-    trigger:
-      - platform: tag
+    triggers:
+      - trigger: tag
         tag_id: c45d3b71-2ade-45e3-8663-f0028f52b01d
-    action:
+    actions:
       - action: input_boolean.toggle
         target:
           entity_id: input_boolean.show_cameras_in_lovelace
@@ -33,12 +33,12 @@ automation:
   - alias: Reenable Cameras if Hided
     id: reenable_cameras_if_hided
     mode: single
-    trigger:
-      - platform: state
+    triggers:
+      - trigger: state
         entity_id: input_boolean.show_cameras_in_lovelace
         to: "off"
         for: "01:00:00"
-    action:
+    actions:
       - action: input_boolean.turn_on
         target:
           entity_id: input_boolean.show_cameras_in_lovelace
@@ -50,10 +50,10 @@ automation:
   - alias: Tag Near PC is scanned
     id: tag_near_pc_is_scanned
     mode: restart
-    trigger:
-      - platform: tag
+    triggers:
+      - trigger: tag
         tag_id: 5954e702-f87d-4955-969c-5231af33ece8
-    action:
+    actions:
       - action: input_boolean.turn_on
         entity_id: input_boolean.ignore_people_presence
       # Turn off the script that could be running at this moment
@@ -79,7 +79,7 @@ automation:
                 title: ❌ Отключить обратно
                 icon: mdi:account-off
       - wait_for_trigger:
-          - platform: event
+          - trigger: event
             event_type: mobile_app_notification_action
             event_data:
               action: "{{ action_disable }}"
@@ -98,16 +98,16 @@ automation:
   - alias: Ignore People Presence reset
     id: ignore_people_presence_reset
     mode: restart
-    trigger:
-      - platform: state
+    triggers:
+      - trigger: state
         entity_id: binary_sensor.people_home
         to: "on"
         for: "00:15:00"
-    condition:
+    conditions:
       - condition: state
         entity_id: input_boolean.ignore_people_presence
         state: "on"
-    action:
+    actions:
       - action: input_boolean.turn_off
         target:
           entity_id: input_boolean.ignore_people_presence
@@ -125,7 +125,7 @@ automation:
                 title: ↻ Включить снова
                 icon: mdi:account-check
       - wait_for_trigger:
-          - platform: event
+          - trigger: event
             event_type: mobile_app_notification_action
             event_data:
               action: "{{ action_enable_back_on }}"

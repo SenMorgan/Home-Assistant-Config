@@ -21,20 +21,20 @@ input_datetime:
 automation:
   - alias: Notification Air Quality Bad
     id: "notification_air_quality_bad"
-    trigger:
-      - platform: numeric_state
+    triggers:
+      - trigger: numeric_state
         entity_id: sensor.air_quality_station_iaq
         above: 200
         for: 00:02:00
-    condition:
+    conditions:
       - condition: state
         entity_id: input_boolean.home_night_mode
         state: "off"
-    action:
+    actions:
       # Check if yandex station is not playing now
       - if:
-          condition: template
-          value_template: "{{ not is_state('media_player.yandex_station_midi', 'playing') }}"
+          - condition: template
+            value_template: "{{ not is_state('media_player.yandex_station_midi', 'playing') }}"
         then:
           - action: media_player.play_media
             entity_id: media_player.yandex_station_midi
@@ -88,16 +88,16 @@ automation:
 
   - alias: Notification Air Quality Open Window Greeting
     id: "notification_air_quality_open_window_greeting"
-    trigger:
-      - platform: state
+    triggers:
+      - trigger: state
         entity_id: binary_sensor.windows
         from: "off"
         to: "on"
-    condition:
+    conditions:
       - condition: state
         entity_id: input_boolean.home_night_mode
         state: "off"
-    action:
+    actions:
       - if:
           # Check if timeout for open window greeting notification has not expired
           - condition: template
@@ -116,20 +116,20 @@ automation:
 
   - alias: Notification Air Quality Restored
     id: "notification_air_quality_restored"
-    trigger:
-      - platform: numeric_state
+    triggers:
+      - trigger: numeric_state
         entity_id: sensor.air_quality_station_iaq
         below: 50
         for: 00:02:00
-    condition:
+    conditions:
       - condition: state
         entity_id: input_boolean.home_night_mode
         state: "off"
-    action:
+    actions:
       # Check if yandex station is not playing now
       - if:
-          condition: template
-          value_template: "{{ not is_state('media_player.yandex_station_midi', 'playing') }}"
+          - condition: template
+            value_template: "{{ not is_state('media_player.yandex_station_midi', 'playing') }}"
         then:
           - action: media_player.play_media
             entity_id: media_player.yandex_station_midi

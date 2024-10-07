@@ -95,10 +95,10 @@ script:
 automation:
   - alias: Silent Mode Handler
     id: silent_mode_handler
-    trigger:
-      platform: state
-      entity_id: input_boolean.silent_mode
-    action:
+    triggers:
+      - trigger: state
+        entity_id: input_boolean.silent_mode
+    actions:
       service_template: >
         {% if is_state('input_boolean.silent_mode', 'on') %}
           script.set_silent_mode
@@ -108,10 +108,10 @@ automation:
 
   - alias: Night Mode Handler
     id: night_mode_handler
-    trigger:
-      platform: state
-      entity_id: input_boolean.home_night_mode
-    action:
+    triggers:
+      - trigger: state
+        entity_id: input_boolean.home_night_mode
+    actions:
       service_template: >
         {% if is_state('input_boolean.home_night_mode', 'on') %}
           script.home_night_mode
@@ -122,33 +122,33 @@ automation:
   - alias: Home Enable Night Mode at Evening
     id: home_enable_night_mode_at_evening
     mode: single
-    trigger:
-      - platform: state
+    triggers:
+      - trigger: state
         entity_id: binary_sensor.bedroom_door_contact
         from: "on"
         to: "off"
         for: 00:00:30
-      - platform: time
+      - trigger: time
         at: "21:00:00"
-    condition:
+    conditions:
       - condition: time
         after: "20:00:00"
         before: "03:00:00"
-    action:
-      action: input_boolean.turn_on
-      entity_id:
-        - input_boolean.home_night_mode
-        - input_boolean.silent_mode
+    actions:
+      - action: input_boolean.turn_on
+        entity_id:
+          - input_boolean.home_night_mode
+          - input_boolean.silent_mode
 
   - alias: Yandex Volume Increased Handler
     id: yandex_volume_increased_handler
     mode: single
-    trigger:
-      - platform: state
+    triggers:
+      - trigger: state
         entity_id: media_player.yandex_station
-      - platform: state
+      - trigger: state
         entity_id: media_player.yandex_station_midi
-    condition:
+    conditions:
       - condition: time
         after: "06:00:00"
         before: "12:00:00"
@@ -160,27 +160,27 @@ automation:
           {% set from = trigger.from_state.attributes.volume_level | float(0) %}
           {% set to = trigger.to_state.attributes.volume_level | float(0) %}
           {{ to > from }}
-    action:
-      action: input_boolean.turn_off
-      entity_id:
-        - input_boolean.home_night_mode
-        - input_boolean.silent_mode
+    actions:
+      - action: input_boolean.turn_off
+        entity_id:
+          - input_boolean.home_night_mode
+          - input_boolean.silent_mode
 
   - alias: Good Morning Handler
     id: good_morning_handler
     mode: single
-    trigger:
-      - platform: state
+    triggers:
+      - trigger: state
         entity_id: binary_sensor.bedroom_door_contact
         from: "off"
         to: "on"
         for: 00:00:30
-      - platform: time
+      - trigger: time
         at: "09:00:00"
-      - platform: state
+      - trigger: state
         entity_id: cover.bedroom
         to: "open"
-    condition:
+    conditions:
       - condition: state
         entity_id: input_boolean.home_night_mode
         state: "on"
@@ -190,55 +190,55 @@ automation:
       - condition: state
         entity_id: binary_sensor.bedroom_door_contact
         state: "on"
-    action:
-      action: input_boolean.turn_off
-      entity_id:
-        - input_boolean.home_night_mode
-        - input_boolean.silent_mode
+    actions:
+      - action: input_boolean.turn_off
+        entity_id:
+          - input_boolean.home_night_mode
+          - input_boolean.silent_mode
 
   - alias: Silent Mode by Bedroom Door
     id: silent_mode_by_bedroom_door
     mode: single
-    trigger:
-      - platform: state
+    triggers:
+      - trigger: state
         entity_id: binary_sensor.bedroom_door_contact
         for: 00:00:30
-    condition:
+    conditions:
       - condition: state
         entity_id: input_boolean.home_night_mode
         state: "off"
-    action:
+    actions:
       # If bedroom door closed ("off" state), then turn on silent mode, otherwise turn it off
-      action: input_boolean.turn_{{ "on" if trigger.to_state.state == "off" else "off" }}
-      entity_id: input_boolean.silent_mode
+      - action: input_boolean.turn_{{ "on" if trigger.to_state.state == "off" else "off" }}
+        entity_id: input_boolean.silent_mode
 
   - alias: Prevent Accidental Bedroom Lights ON
     id: prevent_accidental_bedroom_lights_on
-    trigger:
-      - platform: state
+    triggers:
+      - trigger: state
         entity_id:
           - light.bedroom_ceiling_light
           - light.bedroom_nightlight
         to: "on"
-    condition:
+    conditions:
       - condition: state
         entity_id: input_boolean.bedroom_lights_and_cover_safety_switch
         state: "on"
       # Allow the light to be turned on if it was done manually (trigger.to_state.context.user_id is null)
       - condition: template
         value_template: "{{ trigger.to_state.context.user_id != None }}"
-    action:
+    actions:
       - action: light.turn_off
         data:
           entity_id: "{{ trigger.entity_id }}"
 
   - alias: Prevent Accidental Bedroom Cover Open
     id: prevent_accidental_bedroom_cover_open
-    trigger:
-      - platform: state
+    triggers:
+      - trigger: state
         entity_id: cover.bedroom
         to: "open"
-    condition:
+    conditions:
       - condition: state
         entity_id: input_boolean.bedroom_lights_and_cover_safety_switch
         state: "on"
@@ -248,7 +248,7 @@ automation:
       # Allow the cover to be opened by Yandex Station
       - condition: template
         value_template: !secret TEMPLATE_NOT_A_YANDEX_USER_ID
-    action:
+    actions:
       - action: cover.close_cover
         data:
           entity_id: "{{ trigger.entity_id }}"
@@ -256,12 +256,12 @@ automation:
   # Prevent accidental volume increase on all Yandex devices in silent mode.
   - alias: Prevent Accidental Yandex Volume Increase at Silent Mode
     id: prevent_accidental_yandex_volume_increase_at_silent_mode
-    trigger:
-      - platform: state
+    triggers:
+      - trigger: state
         entity_id: media_player.yandex_station
-      - platform: state
+      - trigger: state
         entity_id: media_player.yandex_station_midi
-    condition:
+    conditions:
       - condition: state
         entity_id: input_boolean.silent_mode
         state: "on"
@@ -270,7 +270,7 @@ automation:
           {% set from = trigger.from_state.attributes.volume_level | float(0) %}
           {% set to = trigger.to_state.attributes.volume_level | float(0) %}
           {{ to > from and to > 0.4 }}
-    action:
+    actions:
       # Lower Yandex volume
       - action: script.set_all_yandex_stations_volume_level
         data:
@@ -281,10 +281,10 @@ automation:
   - alias: Prevent Accidental Yandex Mini Volume Increase
     id: prevent_accidental_yandex_mini_volume_increase
     mode: restart
-    trigger:
-      - platform: state
+    triggers:
+      - trigger: state
         entity_id: media_player.yandex_station
-    condition:
+    conditions:
       # Allow volume to be changed externally (not by buttons on the device)
       - condition: template
         value_template: "{{ trigger.to_state.context.user_id == None }}"
@@ -293,7 +293,7 @@ automation:
           {% set from = trigger.from_state.attributes.volume_level | float(0) %}
           {% set to = trigger.to_state.attributes.volume_level | float(0) %}
           {{ to > from and to > 0.6 }}
-    action:
+    actions:
       # Lower Yandex volume
       - action: script.set_volume_level_repeatedly
         data:

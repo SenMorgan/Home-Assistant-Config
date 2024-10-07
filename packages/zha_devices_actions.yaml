@@ -39,13 +39,13 @@ automation:
     id: "aqara_switch_1_handler"
     mode: restart
     max_exceeded: silent
-    trigger:
-      - platform: event
+    triggers:
+      - trigger: event
         event_type: zha_event
         event_data:
           # Aqara Switch 1
           device_id: "6559eaaf60c9624465f762290ff9e825"
-    action:
+    actions:
       - variables:
           command: "{{ trigger.event.data.command }}"
       - choose:
@@ -102,13 +102,13 @@ automation:
     id: "aqara_cube_1_handler"
     mode: restart
     max_exceeded: silent
-    trigger:
-      - platform: event
+    triggers:
+      - trigger: event
         event_type: zha_event
         event_data:
           # Aqara Cube 1
           device_id: "48fad66663fc601ed1a63ac01e804fab"
-    action:
+    actions:
       - if:
           - condition: state
             entity_id: input_boolean.cube_1_control
@@ -163,13 +163,13 @@ automation:
     id: "tradfri_switch_1_handler"
     mode: restart
     max_exceeded: silent
-    trigger:
-      - platform: event
+    triggers:
+      - trigger: event
         event_type: zha_event
         event_data:
           # Tradfri Switch 1
           device_id: "a64c98fa9b0c36e96ebe42160fcf78b5"
-    action:
+    actions:
       - variables:
           command: "{{ trigger.event.data.command }}"
       - choose:
