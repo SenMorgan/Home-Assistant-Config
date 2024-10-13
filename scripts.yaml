@@ -283,16 +283,6 @@ tell_what_windows_are_opened:
                 Внимание! Открыты окна: {{ expand('binary_sensor.windows') | selectattr('state','eq','on') | map(attribute='name') | list | join(', ') }}
               {% endif %}
 
-turn_off_all_lights:
-  alias: Turn Off All Lights
-  sequence:
-    - action: light.turn_off
-      entity_id: all
-    - action: scene.turn_on
-      entity_id: scene.wallpanel_screen_off
-    - action: switch.turn_off
-      entity_id: switch.dcc_ex_pwr
-
 set_volume_level_repeatedly:
   alias: Set Volume Level Repeatedly
   mode: restart
