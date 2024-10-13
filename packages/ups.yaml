@@ -70,16 +70,11 @@ automation:
         entity_id: sensor.ups_status_data
         to: "OB DISCHRG"
     actions:
-      - action: persistent_notification.create
+      # Notify via mobile app and create persistent notification
+      - action: script.notify_and_create_persistent_notification
         data:
           title: *sys_notify_title_critical
           message: >
-            UPS потерял питание в {{ states('sensor.time') }}
-            Рассчётное время работы: {{ states('sensor.ups_battery_runtime') | int(0) | timestamp_custom('%M:%S') }} минут
-      - action: notify.mobile_app_sm_s901b
-        data:
-          title: *sys_notify_title_critical
-          message: |
             UPS потерял питание в {{ states('sensor.time') }}
             Рассчётное время работы: {{ states('sensor.ups_battery_runtime') | int(0) | timestamp_custom('%M:%S') }} минут
       - action: automation.turn_on
@@ -92,11 +87,11 @@ automation:
       - trigger: template
         value_template: "{{ 'OL' in states('sensor.ups_status_data') }}"
     actions:
-      - action: persistent_notification.create
+      # Notify via mobile app and create persistent notification
+      - action: script.notify_and_create_persistent_notification
         data:
           title: *sys_notify_title_critical
-          message: >
-            UPS восстановил питание в {{ states('sensor.time') }}
+          message: Питание восстановлено в {{ states('sensor.time') }}
       - action: automation.turn_off
         entity_id: automation.ups_grid_power_restored_notification
 
