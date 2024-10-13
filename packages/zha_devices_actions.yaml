@@ -142,11 +142,12 @@ automation:
               - conditions:
                   - "{{ command == 'slide' }}"
                 sequence:
-                  - action: light.toggle
-                    entity_id: light.mi_desk_lamp
+                  - action: light.turn_on
+                    entity_id:
+                      - light.gyver_lamp
+                      - light.pc_backlight
               - conditions:
                   - "{{ command == 'rotate_left' or command == 'rotate_right' }}"
-                  - "{{ is_state('light.mi_desk_lamp', 'on') }}"
                 sequence:
                   - action: light.turn_on
                     entity_id: light.mi_desk_lamp
