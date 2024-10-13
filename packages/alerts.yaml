@@ -1,0 +1,137 @@
+######################################################################
+# File: alerts.yaml                                                  #
+# Author: SenMorgan https://github.com/SenMorgan                     #
+# Date: 2024-10-12                                                   #
+#                                                                    #
+# Copyright (c) 2024 Sen Morgan                                      #
+######################################################################
+
+###############################################
+## SETTINGS AND VARIABLES
+###############################################
+homeassistant:
+  customize:
+    package.node_anchors:
+      sys_notify_title_info: &sys_notify_title_info "💬 Системное уведомление"
+      sys_notify_title_resolved: &sys_notify_title_resolved "✅ Проблема устранена"
+      sys_notify_title_warning: &sys_notify_title_warning "⚠️ Предупреждение"
+      sys_notify_title_critical: &sys_notify_title_critical "🚨 Внимание!"
+
+###############################################
+## Alerts
+###############################################
+alert:
+  water_leakage_bathroom:
+    name: "Water Leakage in Bathroom"
+    entity_id: binary_sensor.water_leakage_bathroom_moisture
+    state: "on"
+    repeat: 1
+    notifiers:
+      - mobile_app_sm_s901b
+      - mobile_app_sm_g991b
+    title: *sys_notify_title_critical
+    message: Обнаружена утечка воды в ванной в {{ states('sensor.time') }}.
+    done_message: Утечка воды в ванной устранена в {{ states('sensor.time') }}.
+    data:
+      ttl: 0
+      priority: high
+      channel: alarm_stream
+
+  water_leakage_kitchen:
+    name: "Water Leakage in Kitchen"
+    entity_id: binary_sensor.water_leakage_kitchen_moisture
+    state: "on"
+    repeat: 1
+    notifiers:
+      - mobile_app_sm_s901b
+      - mobile_app_sm_g991b
+    title: *sys_notify_title_critical
+    message: Обнаружена утечка воды на кухне в {{ states('sensor.time') }}.
+    done_message: Утечка воды на кухне устранена в {{ states('sensor.time') }}.
+    data:
+      ttl: 0
+      priority: high
+      channel: alarm_stream
+
+  carbon_monoxide_detected:
+    name: "Carbon Monoxide Detected"
+    entity_id: binary_sensor.co_and_natural_gas_alarm_carbon_monoxide
+    state: "on"
+    repeat: 1
+    notifiers:
+      - mobile_app_sm_s901b
+      - mobile_app_sm_g991b
+    title: *sys_notify_title_critical
+    message: >
+      Обнаружена высокая концентрация угарного газа на кухне в {{ states('sensor.time') }}.
+      Концентрация газа: {{ states('sensor.co_and_natural_gas_alarm_carbon_monoxide') }} ppm
+    done_message: Концентрация угарного газа на кухне вернулась в норму в {{ states('sensor.time') }}.
+    data:
+      ttl: 0
+      priority: high
+      channel: alarm_stream
+
+  natural_gas_detected:
+    name: "Natural Gas Detected"
+    entity_id: binary_sensor.co_and_natural_gas_alarm_gas
+    state: "on"
+    repeat: 1
+    notifiers:
+      - mobile_app_sm_s901b
+      - mobile_app_sm_g991b
+    title: *sys_notify_title_critical
+    message: >
+      Обнаружена утечка газа на кухне в {{ states('sensor.time') }}.
+      Концентрация газа: {{ states('sensor.co_and_natural_gas_alarm_gas') }} ppm
+    done_message: Утечка газа на кухне устранена в {{ states('sensor.time') }}.
+    data:
+      ttl: 0
+      priority: high
+      channel: alarm_stream
+
+
+###############################################
+## Automations
+###############################################
+automation:
+  - alias: Alert to TTS Handler
+    id: alert_to_tts_handler
+    mode: parallel
+    max: 10
+    max_exceeded: silent
+    variables:
+      alerts_map:
+        alert.water_leakage_bathroom: ["Обнаружена утечка воды в ванной", "Утечка воды в ванной устранена"]
+        alert.water_leakage_kitchen: ["Обнаружена утечка воды на кухне", "Утечка воды на кухне устранена"]
+        alert.carbon_monoxide_detected:
+          - "Обнаружена высокая концентрация угарного газа на кухне"
+          - "Концентрация угарного газа на кухне вернулась в норму"
+        alert.natural_gas_detected:
+          - "Обнаружена утечка газа на кухне"
+          - "Утечка газа на кухне устранена"
+    triggers:
+      - trigger: state
+        entity_id:
+          - alert.water_leakage_bathroom
+          - alert.water_leakage_kitchen
+          - alert.carbon_monoxide_detected
+          - alert.natural_gas_detected
+    actions:
+      - if:
+            # Notify only if the alert is true or false, ignoring "aknowledged" state
+          - condition: template
+            value_template: "{{ trigger.to_state.state in ['on', 'idle'] }}"
+        then:
+          - service: notify.mobile_app_sm_s901b
+            data:
+              message: TTS
+              data:
+                priority: high
+                channel: alarm_stream_max
+                media_stream: "alarm_stream_max"
+                tts_text: >
+                  {% if trigger.to_state.state == 'on' %}
+                    Внимание! {{ alerts_map[trigger.entity_id][0] }}!
+                  {% else %}
+                    {{ alerts_map[trigger.entity_id][1] }}.
+                  {% endif %}
