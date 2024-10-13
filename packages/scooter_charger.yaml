@@ -37,31 +37,39 @@ input_datetime:
     has_time: true
 
 ###############################################
+## SENSORS
+###############################################
+sensor:
+  - platform: template
+    sensors:
+      scooter_charger_energy_consumed:
+        friendly_name: "Scooter Charger Energy Consumed"
+        unit_of_measurement: "Wh"
+        value_template: >
+          {{ ((states('sensor.scooter_charger_summation_delivered') |
+            float - states('input_number.scooter_charger_energy_start') | float) * 1000) | round }}
+
+###############################################
 ## SCRIPTS
 ###############################################
 script:
   scooter_charger_energy_consumed_notify:
     alias: Scooter Charger Energy Consumed Speak
     sequence:
-      - action: notify.mobile_app_sm_s901b
+      - variables:
+          energy_consumed: "{{ states('sensor.scooter_charger_energy_consumed') }}"
+          energy_time: "{{ ((as_timestamp(now()) - as_timestamp(states('input_datetime.scooter_charger_energy_start_time'))) / 60) | round }}"
+      # Notify via mobile app and create persistent notification
+      - action: script.notify_and_create_persistent_notification
         data:
           title: 🛴 Зарядка самоката окончена
-          message: >
-            Заряжено
-            {{ ((states('sensor.scooter_charger_summation_delivered') | float - states('input_number.scooter_charger_energy_start') | float) * 1000) | round }}
-            Вт*ч за
-            {{ ((as_timestamp(now()) - as_timestamp(states('input_datetime.scooter_charger_energy_start_time'))) / 60) | round }}
-            минут
+          message: Заряжено {{ energy_consumed }} Втч за {{ energy_time }} минут
       # Play message on yandex station
       - action: media_player.play_media
         entity_id: media_player.yandex_station_midi
         data:
           media_content_id: >
-            Зарядка электросамоката окончена. Заряжено
-            {{ ((states('sensor.scooter_charger_summation_delivered') | float - states('input_number.scooter_charger_energy_start') | float) * 1000) | round }}
-            Ватт-часов за
-            {{ ((as_timestamp(now()) - as_timestamp(states('input_datetime.scooter_charger_energy_start_time'), 0)) / 60) | round }}
-            минут
+            Зарядка электросамоката окончена. Заряжено {{ energy_consumed }} Ватт-часов за {{ energy_time }} минут
           media_content_type: text
 
 ###############################################
@@ -105,8 +113,12 @@ automation:
     actions:
       - action: switch.turn_off
         entity_id: switch.scooter_charger_socket
-      - action: script.turn_on
-        entity_id: script.scooter_charger_energy_consumed_notify
+      - if:
+          - condition: template
+            value_template: "{{ states('sensor.scooter_charger_energy_consumed') | float > 0 }}"
+        then:
+          - action: script.turn_on
+            entity_id: script.scooter_charger_energy_consumed_notify
       - action: automation.turn_off
         entity_id: automation.scooter_charger_disable_when_idle
 
@@ -126,7 +138,11 @@ automation:
         entity_id: switch.scooter_charger_socket
       - action: input_boolean.turn_off
         entity_id: input_boolean.scooter_charger
-      - action: script.turn_on
-        entity_id: script.scooter_charger_energy_consumed_notify
+      - if:
+          - condition: template
+            value_template: "{{ states('sensor.scooter_charger_energy_consumed') | float > 0 }}"
+        then:
+          - action: script.turn_on
+            entity_id: script.scooter_charger_energy_consumed_notify
       - action: automation.turn_off
-        entity_id: automation.disable_scooter_charger_when_idle
+        entity_id: automation.scooter_charger_disable_when_idle
