@@ -124,25 +124,6 @@
 ## Other Automatations
 ###############################################
 
-- id: "power_monitor_crossed_low_threshold_notification"
-  alias: Power Monitor Crossed Low Threshold Notification
-  triggers:
-    - trigger: numeric_state
-      entity_id: sensor.power_monitor_voltage
-      below: input_number.power_monitor_low_voltage_threshold
-  actions:
-    - repeat:
-        while:
-          - condition: numeric_state
-            entity_id: sensor.power_monitor_voltage
-            below: input_number.power_monitor_low_voltage_threshold
-        sequence:
-          - action: notify.mobile_app_sm_s901b
-            data:
-              title: "{{ '🚨' }} Монитор питания"
-              message: "Напряжение ниже порога: {{ states('sensor.power_monitor_voltage') }} V"
-          - delay: 00:05:00
-
 - id: "busy_wall_switch_1"
   alias: Busy Wall Switch 1
   mode: restart
