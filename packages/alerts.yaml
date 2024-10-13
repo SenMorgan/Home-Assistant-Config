@@ -122,7 +122,7 @@ automation:
           - condition: template
             value_template: "{{ trigger.to_state.state in ['on', 'idle'] }}"
         then:
-          - service: notify.mobile_app_sm_s901b
+          - action: notify.mobile_app_sm_s901b
             data:
               message: TTS
               data:
