@@ -70,7 +70,7 @@ automation:
                 {% endif %}
       - action: notify.mobile_app_sm_s901b
         data:
-          title: "{{ '🌬' }} Качество воздуха"
+          title: "🌬 Качество воздуха"
           message: >
             Качество воздуха в доме ухудшилось и составляет {{ states('sensor.air_quality_station_iaq') }}.
       - action: automation.turn_on
@@ -138,7 +138,7 @@ automation:
               media_content_id: Качество воздуха в доме вернулось в норму.
       - action: notify.mobile_app_sm_s901b
         data:
-          title: "{{ '🌬' }} Качество воздуха"
+          title: "🌬 Качество воздуха"
           message: >
             Качество воздуха в доме улучшилось и составляет {{ states('sensor.air_quality_station_iaq') }}.
       - action: automation.turn_on

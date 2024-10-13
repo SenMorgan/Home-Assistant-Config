@@ -137,7 +137,7 @@ automation:
   #         aircrafts_to_track: 'AIRCRAFT1|AIRCRAFT2|AIRCRAFT3'
   #     - action: notify.mobile_app_sm_s901b
   #       data:
-  #         title: "{{ '✈️' }} Known Aircraft Detected"
+  #         title: "✈️ Known Aircraft Detected"
   #         message: |
   #           {% set aircraft = namespace(flight='', alt_baro='', gs='') %}
   #           {% set aircrafts_list = state_attr('sensor.fr24_aircraft', 'aircraft') %}
@@ -163,5 +163,5 @@ automation:
     actions:
       - action: notify.mobile_app_sm_s901b
         data:
-          title: "{{ '🌞' }} Солнечная панель"
+          title: "🌞 Солнечная панель"
           message: "Мощность выше порога: {{ states('sensor.solar_panel_power') }} W"

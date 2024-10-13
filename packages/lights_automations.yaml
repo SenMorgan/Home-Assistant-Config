@@ -32,7 +32,7 @@ script:
         entity_id: scene.no_people_home
       - action: notify.mobile_app_sm_s901b
         data:
-          title: "{{ '👋' }} До свидания"
+          title: "👋 До свидания"
           message: >
             {% if is_state('input_boolean.heating_season', 'on') %}
               Термостат и свет были отключены

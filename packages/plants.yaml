@@ -65,9 +65,9 @@ automation:
     actions:
       - action: persistent_notification.create
         data:
-          title: "{{ '🪴' }} Домашние цветы"
+          title: "🪴 Домашние цветы"
           message: "Нужно полить следующие растения: {{ states('input_text.plants_to_water') }}"
       - action: notify.mobile_app_sm_s901b
         data:
-          title: "{{ '🪴' }} Домашние цветы"
+          title: "🪴 Домашние цветы"
           message: "Нужно полить следующие растения: {{ states('input_text.plants_to_water') }}"
