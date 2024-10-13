@@ -64,7 +64,7 @@ automation:
           title: *sys_notify_title_info
           message: Входная дверь была открыта в {{ states('sensor.time') }}
 
-    - id: "notification_ads_b_receiver_disconnected"
+  - id: "notification_ads_b_receiver_disconnected"
     alias: Notification ADS-B Receiver Disconnected
     triggers:
       - trigger: state
@@ -159,7 +159,8 @@ automation:
     triggers:
       - trigger: numeric_state
         entity_id: sensor.solar_panel_power
-        above: 45
+        above: 40
+        for: "00:05:00"
     actions:
       - action: notify.mobile_app_sm_s901b
         data:
