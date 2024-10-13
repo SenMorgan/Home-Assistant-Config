@@ -280,6 +280,14 @@ automation:
               action_cancel: "{{ 'action_cancel' ~ context.id }}"
           - action: notify.mobile_app_sm_s901b
             data:
+              message: TTS
+              data:
+                priority: high
+                channel: alarm_stream_max
+                media_stream: "alarm_stream_max"
+                tts_text: Synology DS220+ недоступен, продолжить выключение Home Assistant?
+          - action: notify.mobile_app_sm_s901b
+            data:
               title: *sys_notify_title_critical
               message: Synology DS220+ недоступен, продолжить выключение Home Assistant?
               data:
