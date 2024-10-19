@@ -140,24 +140,25 @@ automation:
     mode: single
     variables:
       day: 0
-      exclude:
-        entity_id: !secret EXCLUDED_BATTERY_DEVICES
+      excluded_entities: !secret EXCLUDED_BATTERY_DEVICES
       sensors: >-
         {% set result = namespace(sensors=[]) %} {% for state in states.sensor |
         selectattr('attributes.device_class', 'defined') |
         selectattr('attributes.device_class', '==', 'battery') %}
-          {% if "unavailable" in state | string  and not state.entity_id in exclude.entity_id %}
+          {% if "unavailable" in state | string and not state.entity_id in excluded_entities %}
             {% set result.sensors = result.sensors + [state.name.replace(" Battery", "")] %}
           {% endif %}
         {% endfor %} {% for state in states.binary_sensor |
         selectattr('attributes.device_class', 'defined') |
         selectattr('attributes.device_class', '==', 'battery') %}
-          {% if "unavailable" in state | string and not state.entity_id in exclude.entity_id %}
+          {% if "unavailable" in state | string and not state.entity_id in excluded_entities %}
             {% set result.sensors = result.sensors + [state.name.replace(" Battery", "")] %}
           {% endif %}
         {% endfor %} {{result.sensors|join(', ')}}
-      message: "Обнаружены недоступные Zigbee устройства: {{sensors}}"
+      message: "Обнаружены недоступные устройства: {{sensors}}"
     triggers:
+      - trigger: time
+        at: "09:00:00"
       - trigger: time
         at: "20:00:00"
     conditions:
@@ -182,41 +183,26 @@ automation:
       - trigger: time_pattern
         hours: "/2"
     actions:
+      - variables:
+          excluded_entities: !secret EXCLUDED_BATTERY_DEVICES
       - action: group.set
         data:
           object_id: battery_devices
           entities: >-
-            {%-
-              for state in states.sensor
-                if is_state_attr(state.entity_id, 'device_class', 'battery') and
-                (state.entity_id.endswith("_battery") or state.entity_id.endswith("_power"))
-            %}
-            {{ state.entity_id }}{%- if not loop.last -%}, {%- endif -%}
+            {% for state in states.sensor
+              if is_state_attr(state.entity_id, 'device_class', 'battery') and
+              state.entity_id not in excluded_entities %}
+              {{ state.entity_id }}{%- if not loop.last -%}, {%- endif -%}
             {%- endfor %}
 
   - id: "home_assistant_low_device_battery_notification"
     alias: Home Assistant Low Device Battery Notification
     triggers:
-      - trigger: event
-        event_type: state_changed
+      - trigger: time
+        at: "09:00:00"
+      - trigger: time
+        at: "20:00:00"
     conditions:
-      # Notify only from 18 till 21 by workdays and from 10 till 21 by weekends
-      - or:
-          - condition: time
-            after: "18:00:00"
-            before: "21:00:00"
-            weekday:
-              - mon
-              - tue
-              - wed
-              - thu
-              - fri
-          - condition: time
-            after: "10:00:00"
-            before: "21:00:00"
-            weekday:
-              - sat
-              - sun
       # Notify only if the device is in the group
       - condition: template
         value_template: >-
