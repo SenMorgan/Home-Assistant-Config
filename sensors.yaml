@@ -43,7 +43,7 @@
     grid_consumed_today_cost:
       friendly_name: "Grid Consumed Today Cost"
       value_template: >
-        {{ ((states('sensor.grid_consumed_today') | float(0.0)) * 8,5) | round(2, default=0) }}
+        {{ ((states('sensor.grid_consumed_today') | float(0.0)) * 8.5) | round(2, default=0) }}
       unit_of_measurement: "Kč"
       device_class: monetary
 
