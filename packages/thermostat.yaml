@@ -214,12 +214,12 @@ script:
       - action: input_text.set_value
         data:
           entity_id: input_text.heating_log
-          value: |
+          value: >-
             {% set room_names = {
-              'binary_sensor.danfoss_etrv0100_bedroom_heat_required': 'спальня',
-              'binary_sensor.danfoss_etrv0103_kitchen_heat_required': 'кухня',
-              'binary_sensor.danfoss_etrv0103_living_room_heat_required': 'гостиная',
-              'binary_sensor.heating_request_bathroom': 'ванная'
+              'binary_sensor.danfoss_etrv0100_bedroom_heat_required': 'спальне',
+              'binary_sensor.danfoss_etrv0103_kitchen_heat_required': 'кухне',
+              'binary_sensor.danfoss_etrv0103_living_room_heat_required': 'гостиной',
+              'binary_sensor.heating_request_bathroom': 'ванной'
             } %}
             {% set rooms = namespace(list=[]) %}
             {% for entity_id, room_name in room_names.items() %}
@@ -227,7 +227,7 @@ script:
                 {% set rooms.list = rooms.list + [room_name] %}
               {% endif %}
             {% endfor %}
-            Отопление было включено для комнат{{ 'ы' if rooms.list | length == 1 else ':' }}
+            ETRVs запрашивают отопление в
             {{ rooms.list[:-1] | join(', ') }}
             {% if rooms.list | length > 1 %} и {% endif %}
             {{ rooms.list[-1] if rooms.list | length > 0 else '' }}
@@ -239,6 +239,13 @@ script:
           # thermostat_default_target_temperature: "{{ states('input_number.thermostat_default_target_temperature') | float(21) }}"
           # Set the temparature to 21 degrees to avoid any issues
           default_temperature: 21
+      # Log the message if provided
+      - if: "{{ message is defined }}"
+        then:
+          - action: input_text.set_value
+            data:
+              entity_id: input_text.heating_log
+              value: "{{ message }}"
       # Check if thermostat is ready to accept new target temperature and enable it if not
       - if:
           - condition: template
@@ -278,29 +285,32 @@ script:
   disable_thermostat:
     alias: Disable Thermostat
     sequence:
-      # Call here the sequence to set default temperature
+      # Firstly, reset the thermostat to the default target temperature to avoid any issues later
       - action: script.turn_on
         entity_id: script.thermostat_set_default_temperature
       # Wait for the script to finish
       - wait_template: "{{ is_state('script.thermostat_set_default_temperature', 'off') }}"
         timeout: "00:01:00"
+      # Log the message if provided
+      - if: "{{ message is defined }}"
+        then:
+          - action: input_text.set_value
+            data:
+              entity_id: input_text.heating_log
+              value: "{{ message }}"
       # Repeat the command to ensure that the thermostat is disabled
       - repeat:
           while:
             - condition: template
               value_template: "{{ not is_state_attr('climate.family_room', 'hvac_action', 'off') }}"
             - condition: template
-              value_template: "{{ repeat.index <= (12 * 5) }}"
+              value_template: "{{ repeat.index <= (12 * 5) }}" # 5 minutes
           sequence:
             - action: climate.set_hvac_mode
               entity_id: climate.family_room
               data:
                 hvac_mode: "off"
             - delay: 5
-      - action: input_text.set_value
-        data:
-          entity_id: input_text.heating_log
-          value: "Термостат отключён"
 
 ###############################################
 ## AUTOMATIONS
@@ -343,8 +353,9 @@ automation:
         # If some window was opened
         then:
           # Set thermostat default target temperature and disable it
-          - action: script.turn_on
-            entity_id: script.disable_thermostat
+          - action: script.disable_thermostat
+            data:
+              message: "Открыто окно → отопление выключено"
           # Do not allow heating for 30 minutes
           - action: input_boolean.turn_off
             entity_id: input_boolean.heating_allowed
@@ -362,10 +373,9 @@ automation:
               # Disable «10 minutes heating» automation
               - action: automation.turn_off
                 entity_id: automation.thermostat_10_minutes_heating_disable
-
         # If all windows were closed
         else:
-          # Wait 30 minutes before restoring thermostat mode
+          # Wait 30 minutes before restoring thermostat mode (qurantine period)
           - action: input_datetime.set_datetime
             data:
               entity_id: input_datetime.thermostat_windows_close_delay_time_end
@@ -413,6 +423,10 @@ automation:
               {{ is_state('binary_sensor.people_home', 'on') or
                 is_state('input_boolean.ignore_people_presence', 'on')}}
         then:
+          - action: input_text.set_value
+            data:
+              entity_id: input_text.heating_log
+              value: "Карантин после закрытия окон окончен → отопление включено"
           - action: climate.set_hvac_mode
             entity_id: climate.family_room
             data:
@@ -463,7 +477,7 @@ automation:
       - action: input_text.set_value
         data:
           entity_id: input_text.heating_log
-          value: *notification_freeze_alert_at_night
+          value: "Температура упала ниже порога ночью → термостат переведён на 21°C"
       # Set thermostat mode to «heat»
       - action: climate.set_hvac_mode
         entity_id: climate.family_room
@@ -472,11 +486,11 @@ automation:
       # Wait till thermostat will be ready to accept new target temperature
       - wait_template: "{{ state_attr('climate.family_room', 'temperature') != None }}"
         timeout: "00:30:00"
-      # Set temperature to 20°C
+      # Set temperature to 21°C
       - action: climate.set_temperature
         entity_id: climate.family_room
         data:
-          temperature: 20
+          temperature: 21
 
   - alias: Thermostat Preheat Alert
     id: thermostat_preheat_alert
@@ -511,7 +525,7 @@ automation:
       - action: input_text.set_value
         data:
           entity_id: input_text.heating_log
-          value: "Термостат был переведён в автоматический режим по причине высокой температуры в квартире"
+          value: "Температура поднялась выше порога → термостат переведён на 21°C"
       # Set thermostat mode to «heat»
       - action: climate.set_hvac_mode
         entity_id: climate.family_room
@@ -520,11 +534,11 @@ automation:
       # Wait till thermostat will be ready to accept new target temperature
       - wait_template: "{{ state_attr('climate.family_room', 'temperature') != None }}"
         timeout: "00:30:00"
-      # Set temperature to 20°C
+      # Set temperature to 21°C
       - action: climate.set_temperature
         entity_id: climate.family_room
         data:
-          temperature: 20
+          temperature: 21
 
   ###############################################
   ## Thermostat 10 Minutes Heating
@@ -639,14 +653,11 @@ automation:
           media_content_id: Подогрев квартиры окончен
           media_content_type: text
       # Set thermostat default target temperature
-      - action: script.turn_on
-        entity_id: script.thermostat_set_default_temperature
+      - action: script.thermostat_set_default_temperature
+        data:
+          message: "Подогрев квартиры окончен"
       - action: automation.turn_off
         entity_id: automation.thermostat_10_minutes_heating_disable
-      - action: input_text.set_value
-        data:
-          entity_id: input_text.heating_log
-          value: "Подогрев квартиры окончен"
 
   ###############################################
   ## Thermostat ECO Mode When Noone Home
@@ -671,8 +682,9 @@ automation:
         state: "off"
     actions:
       # Set thermostat default target temperature and disable it
-      - action: script.turn_on
-        entity_id: script.disable_thermostat
+      - action: script.disable_thermostat
+        data:
+          message: "Никого нет дома → отопление выключено"
       # Turn on the heating flag. This prevents the heating from being blocked if
       # the `thermostat_eco_mode_by_window_enable` automation has already turned off the heating.
       - action: input_boolean.turn_on
@@ -698,31 +710,26 @@ automation:
       - condition: template
         value_template: "{{ is_state('climate.family_room', 'off') }}"
     actions:
-      - action: notify.mobile_app_sm_s901b
-        data:
-          title: *sys_notify_title_info
-          message: &notification_noone_home_disable |
-            Термостат переведён в нормальный режим.
-            Температура дома: {{ state_attr('climate.family_room', 'current_temperature') }}°C
-      - action: input_text.set_value
-        data:
-          entity_id: input_text.heating_log
-          value: *notification_noone_home_disable
-      # If some window is opened, set thermostat mode to «off» mode
+            # If some window is opened, set thermostat mode to «off» mode
       - if:
           - condition: state
             entity_id: binary_sensor.windows
             state: "on"
         then:
           # Set thermostat default target temperature and disable it
-          - action: script.turn_on
-            entity_id: script.disable_thermostat
+          - action: script.disable_thermostat
+            data:
+              message: "Окно открыто при возращении домой → отопление всё ещё выключено"
         # If no windows are opened, set thermostat mode to «heat» mode
         else:
           - action: climate.set_hvac_mode
             entity_id: climate.family_room
             data:
               hvac_mode: "heat"
+          - action: input_text.set_value
+            data:
+              entity_id: input_text.heating_log
+              value: "Дома кто-то появился → отопление включено"
       # Disable this automation
       - action: automation.turn_off
         entity_id: automation.thermostat_eco_mode_when_noone_home_disable
@@ -802,7 +809,7 @@ automation:
       - action: script.turn_on
         entity_id: script.thermostat_start_heating
 
-  # If all ETRVs are not in "heat" state - restore mate.family_room target temperature.
+  # If all ETRVs are not in "heat" state - restore climate.family_room target temperature.
   - alias: Thermostat ETRV Heating Disable
     id: thermostat_etrv_heating_disable
     mode: single
@@ -838,12 +845,9 @@ automation:
         state: "on"
     actions:
       # Set thermostat default target temperature
-      - action: script.turn_on
-        entity_id: script.thermostat_set_default_temperature
-      - action: input_text.set_value
+      - action: script.thermostat_set_default_temperature
         data:
-          entity_id: input_text.heating_log
-          value: "Отопление выключено"
+          message: "ETRVs не запрашивают отопление → температура возвращена на 21°C"
 
   ###############################################
   ## ETRVs Child Lock
@@ -872,7 +876,7 @@ automation:
           set_temperature: "{{ states('input_number.etrv_kitchen_default_temperature') | float(21) }}"
           message: >-
             Установленная температура на кухне вышла за допустимые пределы в {{ timestamp }}.
-            Возвращаю температуру с {{ target_temperature }}°C на {{ set_temperature }}°C
+            Температура возвращена с {{ target_temperature }}°C на {{ set_temperature }}°C
       - action: climate.set_temperature
         entity_id: climate.danfoss_etrv0103_kitchen_thermostat
         data:
@@ -903,7 +907,7 @@ automation:
           set_temperature: "{{ states('input_number.etrv_bedroom_default_temperature') | float(21) }}"
           message: >-
             Установленная температура в спальне вышла за допустимые пределы в {{ timestamp }}.
-            Возвращаю температуру с {{ target_temperature }}°C на {{ set_temperature }}°C
+            Температура возвращена с {{ target_temperature }}°C на {{ set_temperature }}°C
       - action: climate.set_temperature
         entity_id: climate.danfoss_etrv0100_bedroom_thermostat
         data:
@@ -934,7 +938,7 @@ automation:
           set_temperature: "{{ states('input_number.etrv_living_room_default_temperature') | float(21) }}"
           message: >-
             Установленная температура в гостиной вышла за допустимые пределы в {{ timestamp }}.
-            Возвращаю температуру с {{ target_temperature }}°C на {{ set_temperature }}°C
+            Температура возвращена с {{ target_temperature }}°C на {{ set_temperature }}°C
       - action: climate.set_temperature
         entity_id: climate.danfoss_etrv0103_living_room_thermostat
         data:
