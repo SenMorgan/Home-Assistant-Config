@@ -380,6 +380,10 @@ automation:
             data:
               entity_id: input_datetime.thermostat_windows_close_delay_time_end
               datetime: "{{ now() + timedelta(minutes=30) }}"
+          - action: input_text.set_value
+            data:
+              entity_id: input_text.heating_log
+              value: "Окна закрыты → 30 минут карантина перед включением отопления"
           - action: automation.turn_on
             entity_id:
               - automation.thermostat_eco_mode_by_window_reset
@@ -395,6 +399,10 @@ automation:
         to: "on"
         for: "00:00:05"
     actions:
+      - action: input_text.set_value
+        data:
+          entity_id: input_text.heating_log
+          value: "Открыто окно → карантин отменён"
       - action: automation.turn_off
         entity_id:
           - automation.thermostat_eco_mode_by_window_disable
