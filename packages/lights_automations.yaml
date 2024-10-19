@@ -342,11 +342,8 @@ automation:
       - condition: state
         entity_id: binary_sensor.people_home
         state: "on"
-      - condition: sun
-        after: sunrise
-        before_offset: 00:15:00
       - condition: time
-        after: "04:00:00"
+        after: "05:00:00"
         before: "12:00:00"
     actions:
       - action: light.turn_on
