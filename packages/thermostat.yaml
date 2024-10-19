@@ -540,6 +540,24 @@ automation:
         data:
           temperature: 21
 
+  - alias: Thermostat Low Temperature Notification
+    id: thermostat_low_temperature_notification
+    mode: single
+    triggers:
+      - trigger: state
+        entity_id: binary_sensor.freeze_alert_at_night
+        to: "on"
+        for: "00:05:00"
+    actions:
+      - action: script.notify_and_create_persistent_notification
+        data:
+          title: *sys_notify_title_warning
+          message: "Температура упала ниже порога"
+      - action: input_text.set_value
+        data:
+          entity_id: input_text.heating_log
+          value: "Температура упала ниже порога"
+
   ###############################################
   ## Thermostat 10 Minutes Heating
   ###############################################
@@ -710,7 +728,7 @@ automation:
       - condition: template
         value_template: "{{ is_state('climate.family_room', 'off') }}"
     actions:
-            # If some window is opened, set thermostat mode to «off» mode
+      # If some window is opened, set thermostat mode to «off» mode
       - if:
           - condition: state
             entity_id: binary_sensor.windows
