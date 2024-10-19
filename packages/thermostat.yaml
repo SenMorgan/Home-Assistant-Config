@@ -229,7 +229,7 @@ script:
             {% endfor %}
             ETRVs запрашивают отопление в
             {{ rooms.list[:-1] | join(', ') }}
-            {% if rooms.list | length > 1 %} и {% endif %}
+            {% if rooms.list | length > 1 %}и{% endif %}
             {{ rooms.list[-1] if rooms.list | length > 0 else '' }}
 
   thermostat_set_default_temperature:
