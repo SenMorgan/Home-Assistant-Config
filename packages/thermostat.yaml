@@ -50,8 +50,8 @@ input_boolean:
   heating_season:
     name: Heating Season
     icon: mdi:radiator
-  heating_allowed:
-    name: Heating Allowed
+  heating_quarantine:
+    name: Heating Quarantine
     icon: mdi:radiator
 
 ###############################################
@@ -356,9 +356,9 @@ automation:
           - action: script.disable_thermostat
             data:
               message: "Открыто окно → отопление выключено"
-          # Do not allow heating for 30 minutes
-          - action: input_boolean.turn_off
-            entity_id: input_boolean.heating_allowed
+          # Disallow heating for quarantine period
+          - action: input_boolean.turn_on
+            entity_id: input_boolean.heating_quarantine
           # If «10 minutes heating» automation is enabled now - disable it
           - if:
               - condition: state
@@ -421,8 +421,8 @@ automation:
         value_template: "{{ as_timestamp(now()) > as_timestamp(states('input_datetime.thermostat_windows_close_delay_time_end'), 0) }}"
     actions:
       # Allow heating
-      - action: input_boolean.turn_on
-        entity_id: input_boolean.heating_allowed
+      - action: input_boolean.turn_off
+        entity_id: input_boolean.heating_quarantine
       # Set thermostat mode to «heat» only if someone is home
       - if:
           # Continue if people are home or if presense is ignored
@@ -607,10 +607,10 @@ automation:
             data:
               media_content_id: Включен подогрев квартиры на 10 минут
               media_content_type: text
-          # Turn on the heating flag. This prevents the heating from being blocked if
+          # Turn off the Quarantine flag. This prevents the heating from being blocked if
           # the `thermostat_eco_mode_by_window_enable` automation has already turned off the heating.
-          - action: input_boolean.turn_on
-            entity_id: input_boolean.heating_allowed
+          - action: input_boolean.turn_off
+            entity_id: input_boolean.heating_quarantine
           # Set thermostat mode to «heat» and wait until 'temperature' attribute will become not "None"
           - action: climate.set_hvac_mode
             entity_id: climate.family_room
@@ -711,10 +711,10 @@ automation:
       - action: script.disable_thermostat
         data:
           message: "Никого нет дома → отопление выключено"
-      # Turn on the heating flag. This prevents the heating from being blocked if
+      # Turn off the Quarantine flag. This prevents the heating from being blocked if
       # the `thermostat_eco_mode_by_window_enable` automation has already turned off the heating.
-      - action: input_boolean.turn_on
-        entity_id: input_boolean.heating_allowed
+      - action: input_boolean.turn_off
+        entity_id: input_boolean.heating_quarantine
       # Enable automation to disable ECO mode when someone will be home
       - action: automation.turn_on
         entity_id: automation.thermostat_eco_mode_when_noone_home_disable
@@ -785,8 +785,8 @@ automation:
         state: "on"
       # If not waiting after windows were closed
       - condition: state
-        entity_id: input_boolean.heating_allowed
-        state: "on"
+        entity_id: input_boolean.heating_quarantine
+        state: "off"
       # Continue if people are home or if presense is ignored
       - condition: template
         value_template: >
@@ -817,8 +817,7 @@ automation:
         entity_id: binary_sensor.heating_request_bathroom
         to: "on"
     condition:
-      # Do not check if heating is allowed "input_boolean.heating_allowed"
-      # because we need to heat the bathroom even with windows opened.
+      # Do not check if heating Quarantine set because we need to heat the bathroom even with windows opened.
       - condition: state
         entity_id: input_boolean.heating_season
         state: "on"
