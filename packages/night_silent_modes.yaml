@@ -13,6 +13,9 @@ input_boolean:
   silent_mode:
     name: Silent Mode
     icon: mdi:volume-off
+  home_night_mode:
+    name: Home Night Mode
+    icon: mdi:weather-night
   bedroom_lights_and_cover_safety_switch:
     name: Bedroom Lights Safety Switch
     icon: mdi:lightbulb-multiple-off-outline

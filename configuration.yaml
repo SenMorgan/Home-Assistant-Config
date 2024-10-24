@@ -82,9 +82,6 @@ input_boolean:
     icon: mdi:engine-outline
   flag_hall_lights_triggered_by_motion:
     name: Flag - Hall Lights Was Triggered by Motion Sensor
-  home_night_mode:
-    name: Home Night Mode
-    icon: mdi:volume-off
   show_cameras_in_lovelace:
     name: Show Cameras in Lovelace
     icon: mdi:camera
