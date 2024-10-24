@@ -46,6 +46,14 @@ input_button:
     icon: mdi:railroad-light
 
 ###############################################
+## LIGHTS
+###############################################
+light:
+  - platform: switch
+    name: "Model Railway Lights"
+    entity_id: switch.dcc_ex_pwr
+
+###############################################
 ## SWITCHES
 ###############################################
 switch:

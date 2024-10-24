@@ -26,6 +26,8 @@ sensor.air_quality_station_pm2_5:
   icon: mdi:blur
 switch.dcc_ex_pwr:
     icon: mdi:power
+light.model_railway_lights:
+    icon: mdi:train
 switch.dcc_ex_engine_sound:
     icon: mdi:engine-outline
 switch.dcc_ex_horn:
