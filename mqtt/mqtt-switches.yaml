@@ -47,20 +47,3 @@
   payload_available: "online"
   payload_not_available: "offline"
   optimistic: false
-
-###############################################
-## Electric Heater Controller Switches
-###############################################
-- name: "Electric Heater Controller Power"
-  unique_id: "electric_heater_controller_power"
-  state_topic: "/electric-heater-controller/state/power/all"
-  command_topic: "/electric-heater-controller/set/power/all"
-  payload_on: "1"
-  payload_off: "0"
-  availability_topic: "/electric-heater-controller/availability"
-  payload_available: "online"
-  payload_not_available: "offline"
-  retain: true
-  optimistic: false
-  qos: 0
-  icon: "mdi:radiator"
