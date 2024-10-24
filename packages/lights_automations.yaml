@@ -474,9 +474,6 @@ scene:
       light.bar_light: on
       light.bedroom_nightlight: off
       light.christmas_tree: on
-      light.floor_lamp:
-        brightness: 255
-        state: on
       light.gyver_lamp:
         brightness: 100
         state: on
@@ -490,5 +487,7 @@ scene:
         color_temp: 370
         state: on
       light.mi_desk_lamp: off
+      light.pc_backlight: on
       light.shelf_lighting: on
       light.string_lights: on
+      switch.dcc_ex_pwr: on
