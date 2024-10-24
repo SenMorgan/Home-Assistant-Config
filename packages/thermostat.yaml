@@ -52,7 +52,7 @@ input_boolean:
     icon: mdi:radiator
   heating_quarantine:
     name: Heating Quarantine
-    icon: mdi:radiator
+    icon: mdi:radiator-off
 
 ###############################################
 ## BINARY SENSORS
