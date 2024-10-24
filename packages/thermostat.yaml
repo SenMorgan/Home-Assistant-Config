@@ -49,7 +49,7 @@ input_text:
 input_boolean:
   heating_season:
     name: Heating Season
-    icon: mdi:radiator
+    icon: mdi:snowflake
   heating_quarantine:
     name: Heating Quarantine
     icon: mdi:radiator-off

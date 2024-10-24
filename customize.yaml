@@ -8,8 +8,6 @@ light.floor_lamp:
     - Breathe
     - Lightning
     - Solid
-input_boolean.heating_season:
-  icon: mdi:sun-snowflake-variant
 sensor.gas_meter:
   state_class: total_increasing
 #  state_class: measurement
