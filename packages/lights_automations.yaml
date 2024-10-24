@@ -288,31 +288,20 @@ automation:
           - light.gyver_lamp
           - light.shelf_lighting
 
-  - id: "kitchen_clock_control_based_on_people_presence"
-    alias: Kitchen Clock Control Based on People Presence
+  - id: "kitchen_clock_disable_by_presence"
+    alias: Kitchen Clock Disable by Presence
     triggers:
       - trigger: state
         entity_id: binary_sensor.people_home
-        for: 00:00:30
+        to: "off"
+        for: 00:01:00
+    condition:
+      - condition: state
+        entity_id: input_boolean.ignore_people_presence
+        state: "off"
     actions:
-      - if:
-          - condition: template
-            value_template: >
-              {{ trigger.to_state.state == 'on' }}
-        then:
-          - action: light.turn_on
-            entity_id: light.7_seg_clock
-          - action: scene.turn_on
-            entity_id: scene.wallpanel_screen_on
-        else:
-          # Turn off only if people presence ignoring is off
-          - if:
-              - condition: state
-                entity_id: input_boolean.ignore_people_presence
-                state: "off"
-            then:
-              - action: light.turn_off
-                entity_id: light.7_seg_clock
+      - action: light.turn_off
+        entity_id: light.7_seg_clock
 
   - id: "kitchen_clock_reenable"
     alias: Kitchen Clock Reenable
@@ -320,7 +309,14 @@ automation:
       - trigger: state
         entity_id: light.7_seg_clock
         to: "off"
-        for: 00:00:15
+        for: 00:00:05
+      - trigger: state
+        entity_id: binary_sensor.people_home
+        to: "on"
+        for: 00:00:30
+      - trigger: state
+        entity_id: input_boolean.home_night_mode
+        to: "off"
     conditions:
       - condition: state
         entity_id: binary_sensor.people_home
