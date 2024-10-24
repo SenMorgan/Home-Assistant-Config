@@ -311,36 +311,21 @@ automation:
         to: "off"
         for: 00:00:05
       - trigger: state
-        entity_id: binary_sensor.people_home
+        entity_id: binary_sensor.kitchen_motion_alarm
         to: "on"
-        for: 00:00:30
       - trigger: state
         entity_id: input_boolean.home_night_mode
         to: "off"
     conditions:
       - condition: state
-        entity_id: binary_sensor.people_home
-        state: "on"
-      - condition: state
-        entity_id: input_boolean.home_night_mode
-        state: "off"
-    actions:
-      - action: light.turn_on
         entity_id: light.7_seg_clock
-
-  - id: "kitchen_clock_enable_at_morning_by_motion"
-    alias: Kitchen Clock Enable at Morning by Motion
-    triggers:
-      - trigger: state
-        entity_id: binary_sensor.kitchen_motion_alarm
-        to: "on"
-    conditions:
+        state: "off"
       - condition: state
         entity_id: binary_sensor.people_home
         state: "on"
       - condition: time
         after: "05:00:00"
-        before: "12:00:00"
+        before: "22:00:00"
     actions:
       - action: light.turn_on
         entity_id: light.7_seg_clock
