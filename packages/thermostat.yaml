@@ -41,7 +41,6 @@ schedule:
 input_text:
   heating_log:
     name: Heating Log
-    initial: ""
 
 ###############################################
 ## INPUT BOOLEANS
