@@ -51,7 +51,7 @@ script:
       # Rase Yandex volume
       - action: script.set_all_yandex_stations_volume_level
         data:
-          volume_level: 0.5
+          volume_level: 0.4
       # Notify via 7-Segment Clock that we left silent mode
       - action: select.select_option
         data:
