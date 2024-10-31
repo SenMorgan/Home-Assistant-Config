@@ -47,6 +47,39 @@ script:
       - action: hassio.host_reboot
 
 ###############################################
+## BINARY SENSORS
+###############################################
+binary_sensor:
+  - platform: template
+    sensors:
+      any_battery_device_low:
+        friendly_name: "Any Battery Device Low"
+        value_template: >-
+          {{ expand('group.low_battery_devices') | list | count > 0 }}
+
+###############################################
+## ALERTS
+###############################################
+alert:
+  any_battery_device_low:
+    name: "Any Battery Device Low"
+    entity_id: binary_sensor.any_battery_device_low
+    state: "on"
+    repeat: 180
+    notifiers:
+      - mobile_app_sm_s901b
+      - persistent_notification
+    title: *sys_notify_title_warning
+    message: >-
+      {% set devices = expand('group.low_battery_devices') | list %}
+      {% set dev_names = devices | sort(attribute='name') | map(attribute='name') | join(', ') %}
+      Устройств{{ iif(devices | length > 1, 'а', 'о') }} с низким зарядом батареи: {{ dev_names }}
+    data:
+      ttl: 0
+      priority: high
+      channel: alarm_stream
+
+###############################################
 ## AUTOMATIONS
 ###############################################
 automation:
@@ -173,8 +206,8 @@ automation:
   ## Low Battery Notifications
   ###############################################
 
-  - id: "home_assistant_create_group_of_battery_devices"
-    alias: Home Assistant Create Group of Battery Devices
+  - id: "home_assistant_monitor_battery_devices"
+    alias: Home Assistant Monitor Battery Devices
     triggers:
       # Trigger on startup
       - trigger: homeassistant
@@ -185,6 +218,7 @@ automation:
     actions:
       - variables:
           excluded_entities: !secret EXCLUDED_BATTERY_DEVICES
+      # Create a group of battery devices for UI
       - action: group.set
         data:
           object_id: battery_devices
@@ -194,34 +228,20 @@ automation:
               state.entity_id not in excluded_entities %}
               {{ state.entity_id }}{%- if not loop.last -%}, {%- endif -%}
             {%- endfor %}
-
-  - id: "home_assistant_low_device_battery_notification"
-    alias: Home Assistant Low Device Battery Notification
-    triggers:
-      - trigger: time
-        at: "09:00:00"
-      - trigger: time
-        at: "20:00:00"
-    conditions:
-      # Notify only if the device is in the group
-      - condition: template
-        value_template: >-
-          {{ trigger.event.data.entity_id in (expand('group.battery_devices') | map(attribute='entity_id')) }}
-      # Notify only if the device is not unavailable
-      - condition: template
-        value_template: >-
-          {{ not trigger.event.data.new_state.state in ['unknown', 'unavailable'] }}
-      # Notify only if the battery level is less than 20%
-      - condition: template
-        value_template: >-
-          {{ (trigger.event.data.new_state.state | int(0)) < 20 }}
-    actions:
-      - action: script.notify_and_create_persistent_notification
+      # Create a group of low battery devices for notifications
+      - action: group.set
         data:
-          title: *sys_notify_title_warning
-          message: |
-            Устройство {{ trigger.event.data.new_state.attributes.friendly_name }}
-            имеет низкий уровень заряда батареи: {{ trigger.event.data.new_state.state }}%
+          object_id: low_battery_devices
+          entities: >-
+            {% set threshold = 20 %}
+            {% set devices = expand('group.battery_devices') | selectattr('state', 'is_number') | list %}
+            {% set low = devices | map(attribute='state') | map('int') | select('<=', threshold) | map('string') | list %}
+            {% set low_devices = devices | selectattr('state', 'in', low) | sort(attribute='entity_id') | map(attribute='entity_id') | list %}
+            {% if low_devices | length > 0 %}
+              {{ low_devices | join(', ') }}
+            {% else %}
+              []
+            {% endif %}
 
   ###############################################
   ## Other Automations
