@@ -72,13 +72,6 @@ automation:
                 data:
                   brightness: 255
           - conditions:
-              - "{{ command == 'triple' }}"
-            sequence:
-              - action: light.toggle
-                entity_id: light.bedroom_nightlight
-                data:
-                  brightness: 1
-          - conditions:
               - "{{ command == 'hold' }}"
             sequence:
               # Allow to turn on bedroom lights and open cover
