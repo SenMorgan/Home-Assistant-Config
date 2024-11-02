@@ -53,14 +53,14 @@ automation:
                     entity_id: input_boolean.child_lock
                     state: "off"
                 then:
-                  - action: script.turn_on
-                    entity_id: script.turn_off_all_lights
                   - action: scene.turn_on
                     entity_id: scene.good_night
                   - action: input_boolean.turn_on
                     entity_id:
                       - input_boolean.home_night_mode
                       - input_boolean.silent_mode
+                  - action: script.turn_off_all_lights
+                  - action: script.notify_if_some_window_is_opened_during_heating_season
                 else:
                   - action: cover.toggle
                     entity_id: cover.bedroom

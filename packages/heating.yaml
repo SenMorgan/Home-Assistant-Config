@@ -311,6 +311,27 @@ script:
                 hvac_mode: "off"
             - delay: 5
 
+  notify_if_some_window_is_opened_during_heating_season:
+    alias: Notify If Some Window Opened During Heating Season
+    sequence:
+      - condition: state
+        entity_id: input_boolean.heating_season
+        state: "on"
+      - condition: state
+        entity_id: binary_sensor.windows
+        state: "on"
+      - action: notify.mobile_app_sm_s901b
+        data:
+          title: *sys_notify_title_warning
+          message: >-
+            {% set rooms = expand('binary_sensor.windows') | selectattr('state','eq','on') |
+              map(attribute='entity_id') | map('area_name') | list %}
+            {% if rooms | length == 1 %}
+              Открыто окно в комнате: {{ rooms[0] }}
+            {% else %}
+              Открыты окна в комнатах: {{ rooms | join(', ') }}
+            {% endif %}
+
 ###############################################
 ## AUTOMATIONS
 ###############################################
