@@ -1,10 +1,10 @@
 ######################################################################
-# File: thermostat.yaml                                              #
+# File: heating.yaml                                                 #
 # Author: SenMorgan https://github.com/SenMorgan                     #
 # Date: 2022-11-30                                                   #
 #                                                                    #
-# Info: this file contains automations that are associated to the    #
-# Climate (Thermostat).                                              #
+# Info: this file contains automations and scripts for heating       #
+#       control in the apartment.                                    #
 #                                                                    #
 # Copyright (c) 2022 Sen Morgan                                      #
 ######################################################################
