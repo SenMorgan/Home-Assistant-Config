@@ -19,7 +19,7 @@ input_boolean:
   cube_1_control:
     name: Cube Control
     icon: mdi:gesture-double-tap
-      child_lock:
+  child_lock:
     name: Child Lock
     icon: mdi:lock
     initial: off
@@ -69,6 +69,15 @@ automation:
             sequence:
               - action: light.toggle
                 entity_id: light.bedroom_nightlight
+                data:
+                  brightness: 255
+          - conditions:
+              - "{{ command == 'triple' }}"
+            sequence:
+              - action: light.toggle
+                entity_id: light.bedroom_nightlight
+                data:
+                  brightness: 1
           - conditions:
               - "{{ command == 'hold' }}"
             sequence:
