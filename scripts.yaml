@@ -277,10 +277,12 @@ tell_what_windows_are_opened:
           data:
             media_content_type: text
             media_content_id: >
-              {% if expand('binary_sensor.windows') | selectattr('state','eq','on') | list | count == 1 %}
-                Внимание! Открыто окно: {{ expand('binary_sensor.windows') | selectattr('state','eq','on') | map(attribute='name') | list | join(', ') }}
+              {% set rooms = expand('binary_sensor.windows') | selectattr('state','eq','on') |
+                map(attribute='entity_id') | map('area_name') | list %}
+              {% if rooms | length == 1 %}
+                Предупреждение! Открыто окно в комнате: {{ rooms[0] }}
               {% else %}
-                Внимание! Открыты окна: {{ expand('binary_sensor.windows') | selectattr('state','eq','on') | map(attribute='name') | list | join(', ') }}
+                Предупреждение! Открыты окна в комнатах: {{ rooms | join(', ') }}
               {% endif %}
 
 set_volume_level_repeatedly:
