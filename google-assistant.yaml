@@ -92,7 +92,5 @@ entity_config:
     expose: false
   input_boolean.cube_1_control:
     expose: false
-  input_boolean.light_brightness:
-    expose: false
   switch.udpate_sensors:
     expose: false

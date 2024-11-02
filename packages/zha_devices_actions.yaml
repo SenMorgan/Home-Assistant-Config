@@ -19,11 +19,7 @@ input_boolean:
   cube_1_control:
     name: Cube Control
     icon: mdi:gesture-double-tap
-    # icon: mdi:cube-outline
-  light_brightness:
-    name: Light Brightness
-    icon: mdi:lightbulb-on-outline
-  child_lock:
+      child_lock:
     name: Child Lock
     icon: mdi:lock
     initial: off
