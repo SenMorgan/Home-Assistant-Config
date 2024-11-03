@@ -212,9 +212,9 @@ automation:
       # Trigger on startup
       - trigger: homeassistant
         event: start
-      # Trigger every 2 hours by time_pattern
+      # Trigger every 10 minutes
       - trigger: time_pattern
-        hours: "/2"
+        minutes: "/10"
     actions:
       - variables:
           excluded_entities: !secret EXCLUDED_BATTERY_DEVICES
