@@ -32,3 +32,7 @@ switch.dcc_ex_horn:
     icon: mdi:bullhorn-outline
 switch.dcc_ex_pause:
     icon: mdi:play-pause
+switch.asus_pc:
+    icon: mdi:desktop-tower-monitor
+switch.lenovo_thinkbook:
+    icon: mdi:laptop
