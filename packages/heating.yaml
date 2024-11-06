@@ -52,6 +52,10 @@ input_boolean:
   heating_quarantine:
     name: Heating Quarantine
     icon: mdi:radiator-off
+  short_heating:
+    name: Short Heating
+    icon: mdi:radiator
+    initial: off
 
 ###############################################
 ## BINARY SENSORS
@@ -631,6 +635,9 @@ automation:
           # the `thermostat_eco_mode_by_window_enable` automation has already turned off the heating.
           - action: input_boolean.turn_off
             entity_id: input_boolean.heating_quarantine
+          # Set flag to indicate that heating is in progress
+          - action: input_boolean.turn_on
+            entity_id: input_boolean.short_heating
           # Set thermostat mode to «heat» and wait until 'temperature' attribute will become not "None"
           - action: climate.set_hvac_mode
             entity_id: climate.family_room
@@ -693,6 +700,9 @@ automation:
               {{ state_attr('climate.family_room', 'temperature') !=
               (states('input_number.thermostat_new_target_temperature') | float(0)) }}
     actions:
+      # Reset the flag to indicate that heating is not in progress
+      - action: input_boolean.turn_off
+        entity_id: input_boolean.short_heating
       - action: media_player.play_media
         entity_id: media_player.yandex_station_midi
         data:
@@ -883,6 +893,10 @@ automation:
       # If bathroom is not requesting heat
       - condition: state
         entity_id: binary_sensor.heating_request_bathroom
+        state: "off"
+      # If not short heating is in progress
+      - condition: state
+        entity_id: input_boolean.short_heating
         state: "off"
       # If already heating
       - condition: state
