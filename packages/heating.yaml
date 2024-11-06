@@ -395,15 +395,15 @@ automation:
                 entity_id: automation.thermostat_10_minutes_heating_disable
         # If all windows were closed
         else:
-          # Wait 30 minutes before restoring thermostat mode (qurantine period)
+          # Wait some time before restoring thermostat mode (qurantine period)
           - action: input_datetime.set_datetime
             data:
               entity_id: input_datetime.thermostat_windows_close_delay_time_end
-              datetime: "{{ now() + timedelta(minutes=30) }}"
+              datetime: "{{ now() + timedelta(minutes=50) }}"
           - action: input_text.set_value
             data:
               entity_id: input_text.heating_log
-              value: "Окна закрыты → 30 минут карантина перед включением отопления"
+              value: "Окна закрыты → 50 минут карантина перед включением отопления"
           - action: automation.turn_on
             entity_id:
               - automation.thermostat_eco_mode_by_window_reset
