@@ -10,7 +10,7 @@
 # Check if any window is open
 - platform: group
   name: Windows
-  device_class: opening
+  device_class: window
   entities:
     - binary_sensor.bedroom_window_contact
     - binary_sensor.kitchen_window_contact
