@@ -457,6 +457,7 @@ scene:
     name: Evening
     entities:
       light.bar_light: on
+      light.bedroom_ceiling_light: off
       light.bedroom_nightlight: off
       light.christmas_tree: on
       light.gyver_lamp:
@@ -466,7 +467,6 @@ scene:
       light.kitchen_ceiling_light: off
       light.kitchen_led_strip: off
       light.kitchen_spotlights: on
-      light.living_room_ceiling_light: off
       light.living_room_nightlight:
         brightness: 255
         color_temp: 370
