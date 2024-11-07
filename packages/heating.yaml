@@ -54,7 +54,7 @@ input_boolean:
     icon: mdi:radiator-off
   short_heating:
     name: Short Heating
-    icon: mdi:radiator
+    icon: mdi:timer-sand
     initial: off
 
 ###############################################
