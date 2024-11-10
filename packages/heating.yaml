@@ -617,6 +617,41 @@ automation:
           entity_id: input_text.heating_log
           value: "Температура упала ниже порога"
 
+  # If Thermostat is heating for more then 1 hour - notify about it and disable heating for 1 hour
+  - alias: Thermostat Heating Duration Alert
+    id: thermostat_heating_duration_alert
+    mode: restart
+    triggers:
+      - trigger: state
+        entity_id: binary_sensor.thermostat_heating
+        to: "on"
+        for: "01:00:00"
+    conditions:
+      - condition: state
+        entity_id: input_boolean.heating_season
+        state: "on"
+    actions:
+      - action: script.notify_and_create_persistent_notification
+        data:
+          title: *sys_notify_title_warning
+          message: "Термостат работает более часа"
+      - action: input_text.set_value
+        data:
+          entity_id: input_text.heating_log
+          value: "Термостат работает более часа → отопление отключено на 1 час"
+      - action: input_boolean.turn_off
+        entity_id: input_boolean.heating_allowed
+      # Disable all active heating automations and reset related flags
+      - action: automation.turn_off
+        entity_id:
+          - automation.thermostat_10_minutes_heating_disable
+          - automation.thermostat_eco_mode_by_window_disable
+          - automation.thermostat_eco_mode_by_window_reset
+      - action: input_boolean.turn_off
+        entity_id:
+          - input_boolean.short_heating
+          - input_boolean.heating_quarantine
+
   ###############################################
   ## Thermostat 10 Minutes Heating
   ###############################################
