@@ -101,13 +101,13 @@ binary_sensor:
           {{ (states('sensor.ble_temperature_atc_bathroom') | float(0) <
             states('input_number.bathroom_heating_target_temperature') | float(24)) and
             is_state('schedule.bathroom_heating_evening', 'on') }}
-      etrvs_requesting_heat:
-        friendly_name: ETRVs are requesting heat
-        device_class: heat
-        value_template: >
-          {{ is_state('binary_sensor.danfoss_etrv0100_bedroom_heat_required', 'on') or
-            is_state('binary_sensor.danfoss_etrv0103_kitchen_heat_required', 'on') or
-            is_state('binary_sensor.danfoss_etrv0103_living_room_heat_required', 'on') }}
+  - platform: group
+    name: ETRVs requesting heat
+    entities:
+      - binary_sensor.danfoss_etrv0100_bedroom_heat_required
+      - binary_sensor.danfoss_etrv0103_kitchen_heat_required
+      - binary_sensor.danfoss_etrv0103_living_room_heat_required
+
 
 ###############################################
 ## INPUT BUTTONS
