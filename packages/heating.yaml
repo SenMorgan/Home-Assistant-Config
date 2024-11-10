@@ -1000,3 +1000,49 @@ automation:
             data:
               media_content_id: Подогрев квартиры окончен раньше мануально
               media_content_type: text
+
+  ###############################################
+  ## Logging
+  ###############################################
+
+  # Log changes of all heating-related entities
+  - alias: Log Heating Changes
+    id: log_heating_changes
+    mode: parallel
+    max: 10
+    trigger:
+      - platform: state
+        entity_id:
+          - binary_sensor.thermostat_heating
+          - binary_sensor.etrvs_requesting_heat
+          - binary_sensor.heating_request_bathroom
+          - binary_sensor.heating_quarantine
+          - binary_sensor.short_heating
+          - binary_sensor.heating_allowed
+          - binary_sensor.people_home
+          - binary_sensor.windows
+          - input_boolean.ignore_people_presence
+          - input_boolean.heating_season
+          - input_boolean.heating_allowed
+          - input_boolean.heating_quarantine
+          - input_boolean.short_heating
+          - input_number.thermostat_default_target_temperature
+          - input_number.thermostat_new_target_temperature
+          - input_number.etrv_bedroom_default_temperature
+          - input_number.etrv_kitchen_default_temperature
+          - input_number.etrv_living_room_default_temperature
+          - input_number.etrv_min_target_temperature
+          - input_number.etrv_max_target_temperature
+          - input_number.bathroom_heating_target_temperature
+          - input_datetime.thermostat_10_minutes_heating_time_end
+          - input_datetime.thermostat_windows_close_delay_time_end
+    action:
+      - service: input_text.set_value
+        data:
+          entity_id: input_text.heating_log
+          value: >-
+            {% set entity_id = trigger.entity_id %}
+            {% set entity_name = states[entity_id].name | default(entity_id) %}
+            {% set new_state = trigger.to_state.state %}
+            {% set old_state = trigger.from_state.state %}
+            Изменено состояние "{{ entity_name }}" с {{ old_state }} на {{ new_state }}
