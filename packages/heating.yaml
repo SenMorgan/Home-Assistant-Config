@@ -978,28 +978,32 @@ automation:
         entity_id: binary_sensor.thermostat_heating
         state: "on"
     action:
-      # Set thermostat default target temperature
-      - action: script.thermostat_set_default_temperature
-        data:
-          message: "Отопление выключено мануально → температура возвращена на 21°C"
-      # If short heating is in progress, disable it
+      # If short heating is in progress, notify that heating was stopped
       - if:
           - condition: state
             entity_id: input_boolean.short_heating
             state: "on"
         then:
-          # Reset the flag to indicate that short heating is not in progress
-          - action: input_boolean.turn_off
-            entity_id: input_boolean.short_heating
-          # Disable «10 minutes heating» automation
-          - action: automation.turn_off
-            entity_id: automation.thermostat_10_minutes_heating_disable
           # Notify that heating was stopped
           - action: media_player.play_media
             entity_id: media_player.yandex_station_midi
             data:
               media_content_id: Подогрев квартиры окончен раньше мануально
               media_content_type: text
+      # Disable all active heating automations and reset related flags
+      - action: automation.turn_off
+        entity_id:
+          - automation.thermostat_10_minutes_heating_disable
+          - automation.thermostat_eco_mode_by_window_disable
+          - automation.thermostat_eco_mode_by_window_reset
+      - action: input_boolean.turn_off
+        entity_id:
+          - input_boolean.short_heating
+          - input_boolean.heating_quarantine
+      # Set thermostat default target temperature
+      - action: script.thermostat_set_default_temperature
+        data:
+          message: "Отопление выключено мануально → температура возвращена на 21°C"
 
   ###############################################
   ## Logging
