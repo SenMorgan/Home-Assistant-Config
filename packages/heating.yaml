@@ -19,6 +19,12 @@ homeassistant:
       sys_notify_title_warning: &sys_notify_title_warning "⚠️ Предупреждение"
       sys_notify_title_critical: &sys_notify_title_critical "🚨 Внимание!"
 
+      quarantine_duration_min: &quarantine_duration_min "50"
+      short_heating_duration_min: &short_heating_duration_min "10"
+      pause_heating_duration_min: &pause_heating_duration_min "60"
+
+      default_temperature: &default_temperature "21.0"
+
 ###############################################
 ## SCHEDULERS
 ###############################################
@@ -49,18 +55,34 @@ input_boolean:
   heating_season:
     name: Heating Season
     icon: mdi:snowflake
-  heating_quarantine:
-    name: Heating Quarantine
-    icon: mdi:radiator-off
   heating_allowed:
     # Flag used to block heating manually for some time or by any external automation
     name: Heating Allowed
     icon: mdi:check-circle-outline
     initial: on
+
+###############################################
+## TIMERS
+###############################################
+timer:
+  heating_quarantine:
+    name: Heating Quarantine
+    duration:
+      minutes: *quarantine_duration_min
+    icon: mdi:radiator-off
+    restore: true
   short_heating:
     name: Short Heating
+    duration:
+      minutes: *short_heating_duration_min
     icon: mdi:timer-sand
-    initial: off
+    restore: true
+  pause_heating:
+    name: Pause Heating
+    duration:
+      minutes: *pause_heating_duration_min
+    icon: mdi:check-circle-outline
+    restore: true
 
 ###############################################
 ## BINARY SENSORS
@@ -73,6 +95,11 @@ binary_sensor:
         device_class: heat
         value_template: >
           {{ is_state_attr('climate.family_room', 'hvac_action', "heating") }}
+      thermostat_active:
+        friendly_name: Thermostat Active
+        device_class: running
+        value_template: >-
+          {{ not is_state_attr('climate.family_room', 'hvac_action', "off") }}
       freeze_alert_at_night:
         friendly_name: Temperature is below 19°C at night
         device_class: cold
@@ -183,22 +210,10 @@ sensor:
 ## INPUT BUTTONS
 ###############################################
 input_button:
+  # Button to start manual heating for 10 minutes from the UI / voice assistant
   thermostat_10_minutes_heating:
     name: Heat 10 Minutes
     icon: mdi:radiator
-
-###############################################
-## INPUT DATETIMES
-###############################################
-input_datetime:
-  thermostat_10_minutes_heating_time_end:
-    name: Thermostat 10 Minutes Heating Time End
-    has_date: true
-    has_time: true
-  thermostat_windows_close_delay_time_end:
-    name: Thermostat Windows Close Delay Time End
-    has_date: true
-    has_time: true
 
 ###############################################
 ## INPUT NUMBERS
@@ -208,48 +223,40 @@ input_number:
     name: Thermostat Default Target Temperature
     min: 18.0
     max: 25.0
-    initial: 20.0
   thermostat_new_target_temperature:
     name: Thermostat New Target Temperature
     min: 15.0
     max: 30.0
-    initial: 20.0
   etrv_bedroom_default_temperature:
     name: ETRV Bedroom Default Temperature
     step: 0.5
     min: 18.0
     max: 25.0
-    initial: 21.0
   etrv_kitchen_default_temperature:
     name: ETRV Kitchen Default Temperature
     step: 0.5
     min: 18.0
     max: 25.0
-    initial: 21.0
   etrv_living_room_default_temperature:
     name: ETRV Living Room Default Temperature
     step: 0.5
     min: 18.0
     max: 25.0
-    initial: 21.0
   etrv_min_target_temperature:
     name: ETRV Min Target Temperature
     step: 0.5
     min: 17.0
     max: 21.0
-    initial: 19.0
   etrv_max_target_temperature:
     name: ETRV Max Target Temperature
     step: 0.5
     min: 21.0
     max: 25.0
-    initial: 23.0
   bathroom_heating_target_temperature:
     name: Bathroom Heating Target Temperature
     step: 0.5
     min: 20.0
     max: 25.0
-    initial: 24.0
 
 ###############################################
 ## SCRIPTS
@@ -309,9 +316,7 @@ script:
     alias: Thermostat Set Default Temperature
     sequence:
       - variables:
-          # thermostat_default_target_temperature: "{{ states('input_number.thermostat_default_target_temperature') | float(21) }}"
-          # Set the temparature to 21 degrees to avoid any issues
-          default_temperature: 21
+          default_temperature: "{{ states('input_number.thermostat_default_target_temperature') | float(21) }}"
       # Log the message if provided
       - if: "{{ message is defined }}"
         then:
@@ -374,8 +379,9 @@ script:
       # Repeat the command to ensure that the thermostat is disabled
       - repeat:
           while:
-            - condition: template
-              value_template: "{{ not is_state_attr('climate.family_room', 'hvac_action', 'off') }}"
+            - condition: state
+              entity_id: binary_sensor.thermostat_active
+              state: "on"
             - condition: template
               value_template: "{{ repeat.index <= (12 * 5) }}" # 5 minutes
           sequence:
@@ -411,121 +417,108 @@ script:
 ###############################################
 automation:
   ###############################################
-  ## Thermostat ECO Mode by Window
+  ## Window Opened Control
   ###############################################
-  - alias: Thermostat ECO Mode by Window Enable
-    id: thermostat_eco_mode_by_window_enable
+  - alias: Stop Heating by Window Opened
+    id: stop_heating_by_window_opened
     mode: restart
-    triggers:
-      - trigger: state
+    trigger:
+      - platform: state
         entity_id: binary_sensor.windows
-        id: Some Window Opened
-        from: "off"
         to: "on"
         for: "00:00:10"
-      - trigger: state
-        entity_id: binary_sensor.windows
-        id: All Windows Closed
-        from: "on"
-        to: "off"
-        for: "00:00:10"
-    conditions:
+    condition:
       - condition: state
         entity_id: input_boolean.heating_season
         state: "on"
-        # If some window was opened and thermostat is in «heat» mode
-        # or if all windows were closed and thermostat is in «off» mode
-      - condition: template
-        value_template: >
-          {{ (states('climate.family_room') == 'heat' and is_state('binary_sensor.windows', 'on')) or
-              (states('climate.family_room') == 'off' and is_state('binary_sensor.windows', 'off')) }}
-    actions:
+      # If thermostat is active and heating is not paused
+      - condition: state
+        entity_id: binary_sensor.thermostat_active
+        state: "on"
+    action:
+      # Stop "Pause Heating" timer if it is active without restoring the thermostat mode
+      - action: timer.cancel
+        entity_id: timer.pause_heating
+      # Stop "Heating Quarantine" timer if it is active and log it
       - if:
           - condition: state
-            entity_id: binary_sensor.windows
-            state: "on"
-        # If some window was opened
+            entity_id: timer.heating_quarantine
+            state: "active"
         then:
-          # Set thermostat default target temperature and disable it
-          - action: script.disable_thermostat
-            data:
-              message: "Открыто окно → отопление выключено"
-          # Disallow heating for quarantine period
-          - action: input_boolean.turn_on
-            entity_id: input_boolean.heating_quarantine
-          # If short heating is in progress - disable it
-          - if:
-              - condition: state
-                entity_id: input_boolean.short_heating
-                state: "on"
-            then:
-              - action: media_player.play_media
-                entity_id: media_player.yandex_station_midi
-                data:
-                  media_content_id: Подогрев квартиры окончен вручную
-                  media_content_type: text
-              # Reset the flag to indicate that short heating is not in progress
-              - action: input_boolean.turn_off
-                entity_id: input_boolean.short_heating
-              # Disable «10 minutes heating» automation
-              - action: automation.turn_off
-                entity_id: automation.thermostat_10_minutes_heating_disable
-        # If all windows were closed
-        else:
-          # Wait some time before restoring thermostat mode (qurantine period)
-          - action: input_datetime.set_datetime
-            data:
-              entity_id: input_datetime.thermostat_windows_close_delay_time_end
-              datetime: "{{ now() + timedelta(minutes=50) }}"
+          - action: timer.cancel
+            entity_id: timer.heating_quarantine
           - action: input_text.set_value
             data:
               entity_id: input_text.heating_log
-              value: "Окна закрыты → 50 минут карантина перед включением отопления"
-          - action: automation.turn_on
-            entity_id:
-              - automation.thermostat_eco_mode_by_window_reset
-              - automation.thermostat_eco_mode_by_window_disable
+              value: "Открыто окно → карантин перед включением отопления отменён"
+      # Stop "Short Heating" timer if it is active and notify about it
+      - if:
+          - condition: state
+            entity_id: timer.short_heating
+            state: "active"
+        then:
+          # Stop "Short Heating" timer without restoring the thermostat mode
+          - action: timer.cancel
+            entity_id: timer.short_heating
+          - action: input_text.set_value
+            data:
+              entity_id: input_text.heating_log
+              value: "Открыто окно → кратковременное отопление отменено"
+          - action: media_player.play_media
+            entity_id: media_player.yandex_station_midi
+            data:
+              media_content_id: Подогрев квартиры окончен из-за открытого окна
+              media_content_type: text
+      # Disable heating
+      - action: script.disable_thermostat
+        data:
+          message: "Открыто окно → отопление выключено"
 
-  - alias: Thermostat ECO Mode by Window Reset
-    id: thermostat_eco_mode_by_window_reset
-    mode: single
-    triggers:
-      - trigger: state
+  - alias: Start Quarantine by Window Closed
+    id: start_quarantine_by_window_closed
+    mode: restart
+    trigger:
+      - platform: state
         entity_id: binary_sensor.windows
-        from: "off"
-        to: "on"
-        for: "00:00:05"
-    actions:
+        to: "off"
+        for: "00:00:10"
+    condition:
+      - condition: state
+        entity_id: input_boolean.heating_season
+        state: "on"
+    action:
+      # Start "Heating Quarantine" timer
+      - action: timer.start
+        entity_id: timer.heating_quarantine
       - action: input_text.set_value
         data:
           entity_id: input_text.heating_log
-          value: "Открыто окно → карантин отменён"
-      - action: automation.turn_off
-        entity_id:
-          - automation.thermostat_eco_mode_by_window_disable
-          - automation.thermostat_eco_mode_by_window_reset
+          value: Окна закрыты → карантин перед включением отопления начат
 
-  - alias: Thermostat ECO Mode by Window Disable
-    id: thermostat_eco_mode_by_window_disable
+  - alias: Restore Heating after Quarantine
+    id: restore_heating_after_quarantine
     mode: single
-    triggers:
-      # Trigger every 1 minute
-      - trigger: time_pattern
-        minutes: "/1"
-    conditions:
-      # We use here template condition because time condition ignores date part of timestamp
-      - condition: template
-        value_template: "{{ as_timestamp(now()) > as_timestamp(states('input_datetime.thermostat_windows_close_delay_time_end'), 0) }}"
-    actions:
-      # Allow heating
-      - action: input_boolean.turn_off
-        entity_id: input_boolean.heating_quarantine
+    max_exceeded: silent
+    trigger:
+      - platform: event
+        event_type: timer.finished
+        event_data:
+          entity_id: timer.heating_quarantine
+    condition:
+      - condition: state
+        entity_id: input_boolean.heating_season
+        state: "on"
+      # All windows should be closed
+      - condition: state
+        entity_id: binary_sensor.windows
+        state: "off"
+    action:
       # Set thermostat mode to «heat» only if someone is home
       - if:
-          # Proceed only if heating is permitted and either people are home or presence is ignored
+          # Proceed only if heating is not paused and either people are home or presence is ignored
           - condition: state
-            entity_id: input_boolean.heating_allowed
-            state: "on"
+            entity_id: timer.pause_heating
+            state: "idle"
           - or:
               - condition: state
                 entity_id: binary_sensor.people_home
@@ -537,7 +530,7 @@ automation:
           - action: input_text.set_value
             data:
               entity_id: input_text.heating_log
-              value: "Карантин после закрытия окон окончен → отопление включено"
+              value: "Карантин перед включением отопления окончен → отопление включено"
           - action: climate.set_hvac_mode
             entity_id: climate.family_room
             data:
@@ -547,12 +540,8 @@ automation:
             data:
               entity_id: input_text.heating_log
               value: >-
-                Карантин после закрытия окон окончен, но никого нет дома либо
+                Карантин перед включением отопления окончен, но никого нет дома либо
                 отопление запрещено → отопление не включено
-      - action: automation.turn_off
-        entity_id:
-          - automation.thermostat_eco_mode_by_window_reset
-          - automation.thermostat_eco_mode_by_window_disable
 
   ###############################################
   ## Thermostat Emergency Control
@@ -561,6 +550,7 @@ automation:
   - alias: Thermostat Freeze Alert at Night
     id: thermostat_freeze_alert_at_night
     mode: single
+    max_exceeded: silent
     triggers:
       - trigger: state
         entity_id: binary_sensor.freeze_alert_at_night
@@ -587,11 +577,12 @@ automation:
               state_attr('climate.family_room', 'temperature') <= 19.0) or
               states('climate.family_room') == 'off' }}
     actions:
-      # Reset heating quarantine and allow heating
-      - action: input_boolean.turn_off
-        entity_id: input_boolean.heating_quarantine
-      - action: input_boolean.turn_on
-        entity_id: input_boolean.heating_allowed
+      # Reset all active timers that could affect heating
+      - action: timer.cancel
+        entity_id:
+          - timer.heating_quarantine
+          - timer.short_heating
+          - timer.pause_heating
       # Notify about low temperature
       - action: notify.mobile_app_sm_s901b
         data:
@@ -618,7 +609,8 @@ automation:
 
   - alias: Thermostat Preheat Alert
     id: thermostat_preheat_alert
-    mode: restart
+    mode: single
+    max_exceeded: silent
     triggers:
       - trigger: numeric_state
         entity_id: climate.family_room
@@ -667,6 +659,7 @@ automation:
   - alias: Thermostat Low Temperature Notification
     id: thermostat_low_temperature_notification
     mode: single
+    max_exceeded: silent
     triggers:
       - trigger: state
         entity_id: binary_sensor.freeze_alert_at_night
@@ -685,7 +678,8 @@ automation:
   # If Thermostat is heating for more then 1 hour - notify about it and disable heating for 1 hour
   - alias: Thermostat Heating Duration Alert
     id: thermostat_heating_duration_alert
-    mode: restart
+    mode: single
+    max_exceeded: silent
     triggers:
       - trigger: state
         entity_id: binary_sensor.thermostat_heating
@@ -696,6 +690,12 @@ automation:
         entity_id: input_boolean.heating_season
         state: "on"
     actions:
+      # Cancel all active timers that could affect heating
+      - action: timer.cancel
+        entity_id:
+          - timer.heating_quarantine
+          - timer.short_heating
+          - timer.pause_heating
       - action: script.notify_and_create_persistent_notification
         data:
           title: *sys_notify_title_warning
@@ -704,38 +704,28 @@ automation:
         data:
           entity_id: input_text.heating_log
           value: "Термостат работает более часа → отопление отключено на 1 час"
-      - action: input_boolean.turn_off
-        entity_id: input_boolean.heating_allowed
-      # Disable all active heating automations and reset related flags
-      - action: automation.turn_off
-        entity_id:
-          - automation.thermostat_10_minutes_heating_disable
-          - automation.thermostat_eco_mode_by_window_disable
-          - automation.thermostat_eco_mode_by_window_reset
-      - action: input_boolean.turn_off
-        entity_id:
-          - input_boolean.short_heating
-          - input_boolean.heating_quarantine
 
   ###############################################
-  ## Thermostat 10 Minutes Heating
+  ## Short Heating
   ###############################################
 
-  - alias: Thermostat 10 Minutes Heating Enable
-    id: thermostat_10_minutes_heating_enable
+  - alias: Short Heating Start
+    id: short_heating_start
     mode: single
+    max_exceeded: silent
     triggers:
       - trigger: state
         entity_id: input_button.thermostat_10_minutes_heating
     actions:
       - if:
+        # Just notify if heating is already in progress and thermostat is in «heat» mode
           - or:
               - condition: state
                 entity_id: binary_sensor.thermostat_heating
                 state: "on"
               - condition: state
-                entity_id: automation.thermostat_10_minutes_heating_disable
-                state: "on"
+                entity_id: timer.short_heating
+                state: "active"
         then:
           - action: media_player.play_media
             entity_id: media_player.yandex_station_midi
@@ -743,29 +733,21 @@ automation:
               media_content_id: Подогрев квартиры уже включен
               media_content_type: text
         else:
-          # If «ECO mode by windows» automation is enabled now - disable it
-          - if:
-              - condition: state
-                entity_id: automation.thermostat_eco_mode_by_window_disable
-                state: "on"
-            then:
-              - action: automation.turn_off
-                entity_id:
-                  - automation.thermostat_eco_mode_by_window_reset
-                  - automation.thermostat_eco_mode_by_window_disable
+          # Reset all active timers that could affect heating
+          - action: timer.cancel
+            entity_id:
+              - timer.heating_quarantine
+              - timer.short_heating
+              - timer.pause_heating
+          # Start "Short Heating" timer
+          - action: timer.start
+            entity_id: timer.short_heating
+          # Notify about heating start
           - action: media_player.play_media
             entity_id: media_player.yandex_station_midi
             data:
-              media_content_id: Включен подогрев квартиры на 10 минут
+              media_content_id: Включен кратковременный подогрев квартиры
               media_content_type: text
-          # Turn off the Quarantine flag. This prevents the heating from being blocked if
-          # the `thermostat_eco_mode_by_window_enable` automation has already turned off the heating.
-          - action: input_boolean.turn_off
-            entity_id: input_boolean.heating_quarantine
-          - action: input_boolean.turn_on
-            entity_id:
-              - input_boolean.short_heating # Set flag to indicate that heating is in progress
-              - input_boolean.heating_allowed # Reset allow heating flag
           # Set thermostat mode to «heat» and wait until 'temperature' attribute will become not "None"
           - action: climate.set_hvac_mode
             entity_id: climate.family_room
@@ -786,51 +768,40 @@ automation:
             entity_id: climate.family_room
             data:
               temperature: "{{ states('input_number.thermostat_new_target_temperature') }}"
-          # Set heating_time_end to a time ten minutes in the future
-          - action: input_datetime.set_datetime
-            data:
-              entity_id: input_datetime.thermostat_10_minutes_heating_time_end
-              datetime: "{{ now() + timedelta(minutes=10) }}"
           # Wait here until actual target temperature is the same as new target temperature
           - wait_template: |
               {{ state_attr('climate.family_room', 'temperature') ==
               (states('input_number.thermostat_new_target_temperature') | float(0)) }}
             timeout: "00:01:00"
             continue_on_timeout: false
-          - action: automation.turn_on
-            entity_id: automation.thermostat_10_minutes_heating_disable
           - action: input_text.set_value
             data:
               entity_id: input_text.heating_log
               value: "Включен подогрев квартиры на 10 минут"
 
-  - alias: Thermostat 10 Minutes Heating Disable
-    id: thermostat_10_minutes_heating_disable
+  - alias: Short Heating End
+    id: short_heating_end
     mode: single
+    max_exceeded: silent
     triggers:
-      # Trigger every 30 seconds
-      - trigger: time_pattern
-        seconds: "/30"
-      # Or if thermostat changed it's mode
-      - trigger: state
-        entity_id: climate.family_room
+      # Trigger on timer finish
+      - platform: event
+        event_type: timer.finished
+        event_data:
+          entity_id: timer.short_heating
     conditions:
-      # Either time condition or thermostat mode condition
-      - or:
-          # We use here template condition because time condition ignores date part of timestamp
-          - condition: template
-            value_template: "{{ as_timestamp(now()) > as_timestamp(states('input_datetime.thermostat_10_minutes_heating_time_end'), 0) }}"
-          - condition: template
-            value_template: "{{ not is_state('climate.family_room', 'heat') }}"
-            # Compare new target temperature with actual target temperature to know if the temperature was manually changed
-          - condition: template
-            value_template: |
-              {{ state_attr('climate.family_room', 'temperature') !=
-              (states('input_number.thermostat_new_target_temperature') | float(0)) }}
+      - condition: state
+        entity_id: input_boolean.heating_season
+        state: "on"
+      # ETRVs should not be requesting heat
+      - condition: state
+        entity_id: binary_sensor.etrvs_requesting_heat
+        state: "off"
+      # Bathroom heating should not be requested
+      - condition: state
+        entity_id: binary_sensor.heating_request_bathroom
+        state: "off"
     actions:
-      # Reset the flag to indicate that heating is not in progress
-      - action: input_boolean.turn_off
-        entity_id: input_boolean.short_heating
       - action: media_player.play_media
         entity_id: media_player.yandex_station_midi
         data:
@@ -840,16 +811,15 @@ automation:
       - action: script.thermostat_set_default_temperature
         data:
           message: "Подогрев квартиры окончен"
-      - action: automation.turn_off
-        entity_id: automation.thermostat_10_minutes_heating_disable
 
   ###############################################
-  ## Thermostat ECO Mode When Noone Home
+  ## Presence Control
   ###############################################
 
-  - alias: Thermostat ECO Mode When Noone Home Enable
-    id: thermostat_eco_mode_when_noone_home_enable
+  - alias: Disable Heating When Noone Home
+    id: disable_heating_when_noone_home
     mode: single
+    max_exceeded: silent
     triggers:
       - trigger: state
         entity_id: binary_sensor.people_home
@@ -859,42 +829,41 @@ automation:
       - condition: state
         entity_id: input_boolean.heating_season
         state: "on"
-      - condition: template
-        value_template: "{{ not is_state('climate.family_room', 'off') }}"
+      - condition: state
+        entity_id: binary_sensor.thermostat_active
+        state: "on"
       - condition: state
         entity_id: input_boolean.ignore_people_presence
         state: "off"
     actions:
+      # Reset all active timers that could affect heating
+      - action: timer.cancel
+        entity_id:
+          - timer.heating_quarantine
+          - timer.short_heating
+          - timer.pause_heating
       # Set thermostat default target temperature and disable it
       - action: script.disable_thermostat
         data:
           message: "Никого нет дома → отопление выключено"
-      # Turn off the Quarantine flag. This prevents the heating from being blocked if
-      # the `thermostat_eco_mode_by_window_enable` automation has already turned off the heating.
-      - action: input_boolean.turn_off
-        entity_id: input_boolean.heating_quarantine
-      # Enable automation to disable ECO mode when someone will be home
-      - action: automation.turn_on
-        entity_id: automation.thermostat_eco_mode_when_noone_home_disable
-      # Stop all automations that can change thermostat mode
-      - action: automation.turn_off
-        entity_id:
-          - automation.thermostat_eco_mode_by_window_reset
-          - automation.thermostat_eco_mode_by_window_disable
-          - automation.thermostat_10_minutes_heating_disable
 
-  - alias: Thermostat ECO Mode When Noone Home Disable
-    id: thermostat_eco_mode_when_noone_home_disable
+  - alias: Restore Heating When Someone Home
+    id: restore_heating_when_someone_home
     mode: single
+    max_exceeded: silent
     triggers:
       - trigger: state
         entity_id: binary_sensor.people_home
         to: "on"
     conditions:
-      - condition: template
-        value_template: "{{ is_state('climate.family_room', 'off') }}"
+      - condition: state
+        entity_id: input_boolean.heating_season
+        state: "on"
+      - condition: state
+        entity_id: binary_sensor.thermostat_active
+        state: "off"
     actions:
-      # If some window is opened, set thermostat mode to «off» mode
+      # If some window is opened, restore thermostat in "off" mode
       - if:
           - condition: state
             entity_id: binary_sensor.windows
@@ -904,7 +873,7 @@ automation:
           - action: script.disable_thermostat
             data:
               message: "Окно открыто при возращении домой → отопление всё ещё выключено"
-        # If no windows are opened, set thermostat mode to «heat» mode
+        # If all windows are closed, restore thermostat in "heat" mode
         else:
           - action: climate.set_hvac_mode
             entity_id: climate.family_room
@@ -914,9 +883,6 @@ automation:
             data:
               entity_id: input_text.heating_log
               value: "Дома кто-то появился → отопление включено"
-      # Disable this automation
-      - action: automation.turn_off
-        entity_id: automation.thermostat_eco_mode_when_noone_home_disable
 
   ###############################################
   ## Main home heating logic
@@ -925,9 +891,10 @@ automation:
   # If one of ETRV is in "heat" state and climate.family_room is not in "heat" state,
   # and all windows are closed - set new thermostat target temperature by adding 2°C to
   # the current temperature to force enable heating.
-  - alias: Thermostat ETRV Heating Enable
-    id: thermostat_etrv_heating_enable
+  - alias: Start Heating by ETRV Request
+    id: start_heating_by_etrv_request
     mode: single
+    max_exceeded: silent
     triggers:
       # Trigger if some of ETRVs are requesting heat
       - trigger: state
@@ -941,52 +908,61 @@ automation:
       - condition: state
         entity_id: input_boolean.heating_season
         state: "on"
-      # If not waiting after windows were closed
+      # If some of ETRVs are requesting heat (in case if automation was triggered by time_pattern)
       - condition: state
-        entity_id: input_boolean.heating_quarantine
-        state: "off"
-      # If heating allowed
-      - condition: state
-        entity_id: input_boolean.heating_allowed
+        entity_id: binary_sensor.etrvs_requesting_heat
         state: "on"
-      # Continue if people are home or if presense is ignored
+      # If all windows are closed for at least 5 minutes (time gap between window close and timer start)
+      - condition: state
+        entity_id: binary_sensor.windows
+        state: "off"
+        for: "00:05:00"
+      # If not in quarantine time after windows were closed
+      - condition: state
+        entity_id: timer.heating_quarantine
+        state: "idle"
+      # If heating is not manually paused
+      - condition: state
+        entity_id: timer.pause_heating
+        state: "idle"
+      # If short heating is not in progress
+      - condition: state
+        entity_id: timer.short_heating
+        state: "idle"
+      # If people are home or if presense is ignored
       - condition: template
         value_template: >
           {{ is_state('binary_sensor.people_home', 'on') or
             is_state('input_boolean.ignore_people_presence', 'on')}}
-      # If all ETRVs are requesting heat
-      - condition: state
-        entity_id: binary_sensor.etrvs_requesting_heat
-        state: "on"
       # If not already heating
       - condition: state
         entity_id: binary_sensor.thermostat_heating
-        state: "off"
-      # If all windows are closed
-      - condition: state
-        entity_id: binary_sensor.windows
         state: "off"
     actions:
       # Start heating
       - action: script.turn_on
         entity_id: script.thermostat_start_heating
 
-  - alias: Bathroom Heating Enable
-    id: bathroom_heating_enable
-    mode: restart
+  - alias: Start Heating in Bathroom
+    id: start_heating_in_bathroom
+    mode: single
+    max_exceeded: silent
     trigger:
       - platform: state
         entity_id: binary_sensor.heating_request_bathroom
         to: "on"
-    condition:
-      # Do not check if heating Quarantine set because we need to heat the bathroom even with windows opened.
+    condition:  # Ignore windows state, we need to heat the bathroom
       - condition: state
         entity_id: input_boolean.heating_season
         state: "on"
-      # If heating allowed
+      # If heating is not manually paused
       - condition: state
-        entity_id: input_boolean.heating_allowed
-        state: "on"
+        entity_id: timer.pause_heating
+        state: "idle"
+      # If short heating is not in progress
+      - condition: state
+        entity_id: timer.short_heating
+        state: "idle"
       # Continue if people are home or if presense is ignored
       - condition: template
         value_template: >
@@ -1001,9 +977,10 @@ automation:
         entity_id: script.thermostat_start_heating
 
   # If all ETRVs are not in "heat" state - restore climate.family_room target temperature.
-  - alias: Thermostat ETRV Heating Disable
-    id: thermostat_etrv_heating_disable
+  - alias: Stop Heating by ETRV Request
+    id: stop_heating_by_etrv_request
     mode: single
+    max_exceeded: silent
     triggers:
       # Trigger if all ETRVs are not requesting heat
       - trigger: state
@@ -1030,11 +1007,11 @@ automation:
       - condition: state
         entity_id: binary_sensor.heating_request_bathroom
         state: "off"
-      # If not short heating is in progress
+      # If short heating is not in progress
       - condition: state
-        entity_id: input_boolean.short_heating
-        state: "off"
-      # If already heating
+        entity_id: timer.short_heating
+        state: "idle"
+      # If actually heating
       - condition: state
         entity_id: binary_sensor.thermostat_heating
         state: "on"
@@ -1048,23 +1025,12 @@ automation:
   ## Extra Heating Control
   ###############################################
 
-  - alias: Heating Allowed Reenable
-    id: heating_allowed_reenable
+  # Start "Pause Heating" timer if "Heating Allowed" flag was reset
+  # Heating will be enabled again in "Start Heating by ETRV Request" automation
+  - alias: Start Pause Heating Manually
+    id: start_pause_heating_manually
     mode: single
-    trigger:
-      - platform: state
-        entity_id: input_boolean.heating_allowed
-        to: "off"
-        for: "01:00:00"
-    action:
-      - service: input_boolean.turn_on
-        target:
-          entity_id: input_boolean.heating_allowed
-
-  # Stop heating if was dissallowed manually
-  - alias: Heating Disallowed
-    id: heating_disallowed
-    mode: single
+    max_exceeded: silent
     trigger:
       - platform: state
         entity_id: input_boolean.heating_allowed
@@ -1073,7 +1039,7 @@ automation:
       - condition: state
         entity_id: input_boolean.heating_season
         state: "on"
-      # If already heating
+      # If actually heating
       - condition: state
         entity_id: binary_sensor.thermostat_heating
         state: "on"
@@ -1081,8 +1047,8 @@ automation:
       # If short heating is in progress, notify that heating was stopped
       - if:
           - condition: state
-            entity_id: input_boolean.short_heating
-            state: "on"
+            entity_id: timer.short_heating
+            state: "active"
         then:
           # Notify that heating was stopped
           - action: media_player.play_media
@@ -1090,20 +1056,52 @@ automation:
             data:
               media_content_id: Подогрев квартиры окончен раньше вручную
               media_content_type: text
-      # Disable all active heating automations and reset related flags
-      - action: automation.turn_off
+      # Reset all active timers that could affect heating
+      - action: timer.cancel
         entity_id:
-          - automation.thermostat_10_minutes_heating_disable
-          - automation.thermostat_eco_mode_by_window_disable
-          - automation.thermostat_eco_mode_by_window_reset
-      - action: input_boolean.turn_off
-        entity_id:
-          - input_boolean.short_heating
-          - input_boolean.heating_quarantine
+          - timer.heating_quarantine
+          - timer.short_heating
+          - timer.pause_heating
+      # Start "Pause Heating" timer
+      - action: timer.start
+        entity_id: timer.pause_heating
       # Set thermostat default target temperature
       - action: script.thermostat_set_default_temperature
         data:
-          message: "Отопление выключено вручную → температура возвращена на 21°C"
+          message: "Отопление заблокировано вручную → температура возвращена на 21°C"
+
+  # Cancel "Pause Heating" timer if "Heating Allowed" flag was set
+  - alias: Cancel Pause Heating Manually
+    id: cancel_pause_heating_manually
+    mode: single
+    max_exceeded: silent
+    trigger:
+      - platform: state
+        entity_id: input_boolean.heating_allowed
+        to: "on"
+    condition:
+      - condition: state
+        entity_id: input_boolean.heating_season
+        state: "on"
+      # If "Pause Heating" timer is active
+      - condition: state
+        entity_id: timer.pause_heating
+        state: "active"
+    action:
+      # Cancel "Pause Heating" timer
+      - action: timer.cancel
+        entity_id: timer.pause_heating
+      # Notify that heating was restored
+      - action: media_player.play_media
+        entity_id: media_player.yandex_station_midi
+        data:
+          media_content_id: Блокировка отопления отменена вручную
+          media_content_type: text
+      # Log the message
+      - action: input_text.set_value
+        data:
+          entity_id: input_text.heating_log
+          value: "Блокировка отопления отменена вручную"
 
   ###############################################
   ## Logging
@@ -1118,28 +1116,19 @@ automation:
       - platform: state
         entity_id:
           - binary_sensor.thermostat_heating
+          - binary_sensor.thermostat_active
           - binary_sensor.etrvs_requesting_heat
           - binary_sensor.heating_request_bathroom
-          - binary_sensor.heating_quarantine
-          - binary_sensor.short_heating
-          - binary_sensor.heating_allowed
-          - binary_sensor.people_home
+          - binary_sensor.freeze_alert_at_night
           - binary_sensor.windows
-          - input_boolean.ignore_people_presence
+          - binary_sensor.people_home
           - input_boolean.heating_season
+          - input_boolean.ignore_people_presence
           - input_boolean.heating_allowed
-          - input_boolean.heating_quarantine
-          - input_boolean.short_heating
-          - input_number.thermostat_default_target_temperature
           - input_number.thermostat_new_target_temperature
-          - input_number.etrv_bedroom_default_temperature
-          - input_number.etrv_kitchen_default_temperature
-          - input_number.etrv_living_room_default_temperature
-          - input_number.etrv_min_target_temperature
-          - input_number.etrv_max_target_temperature
-          - input_number.bathroom_heating_target_temperature
-          - input_datetime.thermostat_10_minutes_heating_time_end
-          - input_datetime.thermostat_windows_close_delay_time_end
+          - timer.heating_quarantine
+          - timer.short_heating
+          - timer.pause_heating
     actions:
       # Log changes only if from_state and to_state are defined
       - condition: template
