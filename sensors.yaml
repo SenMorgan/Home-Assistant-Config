@@ -96,3 +96,21 @@
       friendly_name: "Mikrotik Clients"
       value_template: "{{ states('sensor.mikrotik_hap_ax_3_wireless_clients') | int(0) }}"
       unit_of_measurement: "clients"
+
+###############################################
+## History Stats
+###############################################
+- platform: history_stats
+  name: "Asus PC Work Time Today"
+  entity_id: switch.asus_pc
+  state: "on"
+  type: time
+  start: "{{ today_at('00:00:00') }}"
+  end: "{{ now() }}"
+- platform: history_stats
+  name: "Lenovo Laptop Work Time Today"
+  entity_id: switch.lenovo_thinkbook
+  state: "on"
+  type: time
+  start: "{{ today_at('00:00:00') }}"
+  end: "{{ now() }}"
