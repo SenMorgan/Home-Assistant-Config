@@ -397,7 +397,7 @@ automation:
               - action: media_player.play_media
                 entity_id: media_player.yandex_station_midi
                 data:
-                  media_content_id: Подогрев квартиры окончен раньше, потому что было открыто окно
+                  media_content_id: Подогрев квартиры окончен вручную
                   media_content_type: text
               # Reset the flag to indicate that short heating is not in progress
               - action: input_boolean.turn_off
@@ -1023,7 +1023,7 @@ automation:
           - action: media_player.play_media
             entity_id: media_player.yandex_station_midi
             data:
-              media_content_id: Подогрев квартиры окончен раньше мануально
+              media_content_id: Подогрев квартиры окончен раньше вручную
               media_content_type: text
       # Disable all active heating automations and reset related flags
       - action: automation.turn_off
@@ -1038,7 +1038,7 @@ automation:
       # Set thermostat default target temperature
       - action: script.thermostat_set_default_temperature
         data:
-          message: "Отопление выключено мануально → температура возвращена на 21°C"
+          message: "Отопление выключено вручную → температура возвращена на 21°C"
 
   ###############################################
   ## Logging
