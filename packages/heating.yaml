@@ -114,7 +114,6 @@ binary_sensor:
       - binary_sensor.danfoss_etrv0103_kitchen_heat_required
       - binary_sensor.danfoss_etrv0103_living_room_heat_required
 
-
 ###############################################
 ## INPUT BUTTONS
 ###############################################
@@ -458,7 +457,7 @@ automation:
         entity_id: input_boolean.heating_quarantine
       # Set thermostat mode to «heat» only if someone is home
       - if:
-            # Proceed only if heating is permitted and either people are home or presence is ignored
+          # Proceed only if heating is permitted and either people are home or presence is ignored
           - condition: state
             entity_id: input_boolean.heating_allowed
             state: "on"
@@ -665,7 +664,7 @@ automation:
             entity_id: input_boolean.heating_quarantine
           - action: input_boolean.turn_on
             entity_id:
-              - input_boolean.short_heating   # Set flag to indicate that heating is in progress
+              - input_boolean.short_heating # Set flag to indicate that heating is in progress
               - input_boolean.heating_allowed # Reset allow heating flag
           # Set thermostat mode to «heat» and wait until 'temperature' attribute will become not "None"
           - action: climate.set_hvac_mode
@@ -957,11 +956,47 @@ automation:
         entity_id: input_boolean.heating_allowed
         to: "off"
         for: "01:00:00"
-    condition:
-      - condition: state
-        entity_id: input_boolean.heating_season
-        state: "on"
     action:
       - service: input_boolean.turn_on
         target:
           entity_id: input_boolean.heating_allowed
+
+  # Stop heating if was dissallowed manually
+  - alias: Heating Disallowed
+    id: heating_disallowed
+    mode: single
+    trigger:
+      - platform: state
+        entity_id: input_boolean.heating_allowed
+        to: "off"
+    condition:
+      - condition: state
+        entity_id: input_boolean.heating_season
+        state: "on"
+      # If already heating
+      - condition: state
+        entity_id: binary_sensor.thermostat_heating
+        state: "on"
+    action:
+      # Set thermostat default target temperature
+      - action: script.thermostat_set_default_temperature
+        data:
+          message: "Отопление выключено мануально → температура возвращена на 21°C"
+      # If short heating is in progress, disable it
+      - if:
+          - condition: state
+            entity_id: input_boolean.short_heating
+            state: "on"
+        then:
+          # Reset the flag to indicate that short heating is not in progress
+          - action: input_boolean.turn_off
+            entity_id: input_boolean.short_heating
+          # Disable «10 minutes heating» automation
+          - action: automation.turn_off
+            entity_id: automation.thermostat_10_minutes_heating_disable
+          # Notify that heating was stopped
+          - action: media_player.play_media
+            entity_id: media_player.yandex_station_midi
+            data:
+              media_content_id: Подогрев квартиры окончен раньше мануально
+              media_content_type: text
