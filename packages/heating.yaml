@@ -52,6 +52,11 @@ input_boolean:
   heating_quarantine:
     name: Heating Quarantine
     icon: mdi:radiator-off
+  heating_allowed:
+    # Flag used to block heating manually for some time or by any external automation
+    name: Heating Allowed
+    icon: mdi:check-circle-outline
+    initial: on
   short_heating:
     name: Short Heating
     icon: mdi:timer-sand
@@ -103,6 +108,7 @@ binary_sensor:
             is_state('schedule.bathroom_heating_evening', 'on') }}
   - platform: group
     name: ETRVs requesting heat
+    device_class: heat
     entities:
       - binary_sensor.danfoss_etrv0100_bedroom_heat_required
       - binary_sensor.danfoss_etrv0103_kitchen_heat_required
@@ -449,11 +455,17 @@ automation:
         entity_id: input_boolean.heating_quarantine
       # Set thermostat mode to «heat» only if someone is home
       - if:
-          # Continue if people are home or if presense is ignored
-          - condition: template
-            value_template: >
-              {{ is_state('binary_sensor.people_home', 'on') or
-                is_state('input_boolean.ignore_people_presence', 'on')}}
+            # Proceed only if heating is permitted and either people are home or presence is ignored
+          - condition: state
+            entity_id: input_boolean.heating_allowed
+            state: "on"
+          - or:
+              - condition: state
+                entity_id: binary_sensor.people_home
+                state: "on"
+              - condition: state
+                entity_id: input_boolean.ignore_people_presence
+                state: "on"
         then:
           - action: input_text.set_value
             data:
@@ -463,6 +475,13 @@ automation:
             entity_id: climate.family_room
             data:
               hvac_mode: "heat"
+        else:
+          - action: input_text.set_value
+            data:
+              entity_id: input_text.heating_log
+              value: >-
+                Карантин после закрытия окон окончен, но никого нет дома либо
+                отопление запрещено → отопление не включено
       - action: automation.turn_off
         entity_id:
           - automation.thermostat_eco_mode_by_window_reset
@@ -501,6 +520,12 @@ automation:
               state_attr('climate.family_room', 'temperature') <= 19.0) or
               states('climate.family_room') == 'off' }}
     actions:
+      # Reset heating quarantine and allow heating
+      - action: input_boolean.turn_off
+        entity_id: input_boolean.heating_quarantine
+      - action: input_boolean.turn_on
+        entity_id: input_boolean.heating_allowed
+      # Notify about low temperature
       - action: notify.mobile_app_sm_s901b
         data:
           title: *sys_notify_title_info
@@ -635,9 +660,10 @@ automation:
           # the `thermostat_eco_mode_by_window_enable` automation has already turned off the heating.
           - action: input_boolean.turn_off
             entity_id: input_boolean.heating_quarantine
-          # Set flag to indicate that heating is in progress
           - action: input_boolean.turn_on
-            entity_id: input_boolean.short_heating
+            entity_id:
+              - input_boolean.short_heating   # Set flag to indicate that heating is in progress
+              - input_boolean.heating_allowed # Reset allow heating flag
           # Set thermostat mode to «heat» and wait until 'temperature' attribute will become not "None"
           - action: climate.set_hvac_mode
             entity_id: climate.family_room
@@ -806,7 +832,7 @@ automation:
         entity_id: binary_sensor.etrvs_requesting_heat
         to: "on"
         for: 00:01:00
-      # Trigger every 2 minutes
+      # Trigger every 2 minutes to account for any changes in conditions
       - trigger: time_pattern
         minutes: "/2"
     conditions:
@@ -817,6 +843,10 @@ automation:
       - condition: state
         entity_id: input_boolean.heating_quarantine
         state: "off"
+      # If heating allowed
+      - condition: state
+        entity_id: input_boolean.heating_allowed
+        state: "on"
       # Continue if people are home or if presense is ignored
       - condition: template
         value_template: >
@@ -850,6 +880,10 @@ automation:
       # Do not check if heating Quarantine set because we need to heat the bathroom even with windows opened.
       - condition: state
         entity_id: input_boolean.heating_season
+        state: "on"
+      # If heating allowed
+      - condition: state
+        entity_id: input_boolean.heating_allowed
         state: "on"
       # Continue if people are home or if presense is ignored
       - condition: template
@@ -907,3 +941,24 @@ automation:
       - action: script.thermostat_set_default_temperature
         data:
           message: "ETRVs не запрашивают отопление → температура возвращена на 21°C"
+
+  ###############################################
+  ## Extra Heating Control
+  ###############################################
+
+  - alias: Heating Allowed Reenable
+    id: heating_allowed_reenable
+    mode: single
+    trigger:
+      - platform: state
+        entity_id: input_boolean.heating_allowed
+        to: "off"
+        for: "01:00:00"
+    condition:
+      - condition: state
+        entity_id: input_boolean.heating_season
+        state: "on"
+    action:
+      - service: input_boolean.turn_on
+        target:
+          entity_id: input_boolean.heating_allowed

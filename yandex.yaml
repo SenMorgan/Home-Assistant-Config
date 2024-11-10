@@ -19,6 +19,7 @@ filter:
     - binary_sensor.kitchen_window_contact
     - binary_sensor.living_room_window_contact
     - input_boolean.child_lock
+    - input_boolean.heating_allowed
     - input_boolean.home_night_mode
     - input_boolean.scooter_charger
     - input_boolean.silent_mode
@@ -72,6 +73,10 @@ entity_config:
     room: Кухня
   input_button.thermostat_10_minutes_heating:
     name: Подогрев
+    room: Дом
+    type: devices.types.switch
+  input_boolean.heating_allowed:
+    name: Отопление
     room: Дом
     type: devices.types.switch
   input_boolean.home_night_mode:
