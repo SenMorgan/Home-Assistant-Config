@@ -667,7 +667,7 @@ automation:
       - action: script.notify_and_create_persistent_notification
         data:
           title: *sys_notify_title_warning
-          message: "Термостат работает более часа → отопление отключено на 1 час"
+          message: "Термостат работает более часа → отопление отключено на 1 час в {{ states('sensor.time') }}"
       # Start "Pause Heating" timer
       - action: timer.start
         entity_id: timer.pause_heating
