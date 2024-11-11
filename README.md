@@ -4,7 +4,7 @@
 
 ![Last Commit](https://img.shields.io/github/last-commit/SenMorgan/Home-Assistant-Config/master?style=for-the-badge)
 ![GitHub commit activity](https://img.shields.io/github/commit-activity/y/SenMorgan/Home-Assistant-Config?style=for-the-badge)
-
+![](https://tokei.rs/b1/github/SenMorgan/Home-Assistant-Config?category=lines&style=for-the-badge)
 
 Welcome to my [Home Assistant](https://www.home-assistant.io/) configuration! This repository contains my personal [Home Assistant](https://www.home-assistant.io/) setup, which I use to automate my smart home. [Home Assistant](https://www.home-assistant.io/) is an awesome open-source home automation platform that focuses on privacy and local control.
 
