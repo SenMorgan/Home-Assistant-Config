@@ -444,7 +444,7 @@ scene:
       light.kitchen_ceiling_light: off
       light.kitchen_spotlights: off
       light.living_room_ceiling_light: off
-      light.living_room_nightlight:
+      light.living_room_table_lamp:
         brightness: 150
         color_temp: 370
         state: on
@@ -467,7 +467,7 @@ scene:
       light.kitchen_ceiling_light: off
       light.kitchen_led_strip: off
       light.kitchen_spotlights: on
-      light.living_room_nightlight:
+      light.living_room_table_lamp:
         brightness: 255
         color_temp: 370
         state: on

@@ -35,7 +35,7 @@ filter:
     - light.kitchen_led_strip
     - light.kitchen_spotlights
     - light.living_room_ceiling_light
-    - light.living_room_nightlight
+    - light.living_room_table_lamp
     - light.mi_desk_lamp
     - light.shelf_lighting
     - light.string_lights
@@ -122,7 +122,7 @@ entity_config:
   light.bedroom_nightlight:
     name: Ночник
     room: Спальня
-  light.living_room_nightlight:
+  light.living_room_table_lamp:
     name: Светильник
     room: Зал
   light.living_room_ceiling_light:

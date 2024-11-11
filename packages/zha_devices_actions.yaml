@@ -195,14 +195,14 @@ automation:
         on_press_action:
         - action: light.turn_on
           target:
-            entity_id: light.living_room_nightlight
+            entity_id: light.living_room_table_lamp
         - action: light.turn_on
           target:
             entity_id: light.bar_light
         off_press_action:
         - action: light.turn_off
           target:
-            entity_id: light.living_room_nightlight
+            entity_id: light.living_room_table_lamp
         - action: light.turn_off
           target:
             entity_id: light.bar_light
@@ -211,12 +211,12 @@ automation:
           data:
             brightness_step_pct: 4
           target:
-            entity_id: light.living_room_nightlight
+            entity_id: light.living_room_table_lamp
         off_hold_action:
         - action: light.turn_on
           data:
             brightness_step_pct: -4
           target:
-            entity_id: light.living_room_nightlight
+            entity_id: light.living_room_table_lamp
         helper_hold_delay: 200
         helper_max_loops: 20
