@@ -700,7 +700,7 @@ automation:
           - action: media_player.play_media
             entity_id: media_player.yandex_station_midi
             data:
-              media_content_id: Подогрев квартиры уже включен
+              media_content_id: Квартира уже подогревается
               media_content_type: text
         else:
           # Reset all active timers that could affect heating
@@ -737,24 +737,26 @@ automation:
       - condition: state
         entity_id: input_boolean.heating_season
         state: "on"
-      # ETRVs should not be requesting heat
-      - condition: state
-        entity_id: binary_sensor.etrvs_requesting_heat
-        state: "off"
-      # Bathroom heating should not be requested
-      - condition: state
-        entity_id: binary_sensor.heating_request_bathroom
-        state: "off"
     actions:
       - action: media_player.play_media
         entity_id: media_player.yandex_station_midi
         data:
-          media_content_id: Подогрев квартиры окончен
+          media_content_id: Кратковременный подогрев квартиры окончен
           media_content_type: text
-      # Set thermostat default target temperature
-      - action: script.thermostat_set_default_temperature
-        data:
-          message: "Подогрев квартиры окончен"
+      - if:
+          # ETRVs should not be requesting heat
+          - condition: state
+            entity_id: binary_sensor.etrvs_requesting_heat
+            state: "off"
+          # Bathroom heating should not be requested
+          - condition: state
+            entity_id: binary_sensor.heating_request_bathroom
+            state: "off"
+        then:
+          # Set thermostat default target temperature
+          - action: script.thermostat_set_default_temperature
+            data:
+              message: "Кратковременный подогрев квартиры окончен"
 
   ###############################################
   ## Presence Control
