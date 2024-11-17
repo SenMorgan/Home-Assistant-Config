@@ -264,31 +264,17 @@ input_number:
 script:
   thermostat_start_heating:
     alias: Thermostat Start Heating
+    # Forces the thermostat to start heating by adding 2°C to the current temperature
     sequence:
-      # Set thermostat mode to «heat» and wait until 'temperature' attribute will become not "None"
-      - action: climate.set_hvac_mode
-        entity_id: climate.family_room
-        data:
-          hvac_mode: "heat"
-      # Wait till thermostat will be ready to accept new target temperature
-      - wait_template: "{{ state_attr('climate.family_room', 'temperature') != None }}"
-        timeout: "00:30:00"
-      # Set new thermostat target temperature by adding 2°C to the current temperature
       - action: input_number.set_value
         data:
           entity_id: input_number.thermostat_new_target_temperature
           value: "{{ (state_attr('climate.family_room', 'current_temperature') | float(24)) + 2 }}"
-      # Send new target temperature to thermostat
-      - action: climate.set_temperature
-        entity_id: climate.family_room
+      # Set thermostat new target temperature
+      - action: script.thermostat_set_temperature
         data:
-          temperature: "{{ states('input_number.thermostat_new_target_temperature') }}"
-      # Wait here until actual target temperature is the same as new target temperature
-      - wait_template: |
-          {{ state_attr('climate.family_room', 'temperature') ==
-          (states('input_number.thermostat_new_target_temperature') | float(0)) }}
-        timeout: "00:01:00"
-        continue_on_timeout: false
+          temperature: "{{ states('input_number.thermostat_new_target_temperature') | float(24) }}"
+      # Log what rooms are requesting heat
       - action: input_text.set_value
         data:
           entity_id: input_text.heating_log
@@ -310,11 +296,10 @@ script:
             {% if rooms.list | length > 1 %}и{% endif %}
             {{ rooms.list[-1] if rooms.list | length > 0 else '' }}
 
-  thermostat_set_default_temperature:
-    alias: Thermostat Set Default Temperature
+  thermostat_stop_heating:
+    alias: Thermostat Stop Heating
+    # Stop forced heating by setting default target temperature
     sequence:
-      - variables:
-          default_temperature: "{{ states('input_number.thermostat_default_target_temperature') | float(21) }}"
       # Log the message if provided
       - if: "{{ message is defined }}"
         then:
@@ -322,6 +307,14 @@ script:
             data:
               entity_id: input_text.heating_log
               value: "{{ message }}"
+      # Set default thermostat target temperature
+      - action: script.thermostat_set_temperature
+        data:
+          temperature: "{{ states('input_number.thermostat_default_target_temperature') | float(21) }}"
+
+  thermostat_set_temperature:
+    alias: Thermostat Set Temperature
+    sequence:
       # Check if thermostat is ready to accept new target temperature and enable it if not
       - if:
           - condition: template
@@ -329,43 +322,30 @@ script:
         then:
           # Repeat the command to ensure that the thermostat is enabled
           - repeat:
-              while:
-                - condition: template
-                  value_template: "{{ state_attr('climate.family_room', 'temperature') == None }}"
-                - condition: template
-                  value_template: "{{ repeat.index <= (12 * 5) }}"
               sequence:
                 - action: climate.set_hvac_mode
                   entity_id: climate.family_room
                   data:
                     hvac_mode: "heat"
-                - delay: 5
+                - delay: "{{ 5 * repeat.index }}"
+              until: "{{ state_attr('climate.family_room', 'temperature') != None or repeat.index > 5 }}"
       # Repeat the command to ensure that the thermostat is set to the default temperature
       - repeat:
-          while:
-            - condition: template
-              value_template: "{{ state_attr('climate.family_room', 'temperature') != default_temperature }}"
-            - condition: template
-              value_template: "{{ repeat.index <= (12 * 5) }}"
           sequence:
             - action: climate.set_temperature
               entity_id: climate.family_room
               data:
-                temperature: "{{ default_temperature }}"
-            - delay: 5
-      # Wait here until actual target temperature is the same as new target temperature
-      - wait_template: |
-          {{ state_attr('climate.family_room', 'temperature') == default_temperature }}
-        timeout: "00:01:00"
+                temperature: "{{ temperature }}"
+            - delay: "{{ 5 * repeat.index }}"
+          until: "{{ state_attr('climate.family_room', 'temperature') == temperature or repeat.index > 5 }}"
 
   disable_thermostat:
     alias: Disable Thermostat
     sequence:
-      # Firstly, reset the thermostat to the default target temperature to avoid any issues later
-      - action: script.turn_on
-        entity_id: script.thermostat_set_default_temperature
+      # Firstly, reset the thermostat target temperature
+      - action: script.thermostat_stop_heating
       # Wait for the script to finish
-      - wait_template: "{{ is_state('script.thermostat_set_default_temperature', 'off') }}"
+      - wait_template: "{{ is_state('script.thermostat_stop_heating', 'off') }}"
         timeout: "00:01:00"
       # Log the message if provided
       - if: "{{ message is defined }}"
@@ -374,20 +354,15 @@ script:
             data:
               entity_id: input_text.heating_log
               value: "{{ message }}"
-      # Repeat the command to ensure that the thermostat is disabled
-      - repeat:
-          while:
-            - condition: state
-              entity_id: binary_sensor.thermostat_active
-              state: "on"
-            - condition: template
-              value_template: "{{ repeat.index <= (12 * 5) }}" # 5 minutes
+      - alias: "Repeat until thermostat is off"
+        repeat:
           sequence:
             - action: climate.set_hvac_mode
               entity_id: climate.family_room
               data:
                 hvac_mode: "off"
-            - delay: 5
+            - delay: "{{ 5 * repeat.index }}"
+          until: "{{ is_state('binary_sensor.thermostat_active', 'off') or repeat.index > 5 }}"
 
   notify_if_some_window_is_opened_during_heating_season:
     alias: Notify If Some Window Opened During Heating Season
@@ -525,8 +500,8 @@ automation:
                 entity_id: input_boolean.ignore_people_presence
                 state: "on"
         then:
-          # Set thermostat default target temperature
-          - action: script.thermostat_set_default_temperature
+          # Stop heating by setting default temperature on thermostat
+          - action: script.thermostat_stop_heating
             data:
               message: "Карантин перед включением отопления окончен → отопление включено"
         else:
@@ -583,8 +558,8 @@ automation:
           title: *sys_notify_title_info
           message: &notification_freeze_alert_at_night >-
             Термостат был снова включен в {{ states('sensor.time') }}, чтобы вы не замёрзли
-      # Set thermostat default target temperature
-      - action: script.thermostat_set_default_temperature
+      # Stop heating by setting default temperature on thermostat
+      - action: script.thermostat_stop_heating
         data:
           message: "Температура упала ниже порога ночью → термостат переведён на 21°C"
 
@@ -619,8 +594,8 @@ automation:
           title: *sys_notify_title_warning
           message: >
             Термостат был переведён в автоматический режим по причине высокой температуры в квартире в {{ states('sensor.time') }}
-      # Set thermostat default target temperature
-      - action: script.thermostat_set_default_temperature
+      # Stop heating by setting default temperature on thermostat
+      - action: script.thermostat_stop_heating
         data:
           message: "Температура поднялась выше порога → термостат переведён на 21°C"
 
@@ -671,8 +646,8 @@ automation:
       # Start "Pause Heating" timer
       - action: timer.start
         entity_id: timer.pause_heating
-      # Set thermostat default target temperature
-      - action: script.thermostat_set_default_temperature
+      # Stop heating by setting default temperature on thermostat
+      - action: script.thermostat_stop_heating
         data:
           message: "Термостат работает более часа → отопление отключено на 1 час"
 
@@ -753,8 +728,8 @@ automation:
             entity_id: binary_sensor.heating_request_bathroom
             state: "off"
         then:
-          # Set thermostat default target temperature
-          - action: script.thermostat_set_default_temperature
+          # Stop heating by setting default temperature on thermostat
+          - action: script.thermostat_stop_heating
             data:
               message: "Кратковременный подогрев квартиры окончен"
 
@@ -788,7 +763,7 @@ automation:
           - timer.heating_quarantine
           - timer.short_heating
           - timer.pause_heating
-      # Set thermostat default target temperature and disable it
+      # Stop heating by setting default temperature on thermostat  and disable it
       - action: script.disable_thermostat
         data:
           message: "Никого нет дома → отопление выключено"
@@ -815,14 +790,14 @@ automation:
             entity_id: binary_sensor.windows
             state: "on"
         then:
-          # Set thermostat default target temperature and disable it
+          # Stop heating by setting default temperature on thermostat  and disable it
           - action: script.disable_thermostat
             data:
               message: "Окно открыто при возращении домой → отопление всё ещё выключено"
         # If all windows are closed, restore thermostat in "heat" mode
         else:
-          # Set thermostat default target temperature
-          - action: script.thermostat_set_default_temperature
+          # Stop heating by setting default temperature on thermostat
+          - action: script.thermostat_stop_heating
             data:
               message: "Возвращение домой → отопление включено"
 
@@ -882,8 +857,10 @@ automation:
         state: "off"
     actions:
       # Start heating
-      - action: script.turn_on
-        entity_id: script.thermostat_start_heating
+      - action: script.thermostat_start_heating
+      # Reset flag cause all conditions are met and we could allow heating again
+      - action: input_boolean.turn_on
+        entity_id: input_boolean.heating_allowed
 
   - alias: Start Heating in Bathroom
     id: start_heating_in_bathroom
@@ -915,8 +892,7 @@ automation:
         entity_id: binary_sensor.thermostat_heating
         state: "off"
     action:
-      - action: script.turn_on
-        entity_id: script.thermostat_start_heating
+      - action: script.thermostat_start_heating
 
   # If all ETRVs are not in "heat" state - restore climate.family_room target temperature.
   - alias: Stop Heating by ETRV Request
@@ -958,8 +934,8 @@ automation:
         entity_id: binary_sensor.thermostat_heating
         state: "on"
     actions:
-      # Set thermostat default target temperature
-      - action: script.thermostat_set_default_temperature
+      # Stop heating by setting default temperature on thermostat
+      - action: script.thermostat_stop_heating
         data:
           message: "ETRVs не запрашивают отопление → температура возвращена на 21°C"
 
@@ -1007,8 +983,8 @@ automation:
       # Start "Pause Heating" timer
       - action: timer.start
         entity_id: timer.pause_heating
-      # Set thermostat default target temperature
-      - action: script.thermostat_set_default_temperature
+      # Stop heating by setting default temperature on thermostat
+      - action: script.thermostat_stop_heating
         data:
           message: "Отопление заблокировано вручную → температура возвращена на 21°C"
 
