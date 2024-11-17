@@ -121,7 +121,7 @@
           - delay: 1
 
 ###############################################
-## Other Automatations
+## Other Automations
 ###############################################
 
 - id: "busy_wall_switch_1"
