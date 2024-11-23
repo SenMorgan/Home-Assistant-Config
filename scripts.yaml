@@ -41,9 +41,7 @@ presentation:
   alias: Presentation
   sequence:
     # *****************************SEQUENCE START*************************************
-    # Switch OFF all lights and TV
-    #   - action: media_player.turn_off
-    #     entity_id: media_player.tv
+    # Switch OFF all lights
     - action: light.turn_off
       entity_id: all
     - delay:
@@ -105,13 +103,13 @@ presentation:
 
     # Switch ON TV
     - action: media_player.turn_on
-      entity_id: media_player.tv
+      entity_id: media_player.samsung_tv
     - delay:
         seconds: 5
 
     # Switch OFF Bar Light and TV
     - action: media_player.turn_off
-      entity_id: media_player.tv
+      entity_id: media_player.samsung_tv
     - action: light.turn_off
       entity_id: light.bar_light
     - delay:
@@ -255,14 +253,6 @@ update_shopping_list:
       data:
         media_content_id: update
         media_content_type: shopping_list
-
-# Switch ON LG TV with magic packet through WoL
-wake_tv:
-  alias: Wake TV
-  sequence:
-    - action: wake_on_lan.send_magic_packet
-      data:
-        mac: !secret TV_MAC
 
 tell_what_windows_are_opened:
   alias: Tell What Windows Are Opened

@@ -20,20 +20,6 @@
       entity_id: cover.bedroom
 
 ###############################################
-## Media Players Control
-###############################################
-
-- id: "living_room_tv_by_wol_on"
-  alias: Living Room TV by WoL ON
-  mode: restart
-  triggers:
-    - trigger: webostv.turn_on
-      entity_id: media_player.tv
-  actions:
-    - action: script.turn_on
-      entity_id: script.wake_tv
-
-###############################################
 ## Other Buttons and Switches Handles
 ###############################################
 

@@ -39,7 +39,7 @@ filter:
     - light.mi_desk_lamp
     - light.shelf_lighting
     - light.string_lights
-    - media_player.tv
+    - media_player.samsung_tv
     - scene.evening
     - scene.movies
     - sensor.electricity_meter_energy
@@ -140,7 +140,7 @@ entity_config:
   light.christmas_tree:
     name: Ёлка
     room: Зал
-  media_player.tv:
+  media_player.samsung_tv:
     name: Телевизор
     room: Зал
   scene.evening:

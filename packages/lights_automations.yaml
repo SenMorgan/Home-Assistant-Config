@@ -339,7 +339,7 @@ automation:
         offset: -00:15:00
       - trigger: state
         id: "TV_ON"
-        entity_id: media_player.tv
+        entity_id: media_player.samsung_tv
         to: "on"
     conditions:
       - condition: state
@@ -350,7 +350,7 @@ automation:
               - condition: trigger
                 id: "SUNSET"
               - condition: state
-                entity_id: media_player.tv
+                entity_id: media_player.samsung_tv
                 state: "on"
           - and:
               - condition: trigger
@@ -370,7 +370,7 @@ automation:
       # Check if it's still needed (TV is on)
       - if:
           - condition: state
-            entity_id: media_player.tv
+            entity_id: media_player.samsung_tv
             state: "on"
         then:
           - action: scene.turn_on
@@ -414,7 +414,7 @@ automation:
     alias: TV OFF All Lights OFF
     triggers:
       - trigger: state
-        entity_id: media_player.tv
+        entity_id: media_player.samsung_tv
         to: "off"
         for: 00:00:10
     conditions:
@@ -451,7 +451,7 @@ scene:
       light.mi_desk_lamp: off
       light.shelf_lighting: off
       light.string_lights: off
-      media_player.tv: on
+      media_player.samsung_tv: on
 
   - id: evening
     name: Evening

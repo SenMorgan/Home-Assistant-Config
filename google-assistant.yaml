@@ -38,10 +38,6 @@ entity_config:
       - COVER
       - BLIND
       - BLINDS
-  media_player.tv:
-    room: Living room
-  media_player.lg_webos_tv_551e:
-    room: Living room
   switch.asus_pc:
     name: PC
     room: Kitchen
