@@ -1060,3 +1060,73 @@ automation:
             {% set new_state = trigger.to_state.state %}
             {% set old_state = trigger.from_state.state %}
             Изменено состояние "{{ entity_name }}" с {{ old_state }} на {{ new_state }}
+
+  ###############################################
+  ## DANFOSS ETRV WINDOW SENSOR MAPPING
+  ###############################################
+
+  - alias: Sync Danfoss ETRV Window Contact Kitchen
+    id: sync_danfoss_etrv_window_contact_kitchen
+    mode: queued
+    max: 3
+    trigger:
+      - platform: state
+        entity_id: binary_sensor.kitchen_window_contact
+        to:
+          - "off"
+          - "on"
+    condition:
+      - condition: state
+        entity_id: input_boolean.heating_season
+        state: "on"
+      - condition: template
+        value_template: >
+          {{ not is_state('switch.danfoss_etrv0103_kitchen_external_window_sensor', trigger.to_state.state) }}
+    action:
+      - service: "switch.turn_{{ trigger.to_state.state }}"
+        target:
+          entity_id: switch.danfoss_etrv0103_kitchen_external_window_sensor
+
+  - alias: Sync Danfoss ETRV Window Contact Bedroom
+    id: sync_danfoss_etrv_window_contact_bedroom
+    mode: queued
+    max: 3
+    trigger:
+      - platform: state
+        entity_id: binary_sensor.bedroom_window_contact
+        to:
+          - "off"
+          - "on"
+    condition:
+      - condition: state
+        entity_id: input_boolean.heating_season
+        state: "on"
+      - condition: template
+        value_template: >
+          {{ not is_state('switch.danfoss_etrv0100_bedroom_external_window_sensor', trigger.to_state.state) }}
+    action:
+      - service: "switch.turn_{{ trigger.to_state.state }}"
+        target:
+          entity_id: switch.danfoss_etrv0100_bedroom_external_window_sensor
+
+  - alias: Sync Danfoss ETRV Window Contact Living Room
+    id: sync_danfoss_etrv_window_contact_living_room
+    mode: queued
+    max: 3
+    trigger:
+      - platform: state
+        entity_id: binary_sensor.living_room_window_contact
+        to:
+          - "off"
+          - "on"
+    condition:
+      - condition: state
+        entity_id: input_boolean.heating_season
+        state: "on"
+      - condition: template
+        value_template: >
+          {{ not is_state('switch.danfoss_etrv0103_living_room_external_window_sensor', trigger.to_state.state) }}
+    action:
+      - service: "switch.turn_{{ trigger.to_state.state }}"
+        target:
+          entity_id: switch.danfoss_etrv0103_living_room_external_window_sensor
