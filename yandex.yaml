@@ -32,6 +32,7 @@ filter:
     - light.gyver_lamp
     - light.hall_lights
     - light.kitchen_ceiling_light
+    - light.kitchen_christmas_lights
     - light.kitchen_led_strip
     - light.kitchen_spotlights
     - light.living_room_ceiling_light
@@ -140,6 +141,9 @@ entity_config:
   light.christmas_tree:
     name: Ёлка
     room: Зал
+  light.kitchen_christmas_lights:
+    name: Гирлянда
+    room: Кухня
   media_player.samsung_tv:
     name: Телевизор
     room: Зал

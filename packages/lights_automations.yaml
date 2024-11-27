@@ -459,6 +459,7 @@ scene:
       light.bar_light: on
       light.bedroom_ceiling_light: off
       light.bedroom_nightlight: off
+      light.kitchen_christmas_lights: on
       light.christmas_tree: on
       light.gyver_lamp:
         brightness: 100
