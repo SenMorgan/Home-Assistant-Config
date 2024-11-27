@@ -439,7 +439,7 @@ scene:
       light.bedroom_nightlight: off
       light.christmas_tree: on
       light.floor_lamp: off
-      light.gyver_lamp: on
+      light.gyver_lamp: off
       light.hall_lights: off
       light.kitchen_ceiling_light: off
       light.kitchen_spotlights: off
