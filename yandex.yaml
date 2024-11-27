@@ -27,7 +27,6 @@ filter:
     - light.bar_light
     - light.bedroom_ceiling_light
     - light.bedroom_nightlight
-    - light.christmas_tree
     - light.floor_lamp
     - light.gyver_lamp
     - light.hall_lights
@@ -36,6 +35,7 @@ filter:
     - light.kitchen_led_strip
     - light.kitchen_spotlights
     - light.living_room_ceiling_light
+    - light.living_room_christmas_lights
     - light.living_room_table_lamp
     - light.mi_desk_lamp
     - light.shelf_lighting
@@ -129,6 +129,9 @@ entity_config:
   light.living_room_ceiling_light:
     name: Люстра
     room: Зал
+  light.living_room_christmas_lights:
+    name: Гирлянда
+    room: Зал
   light.bedroom_ceiling_light:
     name: Люстра
     room: Спальня
@@ -137,9 +140,6 @@ entity_config:
     room: Кухня
   light.bar_light:
     name: Подсветка бара
-    room: Зал
-  light.christmas_tree:
-    name: Ёлка
     room: Зал
   light.kitchen_christmas_lights:
     name: Гирлянда
