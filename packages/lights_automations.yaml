@@ -342,9 +342,18 @@ automation:
         entity_id: media_player.samsung_tv
         to: "on"
     conditions:
+      # Only if Sen is home
       - condition: state
         entity_id: person.sen
         state: "home"
+      # Only from 20:00 to 22:00
+      - condition: time
+        after: "20:00:00"
+        before: "22:00:00"
+      # Only if silent mode enabled
+      - condition: state
+        entity_id: input_boolean.silent_mode
+        state: "on"
       - or:
           - and:
               - condition: trigger
@@ -364,7 +373,8 @@ automation:
             states('light.mi_desk_lamp') == 'off' and
             states('light.kitchen_spotlights') == 'off' and
             states('light.kitchen_ceiling_light') == 'off' and
-            states('light.bedroom_nightlight') == 'off' }}
+            states('light.bedroom_nightlight') == 'off' and
+            states('binary_sensor.kitchen_motion_alarm') == 'off' }}
         timeout: 01:00:00
         continue_on_timeout: false
       # Check if it's still needed (TV is on)
@@ -408,25 +418,6 @@ automation:
                 title: *sys_notify_title_info
                 message: Реле освещения парковки было отключено более часа. Автоматическое включение в {{ states('sensor.time') }}
             - delay: 00:01:00
-
-  # Turn off all lights if tv was turned off for 10 seconds in the evening (21:00 ~ 02:00)
-  - id: "tv_off_all_lights_off"
-    alias: TV OFF All Lights OFF
-    triggers:
-      - trigger: state
-        entity_id: media_player.samsung_tv
-        to: "off"
-        for: 00:00:10
-    conditions:
-      - condition: time
-        after: "21:00:00"
-        before: "02:00:00"
-      - condition: state
-        entity_id: switch.asus_pc
-        state: "off"
-    actions:
-      - action: script.turn_on
-        entity_id: script.turn_off_all_lights
 
 ###############################################
 ## SCENES
