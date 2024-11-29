@@ -435,10 +435,7 @@ scene:
       light.kitchen_spotlights: off
       light.living_room_ceiling_light: off
       light.living_room_christmas_lights: on
-      light.living_room_table_lamp:
-        brightness: 150
-        color_temp: 370
-        state: on
+      light.living_room_table_lamp: off
       light.mi_desk_lamp: off
       light.shelf_lighting: off
       light.string_lights: off
