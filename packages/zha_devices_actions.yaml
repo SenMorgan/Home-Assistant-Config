@@ -194,29 +194,25 @@ automation:
         remote_device: 51724530dc1fcac3561d2fcb39f40048
         on_press_action:
         - action: light.turn_on
-          target:
-            entity_id: light.living_room_table_lamp
-        - action: light.turn_on
-          target:
-            entity_id: light.bar_light
+          entity_id:
+            - light.living_room_table_lamp
+            - light.bar_light
+            - light.living_room_christmas_lights
         off_press_action:
         - action: light.turn_off
-          target:
-            entity_id: light.living_room_table_lamp
-        - action: light.turn_off
-          target:
-            entity_id: light.bar_light
+          entity_id:
+            - light.living_room_table_lamp
+            - light.bar_light
+            - light.living_room_christmas_lights
         on_hold_action:
         - action: light.turn_on
+          entity_id: light.living_room_table_lamp
           data:
             brightness_step_pct: 4
-          target:
-            entity_id: light.living_room_table_lamp
         off_hold_action:
         - action: light.turn_on
+          entity_id: light.living_room_table_lamp
           data:
             brightness_step_pct: -4
-          target:
-            entity_id: light.living_room_table_lamp
         helper_hold_delay: 200
         helper_max_loops: 20
