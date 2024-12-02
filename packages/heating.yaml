@@ -1130,3 +1130,21 @@ automation:
       - service: "switch.turn_{{ trigger.to_state.state }}"
         target:
           entity_id: switch.danfoss_etrv0103_living_room_external_window_sensor
+
+  - alias: Sync ETRVs Heating Available Flag
+    id: sync_etrvs_heating_available_flag
+    mode: queued
+    max: 3
+    trigger:
+      - platform: state
+        entity_id: binary_sensor.thermostat_heating
+        to:
+          - "off"
+          - "on"
+    action:
+      - service: "input_boolean.turn_{{ trigger.to_state.state }}"
+        target:
+          entity_id:
+            - switch.danfoss_etrv0100_bedroom_heat_available
+            - switch.danfoss_etrv0103_kitchen_heat_available
+            - switch.danfoss_etrv0103_living_room_heat_available
