@@ -139,7 +139,7 @@ binary_sensor:
     entities:
       - binary_sensor.danfoss_etrv0100_bedroom_heat_required
       - binary_sensor.danfoss_etrv0103_kitchen_heat_required
-      # - binary_sensor.danfoss_etrv0103_living_room_heat_required
+      - binary_sensor.danfoss_etrv0103_living_room_heat_required
 
 ###############################################
 ## HISTORY STATS SENSORS
