@@ -1072,18 +1072,19 @@ automation:
     trigger:
       - platform: state
         entity_id: binary_sensor.kitchen_window_contact
-        to:
-          - "off"
-          - "on"
+        for: "00:00:10"
+      # Trigger every X minutes
+      - platform: time_pattern
+        minutes: "/10"
     condition:
       - condition: state
         entity_id: input_boolean.heating_season
         state: "on"
       - condition: template
         value_template: >
-          {{ not is_state('switch.danfoss_etrv0103_kitchen_external_window_sensor', trigger.to_state.state) }}
+          {{ states('binary_sensor.kitchen_window_contact') in ['on', 'off'] }}
     action:
-      - service: "switch.turn_{{ trigger.to_state.state }}"
+      - service: "switch.turn_{{ states('binary_sensor.kitchen_window_contact') }}"
         target:
           entity_id: switch.danfoss_etrv0103_kitchen_external_window_sensor
 
@@ -1094,18 +1095,19 @@ automation:
     trigger:
       - platform: state
         entity_id: binary_sensor.bedroom_window_contact
-        to:
-          - "off"
-          - "on"
+        for: "00:00:10"
+      # Trigger every X minutes
+      - platform: time_pattern
+        minutes: "/10"
     condition:
       - condition: state
         entity_id: input_boolean.heating_season
         state: "on"
       - condition: template
         value_template: >
-          {{ not is_state('switch.danfoss_etrv0100_bedroom_external_window_sensor', trigger.to_state.state) }}
+          {{ states('binary_sensor.bedroom_window_contact') in ['on', 'off'] }}
     action:
-      - service: "switch.turn_{{ trigger.to_state.state }}"
+      - service: "switch.turn_{{ states('binary_sensor.bedroom_window_contact') }}"
         target:
           entity_id: switch.danfoss_etrv0100_bedroom_external_window_sensor
 
@@ -1116,18 +1118,19 @@ automation:
     trigger:
       - platform: state
         entity_id: binary_sensor.living_room_window_contact
-        to:
-          - "off"
-          - "on"
+        for: "00:00:10"
+      # Trigger every X minutes
+      - platform: time_pattern
+        minutes: "/10"
     condition:
       - condition: state
         entity_id: input_boolean.heating_season
         state: "on"
       - condition: template
         value_template: >
-          {{ not is_state('switch.danfoss_etrv0103_living_room_external_window_sensor', trigger.to_state.state) }}
+          {{ states('binary_sensor.living_room_window_contact') in ['on', 'off'] }}
     action:
-      - service: "switch.turn_{{ trigger.to_state.state }}"
+      - service: "switch.turn_{{ states('binary_sensor.living_room_window_contact') }}"
         target:
           entity_id: switch.danfoss_etrv0103_living_room_external_window_sensor
 
@@ -1138,11 +1141,19 @@ automation:
     trigger:
       - platform: state
         entity_id: binary_sensor.thermostat_heating
-        to:
-          - "off"
-          - "on"
+        for: "00:00:10"
+      # Trigger every X minutes
+      - platform: time_pattern
+        minutes: "/10"
+    condition:
+      - condition: state
+        entity_id: input_boolean.heating_season
+        state: "on"
+      - condition: template
+        value_template: >
+          {{ states('binary_sensor.thermostat_heating') in ['on', 'off'] }}
     action:
-      - service: "input_boolean.turn_{{ trigger.to_state.state }}"
+      - service: "switch.turn_{{ states('binary_sensor.thermostat_heating') }}"
         target:
           entity_id:
             - switch.danfoss_etrv0100_bedroom_heat_available
