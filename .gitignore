@@ -6,8 +6,10 @@
 !.gitignore
 !*.md
 !*.py
+!*.sh
 !packages/
 !python_scripts/
+!scripts/
 !mqtt/
 
 # Ignore folders

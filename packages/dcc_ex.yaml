@@ -54,6 +54,53 @@ light:
     entity_id: switch.dcc_ex_pwr
 
 ###############################################
+## SHELL COMMANDS
+###############################################
+shell_command:
+  dcc_ex_command: >-
+    /config/scripts/dcc_ex_command.sh
+    -c '{{ command_type }}'
+    -v '{{ command_value }}'
+    -a '{{ dcc_ex_server_ip }}'
+    -p '{{ dcc_ex_server_port }}'
+
+###############################################
+## MEDIA PLAYER - Used for easier control of volume, power, etc.
+###############################################
+media_player:
+  - platform: universal
+    name: "Model Railway"
+    commands:
+      turn_on:
+        action: switch.turn_on
+        entity_id: switch.dcc_ex_pwr
+      turn_off:
+        action: switch.turn_off
+        entity_id: switch.dcc_ex_pwr
+      volume_up:
+        action: input_button.press
+        entity_id: input_button.dcc_ex_max_volume
+      volume_down:
+        action: input_button.press
+        entity_id: input_button.dcc_ex_default_volume
+      volume_set:
+        service: shell_command.dcc_ex_command
+        data:
+          command_type: "volume"
+          command_value: "{{ volume_level }}"
+          dcc_ex_server_ip: !secret DCC-EX-SERVER-IP
+          dcc_ex_server_port: !secret DCC-EX-SERVER-PORT
+      media_play:
+        action: switch.turn_on
+        entity_id: input_button.dcc_ex_pause
+      media_pause:
+        action: switch.turn_off
+        entity_id: input_button.dcc_ex_pause
+    attributes:
+      state: switch.dcc_ex_pwr
+    device_class: speaker
+
+###############################################
 ## SWITCHES
 ###############################################
 switch:
@@ -66,7 +113,7 @@ switch:
         <<: *defaults
         name: "DCC-EX Power and Loco Lights"
         # Power all tracks, enable loco's lights (outdoor + interior), set max volume
-        command_on: "<1> <F 4 0 1> <F 5 0 1> <F 4 15 1> <w 4 63 64>"
+        command_on: "<1> <F 4 0 1> <F 5 0 1> <F 4 15 1> <W 4 63 64>"
         # Power off all tracks
         command_off: "<0>"
         command_state: "<s>"
