@@ -38,12 +38,15 @@ script:
       - action: input_button.press
         target:
           entity_id: input_button.dcc_ex_default_volume
-      # Ensure silent mode is enabled
       - action: input_boolean.turn_on
-        entity_id: input_boolean.silent_mode
-      # Do not allow to turn on bedroom lights and open cover
-      - action: input_boolean.turn_on
-        entity_id: input_boolean.bedroom_lights_and_cover_safety_switch
+        entity_id:
+          # Ensure silent mode is enabled
+          - input_boolean.silent_mode
+          # Disallow control of bedroom lights and cover
+          - input_boolean.bedroom_lights_and_cover_safety_switch
+      # Reset child lock
+      - action: input_boolean.turn_off
+        entity_id: input_boolean.child_lock
 
   reset_silent_mode:
     alias: Reset Silent Mode
@@ -61,12 +64,12 @@ script:
       - action: input_button.press
         target:
           entity_id: input_button.dcc_ex_max_volume
-      # Ensure silent mode is disabled
       - action: input_boolean.turn_off
-        entity_id: input_boolean.silent_mode
-      # Allow to turn on bedroom lights and open cover
-      - action: input_boolean.turn_off
-        entity_id: input_boolean.bedroom_lights_and_cover_safety_switch
+        entity_id:
+          # Ensure silent mode is disabled
+          - input_boolean.silent_mode
+          # Allow control of bedroom lights and cover
+          - input_boolean.bedroom_lights_and_cover_safety_switch
 
   home_night_mode:
     alias: Home Night Mode
