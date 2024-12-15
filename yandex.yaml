@@ -10,7 +10,6 @@ filter:
     - vacuum
     - fan
   include_entity_globs:
-    - input_button.dcc_ex_*
     - sensor.ble_temperature_atc_*
   include_entities:
     - binary_sensor.backyard_motion_alarm
@@ -18,6 +17,10 @@ filter:
     - binary_sensor.kitchen_motion_alarm
     - binary_sensor.kitchen_window_contact
     - binary_sensor.living_room_window_contact
+    - input_button.dcc_ex_emergency_stop
+    - input_button.dcc_ex_reboot
+    - input_button.dcc_ex_route_300
+    - input_button.dcc_ex_route_301
     - input_boolean.child_lock
     - input_boolean.heating_allowed
     - input_boolean.home_night_mode
@@ -40,6 +43,7 @@ filter:
     - light.mi_desk_lamp
     - light.shelf_lighting
     - light.string_lights
+    - media_player.model_railway
     - media_player.samsung_tv
     - scene.evening
     - scene.movies
@@ -53,7 +57,6 @@ filter:
     - switch.asus_pc
     - switch.dcc_ex_engine_sound
     - switch.dcc_ex_horn
-    - switch.dcc_ex_pwr
     - switch.moving_head_power
 
 entity_config:
@@ -144,6 +147,9 @@ entity_config:
   light.kitchen_christmas_lights:
     name: Гирлянда
     room: Кухня
+  media_player.model_railway:
+    name: Макет
+    room: Макет
   media_player.samsung_tv:
     name: Телевизор
     room: Зал
@@ -161,14 +167,6 @@ entity_config:
     name: Компьютер
     room: Кухня
     type: devices.types.socket
-  input_button.dcc_ex_default_volume:
-    name: Стандартная громкость
-    room: Макет
-    type: devices.types.switch
-  input_button.dcc_ex_max_volume:
-    name: Максимальная громкость
-    room: Макет
-    type: devices.types.switch
   input_button.dcc_ex_emergency_stop:
     name: Экстренная остановка
     room: Макет
@@ -183,10 +181,6 @@ entity_config:
     type: devices.types.switch
   input_button.dcc_ex_route_301:
     name: Маршрут 301
-    room: Макет
-    type: devices.types.switch
-  switch.dcc_ex_pwr:
-    name: Питание макета
     room: Макет
     type: devices.types.switch
   switch.dcc_ex_engine_sound:
