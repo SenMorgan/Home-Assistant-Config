@@ -23,7 +23,6 @@ homeassistant:
       short_heating_duration_min: &short_heating_duration_min "10"
       pause_heating_duration_min: &pause_heating_duration_min "60"
 
-      default_temperature: &default_temperature "21.0"
 
 ###############################################
 ## SCHEDULERS
