@@ -110,21 +110,24 @@ binary_sensor:
       heating_request_bedroom:
         friendly_name: Heating Request Bedroom
         device_class: heat
+        # Heat only if it is requested by the ETRV and heat demand is above the threshold
         value_template: >
-          {{ state_attr('climate.danfoss_etrv0100_bedroom_thermostat', 'current_temperature') | float <
-            state_attr('climate.danfoss_etrv0100_bedroom_thermostat', 'temperature') | float }}
+          {{ is_state('binary_sensor.danfoss_etrv0100_bedroom_heat_required', 'on') and
+            states('sensor.danfoss_etrv0100_bedroom_pi_heating_demand') | int(0) >= 20 }}
       heating_request_kitchen:
         friendly_name: Heating Request Kitchen
         device_class: heat
+        # Heat only if it is requested by the ETRV and heat demand is above the threshold
         value_template: >
-          {{ state_attr('climate.danfoss_etrv0103_kitchen_thermostat', 'current_temperature') | float <
-            state_attr('climate.danfoss_etrv0103_kitchen_thermostat', 'temperature') | float }}
+          {{ is_state('binary_sensor.danfoss_etrv0103_kitchen_heat_required', 'on') and
+            states('sensor.danfoss_etrv0103_kitchen_pi_heating_demand') | int(0) >= 20 }}
       heating_request_living_room:
         friendly_name: Heating Request Living Room
         device_class: heat
+        # Heat only if it is requested by the ETRV and heat demand is above the threshold
         value_template: >
-          {{ state_attr('climate.danfoss_etrv0103_living_room_thermostat', 'current_temperature') | float <
-            state_attr('climate.danfoss_etrv0103_living_room_thermostat', 'temperature') | float }}
+          {{ is_state('binary_sensor.danfoss_etrv0103_living_room_heat_required', 'on') and
+            states('sensor.danfoss_etrv0103_living_room_pi_heating_demand') | int(0) >= 20 }}
       heating_request_bathroom:
         friendly_name: Heating Request Bathroom
         device_class: heat
@@ -136,9 +139,9 @@ binary_sensor:
     name: ETRVs requesting heat
     device_class: heat
     entities:
-      - binary_sensor.danfoss_etrv0100_bedroom_heat_required
-      - binary_sensor.danfoss_etrv0103_kitchen_heat_required
-      - binary_sensor.danfoss_etrv0103_living_room_heat_required
+      - binary_sensor.heating_request_bedroom
+      - binary_sensor.heating_request_kitchen
+      - binary_sensor.heating_request_living_room
 
 ###############################################
 ## HISTORY STATS SENSORS
