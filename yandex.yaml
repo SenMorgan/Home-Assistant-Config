@@ -7,7 +7,6 @@ filter:
   include_domains:
     - climate
     - cover
-    - vacuum
     - fan
   include_entity_globs:
     - sensor.ble_temperature_atc_*
@@ -318,30 +317,3 @@ entity_config:
   fan.wc_and_bathroom:
     name: Вентиляция
     room: Туалет
-  vacuum.johnny:
-    name: Джонни
-    room: Дом
-  vacuum.pod_rakovinoi:
-    name: Под раковиной
-    room: Дом
-  vacuum.pod_stolom:
-    name: Под столом
-    room: Дом
-  vacuum.zona_uborki_korridor:
-    name: Зона уборки коридор
-    room: Коридор
-  vacuum.zona_uborki_kukhnia:
-    name: Зона уборки кухня
-    room: Кухня
-  vacuum.zona_uborki_spalnia:
-    name: Зона уборки спальня
-    room: Спальня
-  vacuum.zona_uborki_tualet:
-    name: Зона уборки туалет
-    room: Туалет
-  vacuum.zona_uborki_vannaia:
-    name: Зона уборки ванная
-    room: Ванная
-  vacuum.zona_uborki_zal:
-    name: Зона уборки зал
-    room: Зал
