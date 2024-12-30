@@ -74,10 +74,6 @@ alert:
       {% set devices = expand('group.low_battery_devices') | list %}
       {% set dev_names = devices | sort(attribute='name') | map(attribute='name') | join(', ') %}
       Устройств{{ iif(devices | length > 1, 'а', 'о') }} с низким зарядом батареи: {{ dev_names }}
-    data:
-      ttl: 0
-      priority: high
-      channel: alarm_stream
 
 ###############################################
 ## AUTOMATIONS
