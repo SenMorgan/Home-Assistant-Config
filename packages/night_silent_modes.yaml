@@ -135,11 +135,14 @@ automation:
         to: "off"
         for: 00:00:30
       - trigger: time
-        at: "21:00:00"
+        at: "22:00:00"
     conditions:
       - condition: time
         after: "20:00:00"
         before: "03:00:00"
+      - condition: state
+        entity_id: binary_sensor.people_home
+        state: "on"
     actions:
       - action: input_boolean.turn_on
         entity_id:
