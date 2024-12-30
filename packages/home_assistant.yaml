@@ -191,8 +191,6 @@ automation:
       message: "Обнаружены недоступные устройства: {{sensors}}"
     triggers:
       - trigger: time
-        at: "09:00:00"
-      - trigger: time
         at: "20:00:00"
     conditions:
       - "{{ sensors != '' and (day | int == 0 or day | int == now().isoweekday()) }}"
