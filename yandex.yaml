@@ -108,6 +108,7 @@ entity_config:
   light.gyver_lamp:
     name: Лампа Гайвера
     room: Кухня
+    slow: true
   light.string_lights:
     name: Лампочки
     room: Кухня
