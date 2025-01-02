@@ -199,8 +199,6 @@ automation:
         entity_id: switch.3d_printer_socket
         state: "on"
     actions:
-      - action: script.turn_on
-        entity_id: script.octoprint_shutdown
       # If server is not in state "operational" — send me notification and stop powering off
       - if:
           - condition: template
@@ -215,6 +213,8 @@ automation:
                 Невозможно выключить Octoprint сервер в состонии «{{ states('sensor.octoprint_current_state') }}».
                 Питания НЕ отключено!
         else:
+          - action: script.turn_on
+            entity_id: script.octoprint_shutdown
           # Wait until server is down
           - wait_template: "{{ states('sensor.octoprint_current_state') == 'unavailable' }}"
             timeout: "00:03:00"
