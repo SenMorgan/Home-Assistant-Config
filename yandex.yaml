@@ -1,8 +1,3 @@
-notifier:
-  - oauth_token: !secret YANDEX_OAUTH_TOKEN
-    skill_id: !secret YANDEX_SKILL_ID
-    user_id: !secret YANDEX_USER_ID
-
 filter:
   include_domains:
     - climate
