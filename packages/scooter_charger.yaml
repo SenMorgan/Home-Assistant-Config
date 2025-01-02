@@ -46,8 +46,8 @@ sensor:
         friendly_name: "Scooter Charger Energy Consumed"
         unit_of_measurement: "Wh"
         value_template: >
-          {{ ((states('sensor.scooter_charger_summation_delivered') |
-            float - states('input_number.scooter_charger_energy_start') | float) * 1000) | round }}
+          {{ ((states('sensor.scooter_charger_summation_delivered') | float(0) -
+            states('input_number.scooter_charger_energy_start') | float(0)) * 1000) | round }}
 
 ###############################################
 ## SCRIPTS
@@ -94,7 +94,7 @@ automation:
       - action: input_number.set_value
         data:
           entity_id: input_number.scooter_charger_energy_start
-          value: "{{ states('sensor.scooter_charger_summation_delivered') | float }}"
+          value: "{{ states('sensor.scooter_charger_summation_delivered') | float(0) }}"
       # Save current time
       - action: input_datetime.set_datetime
         data:
@@ -115,7 +115,7 @@ automation:
         entity_id: switch.scooter_charger_socket
       - if:
           - condition: template
-            value_template: "{{ states('sensor.scooter_charger_energy_consumed') | float > 0 }}"
+            value_template: "{{ states('sensor.scooter_charger_energy_consumed') | float(0) > 0 }}"
         then:
           - action: script.turn_on
             entity_id: script.scooter_charger_energy_consumed_notify
@@ -140,7 +140,7 @@ automation:
         entity_id: input_boolean.scooter_charger
       - if:
           - condition: template
-            value_template: "{{ states('sensor.scooter_charger_energy_consumed') | float > 0 }}"
+            value_template: "{{ states('sensor.scooter_charger_energy_consumed') | float(0) > 0 }}"
         then:
           - action: script.turn_on
             entity_id: script.scooter_charger_energy_consumed_notify

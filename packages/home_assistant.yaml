@@ -189,7 +189,7 @@ automation:
       - trigger: time
         at: "20:00:00"
     conditions:
-      - "{{ sensors != '' and (day | int == 0 or day | int == now().isoweekday()) }}"
+      - "{{ sensors != '' and (day | int(0) == 0 or day | int(0) == now().isoweekday()) }}"
     actions:
       - action: script.notify_and_create_persistent_notification
         data:
