@@ -36,19 +36,25 @@ script:
       - wait_template: "{{ states('binary_sensor.people_home') == 'off' }}"
         timeout: "00:30:00"
         continue_on_timeout: false
-      - action: script.turn_on
-        entity_id: script.turn_off_all_lights
-      - action: scene.turn_on
-        entity_id: scene.no_people_home
-      - action: notify.mobile_app_sm_s901b
-        data:
-          title: "👋 До свидания"
-          message: >
-            {% if is_state('input_boolean.heating_season', 'on') %}
-              Термостат и свет были отключены
-            {% else %}
-              Весь свет был отключен
-            {% endif %}
+      # Check if ignore_people_presence is off
+      - if:
+          - condition: state
+            entity_id: input_boolean.ignore_people_presence
+            state: "off"
+        then:
+          - action: script.turn_on
+            entity_id: script.turn_off_all_lights
+          - action: scene.turn_on
+            entity_id: scene.no_people_home
+          - action: notify.mobile_app_sm_s901b
+            data:
+              title: "👋 До свидания"
+              message: >
+                {% if is_state('input_boolean.heating_season', 'on') %}
+                  Термостат и свет были отключены
+                {% else %}
+                  Весь свет был отключен
+                {% endif %}
 
 ###############################################
 ## AUTOMATIONS
