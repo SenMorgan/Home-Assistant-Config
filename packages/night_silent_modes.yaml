@@ -326,7 +326,6 @@ scene:
       cover.bedroom: closed
       media_player.samsung_tv: off
       switch.moving_head_power: off
-      switch.wireless_charger: off
       switch.dcc_ex_pwr: off
 
   - name: No People Home
@@ -335,7 +334,6 @@ scene:
       # Turning off all lights is called from script.turn_off_all_lights
       media_player.samsung_tv: off
       switch.moving_head_power: off
-      switch.wireless_charger: off
       switch.dcc_ex_pwr: off
 
   - name: 7 Seg Clock Red
