@@ -266,6 +266,7 @@ input_number:
 script:
   thermostat_start_heating:
     alias: Thermostat Start Heating
+    mode: restart
     # Forces the thermostat to start heating by adding 2°C to the current temperature
     sequence:
       - action: input_number.set_value
@@ -300,6 +301,7 @@ script:
 
   thermostat_stop_heating:
     alias: Thermostat Stop Heating
+    mode: restart
     # Stop forced heating by setting default target temperature
     sequence:
       # Log the message if provided
@@ -316,6 +318,7 @@ script:
 
   thermostat_set_temperature:
     alias: Thermostat Set Temperature
+    mode: restart
     sequence:
       # Check if thermostat is ready to accept new target temperature and enable it if not
       - if:
@@ -343,6 +346,7 @@ script:
 
   disable_thermostat:
     alias: Disable Thermostat
+    mode: restart
     sequence:
       # Firstly, reset the thermostat target temperature
       - action: script.thermostat_stop_heating
@@ -368,6 +372,7 @@ script:
 
   notify_if_some_window_is_opened_during_heating_season:
     alias: Notify If Some Window Opened During Heating Season
+    mode: restart
     sequence:
       - condition: state
         entity_id: input_boolean.heating_season
