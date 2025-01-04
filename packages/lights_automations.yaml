@@ -464,7 +464,7 @@ scene:
       light.living_room_christmas_lights: on
       light.living_room_table_lamp:
         brightness: 255
-        color_temp: 370
+        color_temp_kelvin: 370
         state: on
       light.mi_desk_lamp: off
       light.pc_backlight: on

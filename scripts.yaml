@@ -145,7 +145,7 @@ presentation:
         entity_id: light.mi_desk_lamp
       data:
         brightness: 255
-        color_temp: 200
+        color_temp_kelvin: 200
     - delay:
         seconds: 2
 
@@ -155,7 +155,7 @@ presentation:
         entity_id: light.mi_desk_lamp
       data:
         brightness: 255
-        color_temp: 385
+        color_temp_kelvin: 385
     - delay:
         seconds: 2
 

@@ -6,7 +6,7 @@ delay = data.get("delay", 150)
 
 attribute_mapping = {
     "brightness": {"min": 1, "max": 255},
-    "color_temp": {"min": 153, "max": 500},
+    "color_temp_kelvin": {"min": 153, "max": 500},
 }
 
 exit_service = False
