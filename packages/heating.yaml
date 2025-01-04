@@ -23,7 +23,6 @@ homeassistant:
       short_heating_duration_min: &short_heating_duration_min "10"
       pause_heating_duration_min: &pause_heating_duration_min "60"
 
-
 ###############################################
 ## SCHEDULERS
 ###############################################
@@ -320,10 +319,10 @@ script:
     alias: Thermostat Set Temperature
     mode: restart
     sequence:
-      # Check if thermostat is ready to accept new target temperature and enable it if not
+      # Check if thermostat is in "heat" mode and set it if not
       - if:
           - condition: template
-            value_template: "{{ state_attr('climate.family_room', 'temperature') == None }}"
+            value_template: "{{ not is_state('climate.family_room', 'heat') }}"
         then:
           # Repeat the command to ensure that the thermostat is enabled
           - repeat:
@@ -333,7 +332,21 @@ script:
                   data:
                     hvac_mode: "heat"
                 - delay: "{{ 5 * repeat.index }}"
-              until: "{{ state_attr('climate.family_room', 'temperature') != None or repeat.index > 5 }}"
+              until: "{{ is_state('climate.family_room', 'heat') or repeat.index > 5 }}"
+      # Disable "eco" mode if it is active
+      - if:
+          - condition: template
+            value_template: "{{ is_state_attr('climate.family_room', 'preset_mode', 'eco') }}"
+        then:
+          # Repeat the command to ensure that the thermostat is set to the default temperature
+          - repeat:
+              sequence:
+                - action: climate.set_preset_mode
+                  entity_id: climate.family_room
+                  data:
+                    preset_mode: "none"
+                - delay: "{{ 5 * repeat.index }}"
+              until: "{{ is_state_attr('climate.family_room', 'preset_mode', 'none') or repeat.index > 5 }}"
       # Repeat the command to ensure that the thermostat is set to the default temperature
       - repeat:
           sequence:
@@ -344,31 +357,36 @@ script:
             - delay: "{{ 5 * repeat.index }}"
           until: "{{ state_attr('climate.family_room', 'temperature') == temperature or repeat.index > 5 }}"
 
-  disable_thermostat:
-    alias: Disable Thermostat
+  thermostat_set_eco_mode:
+    alias: Thermostat Set Eco Mode
     mode: restart
     sequence:
-      # Firstly, reset the thermostat target temperature
-      - action: script.thermostat_stop_heating
-      # Wait for the script to finish
-      - wait_template: "{{ is_state('script.thermostat_stop_heating', 'off') }}"
-        timeout: "00:01:00"
-      # Log the message if provided
-      - if: "{{ message is defined }}"
+      # Check if thermostat is not already in "eco" mode and set it if not
+      - if:
+          - condition: template
+            value_template: "{{ not is_state_attr('climate.family_room', 'preset_mode', 'eco') }}"
         then:
-          - action: input_text.set_value
-            data:
-              entity_id: input_text.heating_log
-              value: "{{ message }}"
-      - alias: "Repeat until thermostat is off"
-        repeat:
-          sequence:
-            - action: climate.set_hvac_mode
-              entity_id: climate.family_room
-              data:
-                hvac_mode: "off"
-            - delay: "{{ 5 * repeat.index }}"
-          until: "{{ is_state('binary_sensor.thermostat_active', 'off') or repeat.index > 5 }}"
+          # Reset the thermostat target temperature
+          - action: script.thermostat_stop_heating
+          # Wait for the script to finish
+          - wait_template: "{{ is_state('script.thermostat_stop_heating', 'off') }}"
+            timeout: "00:01:00"
+          # Log the message if provided
+          - if: "{{ message is defined }}"
+            then:
+              - action: input_text.set_value
+                data:
+                  entity_id: input_text.heating_log
+                  value: "{{ message }}"
+          - alias: "Repeat until thermostat is in 'eco' mode"
+            repeat:
+              sequence:
+                - action: climate.set_preset_mode
+                  entity_id: climate.family_room
+                  data:
+                    preset_mode: "eco"
+                - delay: "{{ 5 * repeat.index }}"
+              until: "{{ is_state_attr('climate.family_room', 'preset_mode', 'eco') or repeat.index > 5 }}"
 
   notify_if_some_window_is_opened_during_heating_season:
     alias: Notify If Some Window Opened During Heating Season
@@ -449,10 +467,10 @@ automation:
             data:
               media_content_id: Подогрев квартиры окончен из-за открытого окна
               media_content_type: text
-      # Disable heating
-      - action: script.disable_thermostat
+      # Set "eco" mode on thermostat
+      - action: script.thermostat_set_eco_mode
         data:
-          message: "Открыто окно → отопление выключено"
+          message: "Открыто окно → переход в режим экономии"
 
   - alias: Start Quarantine by Window Closed
     id: start_quarantine_by_window_closed
@@ -544,12 +562,6 @@ automation:
         value_template: >
           {{ is_state('binary_sensor.people_home', 'on') or
             is_state('input_boolean.ignore_people_presence', 'on')}}
-      # If thermostat is in «heat» mode and temperature is below 19°C or if thermostat is in «off» mode
-      - condition: template
-        value_template: >
-          {{ (states('climate.family_room') == 'heat' and
-              state_attr('climate.family_room', 'temperature') <= 19.0) or
-              states('climate.family_room') == 'off' }}
     actions:
       # Reset all active timers that could affect heating
       - action: timer.cancel
@@ -768,10 +780,10 @@ automation:
           - timer.heating_quarantine
           - timer.short_heating
           - timer.pause_heating
-      # Stop heating by setting default temperature on thermostat  and disable it
-      - action: script.disable_thermostat
+      # Set "eco" mode on thermostat
+      - action: script.thermostat_set_eco_mode
         data:
-          message: "Никого нет дома → отопление выключено"
+          message: "Никого нет дома → переход в режим экономии"
 
   - alias: Restore Heating When Someone Home
     id: restore_heating_when_someone_home
@@ -795,10 +807,10 @@ automation:
             entity_id: binary_sensor.windows
             state: "on"
         then:
-          # Stop heating by setting default temperature on thermostat  and disable it
-          - action: script.disable_thermostat
+          # Set "eco" mode on thermostat
+          - action: script.thermostat_set_eco_mode
             data:
-              message: "Окно открыто при возращении домой → отопление всё ещё выключено"
+              message: "Окно открыто при возращении домой → сохранение режима экономии"
         # If all windows are closed, restore thermostat in "heat" mode
         else:
           # Stop heating by setting default temperature on thermostat
