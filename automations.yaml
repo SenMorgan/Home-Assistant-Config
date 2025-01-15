@@ -122,6 +122,10 @@
       entity_id: binary_sensor.air_quality_station_digital_input_1
       from: "on"
       to: "off"
+  conditions:
+    - condition: state
+      entity_id: input_boolean.child_lock
+      state: "off"
   actions:
     - action: light.toggle
       entity_id: light.living_room_ceiling_light
