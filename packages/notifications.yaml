@@ -120,6 +120,23 @@ automation:
             Цена дизеля {{ 'упала' if trigger.from_state.state | float(0) > trigger.to_state.state | float(0) else 'возрасла' }}
             с {{ trigger.from_state.state }} до {{ trigger.to_state.state }} Kč/L
 
+  - id: "notification_grundig_monolith_60_available"
+    alias: Notification Grundig Monolith 60 Available
+    triggers:
+      - trigger: state
+        entity_id: sensor.grundig_monolith_60_hifishark_lots
+    conditions:
+      - condition: template
+        value_template: >
+          {{ trigger.from_state.state != trigger.to_state.state }}
+    actions:
+      - action: script.notify_and_create_persistent_notification
+        data:
+          title: *sys_notify_title_info
+          message: >
+            На Hifishark обновилось число доступных лотов акустики Grundig Monolith:
+            {{ trigger.from_state.state }} → {{ trigger.to_state.state }}
+
   # This automation in define in my private.yaml, so here is only a snippet
   # - id: "notification_aircraft_detected"
   #   alias: Notification Aircraft Detected
