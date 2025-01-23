@@ -340,7 +340,6 @@ scene:
     entities:
       # Turning off all lights is called from script.turn_off_all_lights
       cover.bedroom: closed
-      media_player.samsung_tv: off
       switch.moving_head_power: off
       switch.dcc_ex_pwr: off
 
