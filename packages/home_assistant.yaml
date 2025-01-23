@@ -196,6 +196,45 @@ automation:
           title: *sys_notify_title_warning
           message: "{{ message }}"
 
+  - id: "notification_on_failed_login"
+    alias: Notification on Failed Login
+    mode: queued
+    max: 5
+    trigger:
+      - platform: persistent_notification
+        update_type: added
+    condition:
+      - condition: template
+        value_template: "{{ trigger.notification.notification_id == 'http-login' }}"
+    action:
+      - variables:
+          source_ip: >
+            {% set message = trigger.notification.message %}
+            {% if 'invalid authentication' in message or 'login attempt' in message %}
+              {{ message.split('(')[1].split(')')[0] }}
+            {% else %}
+              None
+            {% endif %}
+      - action: notify.mobile_app_sm_s901b
+        data:
+          title: "⚠️ HA: {{ trigger.notification.title }}"
+          message: "{{trigger.notification.message}} Time: {{ now().strftime('%d %b, %X') }}"
+          data:
+            actions:
+              - action: "URI"
+                title: >
+                  {% if source_ip != None %}
+                  Track IP
+                  {% else %}
+                  Open Home Assistant
+                  {% endif %}
+                uri: >
+                  {% if source_ip != None %}
+                  http://www.ip-tracker.org/locator/ip-lookup.php?ip={{source_ip}}
+                  {% else %}
+                  /config/logs
+                  {% endif %}
+
   ###############################################
   ## Low Battery Notifications
   ###############################################
