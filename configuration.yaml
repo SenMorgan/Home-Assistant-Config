@@ -15,8 +15,6 @@ homeassistant:
   customize: !include customize.yaml
   packages: !include_dir_named packages
 
-script: !include scripts.yaml
-
 # Sharing devices with Yandex Smart Home
 yandex_smart_home: !include yandex.yaml
 # Controlling of Yandex Station and TTS

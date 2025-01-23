@@ -56,6 +56,29 @@ script:
                   Весь свет был отключен
                 {% endif %}
 
+  switch_on_parking_light:
+    alias: Switch On Parking Light
+    sequence:
+      - action: switch.turn_off
+        target:
+          entity_id: switch.parking_light
+      - delay:
+          seconds: 15
+      - repeat:
+          while:
+            - condition: state
+              entity_id: switch.parking_light
+              state: "off"
+            # Don't do it too many times
+            - condition: template
+              value_template: "{{ repeat.index <= 300 }}"
+          sequence:
+            - action: switch.turn_on
+              target:
+                entity_id: switch.parking_light
+            - delay:
+                seconds: 1
+
 ###############################################
 ## AUTOMATIONS
 ###############################################

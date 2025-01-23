@@ -95,6 +95,22 @@ script:
           - input_boolean.home_night_mode
           - input_boolean.silent_mode
 
+  cover_correct_up:
+    alias: Cover Correct Zero Pozition Up
+    sequence:
+      - action: mqtt.publish
+        data:
+          topic: /blinds/set
+          payload: "CORRECT_UP"
+
+  cover_correct_down:
+    alias: Cover Correct Zero Pozition Down
+    sequence:
+      - action: mqtt.publish
+        data:
+          topic: /blinds/set
+          payload: "CORRECT_DOWN"
+
 ###############################################
 ## AUTOMATIONS
 ###############################################

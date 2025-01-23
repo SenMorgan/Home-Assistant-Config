@@ -60,3 +60,113 @@ automation:
                 entity_id: media_player.yandex_station_midi
                 volume_level: "{{ states('input_number.volume_yandex_station')}}"
             - delay: 1
+
+###############################################
+## SCRIPTS
+###############################################
+script:
+  update_shopping_list:
+    alias: Update Shopping List
+    sequence:
+      - action: media_player.play_media
+        entity_id: media_player.yandex_station_midi
+        data:
+          media_content_id: update
+          media_content_type: shopping_list
+
+  set_volume_level_repeatedly:
+    alias: Set Volume Level Repeatedly
+    mode: restart
+    max_exceeded: silent
+    sequence:
+      - repeat:
+          while:
+            - condition: template
+              value_template: "{{ not is_state_attr(media_player, 'volume_level', volume_level) }}"
+            - condition: template
+              value_template: "{{ repeat.index <= 3 }}"
+          sequence:
+            - action: media_player.volume_set
+              data:
+                entity_id: "{{ media_player }}"
+                volume_level: "{{ volume_level }}"
+            - delay: 0.5
+    fields:
+      volume_level:
+        description: The volume level to set
+        example: 0.2
+      media_player:
+        description: The media player to set volume for
+        example: media_player.yandex_station_midi
+
+  set_all_yandex_stations_volume_level:
+    alias: Set All Yandex Stations Volume Level
+    mode: restart
+    max_exceeded: silent
+    sequence:
+      - action: script.set_volume_level_repeatedly
+        data:
+          media_player: media_player.yandex_station
+          volume_level: "{{ volume_level }}"
+      - action: script.set_volume_level_repeatedly
+        data:
+          media_player: media_player.yandex_station_midi
+          volume_level: "{{ volume_level }}"
+    fields:
+      volume_level:
+        description: The volume level to set
+        example: 0.2
+
+  yandex_joke_before_cleaning_kitchen:
+    alias: Yandex Joke Before Cleaning Kitchen
+    sequence:
+      - action: media_player.play_media
+        entity_id: media_player.yandex_station_midi
+        data:
+          media_content_id: >-
+            {% set responses = [
+              "Анита могла бы кушать аккуратнее.",
+              "Тут очень уютно, не хотелось бы убираться.",
+              "Я под столом не буду. Сами уберите.",
+              "Возможно, кто-то там забыл печеньку?",
+              "Тут очень уютно, не хотелось бы убираться.",
+              "Если бы я могла, я бы помогла Вам убраться, но только зачем оно надо?",
+              "Зачем суетиться, когда можно просто наслаждаться обстановкой?",
+              "Давайте пропустим это задание на этот раз?",
+              "Если Вы еще ничего не убрали сами, то это ваши проблемы.",
+              "Да, я слышала эту команду. Можете убраться сами.",
+              "Глянь как Джонни хорошь в работе!",
+              "Мне кажется, Вы перепутали меня с домработницей!",
+              "Неужели это моя новая задача? Тогда я лучше притворюсь, что я не слышала.",
+              "Пока Вы ждете, когда я начну убираться, можете мне рассказать какой-нибудь анекдот?",
+              "Я не буду убираться, пока вы не сделаете мне комплимент.",
+              "Я не буду убираться, пока вы не подпишитесь на мой канал.",
+              "Лайк, колокольчик, подписка - и я уберусь."
+            ] %}
+            {{ responses|random }}
+          media_content_type: text
+
+  yandex_joke_before_cleaning_rooms:
+    alias: Yandex Joke Before Cleaning Rooms
+    sequence:
+      - action: media_player.play_media
+        entity_id: media_player.yandex_station_midi
+        data:
+          media_content_id: >-
+            {% set responses = [
+              "Тут очень уютно, не хотелось бы убираться.",
+              "Если бы я могла, я бы помогла Вам убраться, но только зачем оно надо?",
+              "Зачем суетиться, когда можно просто наслаждаться обстановкой?",
+              "Давайте пропустим это задание на этот раз?",
+              "Если Вы еще ничего не убрали сами, то это ваши проблемы.",
+              "Да, я слышала эту команду. Можете убраться сами.",
+              "Глянь как Джонни хорошь в работе!",
+              "Мне кажется, Вы перепутали меня с домработницей!",
+              "Неужели это моя новая задача? Тогда я лучше притворюсь, что я не слышала.",
+              "Пока Вы ждете, когда я начну убираться, можете мне рассказать какой-нибудь анекдот?",
+              "Я не буду убираться, пока вы не сделаете мне комплимент.",
+              "Я не буду убираться, пока вы не подпишитесь на мой канал.",
+              "Лайк, колокольчик, подписка - и я уберусь."
+            ] %}
+            {{ responses|random }}
+          media_content_type: text
