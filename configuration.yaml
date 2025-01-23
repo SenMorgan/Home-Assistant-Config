@@ -74,9 +74,6 @@ input_number:
     step: 0.1
 
 input_boolean:
-  presentation_switch:
-    name: Presentation
-    icon: mdi:presentation-play
   flag_spotlight_triggered_by_motion:
     name: Flag - Spotlight Was Triggered by Motion Sensor
     icon: mdi:engine-outline

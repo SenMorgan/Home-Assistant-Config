@@ -1,25 +1,4 @@
 ###############################################
-## Cover Automations
-###############################################
-
-- id: "bedroom_blinds_by_sunset_close"
-  alias: Bedroom Blinds by Sunset Close
-  triggers:
-    - trigger: sun
-      event: sunset
-      offset: 00:20:00
-  conditions:
-    - condition: state
-      entity_id: cover.bedroom
-      state: open
-    # - condition: state
-    #   entity_id: binary_sensor.bedroom_window_contact
-    #   state: "off"
-  actions:
-    - action: cover.close_cover
-      entity_id: cover.bedroom
-
-###############################################
 ## Other Buttons and Switches Handles
 ###############################################
 
@@ -34,22 +13,6 @@
       target:
         entity_id: script.switch_on_parking_light
 
-- id: "kitchen_presentation_on"
-  alias: Kitchen Presentation ON
-  triggers:
-    - trigger: state
-      entity_id: input_boolean.presentation_switch
-      to: "on"
-  conditions:
-    - condition: state
-      entity_id: script.presentation
-      state: "off"
-  actions:
-    - action: script.turn_on
-      target:
-        entity_id: script.presentation
-    - action: input_boolean.turn_off
-      entity_id: input_boolean.presentation_switch
 
 ###############################################
 ## Yandex Alice Automations

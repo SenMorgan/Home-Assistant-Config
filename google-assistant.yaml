@@ -58,10 +58,6 @@ entity_config:
   switch.backyard_light:
     room: Backyard
     expose: false
-  input_boolean.presentation_switch:
-    name: Presentation
-    room: Kitchen
-    expose: false
   sensor.shelf_lighting_estimated_current:
     expose: false
   switch.shelf_lighting_nightlight:
