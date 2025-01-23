@@ -162,6 +162,13 @@ switch:
         # Set max volume to 100%
         command_on: "<w 4 63 64>"
         command_off: ""
+      dcc_ex_cabin_lights:
+        <<: *defaults
+        name: "DCC-EX Cabin Lights"
+        # Enable cabin lights on Loco #4
+        command_on: "<F 4 15 1>"
+        command_off: "<F 4 15 0>"
+
       ###############################################
       ## ROUTES (AUTOMATIONS)
       ###############################################
@@ -243,3 +250,21 @@ automation:
       - action: switch.turn_on
         target:
           entity_id: switch.dcc_ex_pwr
+
+  # Turn on Locomotive cabin lights on motion
+  - alias: "DCC-EX Cabin Lights on Motion"
+    id: dcc_ex_cabin_lights_on_motion
+    mode: single
+    max_exceeded: silent
+    triggers:
+      - trigger: state
+        entity_id: binary_sensor.kitchen_motion_alarm
+    conditions:
+      - condition: state
+        entity_id: switch.dcc_ex_pwr
+        state: "on"
+      - condition: template
+        value_template: "{{ trigger.to_state.state in ['on', 'off'] }}"
+    actions:
+      - action: switch.turn_{{ "on" if trigger.to_state.state == "on" else "off" }}
+        entity_id: switch.dcc_ex_cabin_lights
