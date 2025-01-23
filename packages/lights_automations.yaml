@@ -402,6 +402,17 @@ automation:
       - action: light.turn_off
         entity_id: light.bar_light
 
+  - id: "parking_lights_on"
+    alias: Parking Lights ON
+    mode: queued
+    triggers:
+      - trigger: state
+        entity_id: input_button.parking_light
+    actions:
+      - action: script.turn_on
+        target:
+          entity_id: script.switch_on_parking_light
+
   # Send me notification if switch.parking_light is turned off for more than 1 hour and turn it ON
   - id: "parking_light_emergency_on"
     alias: Parking Light Emergency On
@@ -424,6 +435,46 @@ automation:
                 title: *sys_notify_title_info
                 message: Реле освещения парковки было отключено более часа. Автоматическое включение в {{ states('sensor.time') }}
             - delay: 00:01:00
+
+###############################################
+## BUSY WALL SWITCHES
+###############################################
+  - id: "busy_wall_switch_1"
+    alias: Busy Wall Switch 1
+    mode: restart
+    triggers:
+      - trigger: state
+        entity_id: binary_sensor.air_quality_station_digital_input_1
+        from: "off"
+        to: "on"
+      - trigger: state
+        entity_id: binary_sensor.air_quality_station_digital_input_1
+        from: "on"
+        to: "off"
+    conditions:
+      - condition: state
+        entity_id: input_boolean.child_lock
+        state: "off"
+    actions:
+      - action: light.toggle
+        entity_id: light.living_room_ceiling_light
+
+  - id: "busy_wall_switch_2"
+    alias: Busy Wall Switch 2
+    mode: restart
+    triggers:
+      - trigger: state
+        entity_id: binary_sensor.air_quality_station_digital_input_2
+        from: "off"
+        to: "on"
+      - trigger: state
+        entity_id: binary_sensor.air_quality_station_digital_input_2
+        from: "on"
+        to: "off"
+    actions:
+      - action: light.toggle
+        entity_id: light.floor_lamp
+
 
 ###############################################
 ## SCENES
