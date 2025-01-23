@@ -255,7 +255,7 @@ automation:
         entity_id: input_boolean.flag_hall_lights_triggered_by_motion
 
   ###############################################
-  ## Other Automatic Lights
+  ## Other Lights Automations
   ###############################################
   - id: "kitchen_asus_pc_background_lights_on"
     alias: Kitchen Asus PC Background Lights ON
