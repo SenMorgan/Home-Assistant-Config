@@ -53,8 +53,6 @@ camera:
     attributes:
       - calibration_points
 
-google_assistant: !include google-assistant.yaml
-
 binary_sensor: !include binary_sensors.yaml
 sensor: !include sensors.yaml
 
