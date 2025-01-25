@@ -242,10 +242,17 @@ automation:
     triggers:
       - trigger: sun
         event: sunset
+      - trigger: state
+        entity_id: binary_sensor.people_home
     conditions:
+      # For sunset trigger
       - condition: state
         entity_id: binary_sensor.people_home
         state: "on"
+      # For people_home trigger
+      - condition: sun
+        after: sunset
+        before_offset: 00:15:00
     actions:
       - action: switch.turn_on
         target:
