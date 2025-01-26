@@ -1,0 +1,31 @@
+######################################################################
+# File: tv.yaml                                                      #
+# Author: SenMorgan https://github.com/SenMorgan                     #
+# Date: 2025-01-26                                                   #
+#                                                                    #
+# Info: this file contains automations that are associated to the    #
+# TVs.                                                               #
+#                                                                    #
+# Copyright (c) 2025 Sen Morgan                                      #
+######################################################################
+
+###############################################
+## SCENES
+###############################################
+scene:
+  - name: "Railway Winter Cab Views"
+    entities:
+      media_player.tv:
+        # @ Data for the service call:
+        # action: media_player.play_media
+        # target:
+        #   entity_id:
+        #     - media_player.tv
+        # data:
+        #   media_content_id: https://www.youtube.com/watch?v=czoEAKX9aaM
+        #   media_content_type: URL
+        #   enqueue: play
+        state: playing
+        media_content_id: "https://www.youtube.com/watch?v=czoEAKX9aaM"
+        media_content_type: "url"
+        enqueue: "play"

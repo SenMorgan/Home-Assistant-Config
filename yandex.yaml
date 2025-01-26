@@ -41,6 +41,7 @@ filter:
     - media_player.samsung_tv
     - scene.evening
     - scene.movies
+    - scene.railway_winter_cab_views
     - sensor.electricity_meter_energy
     - sensor.electricity_meter_power
     - sensor.pool_bme280_temperature
@@ -153,6 +154,9 @@ entity_config:
     room: Дом
   scene.movies:
     name: Сцена Кино
+    room: Зал
+  scene.railway_winter_cab_views:
+    name: Вид из кабины
     room: Зал
   switch.moving_head_power:
     name: Голова
