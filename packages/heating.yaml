@@ -565,7 +565,7 @@ automation:
       - condition: state
         entity_id: binary_sensor.freeze_alert_at_night
         state: "on"
-      # Continue if people are home or if presense is ignored
+      # Continue if people are home or if presence is ignored
       - condition: template
         value_template: >
           {{ is_state('binary_sensor.people_home', 'on') or
@@ -871,7 +871,7 @@ automation:
       - condition: state
         entity_id: timer.short_heating
         state: "idle"
-      # If people are home or if presense is ignored
+      # If people are home or if presence is ignored
       - condition: template
         value_template: >
           {{ is_state('binary_sensor.people_home', 'on') or
@@ -907,7 +907,7 @@ automation:
       - condition: state
         entity_id: timer.short_heating
         state: "idle"
-      # Continue if people are home or if presense is ignored
+      # Continue if people are home or if presence is ignored
       - condition: template
         value_template: >
           {{ is_state('binary_sensor.people_home', 'on') or
