@@ -112,21 +112,24 @@ binary_sensor:
         # Heat only if it is requested by the ETRV and heat demand is above the threshold
         value_template: >
           {{ is_state('binary_sensor.danfoss_etrv0100_bedroom_heat_required', 'on') and
-            states('sensor.danfoss_etrv0100_bedroom_pi_heating_demand') | int(0) >= 20 }}
+            states('sensor.danfoss_etrv0100_bedroom_pi_heating_demand') | int(0) >=
+            states('input_number.pi_heating_demand_threshold') | int(20) }}
       heating_request_kitchen:
         friendly_name: Heating Request Kitchen
         device_class: heat
         # Heat only if it is requested by the ETRV and heat demand is above the threshold
         value_template: >
           {{ is_state('binary_sensor.danfoss_etrv0103_kitchen_heat_required', 'on') and
-            states('sensor.danfoss_etrv0103_kitchen_pi_heating_demand') | int(0) >= 20 }}
+            states('sensor.danfoss_etrv0103_kitchen_pi_heating_demand') | int(0) >=
+            states('input_number.pi_heating_demand_threshold') | int(20) }}
       heating_request_living_room:
         friendly_name: Heating Request Living Room
         device_class: heat
         # Heat only if it is requested by the ETRV and heat demand is above the threshold
         value_template: >
           {{ is_state('binary_sensor.danfoss_etrv0103_living_room_heat_required', 'on') and
-            states('sensor.danfoss_etrv0103_living_room_pi_heating_demand') | int(0) >= 20 }}
+            states('sensor.danfoss_etrv0103_living_room_pi_heating_demand') | int(0) >=
+            states('input_number.pi_heating_demand_threshold') | int(20) }}
       heating_request_bathroom:
         friendly_name: Heating Request Bathroom
         device_class: heat
@@ -220,6 +223,11 @@ input_button:
 ## INPUT NUMBERS
 ###############################################
 input_number:
+  pi_heating_demand_threshold:
+    name: PI Heating Demand Threshold
+    step: 1
+    min: 0
+    max: 100
   thermostat_default_target_temperature:
     name: Thermostat Default Target Temperature
     min: 18.0
