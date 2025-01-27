@@ -596,7 +596,7 @@ automation:
       - trigger: numeric_state
         entity_id: climate.family_room
         attribute: current_temperature
-        above: 24.0
+        above: 25.0
         for: "00:05:00"
       - trigger: time_pattern
         hours: "/1"
@@ -607,8 +607,8 @@ automation:
       - condition: numeric_state
         entity_id: climate.family_room
         attribute: current_temperature
-        above: 24.0
-      # If thermostat is in «heat» mode and temperature is above 24°C
+        above: 25.0
+      # If thermostat is in «heat» mode and temperature is above the threshold
       - condition: template
         value_template: >
           {{ states('climate.family_room') == 'heat' and
