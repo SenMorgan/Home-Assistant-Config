@@ -21,6 +21,10 @@ yandex_smart_home: !include yandex.yaml
 yandex_station: !include yandex-station.yaml
 # Controlling of Xiaomi Vacuum via Yandex Station
 vacuum_zones: !include vacuum-zones.yaml
+# Yandex devices icons
+frontend:
+  extra_module_url:
+    - /hacsfiles/ha-yandex-icons/yandex-icons.js
 
 recorder:
   db_url: !secret DATABASE_URL
