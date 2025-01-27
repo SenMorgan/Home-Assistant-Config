@@ -198,3 +198,19 @@ automation:
         data:
           title: "🌞 Солнечная панель"
           message: "Мощность выше порога: {{ states('sensor.solar_panel_power') }} W"
+
+  # Notify on washing finish
+  - id: "notification_washing_finish"
+    alias: Notification Washing Finish
+    triggers:
+      - trigger: state
+        entity_id: sensor.washing_machine_washer_job_state
+        from: "washing"
+        to: "none"
+    # Condition: only if the washing duration is less than 6 hours (otherwise, it's likely a SmartThings integration issue)
+    conditions:
+      - condition: template
+        value_template: >
+          {{ (as_timestamp(now(), 0) - as_timestamp(states.sensor.washing_machine_washer_job_state.last_changed, 0)) < 21600  }}
+    actions:
+      - action: script.yandex_joke_after_washing_clothes
