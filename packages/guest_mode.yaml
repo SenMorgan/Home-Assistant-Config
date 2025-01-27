@@ -35,9 +35,6 @@ script:
     sequence:
       - action: input_boolean.turn_on
         entity_id: input_boolean.guest_mode
-      # Turn off the script that could be running at this moment
-      - action: script.turn_off
-        entity_id: script.turn_off_lights_after_people_leave
       # Set the time when the guest mode will be disabled
       - action: input_datetime.set_datetime
         data:
