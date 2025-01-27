@@ -16,6 +16,7 @@ filter:
     - input_button.dcc_ex_route_300
     - input_button.dcc_ex_route_301
     - input_boolean.child_lock
+    - input_boolean.guest_mode
     - input_boolean.heating_allowed
     - input_boolean.home_night_mode
     - input_boolean.scooter_charger
@@ -72,6 +73,10 @@ entity_config:
     room: Кухня
   input_button.thermostat_10_minutes_heating:
     name: Подогрев
+    room: Дом
+    type: devices.types.switch
+  input_boolean.guest_mode:
+    name: Гостевой режим
     room: Дом
     type: devices.types.switch
   input_boolean.heating_allowed:

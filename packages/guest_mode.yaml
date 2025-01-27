@@ -41,20 +41,14 @@ script:
           entity_id: input_datetime.guest_mode_disable_time
           datetime: "{{ (now().date() + timedelta(days=1)).strftime('%Y-%m-%d') }} 09:00:00"
       - variables:
-          message: Гостевой режим активирован до 9:00 утра завтрашнего дня
           # Including an id in the action allows us to identify this script run
           # and not accidentally trigger for other notification actions
           action_update_time: "{{ 'action_update_time' ~ context.id }}"
           action_disable: "{{ 'action_disable' ~ context.id }}"
-      - action: media_player.play_media
-        entity_id: media_player.yandex_station_midi
-        data:
-          media_content_id: "{{ message }}"
-          media_content_type: text
       - action: notify.mobile_app_sm_s901b
         data:
           title: "👤 Гостевой режим"
-          message: "{{ message }}"
+          message: Гостевой режим активирован до 9:00 утра завтрашнего дня
           data:
             actions:
               - action: "URI"
@@ -138,3 +132,17 @@ automation:
             data:
               title: "👤 Гостевой режим"
               message: Гостевой режим включен снова до 9:00 утра завтрашнего дня
+
+  - alias: Notify Yandex Guest Mode Enabled
+    id: notify_yandex_guest_mode_enabled
+    trigger:
+      - platform: state
+        entity_id: input_boolean.guest_mode
+        from: "off"
+        to: "on"
+    action:
+      - action: media_player.play_media
+        entity_id: media_player.yandex_station_midi
+        data:
+          media_content_id: Гостевой режим активирован до 9:00 утра завтрашнего дня
+          media_content_type: text
