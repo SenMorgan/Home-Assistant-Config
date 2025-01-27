@@ -478,6 +478,9 @@ automation:
       - condition: state
         entity_id: input_boolean.child_lock
         state: "off"
+      - condition: state
+        entity_id: input_boolean.guest_mode
+        state: "off"
     actions:
       - action: light.toggle
         entity_id: light.living_room_ceiling_light
@@ -497,7 +500,6 @@ automation:
     actions:
       - action: light.toggle
         entity_id: light.floor_lamp
-
 
 ###############################################
 ## SCENES
