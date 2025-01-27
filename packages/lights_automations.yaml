@@ -36,10 +36,10 @@ script:
       - wait_template: "{{ states('binary_sensor.people_home') == 'off' }}"
         timeout: "00:30:00"
         continue_on_timeout: false
-      # Check if ignore_people_presence is off
+      # Check if guest mode is off
       - if:
           - condition: state
-            entity_id: input_boolean.ignore_people_presence
+            entity_id: input_boolean.guest_mode
             state: "off"
         then:
           - action: script.turn_on
@@ -213,7 +213,7 @@ automation:
         entity_id: binary_sensor.people_home
         state: "on"
       - condition: state
-        entity_id: input_boolean.ignore_people_presence
+        entity_id: input_boolean.guest_mode
         state: "off"
     actions:
       - action: script.turn_on
@@ -326,7 +326,7 @@ automation:
         for: 00:01:00
     condition:
       - condition: state
-        entity_id: input_boolean.ignore_people_presence
+        entity_id: input_boolean.guest_mode
         state: "off"
     actions:
       - action: light.turn_off

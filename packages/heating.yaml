@@ -521,7 +521,7 @@ automation:
     action:
       # Set thermostat mode to «heat» only if someone is home
       - if:
-          # Proceed only if heating is not paused and either people are home or presence is ignored
+          # Proceed only if heating is not paused and either people are home or guest mode is enabled
           - condition: state
             entity_id: timer.pause_heating
             state: "idle"
@@ -530,7 +530,7 @@ automation:
                 entity_id: binary_sensor.people_home
                 state: "on"
               - condition: state
-                entity_id: input_boolean.ignore_people_presence
+                entity_id: input_boolean.guest_mode
                 state: "on"
         then:
           # Stop heating by setting default temperature on thermostat
@@ -565,11 +565,11 @@ automation:
       - condition: state
         entity_id: binary_sensor.freeze_alert_at_night
         state: "on"
-      # Continue if people are home or if presence is ignored
+      # Continue if people are home or if guest mode is enabled
       - condition: template
         value_template: >
           {{ is_state('binary_sensor.people_home', 'on') or
-            is_state('input_boolean.ignore_people_presence', 'on')}}
+            is_state('input_boolean.guest_mode', 'on')}}
     actions:
       # Reset all active timers that could affect heating
       - action: timer.cancel
@@ -779,7 +779,7 @@ automation:
         entity_id: binary_sensor.thermostat_active
         state: "on"
       - condition: state
-        entity_id: input_boolean.ignore_people_presence
+        entity_id: input_boolean.guest_mode
         state: "off"
     actions:
       # Reset all active timers that could affect heating
@@ -871,11 +871,11 @@ automation:
       - condition: state
         entity_id: timer.short_heating
         state: "idle"
-      # If people are home or if presence is ignored
+      # If people are home or if guest mode is enabled
       - condition: template
         value_template: >
           {{ is_state('binary_sensor.people_home', 'on') or
-            is_state('input_boolean.ignore_people_presence', 'on')}}
+            is_state('input_boolean.guest_mode', 'on')}}
       # If not already heating
       - condition: state
         entity_id: binary_sensor.thermostat_heating
@@ -907,11 +907,11 @@ automation:
       - condition: state
         entity_id: timer.short_heating
         state: "idle"
-      # Continue if people are home or if presence is ignored
+      # Continue if people are home or if guest mode is enabled
       - condition: template
         value_template: >
           {{ is_state('binary_sensor.people_home', 'on') or
-            is_state('input_boolean.ignore_people_presence', 'on')}}
+            is_state('input_boolean.guest_mode', 'on')}}
       # If not already heating
       - condition: state
         entity_id: binary_sensor.thermostat_heating
@@ -1066,7 +1066,7 @@ automation:
           - binary_sensor.windows
           - binary_sensor.people_home
           - input_boolean.heating_season
-          - input_boolean.ignore_people_presence
+          - input_boolean.guest_mode
           - input_boolean.heating_allowed
           - input_number.thermostat_new_target_temperature
           - timer.heating_quarantine

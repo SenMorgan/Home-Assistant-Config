@@ -47,20 +47,20 @@ automation:
           title: "👁️ Режим камер"
           message: "Камеры включены автоматически в {{ states('sensor.time') }}"
 
-  - alias: Tag Near PC is scanned
-    id: tag_near_pc_is_scanned
+  - alias: Tag Near Entrance was scanned
+    id: tag_near_entrance_was_scanned
     mode: restart
     triggers:
       - trigger: tag
         tag_id: 5954e702-f87d-4955-969c-5231af33ece8
     actions:
       - action: input_boolean.turn_on
-        entity_id: input_boolean.ignore_people_presence
+        entity_id: input_boolean.guest_mode
       # Turn off the script that could be running at this moment
       - action: script.turn_off
         entity_id: script.turn_off_lights_after_people_leave
       - variables:
-          message: Игнорирование присутствия включено - термостат и свет не будут отключены после ухода.
+          message: Включен гостевой режим - термостат и свет не будут отключены после ухода.
           # Including an id in the action allows us to identify this script run
           # and not accidentally trigger for other notification actions
           action_disable: "{{ 'action_disable' ~ context.id }}"
@@ -71,7 +71,7 @@ automation:
           media_content_type: text
       - action: notify.mobile_app_sm_s901b
         data:
-          title: "👤 Режим присутствия"
+          title: "👤 Гостевой режим"
           message: "{{ message }}"
           data:
             actions:
@@ -89,14 +89,14 @@ automation:
         then:
           - action: input_boolean.turn_off
             target:
-              entity_id: input_boolean.ignore_people_presence
+              entity_id: input_boolean.guest_mode
           - action: notify.mobile_app_sm_s901b
             data:
-              title: "👤 Режим присутствия"
-              message: "Игнорирование присутствия было отключено"
+              title: "👤 Гостевой режим"
+              message: Гостевой режим отключен
 
   - alias: Ignore People Presence reset
-    id: ignore_people_presence_reset
+    id: guest_mode_reset
     mode: restart
     triggers:
       - trigger: state
@@ -105,20 +105,20 @@ automation:
         for: "00:15:00"
     conditions:
       - condition: state
-        entity_id: input_boolean.ignore_people_presence
+        entity_id: input_boolean.guest_mode
         state: "on"
     actions:
       - action: input_boolean.turn_off
         target:
-          entity_id: input_boolean.ignore_people_presence
+          entity_id: input_boolean.guest_mode
       - variables:
           # Including an id in the action allows us to identify this script run
           # and not accidentally trigger for other notification actions
           action_enable_back_on: "{{ 'action_enable_back_on' ~ context.id }}"
       - action: notify.mobile_app_sm_s901b
         data:
-          title: "👤 Режим присутствия"
-          message: "Игнорирование присутствия выключено автоматически в {{ states('sensor.time') }}. Включить обратно?"
+          title: "👤 Гостевой режим"
+          message: "Гостевой режим выключен автоматически в {{ states('sensor.time') }}. Включить обратно?"
           data:
             actions:
               - action: "{{ action_enable_back_on }}"
@@ -135,8 +135,8 @@ automation:
         then:
           - action: input_boolean.turn_on
             target:
-              entity_id: input_boolean.ignore_people_presence
+              entity_id: input_boolean.guest_mode
           - action: notify.mobile_app_sm_s901b
             data:
-              title: "👤 Режим присутствия"
-              message: "Игнорирование присутствия включено снова в {{ states('sensor.time') }}"
+              title: "👤 Гостевой режим"
+              message: "Гостевой режим включен снова в {{ states('sensor.time') }}"

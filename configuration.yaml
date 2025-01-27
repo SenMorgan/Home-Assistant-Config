@@ -81,9 +81,12 @@ input_boolean:
   show_cameras_in_lovelace:
     name: Show Cameras in Lovelace
     icon: mdi:camera
-  ignore_people_presence:
-    name: Ignore People Presence
-    icon: mdi:home
+  guest_mode:
+    # When enabled, the system will ignore presence detection (e.g., it will not turn off lights or heating)
+    # while a guest is at home. Controlling lights in the living room from other rooms will be disabled
+    # to avoid disturbing the guest.
+    name: Guest Mode
+    icon: mdi:account-group
 
 switch:
   - platform: wake_on_lan
