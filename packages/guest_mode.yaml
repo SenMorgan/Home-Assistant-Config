@@ -18,6 +18,15 @@ input_boolean:
     icon: mdi:account-group
 
 ###############################################
+## INPUT DATETIME
+###############################################
+input_datetime:
+  guest_mode_disable_time:
+    name: Guest Mode Disable Time
+    has_date: true
+    has_time: true
+
+###############################################
 ## SCRIPTS
 ###############################################
 script:
@@ -29,10 +38,16 @@ script:
       # Turn off the script that could be running at this moment
       - action: script.turn_off
         entity_id: script.turn_off_lights_after_people_leave
+      # Set the time when the guest mode will be disabled
+      - action: input_datetime.set_datetime
+        data:
+          entity_id: input_datetime.guest_mode_disable_time
+          datetime: "{{ (now().date() + timedelta(days=1)).strftime('%Y-%m-%d') }} 09:00:00"
       - variables:
-          message: Включен гостевой режим - термостат и свет не будут отключены после ухода.
+          message: Гостевой режим активирован до 9:00 утра завтрашнего дня
           # Including an id in the action allows us to identify this script run
           # and not accidentally trigger for other notification actions
+          action_update_time: "{{ 'action_update_time' ~ context.id }}"
           action_disable: "{{ 'action_disable' ~ context.id }}"
       - action: media_player.play_media
         entity_id: media_player.yandex_station_midi
@@ -45,8 +60,12 @@ script:
           message: "{{ message }}"
           data:
             actions:
+              - action: "URI"
+                title: 🕘 Сменить время
+                icon: mdi:clock-time-eight
+                uri: /lovelace/security
               - action: "{{ action_disable }}"
-                title: ❌ Отключить обратно
+                title: ❌ Отключить
                 icon: mdi:account-off
       - wait_for_trigger:
           - trigger: event
@@ -73,14 +92,20 @@ automation:
     id: guest_mode_reset
     mode: restart
     triggers:
-      - trigger: state
-        entity_id: binary_sensor.people_home
-        to: "on"
-        for: "00:15:00"
+      # Trigger on the time when the guest mode should be disabled
+      - platform: time
+        at: input_datetime.guest_mode_disable_time
+      # Trigger when Home Assistant starts to handle the case when the system was disabled/restarted at the time
+      # when the guest mode should be disabled
+      - platform: homeassistant
+        event: start
     conditions:
       - condition: state
         entity_id: input_boolean.guest_mode
         state: "on"
+      - condition: template # For HA startup trigger
+        value_template: >
+          {{ as_timestamp(now()) >= as_timestamp(states('input_datetime.guest_mode_disable_time'), 0) }}
     actions:
       - action: input_boolean.turn_off
         target:
@@ -110,7 +135,12 @@ automation:
           - action: input_boolean.turn_on
             target:
               entity_id: input_boolean.guest_mode
+          # Set the time when the guest mode will be disabled
+          - action: input_datetime.set_datetime
+            data:
+              entity_id: input_datetime.guest_mode_disable_time
+              datetime: "{{ (now().date() + timedelta(days=1)).strftime('%Y-%m-%d') }} 09:00:00"
           - action: notify.mobile_app_sm_s901b
             data:
               title: "👤 Гостевой режим"
-              message: "Гостевой режим включен снова в {{ states('sensor.time') }}"
+              message: Гостевой режим включен снова до 9:00 утра завтрашнего дня
