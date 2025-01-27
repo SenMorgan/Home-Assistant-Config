@@ -1,3 +1,11 @@
+######################################################################
+# File: scrape.yaml                                                  #
+# Author: SenMorgan https://github.com/SenMorgan                     #
+# Date: 2025-01-20                                                   #
+#                                                                    #
+# Copyright (c) 2025 Sen Morgan                                      #
+######################################################################
+
 scrape:
   - resource: https://www.hifishark.com/model/grundig-monolith-60
     scan_interval: 900 # 15 minutes
