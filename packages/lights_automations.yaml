@@ -477,6 +477,21 @@ automation:
                 message: Реле освещения парковки было отключено более часа. Автоматическое включение в {{ states('sensor.time') }}
             - delay: 00:01:00
 
+  - id: "kitchen_led_strip_sync_with_spotlights"
+    alias: Kitchen LED Strip Sync with Spotlights
+    triggers:
+      - trigger: state
+        entity_id: light.kitchen_spotlights
+        from: "on"
+        to: "off"
+      - trigger: state
+        entity_id: light.kitchen_spotlights
+        from: "off"
+        to: "on"
+    actions:
+      - action: light.turn_{{ trigger.to_state.state }}
+        entity_id: light.kitchen_led_strip
+
 ###############################################
 ## BUSY WALL SWITCHES
 ###############################################
