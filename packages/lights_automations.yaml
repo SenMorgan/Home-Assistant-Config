@@ -482,12 +482,9 @@ automation:
     triggers:
       - trigger: state
         entity_id: light.kitchen_spotlights
-        from: "on"
-        to: "off"
-      - trigger: state
-        entity_id: light.kitchen_spotlights
-        from: "off"
-        to: "on"
+    conditions:
+      - condition: template
+        value_template: "{{ trigger.to_state.state in ['on', 'off'] }}"
     actions:
       - action: light.turn_{{ trigger.to_state.state }}
         entity_id: light.kitchen_led_strip
