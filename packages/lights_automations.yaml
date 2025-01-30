@@ -28,7 +28,9 @@ script:
       - action: scene.turn_on
         entity_id: scene.wallpanel_screen_off
       - action: switch.turn_off
-        entity_id: switch.dcc_ex_pwr
+        entity_id:
+          - switch.dcc_ex_pwr
+          - switch.interactive_cz_map_enable
 
   turn_off_lights_after_people_leave:
     alias: Turn off lights after people leave
@@ -577,3 +579,4 @@ scene:
       light.shelf_lighting: on
       light.string_lights: on
       switch.dcc_ex_pwr: on
+      switch.interactive_cz_map_enable: on
