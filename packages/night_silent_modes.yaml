@@ -331,12 +331,6 @@ automation:
 ## SCENES
 ###############################################
 scene:
-  - name: Good Morning
-    id: good_morning
-    entities:
-      # Turning off all lights is called from script.turn_off_all_lights
-      cover.bedroom: open
-
   - name: Good Night
     id: good_night
     entities:
