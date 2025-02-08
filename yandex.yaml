@@ -22,7 +22,7 @@ filter:
     - input_boolean.scooter_charger
     - input_boolean.silent_mode
     - input_button.thermostat_10_minutes_heating
-    - light.bar_light
+    - light.tv_lights
     - light.bedroom_ceiling_light
     - light.bedroom_nightlight
     - light.floor_lamp
@@ -142,8 +142,8 @@ entity_config:
   light.kitchen_ceiling_light:
     name: Люстра
     room: Кухня
-  light.bar_light:
-    name: Подсветка бара
+  light.tv_lights:
+    name: Подсветка телевизора
     room: Зал
   light.kitchen_christmas_lights:
     name: Гирлянда

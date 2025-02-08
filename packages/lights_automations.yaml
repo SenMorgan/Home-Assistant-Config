@@ -379,8 +379,8 @@ automation:
       - action: light.turn_on
         entity_id: light.7_seg_clock
 
-  - id: "living_room_bar_lights_by_sunset_or_tv_on"
-    alias: Living Room Bar Lights by Sunset or TV ON
+  - id: "living_room_tv_lights_by_sunset_or_tv_on"
+    alias: Living Room TV Lights by Sunset or TV ON
     triggers:
       - trigger: sun
         id: "SUNSET"
@@ -435,15 +435,15 @@ automation:
           - action: scene.turn_on
             entity_id: scene.movies
 
-  - id: "living_room_bar_lights_by_sunrise_off"
-    alias: Living Room Bar Lights by Sunrise OFF
+  - id: "living_room_tv_lights_by_sunrise_off"
+    alias: Living Room TV Lights by Sunrise OFF
     triggers:
       - trigger: sun
         event: sunrise
         offset: -01:00:00
     actions:
       - action: light.turn_off
-        entity_id: light.bar_light
+        entity_id: light.tv_lights
 
   - id: "parking_lights_on"
     alias: Parking Lights ON
@@ -540,7 +540,7 @@ scene:
   - id: movies
     name: Movies
     entities:
-      light.bar_light: on
+      light.tv_lights: on
       light.bedroom_nightlight: off
       light.floor_lamp: off
       light.gyver_lamp: off
@@ -558,7 +558,7 @@ scene:
   - id: evening
     name: Evening
     entities:
-      light.bar_light: on
+      light.tv_lights: on
       light.bedroom_ceiling_light: off
       light.bedroom_nightlight: off
       light.kitchen_christmas_lights: on
