@@ -419,7 +419,6 @@ automation:
     actions:
       - wait_template: >
           {{ states('switch.asus_pc') == 'off' and
-            states('light.mi_desk_lamp') == 'off' and
             states('light.kitchen_spotlights') == 'off' and
             states('light.kitchen_ceiling_light') == 'off' and
             states('light.bedroom_nightlight') == 'off' and
@@ -549,8 +548,10 @@ scene:
       light.kitchen_spotlights: off
       light.living_room_ceiling_light: off
       light.living_room_christmas_lights: on
-      light.living_room_table_lamp: off
-      light.mi_desk_lamp: off
+      light.mi_desk_lamp:
+        brightness: 5
+        color_temp_kelvin: 3000
+        state: on
       light.shelf_lighting: off
       light.string_lights: off
       media_player.samsung_tv: on
@@ -570,11 +571,10 @@ scene:
       light.kitchen_led_strip: off
       light.kitchen_spotlights: on
       light.living_room_christmas_lights: on
-      light.living_room_table_lamp:
+      light.mi_desk_lamp:
         brightness: 255
-        color_temp_kelvin: 370
+        color_temp_kelvin: 3000
         state: on
-      light.mi_desk_lamp: off
       light.pc_backlight: on
       light.shelf_lighting: on
       light.string_lights: on

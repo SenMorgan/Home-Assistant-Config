@@ -148,10 +148,10 @@ automation:
                   - "{{ command == 'rotate_left' or command == 'rotate_right' }}"
                 sequence:
                   - action: light.turn_on
-                    entity_id: light.mi_desk_lamp
+                    entity_id: light.floor_lamp
                     data_template:
                       brightness:
-                        "{% set suggested = state_attr('light.mi_desk_lamp', 'brightness')\
+                        "{% set suggested = state_attr('light.floor_lamp', 'brightness')\
                         \ | int(0) + \n  relative_degrees | int(0) + 1\
                         \ %}\n{% if suggested > 0 %} {{ suggested }} {% else %} 1 {% endif %}\n"
 
@@ -195,23 +195,23 @@ automation:
         on_press_action:
         - action: light.turn_on
           entity_id:
-            - light.living_room_table_lamp
+            - light.mi_desk_lamp
             - light.tv_lights
             - light.living_room_christmas_lights
         off_press_action:
         - action: light.turn_off
           entity_id:
-            - light.living_room_table_lamp
+            - light.mi_desk_lamp
             - light.tv_lights
             - light.living_room_christmas_lights
         on_hold_action:
         - action: light.turn_on
-          entity_id: light.living_room_table_lamp
+          entity_id: light.mi_desk_lamp
           data:
             brightness_step_pct: 4
         off_hold_action:
         - action: light.turn_on
-          entity_id: light.living_room_table_lamp
+          entity_id: light.mi_desk_lamp
           data:
             brightness_step_pct: -4
         helper_hold_delay: 200
