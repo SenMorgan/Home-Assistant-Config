@@ -74,9 +74,6 @@ script:
   home_night_mode:
     alias: Home Night Mode
     sequence:
-      # Decrease WallPanel screen brightness
-      - action: scene.turn_on
-        entity_id: scene.wallpanel_screen_off
       # Ensure night and silent modes are enabled
       - action: input_boolean.turn_on
         entity_id:
@@ -86,9 +83,6 @@ script:
   home_day_mode:
     alias: Home Day Mode
     sequence:
-      # Rise WallPanel screen brightness
-      - action: scene.turn_on
-        entity_id: scene.wallpanel_screen_on
       # Ensure night and silent mode are disabled
       - action: input_boolean.turn_off
         entity_id:
@@ -360,17 +354,3 @@ scene:
         state: on
         effect: Solid
         rgb_color: [255, 0, 0]
-
-  - name: WallPanel Screen Off
-    id: wallpanel_screen_off
-    entities:
-      light.wallpanel_screen:
-        state: on
-        brightness: 1
-
-  - name: WallPanel Screen On
-    id: wallpanel_screen_on
-    entities:
-      light.wallpanel_screen:
-        state: on
-        brightness: 255
