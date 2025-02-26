@@ -338,6 +338,9 @@ scene:
       cover.bedroom: closed
       switch.moving_head_power: off
       switch.dcc_ex_pwr: off
+      media_player.yandex_station: off
+      media_player.yandex_station_midi: off
+      media_player.bathroom_google_home_mini: off
 
   - name: No People Home
     id: no_people_home
