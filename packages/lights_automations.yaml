@@ -513,9 +513,9 @@ automation:
       - action: light.turn_{{ trigger.to_state.state }}
         entity_id: light.kitchen_led_strip
 
-###############################################
-## BUSY WALL SWITCHES
-###############################################
+  ###############################################
+  ## BUSY WALL SWITCHES
+  ###############################################
   - id: "busy_wall_switch_1"
     alias: Busy Wall Switch 1
     mode: restart
