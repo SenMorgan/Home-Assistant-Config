@@ -29,6 +29,7 @@ script:
         entity_id:
           - switch.dcc_ex_pwr
           - switch.interactive_cz_map_enable
+          - switch.monolith_speakers
 
   switch_on_parking_light:
     alias: Switch On Parking Light
@@ -505,6 +506,7 @@ scene:
       light.shelf_lighting: off
       light.string_lights: off
       media_player.samsung_tv: on
+      switch.monolith_speakers: on
 
   - id: evening
     name: Evening

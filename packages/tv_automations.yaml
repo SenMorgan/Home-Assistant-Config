@@ -76,3 +76,33 @@ automation:
     actions:
       - action: light.turn_off
         entity_id: light.tv_lights
+
+  - alias: Living Room Speakers ON with TV
+    id: "living_room_speakers_on_with_tv"
+    triggers:
+      - trigger: state
+        entity_id: media_player.samsung_tv
+        to: "on"
+    conditions:
+      - condition: state
+        entity_id: switch.monolith_speakers
+        state: "off"
+    actions:
+      - action: input_boolean.turn_on
+        entity_id: switch.monolith_speakers
+
+  - alias: Living Room Speakers Standby OFF
+    id: "living_room_speakers_standby_off"
+    triggers:
+      - trigger: numeric_state
+        entity_id: sensor.monolith_speakers_active_power
+        # Backlight + speakers active = ~15W, backlight + speakers standby = ~8W
+        below: 12 # Power threshold (W) for standby mode
+        for: "00:05:00"
+    conditions:
+      - condition: state
+        entity_id: switch.monolith_speakers
+        state: "on"
+    actions:
+      - action: switch.turn_off
+        entity_id: switch.monolith_speakers
