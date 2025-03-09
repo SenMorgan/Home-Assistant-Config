@@ -51,6 +51,7 @@ filter:
     - switch.asus_pc
     - switch.dcc_ex_engine_sound
     - switch.dcc_ex_horn
+    - switch.monolith_speakers
     - switch.moving_head_power
 
 entity_config:
@@ -155,6 +156,10 @@ entity_config:
   scene.movies:
     name: Сцена Кино
     room: Зал
+  switch.monolith_speakers:
+    name: Колонки
+    room: Зал
+    type: devices.types.socket
   switch.moving_head_power:
     name: Голова
     room: Зал
