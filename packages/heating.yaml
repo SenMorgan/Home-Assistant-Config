@@ -321,7 +321,7 @@ script:
       # Set default thermostat target temperature
       - action: script.thermostat_set_temperature
         data:
-          temperature: "{{ states('input_number.thermostat_default_target_temperature') | float(21) }}"
+          temperature: "{{ states('input_number.thermostat_default_target_temperature') | float(22) }}"
 
   thermostat_set_temperature:
     alias: Thermostat Set Temperature
@@ -586,7 +586,7 @@ automation:
       # Stop heating by setting default temperature on thermostat
       - action: script.thermostat_stop_heating
         data:
-          message: "Температура упала ниже порога ночью → термостат переведён на 21°C"
+          message: "Температура упала ниже порога ночью → термостат переведён на 22°C"
 
   - alias: Thermostat Preheat Alert
     id: thermostat_preheat_alert
@@ -622,7 +622,7 @@ automation:
       # Stop heating by setting default temperature on thermostat
       - action: script.thermostat_stop_heating
         data:
-          message: "Температура поднялась выше порога → термостат переведён на 21°C"
+          message: "Температура поднялась выше порога → термостат переведён на 22°C"
 
   - alias: Thermostat Low Temperature Notification
     id: thermostat_low_temperature_notification
@@ -962,7 +962,7 @@ automation:
       # Stop heating by setting default temperature on thermostat
       - action: script.thermostat_stop_heating
         data:
-          message: "ETRVs не запрашивают отопление → температура возвращена на 21°C"
+          message: "ETRVs не запрашивают отопление → температура возвращена на 22°C"
 
   ###############################################
   ## Extra Heating Control
@@ -1011,7 +1011,7 @@ automation:
       # Stop heating by setting default temperature on thermostat
       - action: script.thermostat_stop_heating
         data:
-          message: "Отопление заблокировано вручную → температура возвращена на 21°C"
+          message: "Отопление заблокировано вручную → температура возвращена на 22°C"
 
   # Cancel "Pause Heating" timer if "Heating Allowed" flag was set
   - alias: Cancel Pause Heating Manually
