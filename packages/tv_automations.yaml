@@ -88,7 +88,7 @@ automation:
         entity_id: switch.monolith_speakers
         state: "off"
     actions:
-      - action: input_boolean.turn_on
+      - action: switch.turn_on
         entity_id: switch.monolith_speakers
 
   - alias: Living Room Speakers Standby OFF
