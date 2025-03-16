@@ -386,8 +386,8 @@ automation:
         entity_id: switch.interactive_cz_map_enable
         state: "off"
       - condition: state
-        entity_id: binary_sensor.people_home
-        state: "on"
+        entity_id: person.sen
+        state: "home"
       - condition: time
         after: "05:00:00"
         before: "22:00:00"

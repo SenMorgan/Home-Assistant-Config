@@ -88,8 +88,13 @@ script:
         entity_id:
           - input_boolean.home_night_mode
           - input_boolean.silent_mode
-      - action: switch.turn_on
-        entity_id: switch.interactive_cz_map_enable
+      - if:
+          - condition: state
+            entity_id: person.sen
+            state: "home"
+        then:
+          - action: switch.turn_on
+            entity_id: switch.interactive_cz_map_enable
 
   cover_correct_up:
     alias: Cover Correct Zero Pozition Up
