@@ -491,20 +491,19 @@ scene:
     name: Movies
     entities:
       light.tv_lights: on
-      light.bedroom_nightlight: off
       light.floor_lamp: off
       light.gyver_lamp: off
       light.hall_lights: off
       light.kitchen_ceiling_light: off
       light.kitchen_spotlights: off
       light.living_room_ceiling_light: off
-      light.living_room_christmas_lights: on
       light.mi_desk_lamp:
         brightness: 5
         color_temp_kelvin: 3000
         state: on
       light.shelf_lighting: off
       light.string_lights: off
+      light.living_room_christmas_lights: on
       switch.samsung_tv: on
       switch.monolith_speakers: on
 
