@@ -142,7 +142,7 @@ automation:
                   media_content_type: dialog
                   extra:
                     volume_level: 0.6
-          # Bouth came home
+          # Both came home
           - conditions:
               - condition: state
                 entity_id: person.sen

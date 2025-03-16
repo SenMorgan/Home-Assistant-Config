@@ -97,7 +97,7 @@ script:
             entity_id: switch.interactive_cz_map_enable
 
   cover_correct_up:
-    alias: Cover Correct Zero Pozition Up
+    alias: Cover Correct Zero Position Up
     sequence:
       - action: mqtt.publish
         data:
@@ -105,7 +105,7 @@ script:
           payload: "CORRECT_UP"
 
   cover_correct_down:
-    alias: Cover Correct Zero Pozition Down
+    alias: Cover Correct Zero Position Down
     sequence:
       - action: mqtt.publish
         data:
