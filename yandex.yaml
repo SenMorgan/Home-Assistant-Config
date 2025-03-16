@@ -38,7 +38,7 @@ filter:
     - light.shelf_lighting
     - light.string_lights
     - media_player.model_railway
-    - media_player.samsung_tv
+    - switch.samsung_tv
     - scene.evening
     - scene.movies
     - sensor.electricity_meter_energy
@@ -147,7 +147,7 @@ entity_config:
   media_player.model_railway:
     name: Макет
     room: Макет
-  media_player.samsung_tv:
+  switch.samsung_tv:
     name: Телевизор
     room: Зал
   scene.evening:

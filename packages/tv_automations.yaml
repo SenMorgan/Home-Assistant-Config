@@ -21,7 +21,7 @@ automation:
         offset: -00:15:00
       - trigger: state
         id: "TV_ON"
-        entity_id: media_player.samsung_tv
+        entity_id: switch.samsung_tv
         to: "on"
     conditions:
       # Only if Sen is home
@@ -41,7 +41,7 @@ automation:
               - condition: trigger
                 id: "SUNSET"
               - condition: state
-                entity_id: media_player.samsung_tv
+                entity_id: switch.samsung_tv
                 state: "on"
           - and:
               - condition: trigger
@@ -61,7 +61,7 @@ automation:
       # Check if it's still needed (TV is on)
       - if:
           - condition: state
-            entity_id: media_player.samsung_tv
+            entity_id: switch.samsung_tv
             state: "on"
         then:
           - action: scene.turn_on
@@ -81,7 +81,7 @@ automation:
     id: "living_room_speakers_on_with_tv"
     triggers:
       - trigger: state
-        entity_id: media_player.samsung_tv
+        entity_id: switch.samsung_tv
         to: "on"
     conditions:
       - condition: state

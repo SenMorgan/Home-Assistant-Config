@@ -505,7 +505,7 @@ scene:
         state: on
       light.shelf_lighting: off
       light.string_lights: off
-      media_player.samsung_tv: on
+      switch.samsung_tv: on
       switch.monolith_speakers: on
 
   - id: evening
