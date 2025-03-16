@@ -9,11 +9,22 @@
 ######################################################################
 
 ###############################################
+## SETTINGS AND VARIABLES
+###############################################
+homeassistant:
+  customize:
+    package.node_anchors:
+      # Backlight + speakers active = ~15W, backlight + speakers standby = ~8W
+      speakers_pwr_threshold: &speakers_pwr_threshold 12       # Power threshold (W) for determining standby mode
+      speakers_pwr_down_timeout: &speakers_pwr_down_timeout 5  # Minutes to wait before powering off speakers
+
+###############################################
 ## AUTOMATIONS
 ###############################################
 automation:
   - alias: Living Room TV Lights by Sunset or TV ON
-    id: "living_room_tv_lights_by_sunset_or_tv_on"
+    id: living_room_tv_lights_by_sunset_or_tv_on
+    description: "Turn on TV lights automatically by sunset or when TV is turned on"
     triggers:
       - trigger: sun
         id: "SUNSET"
@@ -55,42 +66,61 @@ automation:
           - action: scene.turn_on
             entity_id: scene.movies
 
-  - alias: Living Room TV Lights by Sunrise OFF
-    id: "living_room_tv_lights_by_sunrise_off"
-    triggers:
-      - trigger: sun
-        event: sunrise
-        offset: -01:00:00
-    actions:
-      - action: light.turn_off
-        entity_id: light.tv_lights
-
-  - alias: Living Room Speakers ON with TV
-    id: "living_room_speakers_on_with_tv"
-    triggers:
-      - trigger: state
+  - alias: Living Room Speakers Power On with TV
+    id: living_room_speakers_power_on_with_tv
+    description: "Turn on speakers automatically when TV is turned on"
+    trigger:
+      - platform: state
         entity_id: switch.samsung_tv
         to: "on"
-    conditions:
+    condition:
       - condition: state
         entity_id: switch.monolith_speakers
         state: "off"
-    actions:
+    action:
       - action: switch.turn_on
         entity_id: switch.monolith_speakers
 
   - alias: Living Room Speakers Standby OFF
-    id: "living_room_speakers_standby_off"
-    triggers:
-      - trigger: numeric_state
+    id: living_room_speakers_standby_off
+    description: "Turn off speakers when in standby mode for a while and TV is off"
+    trigger:
+      - platform: numeric_state
         entity_id: sensor.monolith_speakers_active_power
-        # Backlight + speakers active = ~15W, backlight + speakers standby = ~8W
-        below: 12 # Power threshold (W) for standby mode
-        for: "00:05:00"
-    conditions:
+        below: *speakers_pwr_threshold
+        for:
+          minutes: *speakers_pwr_down_timeout
+    condition:
       - condition: state
         entity_id: switch.monolith_speakers
         state: "on"
-    actions:
+      - condition: state
+        entity_id: switch.samsung_tv
+        state: "off"
+    action:
       - action: switch.turn_off
         entity_id: switch.monolith_speakers
+
+  - alias: Living Room Speakers Auto Power Down
+    id: living_room_speakers_auto_power_down
+    description: "Turn off speakers if power consumption remains low after powering on"
+    trigger:
+      - platform: state
+        entity_id: sensor.monolith_speakers
+        to: "on"
+    action:
+      - alias: "Check if power consumption exceeds threshold"
+        wait_for_trigger:
+          - platform: numeric_state
+            entity_id: sensor.monolith_speakers_active_power
+            above: *speakers_pwr_threshold
+        timeout:
+          minutes: *speakers_pwr_down_timeout
+      - alias: "Power off if threshold not exceeded"
+        if:
+          - condition: numeric_state
+            entity_id: sensor.monolith_speakers_active_power
+            below: *speakers_pwr_threshold
+        then:
+          - action: switch.turn_off
+            entity_id: switch.monolith_speakers
