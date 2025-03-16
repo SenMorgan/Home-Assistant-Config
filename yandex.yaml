@@ -225,7 +225,7 @@ entity_config:
       - type: humidity
         entity: sensor.ble_humidity_atc_living_room
   sensor.ble_temperature_atc_hall:
-    name: Погода в корридоре
+    name: Погода в коридоре
     room: Коридор
     properties:
       - type: temperature
