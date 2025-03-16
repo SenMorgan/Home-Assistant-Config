@@ -513,7 +513,7 @@ scene:
       light.tv_lights: on
       light.bedroom_ceiling_light: off
       light.bedroom_nightlight: off
-      light.kitchen_christmas_lights: on
+      # light.kitchen_christmas_lights: on
       light.gyver_lamp:
         brightness: 100
         state: on
