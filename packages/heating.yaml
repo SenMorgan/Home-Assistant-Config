@@ -99,13 +99,13 @@ binary_sensor:
         value_template: >-
           {{ not is_state_attr('climate.family_room', 'hvac_action', "off") }}
       freeze_alert_at_night:
-        friendly_name: Temperature is below 19°C at night
+        friendly_name: Temperature is below 20°C at night
         device_class: cold
         value_template: >
-          {{ now().hour >= 0 and now().hour < 6 and
-            ((state_attr('climate.family_room', 'current_temperature') | float(0) < 19.0) or
-            (states('sensor.ble_temperature_atc_bedroom') | float(0) < 19.0) or
-            (states('sensor.ble_temperature_atc_living_room') | float(0) < 19.0)) }}
+          {{ ((now().hour >= 21 and now().hour <= 23) or (now().hour >= 0 and now().hour <= 6)) and
+            ((state_attr('climate.family_room', 'current_temperature') | float(0) < 20.0) or
+            (states('sensor.ble_temperature_atc_bedroom') | float(0) < 20.0) or
+            (states('sensor.ble_temperature_atc_living_room') | float(0) < 20.0)) }}
       heating_request_bedroom:
         friendly_name: Heating Request Bedroom
         device_class: heat
