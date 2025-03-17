@@ -577,13 +577,23 @@ automation:
           - timer.heating_quarantine
           - timer.short_heating
           - timer.pause_heating
-      # Notify about low temperature
+      # Create persistent notification
+      - action: script.notify_and_create_persistent_notification
+        data:
+          title: *sys_notify_title_warning
+          message: "Температура упала ниже порога"
+      # Log the event
+      - action: input_text.set_value
+        data:
+          entity_id: input_text.heating_log
+          value: "Температура упала ниже порога"
+      # Notify about low temperature on mobile app
       - action: notify.mobile_app_sm_s901b
         data:
           title: *sys_notify_title_info
           message: &notification_freeze_alert_at_night >-
             Термостат был снова включен в {{ states('sensor.time') }}, чтобы вы не замёрзли
-      # Stop heating by setting default temperature on thermostat
+      # Set default temperature on thermostat
       - action: script.thermostat_stop_heating
         data:
           message: "Температура упала ниже порога ночью → термостат переведён на 22°C"
@@ -623,25 +633,6 @@ automation:
       - action: script.thermostat_stop_heating
         data:
           message: "Температура поднялась выше порога → термостат переведён на 22°C"
-
-  - alias: Thermostat Low Temperature Notification
-    id: thermostat_low_temperature_notification
-    mode: single
-    max_exceeded: silent
-    triggers:
-      - trigger: state
-        entity_id: binary_sensor.freeze_alert_at_night
-        to: "on"
-        for: "00:05:00"
-    actions:
-      - action: script.notify_and_create_persistent_notification
-        data:
-          title: *sys_notify_title_warning
-          message: "Температура упала ниже порога"
-      - action: input_text.set_value
-        data:
-          entity_id: input_text.heating_log
-          value: "Температура упала ниже порога"
 
   # If Thermostat is heating for more then 1 hour - notify about it and disable heating for 1 hour
   - alias: Thermostat Heating Duration Alert
