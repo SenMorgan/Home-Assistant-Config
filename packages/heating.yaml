@@ -386,6 +386,7 @@ automation:
     trigger:
       - platform: state
         entity_id: binary_sensor.windows
+        from: "off"
         to: "on"
         for: "00:00:10"
     condition:
@@ -441,6 +442,7 @@ automation:
     trigger:
       - platform: state
         entity_id: binary_sensor.windows
+        from: "on"
         to: "off"
         for: "00:00:10"
     condition:
@@ -509,6 +511,7 @@ automation:
     triggers:
       - trigger: state
         entity_id: binary_sensor.freeze_alert_at_night
+        from: "off"
         to: "on"
         for: "00:05:00"
       - trigger: time_pattern
@@ -597,6 +600,7 @@ automation:
     triggers:
       - trigger: state
         entity_id: binary_sensor.thermostat_heating
+        from: "off"
         to: "on"
         for: "01:00:00"
     conditions:
@@ -715,6 +719,7 @@ automation:
     triggers:
       - trigger: state
         entity_id: binary_sensor.people_home
+        from: "on"
         to: "off"
         for: "00:05:00"
     conditions:
@@ -746,6 +751,7 @@ automation:
     triggers:
       - trigger: state
         entity_id: binary_sensor.people_home
+        from: "off"
         to: "on"
     conditions:
       - condition: state
@@ -787,6 +793,7 @@ automation:
       # Trigger if some of ETRVs are requesting heat
       - trigger: state
         entity_id: binary_sensor.etrvs_requesting_heat
+        from: "off"
         to: "on"
         for: 00:01:00
       # Trigger every 2 minutes to account for any changes in conditions
@@ -840,6 +847,7 @@ automation:
     trigger:
       - platform: state
         entity_id: binary_sensor.heating_request_bathroom
+        from: "off"
         to: "on"
     condition: # Ignore windows state, we need to heat the bathroom
       - condition: state
@@ -874,11 +882,13 @@ automation:
       # Trigger if all ETRVs are not requesting heat
       - trigger: state
         entity_id: binary_sensor.etrvs_requesting_heat
+        from: "on"
         to: "off"
         for: 00:01:00
       # Trigger if bathroom is not requesting heat
       - trigger: state
         entity_id: binary_sensor.heating_request_bathroom
+        from: "on"
         to: "off"
         for: 00:01:00
       # Trigger every 2 minutes
@@ -923,6 +933,7 @@ automation:
     trigger:
       - platform: state
         entity_id: input_boolean.heating_allowed
+        from: "on"
         to: "off"
     condition:
       - condition: state
@@ -967,6 +978,7 @@ automation:
     trigger:
       - platform: state
         entity_id: input_boolean.heating_allowed
+        from: "off"
         to: "on"
     condition:
       - condition: state
