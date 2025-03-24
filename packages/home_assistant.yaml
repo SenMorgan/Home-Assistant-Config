@@ -276,6 +276,40 @@ automation:
               []
             {% endif %}
 
+  # Alert if any temperature sensor has not updated its state for 3 hours
+  - id: "notification_temperature_sensor_unchanged"
+    alias: Notification Temperature Sensor Unchanged
+    mode: queued
+    max: 10
+    max_exceeded: silent
+    variables:
+      sensor_name: "{{ trigger.to_state.attributes.friendly_name }}"
+      sensor_state: "{{ trigger.to_state.state }}"
+      sensor_last_changed: "{{ as_timestamp(trigger.to_state.last_changed, 0) | timestamp_custom('%d.%m.%Y %H:%M:%S',1) }}"
+    triggers:
+      - trigger: state
+        entity_id: sensor.ble_temperature_atc_bathroom
+        for: "03:00:00"
+      - trigger: state
+        entity_id: sensor.ble_temperature_atc_bedroom
+        for: "03:00:00"
+      - trigger: state
+        entity_id: sensor.ble_temperature_atc_hall
+        for: "03:00:00"
+      - trigger: state
+        entity_id: sensor.ble_temperature_atc_living_room
+        for: "03:00:00"
+      - trigger: state
+        entity_id: sensor.ble_temperature_atc_toilet
+        for: "03:00:00"
+    actions:
+      - action: script.notify_and_create_persistent_notification
+        data:
+          title: *sys_notify_title_warning
+          message: >-
+            Датчик "{{ sensor_name }}" не обновлялся с {{ sensor_last_changed }}.
+            Текущее состояние: {{ sensor_state }}
+
   ###############################################
   ## Other Automations
   ###############################################
