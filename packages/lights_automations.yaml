@@ -503,7 +503,7 @@ scene:
         state: on
       light.shelf_lighting: off
       light.string_lights: off
-      light.living_room_christmas_lights: on
+      # light.living_room_christmas_lights: on
       switch.samsung_tv: on
       switch.monolith_speakers: on
 
@@ -521,7 +521,7 @@ scene:
       light.kitchen_ceiling_light: off
       light.kitchen_led_strip: off
       light.kitchen_spotlights: on
-      light.living_room_christmas_lights: on
+      # light.living_room_christmas_lights: on
       light.mi_desk_lamp:
         brightness: 255
         color_temp_kelvin: 3000

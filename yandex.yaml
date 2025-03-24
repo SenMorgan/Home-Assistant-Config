@@ -33,7 +33,7 @@ filter:
     - light.kitchen_led_strip
     - light.kitchen_spotlights
     - light.living_room_ceiling_light
-    - light.living_room_christmas_lights
+    # - light.living_room_christmas_lights
     - light.mi_desk_lamp
     - light.shelf_lighting
     - light.string_lights
@@ -129,9 +129,9 @@ entity_config:
   light.living_room_ceiling_light:
     name: Люстра
     room: Зал
-  light.living_room_christmas_lights:
-    name: Гирлянда
-    room: Зал
+  # light.living_room_christmas_lights:
+  #   name: Гирлянда
+  #   room: Зал
   light.bedroom_ceiling_light:
     name: Люстра
     room: Спальня
