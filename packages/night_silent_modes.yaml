@@ -152,7 +152,7 @@ automation:
         to: "off"
         for: 00:00:30
       - trigger: time
-        at: "22:00:00"
+        at: "21:00:00"
     conditions:
       - condition: time
         after: "20:00:00"
