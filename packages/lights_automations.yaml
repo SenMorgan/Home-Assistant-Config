@@ -506,6 +506,7 @@ scene:
       # light.living_room_christmas_lights: on
       switch.samsung_tv: on
       switch.monolith_speakers: on
+      switch.interactive_cz_map_enable: off
 
   - id: evening
     name: Evening
