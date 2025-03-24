@@ -219,3 +219,40 @@ automation:
           {{ (as_timestamp(now(), 0) - as_timestamp(states.sensor.washing_machine_washer_job_state.last_changed, 0)) < 14400 }}
     actions:
       - action: script.yandex_joke_after_washing_clothes
+
+  - id: "notification_shopping_list"
+    alias: Notification Shopping List
+    description: Shopping list reminder when a person enters the supermarket
+    mode: single
+    trigger:
+      - platform: numeric_state
+        entity_id: zone.jip
+        above: 0
+        for: "00:02:00"
+    condition:
+      - condition: numeric_state
+        entity_id: todo.shopping_list
+        above: 0
+    action:
+      - if:
+          - condition: state
+            entity_id: person.sen
+            state: "zone.jip"
+        then:
+          - service: notify.mobile_app_sm_s901b
+            data:
+              message: "🛒 Открыть список покупок?"
+              data:
+                clickAction: /todo?entity_id=todo.shopping_list
+                url: /todo?entity_id=todo.shopping_list
+      - if:
+          - condition: state
+            entity_id: person.kris
+            state: "zone.jip"
+        then:
+          - service: notify.mobile_app_sm_g991b
+            data:
+              message: "🛒 Открыть список покупок?"
+              data:
+                clickAction: /todo?entity_id=todo.shopping_list
+                url: /todo?entity_id=todo.shopping_list
