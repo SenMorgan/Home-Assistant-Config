@@ -227,9 +227,11 @@ automation:
     trigger:
       - platform: numeric_state
         entity_id: zone.jip
-        above: 0
         for: "00:02:00"
     condition:
+      - condition: numeric_state
+        entity_id: zone.jip
+        above: 0
       - condition: numeric_state
         entity_id: todo.shopping_list
         above: 0
@@ -237,7 +239,7 @@ automation:
       - if:
           - condition: state
             entity_id: person.sen
-            state: "zone.jip"
+            state: "JIP"
         then:
           - service: notify.mobile_app_sm_s901b
             data:
@@ -248,7 +250,7 @@ automation:
       - if:
           - condition: state
             entity_id: person.kris
-            state: "zone.jip"
+            state: "JIP"
         then:
           - service: notify.mobile_app_sm_g991b
             data:
