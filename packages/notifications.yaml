@@ -225,7 +225,7 @@ automation:
     description: Shopping list reminder when a person enters the supermarket
     mode: single
     trigger:
-      - platform: numeric_state
+      - platform: state
         entity_id: zone.jip
         for: "00:02:00"
     condition:
