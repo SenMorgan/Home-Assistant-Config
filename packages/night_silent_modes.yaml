@@ -340,7 +340,7 @@ scene:
     id: no_people_home
     entities:
       # Turning off all lights is called from script.turn_off_all_lights
-      switch.samsung_tv: off
+      media_player.samsung_tv: off
       switch.moving_head_power: off
       switch.dcc_ex_pwr: off
       media_player.yandex_station: off

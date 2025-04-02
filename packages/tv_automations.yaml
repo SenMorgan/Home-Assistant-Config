@@ -32,7 +32,7 @@ automation:
         offset: -00:15:00
       - trigger: state
         id: "TV_ON"
-        entity_id: switch.samsung_tv
+        entity_id: media_player.samsung_tv
         to: "on"
     conditions:
       - or:
@@ -40,7 +40,7 @@ automation:
               - condition: trigger
                 id: "SUNSET"
               - condition: state
-                entity_id: switch.samsung_tv
+                entity_id: media_player.samsung_tv
                 state: "on"
           - and:
               - condition: trigger
@@ -60,7 +60,7 @@ automation:
       # Check if it's still needed (TV is on)
       - if:
           - condition: state
-            entity_id: switch.samsung_tv
+            entity_id: media_player.samsung_tv
             state: "on"
         then:
           - action: scene.turn_on
@@ -71,7 +71,7 @@ automation:
     description: "Turn on speakers automatically when TV is turned on"
     trigger:
       - platform: state
-        entity_id: switch.samsung_tv
+        entity_id: media_player.samsung_tv
         to: "on"
     condition:
       - condition: state
@@ -95,7 +95,7 @@ automation:
         entity_id: switch.monolith_speakers
         state: "on"
       - condition: state
-        entity_id: switch.samsung_tv
+        entity_id: media_player.samsung_tv
         state: "off"
     action:
       - action: switch.turn_off

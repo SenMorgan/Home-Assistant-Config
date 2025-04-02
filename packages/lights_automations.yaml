@@ -504,7 +504,7 @@ scene:
       light.shelf_lighting: off
       light.string_lights: off
       # light.living_room_christmas_lights: on
-      switch.samsung_tv: on
+      media_player.samsung_tv: on
       switch.monolith_speakers: on
       switch.interactive_cz_map_enable: off
 
