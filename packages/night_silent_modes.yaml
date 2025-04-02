@@ -196,11 +196,6 @@ automation:
     id: good_morning_handler
     mode: single
     triggers:
-      - trigger: state
-        entity_id: binary_sensor.bedroom_door_contact
-        from: "off"
-        to: "on"
-        for: 00:00:30
       - trigger: time
         at: "09:00:00"
       - trigger: state
