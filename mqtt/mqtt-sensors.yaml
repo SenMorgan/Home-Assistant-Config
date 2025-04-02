@@ -201,7 +201,6 @@
   device_class: signal_strength
   state_topic: "/power-monitor/state/signal-quality"
   value_template: "{{ value }}"
-  unit_of_measurement: "%"
 
 - name: "Power Monitor Uptime"
   state_topic: "/power-monitor/state/uptime"
