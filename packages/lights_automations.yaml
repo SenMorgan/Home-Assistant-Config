@@ -376,7 +376,10 @@ automation:
     alias: Interactive CZ Map Reenable
     triggers:
       - trigger: state
-        entity_id: binary_sensor.kitchen_motion_alarm
+        entity_id: person.sen
+        to: "home"
+      - trigger: state
+        entity_id: switch.asus_pc
         to: "on"
       - trigger: state
         entity_id: input_boolean.home_night_mode
