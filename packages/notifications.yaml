@@ -220,44 +220,47 @@ automation:
     actions:
       - action: script.yandex_joke_after_washing_clothes
 
-  - id: "notification_shopping_list"
-    alias: Notification Shopping List
-    description: Shopping list reminder when a person enters the supermarket
+  - id: "notification_shopping_list_sen"
+    alias: Notification Shopping List for Sen
+    description: Shopping list reminder when Sen enters the supermarket
     mode: single
     trigger:
       - platform: state
-        entity_id: zone.jip
+        entity_id: person.sen
+        to: "JIP"
         for: "00:02:00"
     condition:
-      - condition: numeric_state
-        entity_id: zone.jip
-        above: 0
       - condition: numeric_state
         entity_id: todo.shopping_list
         above: 0
     action:
-      - if:
-          - condition: state
-            entity_id: person.sen
-            state: "JIP"
-        then:
-          - service: notify.mobile_app_sm_s901b
-            data:
-              message: "🛒 Открыть список покупок?"
-              data:
-                clickAction: /todo?entity_id=todo.shopping_list
-                url: /todo?entity_id=todo.shopping_list
-      - if:
-          - condition: state
-            entity_id: person.kris
-            state: "JIP"
-        then:
-          - service: notify.mobile_app_sm_g991b
-            data:
-              message: "🛒 Открыть список покупок?"
-              data:
-                clickAction: /todo?entity_id=todo.shopping_list
-                url: /todo?entity_id=todo.shopping_list
+      - service: notify.mobile_app_sm_s901b
+        data:
+          message: "🛒 Открыть список покупок?"
+          data:
+            clickAction: /todo?entity_id=todo.shopping_list
+            url: /todo?entity_id=todo.shopping_list
+
+  - id: "notification_shopping_list_kris"
+    alias: Notification Shopping List for Kris
+    description: Shopping list reminder when Kris enters the supermarket
+    mode: single
+    trigger:
+      - platform: state
+        entity_id: person.kris
+        to: "JIP"
+        for: "00:02:00"
+    condition:
+      - condition: numeric_state
+        entity_id: todo.shopping_list
+        above: 0
+    action:
+      - service: notify.mobile_app_sm_g991b
+        data:
+          message: "🛒 Открыть список покупок?"
+          data:
+            clickAction: /todo?entity_id=todo.shopping_list
+            url: /todo?entity_id=todo.shopping_list
 
   - id: "notification_watch_charged"
     alias: Notification Watch Charged
