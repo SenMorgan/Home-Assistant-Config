@@ -7,11 +7,11 @@
 ######################################################################
 
 ###############################################
-## INPUT DATETIMES
+## INPUT DATETIMEs
 ###############################################
 input_datetime:
   air_quality_open_window_greeting_timeout:
-    name: "Air Quality Open Window Greeting Timout"
+    name: "Air Quality Open Window Greeting Timeout"
     has_date: true
     has_time: true
 
