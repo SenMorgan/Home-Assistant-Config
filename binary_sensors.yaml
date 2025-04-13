@@ -33,9 +33,7 @@
     diesel_price_ono_trend:
       friendly_name: "Diesel Price ONO Trend"
       entity_id: sensor.diesel_price_ono
-      min_samples: 1
 
     gasoline_price_ono_trend:
       friendly_name: "Gasoline Price ONO Trend"
       entity_id: sensor.gasoline_price_ono
-      min_samples: 1
