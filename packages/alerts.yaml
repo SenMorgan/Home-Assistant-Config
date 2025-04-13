@@ -25,13 +25,14 @@ alert:
     name: "Water Leakage in Bathroom"
     entity_id: binary_sensor.water_leakage_bathroom_moisture
     state: "on"
-    repeat: 1
+    repeat: [ 1, 1, 2, 10, 30, 60 ]
+    skip_first: true
     notifiers:
       - mobile_app_sm_s901b
       - mobile_app_sm_g991b
     title: *sys_notify_title_critical
-    message: Обнаружена утечка воды в ванной в {{ states('sensor.time') }}.
-    done_message: Утечка воды в ванной устранена в {{ states('sensor.time') }}.
+    message: Water leakage detected in bathroom at {{ states('sensor.time') }}.
+    done_message: Bathroom water leakage resolved at {{ states('sensor.time') }}.
     data:
       ttl: 0
       priority: high
@@ -41,13 +42,14 @@ alert:
     name: "Water Leakage in Kitchen"
     entity_id: binary_sensor.water_leakage_kitchen_moisture
     state: "on"
-    repeat: 1
+    repeat: [ 1, 1, 2, 10, 30, 60 ]
+    skip_first: true
     notifiers:
       - mobile_app_sm_s901b
       - mobile_app_sm_g991b
     title: *sys_notify_title_critical
-    message: Обнаружена утечка воды на кухне в {{ states('sensor.time') }}.
-    done_message: Утечка воды на кухне устранена в {{ states('sensor.time') }}.
+    message: Water leakage detected in kitchen at {{ states('sensor.time') }}.
+    done_message: Kitchen water leakage resolved at {{ states('sensor.time') }}.
     data:
       ttl: 0
       priority: high
