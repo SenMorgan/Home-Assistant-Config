@@ -120,6 +120,26 @@ automation:
             Цена дизеля {{ 'упала' if trigger.from_state.state | float(0) > trigger.to_state.state | float(0) else 'возрасла' }}
             с {{ trigger.from_state.state }} до {{ trigger.to_state.state }} Kč/L
 
+  - id: "notification_gasoline_price_changed"
+    alias: Notification Gasoline Price Changed
+    triggers:
+      - trigger: state
+        entity_id: sensor.gasoline_price_ono
+    conditions:
+      - condition: template
+        value_template: >
+          {{ trigger.from_state.state != trigger.to_state.state }}
+      - condition: template
+        value_template: >
+          {{ is_number(trigger.from_state.state) and is_number(trigger.to_state.state) }}
+    actions:
+      - action: notify.mobile_mobile_app_sm_g991b
+        data:
+          title: *sys_notify_title_info
+          message: >
+            Цена бензина {{ 'упала' if trigger.from_state.state | float(0) > trigger.to_state.state | float(0) else 'возрасла' }}
+            с {{ trigger.from_state.state }} до {{ trigger.to_state.state }} Kč/L
+
   - id: "notification_grundig_monolith_60_available"
     alias: Notification Grundig Monolith 60 Available
     triggers:
