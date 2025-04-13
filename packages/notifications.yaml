@@ -27,6 +27,13 @@ script:
         data:
           title: "{{ title }}"
           message: "{{ message }}"
+# If data is not empty, then add it to the notification
+          data: >
+            {% if data is defined %}
+              {{ data }}
+            {% else %}
+              {}
+            {% endif %}
       - action: persistent_notification.create
         data:
           title: "{{ title }}"
