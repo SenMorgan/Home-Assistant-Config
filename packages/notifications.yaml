@@ -27,7 +27,7 @@ script:
         data:
           title: "{{ title }}"
           message: "{{ message }}"
-# If data is not empty, then add it to the notification
+          # If data is not empty, then add it to the notification
           data: >
             {% if data is defined %}
               {{ data }}
@@ -126,6 +126,11 @@ automation:
           message: >
             Цена дизеля {{ 'упала' if trigger.from_state.state | float(0) > trigger.to_state.state | float(0) else 'возрасла' }}
             с {{ trigger.from_state.state }} до {{ trigger.to_state.state }} Kč/L
+          data:
+            actions:
+              - action: "URI"
+                title: 📈 Open Chart
+                uri: "/lovelace/diesel-price"
 
   - id: "notification_gasoline_price_changed"
     alias: Notification Gasoline Price Changed
@@ -146,6 +151,11 @@ automation:
           message: >
             Цена бензина {{ 'упала' if trigger.from_state.state | float(0) > trigger.to_state.state | float(0) else 'возрасла' }}
             с {{ trigger.from_state.state }} до {{ trigger.to_state.state }} Kč/L
+          data:
+            actions:
+              - action: "URI"
+                title: 📈 Open Chart
+                uri: "/lovelace/gasoline-price"
 
   - id: "notification_grundig_monolith_60_available"
     alias: Notification Grundig Monolith 60 Available
