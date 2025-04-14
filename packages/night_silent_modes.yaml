@@ -35,9 +35,10 @@ script:
       - action: scene.turn_on
         entity_id: scene.7_seg_clock_red
       # Make DCC-EX volume lower
-      - action: input_button.press
-        target:
-          entity_id: input_button.dcc_ex_default_volume
+      - action: media_player.volume_set
+        data:
+          entity_id: media_player.model_railway
+          volume_level: 0.3
       - action: input_boolean.turn_on
         entity_id:
           # Ensure silent mode is enabled
@@ -61,9 +62,10 @@ script:
           entity_id: select.7_seg_clock_preset
           option: Orange Candle
       # Set DCC-EX max volume
-      - action: input_button.press
-        target:
-          entity_id: input_button.dcc_ex_max_volume
+      - action: media_player.volume_set
+        data:
+          entity_id: media_player.model_railway
+          volume_level: 1.0
       - action: input_boolean.turn_off
         entity_id:
           # Ensure silent mode is disabled

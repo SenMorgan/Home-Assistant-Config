@@ -25,6 +25,16 @@ homeassistant:
 ###############################################
 ## CUSTOMIZATIONS
 ###############################################
+    switch.dcc_ex_pwr:
+        icon: mdi:power
+    switch.dcc_ex_pause:
+        icon: mdi:play-pause
+    switch.dcc_ex_vossloh_engine:
+        icon: mdi:engine-outline
+    switch.dcc_ex_vossloh_horn:
+        icon: mdi:bullhorn-outline
+    switch.dcc_ex_vossloh_cabin_lights:
+        icon: mdi:light-flood-down
     switch.dcc_ex_cargo_power_sound:
       icon: mdi:transmission-tower
     switch.dcc_ex_cargo_cab_start_up:
@@ -44,12 +54,6 @@ input_button:
   dcc_ex_reboot:
     name: "DCC-EX Reboot"
     icon: mdi:restart
-  dcc_ex_default_volume:
-    name: "DCC-EX Default Volume"
-    icon: mdi:volume-medium
-  dcc_ex_max_volume:
-    name: "DCC-EX Max Volume"
-    icon: mdi:volume-high
   dcc_ex_route_300:
     name: "DCC-EX Route 300"
     icon: mdi:railroad-light
@@ -90,11 +94,19 @@ media_player:
         action: switch.turn_off
         entity_id: switch.dcc_ex_pwr
       volume_up:
-        action: input_button.press
-        entity_id: input_button.dcc_ex_max_volume
+        service: shell_command.dcc_ex_command
+        data:
+          command_type: "volume"
+          command_value: "64"
+          dcc_ex_server_ip: !secret DCC-EX-SERVER-IP
+          dcc_ex_server_port: !secret DCC-EX-SERVER-PORT
       volume_down:
-        action: input_button.press
-        entity_id: input_button.dcc_ex_default_volume
+        service: shell_command.dcc_ex_command
+        data:
+          command_type: "volume"
+          command_value: "20"
+          dcc_ex_server_ip: !secret DCC-EX-SERVER-IP
+          dcc_ex_server_port: !secret DCC-EX-SERVER-PORT
       volume_set:
         service: shell_command.dcc_ex_command
         data:
@@ -126,65 +138,52 @@ switch:
   - platform: telnet
     switches:
       ###############################################
-      ## FUNCTIONS
+      ## Common DCC-EX Commands
       ###############################################
       dcc_ex_pwr:
         <<: *defaults
         name: "DCC-EX Power and Loco Lights"
-        # Power all tracks, enable loco's lights (main + cab), set max volume
-        command_on: "<1> <F 4 0 1> <F 5 0 1> <F 4 15 1> <W 4 63 64>"
+        # Power all tracks, enable loco's lights (main + cab), set max volume on both locos
+        command_on: "<1> <F 4 0 1> <F 4 15 1> <W 4 63 64> <F 5 0 1> <W 5 158 64>"
         # Power off all tracks
         command_off: "<0>"
         command_state: "<s>"
         value_template: "{{ value.find('<p1 MAIN>') != -1 }}"
-      dcc_ex_engine_sound:
-        <<: *defaults
-        name: "DCC-EX Vossloh Engine Sound"
-        # Enable engine sound on Loco #4
-        command_on: "<F 4 1 1>"
-        # Disable engine sound
-        command_off: "<F 4 1 0>"
-      dcc_ex_horn:
-        <<: *defaults
-        name: "DCC-EX Horn"
-        # Horn on Loco #4 (both LOW and HIGH horns)
-        command_on: "<1> <F 4 2 1> <F 4 3 1>"
-        # Horn off
-        command_off: "<F 4 2 0> <F 4 3 0>"
-      dcc_ex_pause:
-        <<: *defaults
-        name: "DCC-EX Pause"
-        # Pause all locos
-        command_on: "</ PAUSE>"
-        command_off: "</ RESUME>"
-      dcc_ex_emergency_stop_cmd:
-        <<: *defaults
-        name: "DCC-EX Emergency Stop Command"
-        # Emergency stop all locos (without disabling power)
-        command_on: "<!>"
-        command_off: ""
       dcc_ex_reboot_cmd:
         <<: *defaults
         name: "DCC-EX Reboot Command"
         # Reboot DCC-EX server
         command_on: "<D RESET>"
         command_off: ""
-      dcc_ex_default_volume_cmd:
+      dcc_ex_pause:
         <<: *defaults
-        name: "DCC-EX Default Volume Command"
-        # Set default volume to ~31%
-        command_on: "<w 4 63 20>"
+        name: "DCC-EX Pause"
+        # Pause all automations
+        command_on: "</ PAUSE>"
+        command_off: "</ RESUME>"
+      dcc_ex_emergency_stop_cmd:
+        <<: *defaults
+        name: "DCC-EX Emergency Stop Command"
+        # Emergency stop all locos (without pausing automations)
+        command_on: "<!>"
         command_off: ""
-      dcc_ex_max_volume_cmd:
+
+      ###############################################
+      ## Vossloh 1701
+      ###############################################
+      dcc_ex_vossloh_engine:
         <<: *defaults
-        name: "DCC-EX Max Volume Command"
-        # Set max volume to 100%
-        command_on: "<w 4 63 64>"
-        command_off: ""
-      dcc_ex_cabin_lights:
+        name: "Vossloh Engine"
+        command_on: "<F 4 1 1>"
+        command_off: "<F 4 1 0>"
+      dcc_ex_vossloh_horn:
         <<: *defaults
-        name: "DCC-EX Cabin Lights"
-        # Enable cabin lights on Loco #4
+        name: "Vossloh Horn"
+        command_on: "<F 4 2 1> <F 4 3 1>"   # Enable both low and high horn
+        command_off: "<F 4 2 0> <F 4 3 0>"
+      dcc_ex_vossloh_cabin_lights:
+        <<: *defaults
+        name: "Vossloh Cabin Lights"
         command_on: "<F 4 15 1>"
         command_off: "<F 4 15 0>"
 
@@ -199,8 +198,8 @@ switch:
       dcc_ex_cargo_cab_start_up:
         <<: *defaults
         name: "Cargo Cab Start Up"
-        command_on: "<F 5 5 1>"
-        command_off: "<F 5 5 0>"
+        command_on: "<F 5 7 1>"
+        command_off: "<F 5 7 0>"
       dcc_ex_cargo_general_station_sounds:
         <<: *defaults
         name: "Cargo General Station Sounds"
@@ -241,8 +240,6 @@ automation:
       button_switch_map:
         input_button.dcc_ex_emergency_stop: switch.dcc_ex_emergency_stop_cmd
         input_button.dcc_ex_reboot: switch.dcc_ex_reboot_cmd
-        input_button.dcc_ex_default_volume: switch.dcc_ex_default_volume_cmd
-        input_button.dcc_ex_max_volume: switch.dcc_ex_max_volume_cmd
         input_button.dcc_ex_route_300: switch.dcc_ex_route_300_cmd
         input_button.dcc_ex_route_301: switch.dcc_ex_route_301_cmd
     triggers:
@@ -250,8 +247,6 @@ automation:
         entity_id:
           - input_button.dcc_ex_emergency_stop
           - input_button.dcc_ex_reboot
-          - input_button.dcc_ex_default_volume
-          - input_button.dcc_ex_max_volume
           - input_button.dcc_ex_route_300
           - input_button.dcc_ex_route_301
     actions:
@@ -267,8 +262,6 @@ automation:
         entity_id:
           - switch.dcc_ex_emergency_stop_cmd
           - switch.dcc_ex_reboot_cmd
-          - switch.dcc_ex_default_volume_cmd
-          - switch.dcc_ex_max_volume_cmd
           - switch.dcc_ex_route_300_cmd
           - switch.dcc_ex_route_301_cmd
         to: "on"
@@ -308,7 +301,7 @@ automation:
 
   # Turn on Locomotive cabin lights on motion
   - alias: "DCC-EX Cabin Lights on Motion"
-    id: dcc_ex_cabin_lights_on_motion
+    id: dcc_ex_vossloh_cabin_lights_on_motion
     mode: single
     max_exceeded: silent
     triggers:
@@ -322,4 +315,4 @@ automation:
         value_template: "{{ trigger.to_state.state in ['on', 'off'] }}"
     actions:
       - action: switch.turn_{{ "on" if trigger.to_state.state == "on" else "off" }}
-        entity_id: switch.dcc_ex_cabin_lights
+        entity_id: switch.dcc_ex_vossloh_cabin_lights
