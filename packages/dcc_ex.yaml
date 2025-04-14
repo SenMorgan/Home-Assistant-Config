@@ -248,6 +248,22 @@ automation:
           dcc_ex_server_ip: !secret DCC-EX-SERVER-IP
           dcc_ex_server_port: !secret DCC-EX-SERVER-PORT
 
+  - alias: "DCC-EX Reset Momentary Command Switches"
+    description: "Reset momentary switches after a short delay to allow them to be triggered again"
+    id: dcc_ex_reset_momentary_switches
+    triggers:
+      - trigger: state
+        entity_id:
+          - switch.dcc_ex_cargo_safety_announcement
+          - switch.dcc_ex_cargo_destination_announcement
+          - switch.dcc_ex_cargo_guard_whistle
+        to: "on"
+        for: "00:00:01"
+    actions:
+      - action: switch.turn_off
+        target:
+          entity_id: "{{ trigger.entity_id }}"
+
   - alias: "DCC-EX Enable Power on Sunset"
     id: dcc_ex_enable_power_on_sunset
     triggers:
