@@ -32,7 +32,8 @@ case "$COMMAND_TYPE" in
 
         # Calculate the volume value 0-64
         VOLUME_VAL_64=$(printf "%.0f" "$(echo "$COMMAND_VALUE * 64" | bc -l)")
-        COMMAND="<w 4 63 $VOLUME_VAL_64>"   # Vossloh volume set (CV63)
+        COMMAND="<w 4 63 $VOLUME_VAL_64> "   # Vossloh volume set (CV63)
+        COMMAND+="<w 5 158 $VOLUME_VAL_64>"  # SBB Cargo volume set (CV158)
         ;;
     "power")
         if [ "$COMMAND_VALUE" = "on" ]; then

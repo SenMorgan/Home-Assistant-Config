@@ -23,6 +23,18 @@ homeassistant:
         timeout: &telnet_cmd_timeout 0.2
 
 ###############################################
+## CUSTOMIZATIONS
+###############################################
+    switch.dcc_ex_cargo_power_sound:
+      icon: mdi:transmission-tower
+    switch.dcc_ex_cargo_cab_start_up:
+      icon: mdi:car-cog
+    switch.dcc_ex_cargo_general_station_sounds:
+      icon: mdi:bullhorn-outline
+    switch.dcc_ex_cargo_inspection_lights:
+      icon: mdi:light-flood-down
+
+###############################################
 ## INPUT BUTTONS
 ###############################################
 input_button:
@@ -90,6 +102,13 @@ media_player:
           command_value: "{{ volume_level }}"
           dcc_ex_server_ip: !secret DCC-EX-SERVER-IP
           dcc_ex_server_port: !secret DCC-EX-SERVER-PORT
+      volume_mute:
+        service: shell_command.dcc_ex_command
+        data:
+          command_type: "volume"
+          command_value: "0"
+          dcc_ex_server_ip: !secret DCC-EX-SERVER-IP
+          dcc_ex_server_port: !secret DCC-EX-SERVER-PORT
       media_play:
         action: switch.turn_on
         entity_id: input_button.dcc_ex_pause
@@ -112,7 +131,7 @@ switch:
       dcc_ex_pwr:
         <<: *defaults
         name: "DCC-EX Power and Loco Lights"
-        # Power all tracks, enable loco's lights (outdoor + interior), set max volume
+        # Power all tracks, enable loco's lights (main + cab), set max volume
         command_on: "<1> <F 4 0 1> <F 5 0 1> <F 4 15 1> <W 4 63 64>"
         # Power off all tracks
         command_off: "<0>"
@@ -168,6 +187,30 @@ switch:
         # Enable cabin lights on Loco #4
         command_on: "<F 4 15 1>"
         command_off: "<F 4 15 0>"
+
+      ###############################################
+      ## SBB Cargo Re 482
+      ###############################################
+      dcc_ex_cargo_power_sound:
+        <<: *defaults
+        name: "Cargo Power Sound"
+        command_on: "<F 5 1 1>"
+        command_off: "<F 5 1 0>"
+      dcc_ex_cargo_cab_start_up:
+        <<: *defaults
+        name: "Cargo Cab Start Up"
+        command_on: "<F 5 5 1>"
+        command_off: "<F 5 5 0>"
+      dcc_ex_cargo_general_station_sounds:
+        <<: *defaults
+        name: "Cargo General Station Sounds"
+        command_on: "<F 5 20 1>"
+        command_off: "<F 5 20 0>"
+      dcc_ex_cargo_inspection_lights:
+        <<: *defaults
+        name: "Cargo Inspection Lights"
+        command_on: "<F 5 21 1>"
+        command_off: "<F 5 21 0>"
 
       ###############################################
       ## ROUTES (AUTOMATIONS)
