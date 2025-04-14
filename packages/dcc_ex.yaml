@@ -39,6 +39,14 @@ homeassistant:
       icon: mdi:transmission-tower
     switch.dcc_ex_cargo_cab_start_up:
       icon: mdi:car-cog
+    switch.dcc_ex_cargo_doors:
+      icon: mdi:door-sliding
+    switch.dcc_ex_cargo_safety_announcement:
+      icon: mdi:bullhorn-outline
+    switch.dcc_ex_cargo_destination_announcement:
+      icon: mdi:bullhorn-outline
+    switch.dcc_ex_cargo_guard_whistle:
+      icon: mdi:whistle-outline
     switch.dcc_ex_cargo_general_station_sounds:
       icon: mdi:bullhorn-outline
     switch.dcc_ex_cargo_inspection_lights:
@@ -142,7 +150,7 @@ switch:
       dcc_ex_vossloh_horn:
         <<: *defaults
         name: "Vossloh Horn"
-        command_on: "<F 4 2 1> <F 4 3 1>"   # Enable both low and high horn
+        command_on: "<F 4 2 1> <F 4 3 1>" # Enable both low and high horn
         command_off: "<F 4 2 0> <F 4 3 0>"
       dcc_ex_vossloh_cabin_lights:
         <<: *defaults
@@ -163,6 +171,26 @@ switch:
         name: "Cargo Cab Start Up"
         command_on: "<F 5 7 1>"
         command_off: "<F 5 7 0>"
+      dcc_ex_cargo_doors:
+        <<: *defaults
+        name: "Cargo Doors"
+        command_on: "<F 5 8 1>"
+        command_off: "<F 5 8 0>"
+      dcc_ex_cargo_safety_announcement:
+        <<: *defaults
+        name: "Cargo Safety Announcement"
+        command_on: "<F 5 17 1>"
+        command_off: "<F 5 17 0>"
+      dcc_ex_cargo_destination_announcement:
+        <<: *defaults
+        name: "Cargo Destination Announcement"
+        command_on: "<F 5 18 1>"
+        command_off: "<F 5 18 0>"
+      dcc_ex_cargo_guard_whistle:
+        <<: *defaults
+        name: "Cargo Guard Whistle"
+        command_on: "<F 5 19 1>"
+        command_off: "<F 5 19 0>"
       dcc_ex_cargo_general_station_sounds:
         <<: *defaults
         name: "Cargo General Station Sounds"
