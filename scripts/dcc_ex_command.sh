@@ -45,6 +45,13 @@ case "$COMMAND_TYPE" in
             exit 1
         fi
         ;;
+    "cmd")
+        if [ -z "$COMMAND_VALUE" ]; then
+            echo "Command type requires non-empty command value."
+            exit 1
+        fi
+        COMMAND="$COMMAND_VALUE"
+        ;;
     *)
         echo "Invalid command type."
         exit 1
