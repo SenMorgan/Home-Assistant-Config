@@ -75,31 +75,31 @@ entity_config:
   input_button.thermostat_10_minutes_heating:
     name: Подогрев
     room: Дом
-    type: devices.types.switch
+    type: switch
   input_boolean.guest_mode:
     name: Гостевой режим
     room: Дом
-    type: devices.types.switch
+    type: switch
   input_boolean.heating_allowed:
     name: Отопление
     room: Дом
-    type: devices.types.switch
+    type: switch
   input_boolean.home_night_mode:
     name: Ночной режим
     room: Дом
-    type: devices.types.switch
+    type: switch
   input_boolean.silent_mode:
     name: Тихий режим
     room: Дом
-    type: devices.types.switch
+    type: switch
   input_boolean.child_lock:
     name: Детский замок
     room: Дом
-    type: devices.types.switch
+    type: switch
   input_boolean.scooter_charger:
     name: Зарядка самоката
     room: Дом
-    type: devices.types.socket
+    type: socket
   light.hall_lights:
     name: Свет в коридоре
     room: Коридор
@@ -161,47 +161,47 @@ entity_config:
   switch.interactive_cz_map_enable:
     name: Карта
     room: Кухня
-    type: devices.types.switch
+    type: switch
   switch.monolith_speakers:
     name: Колонки
     room: Зал
-    type: devices.types.socket
+    type: socket
   switch.moving_head_power:
     name: Голова
     room: Зал
-    type: devices.types.socket
+    type: socket
   switch.asus_pc:
     name: Компьютер
     room: Кухня
-    type: devices.types.socket
+    type: socket
   input_button.dcc_ex_emergency_stop:
     name: Экстренная остановка
     room: Макет
-    type: devices.types.switch
+    type: switch
   input_button.dcc_ex_reboot:
     name: Перезагрузка макета
     room: Макет
-    type: devices.types.switch
+    type: switch
   input_button.dcc_ex_route_300:
     name: Маршрут 300
     room: Макет
-    type: devices.types.switch
+    type: switch
   input_button.dcc_ex_route_301:
     name: Маршрут 301
     room: Макет
-    type: devices.types.switch
+    type: switch
   switch.dcc_ex_vossloh_engine:
     name: Двигатель тепловоза
     room: Макет
-    type: devices.types.switch
+    type: switch
   switch.dcc_ex_vossloh_horn:
     name: Гудок локомотива
     room: Макет
-    type: devices.types.switch
+    type: switch
   switch.dcc_ex_cargo_power_sound:
-    name: Поднять токоприёмник
+    name: Токоприёмник
     room: Макет
-    type: devices.types.switch
+    type: openable
   sensor.family_room_temperature:
     name: Погода на кухне
     room: Кухня
@@ -303,9 +303,7 @@ entity_config:
   sensor.electricity_meter_energy:
     name: Счётчик электричества
     room: Дом
-    properties:
-      - type: electricity_meter
-        entity: sensor.electricity_meter_energy
+    type: smart_meter.electricity
   climate.family_room:
     name: Главный термостат
     room: Кухня
