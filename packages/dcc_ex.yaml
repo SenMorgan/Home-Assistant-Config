@@ -37,6 +37,10 @@ homeassistant:
       icon: mdi:wall-sconce-flat
     switch.dcc_ex_cargo_power_sound:
       icon: mdi:transmission-tower
+    switch.dcc_ex_cargo_horn:
+      icon: mdi:bullhorn-outline
+    switch.dcc_ex_cargo_horns_fancy:
+      icon: mdi:bugle
     switch.dcc_ex_cargo_cab_start_up:
       icon: mdi:car-cog
     switch.dcc_ex_cargo_doors:
@@ -48,7 +52,7 @@ homeassistant:
     switch.dcc_ex_cargo_guard_whistle:
       icon: mdi:whistle-outline
     switch.dcc_ex_cargo_general_station_sounds:
-      icon: mdi:bullhorn-outline
+      icon: mdi:town-hall
     switch.dcc_ex_cargo_inspection_lights:
       icon: mdi:light-flood-down
 
@@ -166,6 +170,16 @@ switch:
         name: "Cargo Power Sound"
         command_on: "<F 5 1 1>"
         command_off: "<F 5 1 0>"
+      dcc_ex_cargo_horn:
+        <<: *defaults
+        name: "Cargo Horn"
+        command_on: "<F 5 2 1>"
+        command_off: "<F 5 2 0>"
+      dcc_ex_cargo_horns_fancy:
+        <<: *defaults
+        name: "Cargo Horns Fancy"
+        command_on: "<F 5 3 1>"
+        command_off: "<F 5 3 0>"
       dcc_ex_cargo_cab_start_up:
         <<: *defaults
         name: "Cargo Cab Start Up"
@@ -254,6 +268,8 @@ automation:
     triggers:
       - trigger: state
         entity_id:
+          - switch.dcc_ex_cargo_horn
+          - switch.dcc_ex_cargo_horns_fancy
           - switch.dcc_ex_cargo_safety_announcement
           - switch.dcc_ex_cargo_destination_announcement
           - switch.dcc_ex_cargo_guard_whistle
