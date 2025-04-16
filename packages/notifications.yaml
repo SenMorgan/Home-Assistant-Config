@@ -247,8 +247,7 @@ automation:
     triggers:
       - trigger: state
         entity_id: sensor.washing_machine_washer_job_state
-        from: "running"
-        to: "stopped"
+        to: "finish"
     # Condition: only if the washing duration is less than 4 hours (otherwise, it's likely a SmartThings integration issue)
     conditions:
       - condition: template
