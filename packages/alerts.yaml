@@ -98,8 +98,7 @@ alert:
 automation:
   - alias: Alert to TTS Handler
     id: alert_to_tts_handler
-    mode: parallel
-    max: 10
+    mode: single
     max_exceeded: silent
     variables:
       alerts_map:
@@ -120,7 +119,7 @@ automation:
           - alert.natural_gas_detected
     actions:
       - if:
-            # Notify only if the alert is true or false, ignoring "aknowledged" state
+            # Notify only if the alert is true or false, ignoring "acknowledge" state
           - condition: template
             value_template: "{{ trigger.to_state.state in ['on', 'idle'] }}"
         then:
