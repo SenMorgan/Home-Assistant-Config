@@ -324,6 +324,9 @@ entity_config:
   cover.bedroom:
     name: Штора
     room: Спальня
+  cover.living_cover:
+    name: Штора
+    room: Зал
   fan.wc_and_bathroom:
     name: Вентиляция
     room: Туалет
