@@ -17,6 +17,14 @@ homeassistant:
       sys_notify_title_critical: &sys_notify_title_critical "🚨 Внимание!"
 
 ###############################################
+## BUTTONS
+###############################################
+input_button:
+  activate_night_mode:
+    name: Activate Night Mode
+    icon: mdi:moon-waning-crescent
+
+###############################################
 ## SCRIPTS
 ###############################################
 script:
@@ -53,6 +61,18 @@ script:
                 entity_id: switch.parking_light
             - delay:
                 seconds: 1
+
+  activate_night_mode:
+    alias: Activate Night Mode
+    sequence:
+      - action: scene.turn_on
+        entity_id: scene.good_night
+      - action: input_boolean.turn_on
+        entity_id:
+          - input_boolean.home_night_mode
+          - input_boolean.silent_mode
+      - action: script.turn_off_all_lights
+      - action: script.notify_if_some_window_is_opened_during_heating_season
 
 ###############################################
 ## AUTOMATIONS
@@ -443,6 +463,17 @@ automation:
     actions:
       - action: light.turn_{{ trigger.to_state.state }}
         entity_id: light.kitchen_led_strip
+
+  - id: "activate_night_mode"
+    alias: Activate Night Mode
+    mode: single
+    max_exceeded: silent
+    triggers:
+      - trigger: state
+        entity_id: input_button.activate_night_mode
+    actions:
+      - action: script.turn_on
+        entity_id: script.activate_night_mode
 
   ###############################################
   ## BUSY WALL SWITCHES
