@@ -500,7 +500,6 @@ scene:
       light.kitchen_ceiling_light: off
       light.kitchen_spotlights: off
       light.living_room_ceiling_light: off
-      light.mi_desk_lamp: off
       light.shelf_lighting: off
       light.string_lights: off
       # light.living_room_christmas_lights: on
