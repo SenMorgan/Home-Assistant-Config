@@ -8,6 +8,10 @@
 # More info about DCC-EX API:                                        #
 # https://dcc-ex.com/reference/developers/api.html#gsc.tab=0         #
 #                                                                    #
+# Note: I have created a custom integration for Home Assistant to    #
+# control EX-CommandStation via DCC-EX protocol. More info:          #
+# https://github.com/SenMorgan/EX-HABridge                           #
+#                                                                    #
 # Copyright (c) 2024 Sen Morgan                                      #
 ######################################################################
 
@@ -25,7 +29,7 @@ homeassistant:
     ###############################################
     ## CUSTOMIZATIONS
     ###############################################
-    switch.dcc_ex_pwr:
+    switch.ex_commandstation_tracks_power:
       icon: mdi:power
     switch.dcc_ex_pause:
       icon: mdi:play-pause
@@ -76,10 +80,10 @@ media_player:
     commands:
       turn_on:
         action: switch.turn_on
-        entity_id: switch.dcc_ex_pwr
+        entity_id: switch.ex_commandstation_tracks_power
       turn_off:
         action: switch.turn_off
-        entity_id: switch.dcc_ex_pwr
+        entity_id: switch.ex_commandstation_tracks_power
       volume_up:
         service: shell_command.dcc_ex_command
         data:
@@ -115,7 +119,7 @@ media_player:
         action: switch.turn_off
         entity_id: input_button.dcc_ex_pause
     attributes:
-      state: switch.dcc_ex_pwr
+      state: switch.ex_commandstation_tracks_power
     device_class: speaker
 
 ###############################################
@@ -127,15 +131,6 @@ switch:
       ###############################################
       ## Common DCC-EX Commands
       ###############################################
-      dcc_ex_pwr:
-        <<: *defaults
-        name: "DCC-EX Power and Loco Lights"
-        # Power ON all tracks, enable loco's lights (main + cab), set max volume on both locos
-        command_on: "<1> <F 4 0 1> <F 4 15 1> <W 4 63 64> <F 5 0 1> <W 5 158 64>"
-        # Power OFF all tracks
-        command_off: "<0>"
-        command_state: "<s>"
-        value_template: "{{ value.find('<p1 MAIN>') != -1 }}"
       dcc_ex_pause:
         <<: *defaults
         name: "DCC-EX Pause"
@@ -304,7 +299,7 @@ automation:
     actions:
       - action: switch.turn_on
         target:
-          entity_id: switch.dcc_ex_pwr
+          entity_id: switch.ex_commandstation_tracks_power
 
   # Turn on Locomotive cabin lights on motion
   - alias: "DCC-EX Cabin Lights on Motion"
@@ -316,7 +311,7 @@ automation:
         entity_id: binary_sensor.kitchen_motion_alarm
     conditions:
       - condition: state
-        entity_id: switch.dcc_ex_pwr
+        entity_id: switch.ex_commandstation_tracks_power
         state: "on"
       - condition: template
         value_template: "{{ trigger.to_state.state in ['on', 'off'] }}"

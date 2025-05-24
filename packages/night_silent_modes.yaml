@@ -333,7 +333,7 @@ scene:
       # Turning off all lights is called from script.turn_off_all_lights
       cover.bedroom: closed
       switch.moving_head_power: off
-      switch.dcc_ex_pwr: off
+      switch.ex_commandstation_tracks_power: off
       media_player.yandex_station: off
       media_player.yandex_station_midi: off
       media_player.bathroom_google_home_mini: off
@@ -344,7 +344,7 @@ scene:
       # Turning off all lights is called from script.turn_off_all_lights
       media_player.samsung_tv: off
       switch.moving_head_power: off
-      switch.dcc_ex_pwr: off
+      switch.ex_commandstation_tracks_power: off
       media_player.yandex_station: off
       media_player.yandex_station_midi: off
       media_player.bathroom_google_home_mini: off

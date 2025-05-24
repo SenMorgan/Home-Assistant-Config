@@ -35,7 +35,7 @@ script:
         entity_id: all
       - action: switch.turn_off
         entity_id:
-          - switch.dcc_ex_pwr
+          - switch.ex_commandstation_tracks_power
           - switch.interactive_cz_map_enable
           - switch.monolith_speakers
 
@@ -560,5 +560,5 @@ scene:
       light.pc_backlight: on
       light.shelf_lighting: on
       light.string_lights: on
-      switch.dcc_ex_pwr: on
+      switch.ex_commandstation_tracks_power: on
       switch.interactive_cz_map_enable: on
