@@ -6,14 +6,3 @@
 # Copyright (c) 2025 Sen Morgan                                      #
 ######################################################################
 
-scrape:
-  - resource: https://www.hifishark.com/model/grundig-monolith-60
-    scan_interval: 900 # 15 minutes
-    sensor:
-      - name: Grundig Monolith 60 Hifishark Lots
-        unique_id: grundig_monolith_60_hifishark_lots
-        icon: mdi:speaker
-        state_class: total
-        select: "#result-tabs > li:nth-child(1) > a > span"
-        value_template: >-
-          {{ value | regex_findall_index('\d+') | int(0) }}
