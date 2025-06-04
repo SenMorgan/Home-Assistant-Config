@@ -219,20 +219,37 @@ automation:
           - input_boolean.home_night_mode
           - input_boolean.silent_mode
 
-  - alias: Silent Mode by Bedroom Door
-    id: silent_mode_by_bedroom_door
+  - alias: Silent Mode by Bedroom Door Enable
+    id: silent_mode_by_bedroom_door_enable
     mode: single
     triggers:
       - trigger: state
         entity_id: binary_sensor.bedroom_door_contact
+        to: "off"
+        for: 00:00:30
+    actions:
+      # If bedroom door closed ("off" state), then turn on silent mode
+      - action: input_boolean.turn_on
+        entity_id: input_boolean.silent_mode
+
+  - alias: Silent Mode by Bedroom Door Disable
+    id: silent_mode_by_bedroom_door_disable
+    mode: single
+    triggers:
+      - trigger: state
+        entity_id: binary_sensor.bedroom_door_contact
+        to: "on"
         for: 00:00:30
     conditions:
       - condition: state
         entity_id: input_boolean.home_night_mode
         state: "off"
+      - condition: time
+        after: "06:00:00"
+        before: "21:00:00"
     actions:
-      # If bedroom door closed ("off" state), then turn on silent mode, otherwise turn it off
-      - action: input_boolean.turn_{{ "on" if trigger.to_state.state == "off" else "off" }}
+      # If bedroom door opened ("on" state), then turn off silent mode
+      - action: input_boolean.turn_off
         entity_id: input_boolean.silent_mode
 
   - alias: Prevent Accidental Bedroom Lights ON
