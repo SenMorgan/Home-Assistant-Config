@@ -85,28 +85,28 @@ media_player:
         action: switch.turn_off
         entity_id: switch.ex_commandstation_tracks_power
       volume_up:
-        service: shell_command.dcc_ex_command
+        action: shell_command.dcc_ex_command
         data:
           command_type: "volume"
           command_value: "64"
           dcc_ex_server_ip: !secret DCC-EX-SERVER-IP
           dcc_ex_server_port: !secret DCC-EX-SERVER-PORT
       volume_down:
-        service: shell_command.dcc_ex_command
+        action: shell_command.dcc_ex_command
         data:
           command_type: "volume"
           command_value: "20"
           dcc_ex_server_ip: !secret DCC-EX-SERVER-IP
           dcc_ex_server_port: !secret DCC-EX-SERVER-PORT
       volume_set:
-        service: shell_command.dcc_ex_command
+        action: shell_command.dcc_ex_command
         data:
           command_type: "volume"
           command_value: "{{ volume_level }}"
           dcc_ex_server_ip: !secret DCC-EX-SERVER-IP
           dcc_ex_server_port: !secret DCC-EX-SERVER-PORT
       volume_mute:
-        service: shell_command.dcc_ex_command
+        action: shell_command.dcc_ex_command
         data:
           command_type: "volume"
           command_value: "0"

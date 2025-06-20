@@ -233,7 +233,7 @@ automation:
         entity_id: todo.shopping_list
         above: 0
     action:
-      - service: notify.mobile_app_sm_s901b
+      - action: notify.mobile_app_sm_s901b
         data:
           message: "🛒 Открыть список покупок?"
           data:
@@ -254,7 +254,7 @@ automation:
         entity_id: todo.shopping_list
         above: 0
     action:
-      - service: notify.mobile_app_sm_g991b
+      - action: notify.mobile_app_sm_g991b
         data:
           message: "🛒 Открыть список покупок?"
           data:
@@ -272,7 +272,7 @@ automation:
         entity_id: person.sen
         state: "home"
     action:
-      - service: notify.mobile_app_sm_s901b
+      - action: notify.mobile_app_sm_s901b
         data:
           title: "{{ '🔋' }} Часы заряжены"
           message: "Твои Galaxy Watch заряжены уже на 80%!"
@@ -282,7 +282,7 @@ automation:
             entity_id: input_boolean.silent_mode
             state: "off"
         then:
-          - service: media_player.play_media
+          - action: media_player.play_media
             entity_id: media_player.yandex_station_midi
             data:
               media_content_type: text

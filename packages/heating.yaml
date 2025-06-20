@@ -1035,7 +1035,7 @@ automation:
       - condition: template
         value_template: >-
           {{ trigger.from_state is not none and trigger.to_state is not none }}
-      - service: input_text.set_value
+      - action: input_text.set_value
         data:
           entity_id: input_text.heating_log
           value: >-
@@ -1067,7 +1067,7 @@ automation:
         value_template: >
           {{ states('binary_sensor.kitchen_window_contact') in ['on', 'off'] }}
     action:
-      - service: "switch.turn_{{ states('binary_sensor.kitchen_window_contact') }}"
+      - action: "switch.turn_{{ states('binary_sensor.kitchen_window_contact') }}"
         target:
           entity_id: switch.danfoss_etrv0103_kitchen_external_window_sensor
 
@@ -1090,7 +1090,7 @@ automation:
         value_template: >
           {{ states('binary_sensor.bedroom_window_contact') in ['on', 'off'] }}
     action:
-      - service: "switch.turn_{{ states('binary_sensor.bedroom_window_contact') }}"
+      - action: "switch.turn_{{ states('binary_sensor.bedroom_window_contact') }}"
         target:
           entity_id: switch.danfoss_etrv0100_bedroom_external_window_sensor
 
@@ -1113,7 +1113,7 @@ automation:
         value_template: >
           {{ states('binary_sensor.living_room_window_contact') in ['on', 'off'] }}
     action:
-      - service: "switch.turn_{{ states('binary_sensor.living_room_window_contact') }}"
+      - action: "switch.turn_{{ states('binary_sensor.living_room_window_contact') }}"
         target:
           entity_id: switch.danfoss_etrv0103_living_room_external_window_sensor
 
@@ -1136,7 +1136,7 @@ automation:
         value_template: >
           {{ states('binary_sensor.thermostat_heating') in ['on', 'off'] }}
     action:
-      - service: "switch.turn_{{ states('binary_sensor.thermostat_heating') }}"
+      - action: "switch.turn_{{ states('binary_sensor.thermostat_heating') }}"
         target:
           entity_id:
             - switch.danfoss_etrv0100_bedroom_heat_available
