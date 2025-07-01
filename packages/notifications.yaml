@@ -71,6 +71,46 @@ automation:
           title: *sys_notify_title_info
           message: Входная дверь была открыта в {{ states('sensor.time') }}
 
+  - id: "notification_kris_arrived"
+    alias: Notification Kris Arrived
+    triggers:
+      - entity_id: person.kris
+        to: home
+        trigger: state
+    conditions:
+      - condition: state
+        entity_id: input_boolean.home_night_mode
+        state: "off"
+    actions:
+      - data:
+          title: "{{ '👩‍🦰' }} Семейное уведомление"
+          message: Кристина пришла домой в {{ states('sensor.time') }}
+        action: notify.mobile_app_sm_s901b
+      - if:
+          - condition: template
+            value_template: "{{ is_state('person.sen', 'home') }}"
+        then:
+          - entity_id: script.notify_via_kitchen_spotlights
+            action: script.turn_on
+          - if:
+              - condition: state
+                entity_id: switch.asus_pc
+                state: "on"
+            then:
+              - target:
+                  entity_id: select.pc_backlight_preset
+                data:
+                  option: Alarm
+                action: select.select_option
+              - delay: "00:00:10"
+              - target:
+                  entity_id: select.pc_backlight_preset
+                data:
+                  option: Gender
+                action: select.select_option
+
+
+
   - id: "notification_ads_b_receiver_disconnected"
     alias: Notification ADS-B Receiver Disconnected
     triggers:
