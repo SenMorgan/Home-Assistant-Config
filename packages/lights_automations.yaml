@@ -35,9 +35,9 @@ script:
         entity_id: all
       - action: switch.turn_off
         entity_id:
-          - switch.ex_commandstation_tracks_power
-          - switch.interactive_cz_map_enable
           - switch.monolith_speakers
+          - switch.interactive_cz_map_enable
+          - switch.ex_commandstation_tracks_power
 
   switch_on_parking_light:
     alias: Switch On Parking Light
