@@ -529,6 +529,7 @@ scene:
       light.gyver_lamp: off
       light.hall_lights: off
       light.kitchen_ceiling_light: off
+      light.kitchen_led_strip: off
       light.kitchen_spotlights: off
       light.living_room_ceiling_light: off
       light.shelf_lighting: off
