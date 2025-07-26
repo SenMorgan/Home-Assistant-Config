@@ -24,13 +24,11 @@ homeassistant:
       defaults: &defaults
         resource: !secret DCC-EX-SERVER-IP
         port: !secret DCC-EX-SERVER-PORT
-        timeout: &telnet_cmd_timeout 0.2
+        timeout: 0.2
 
     ###############################################
     ## CUSTOMIZATIONS
     ###############################################
-    switch.ex_commandstation_tracks_power:
-      icon: mdi:power
     switch.dcc_ex_pause:
       icon: mdi:play-pause
     switch.dcc_ex_vossloh_engine:
