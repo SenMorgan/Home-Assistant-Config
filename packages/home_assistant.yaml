@@ -56,6 +56,11 @@ binary_sensor:
         friendly_name: "Any Battery Device Low"
         value_template: >-
           {{ expand('group.low_battery_devices') | list | count > 0 }}
+  - platform: template
+    sensors:
+      ha_cpu_overheat:
+        friendly_name: "HA CPU Overheat"
+        value_template: "{{ states('sensor.processor_temperature') | float > 60 }}"
 
 ###############################################
 ## ALERTS
@@ -74,6 +79,18 @@ alert:
       {% set devices = expand('group.low_battery_devices') | list %}
       {% set dev_names = devices | sort(attribute='name') | map(attribute='name') | join(', ') %}
       Устройств{{ iif(devices | length > 1, 'а', 'о') }} с низким зарядом батареи: {{ dev_names }}
+
+  home_assistant_cpu_temp_high:
+    name: "Home Assistant CPU Temperature High"
+    entity_id: binary_sensor.ha_cpu_overheat
+    state: "on"
+    repeat: 60
+    notifiers:
+      - mobile_app_sm_s901b
+      - persistent_notification
+    title: *sys_notify_title_critical
+    message: >-
+      Внимание! Температура CPU Home Assistant превышает пороговое значение: {{ states('sensor.processor_temperature') }}°C
 
 ###############################################
 ## AUTOMATIONS
