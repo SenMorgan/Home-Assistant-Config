@@ -27,6 +27,7 @@ automation:
   - alias: Living Room TV Lights by Sunset or TV ON
     id: living_room_tv_lights_by_sunset_or_tv_on
     description: "Turn on TV lights automatically by sunset or when TV is turned on"
+    mode: restart
     triggers:
       - trigger: numeric_state
         entity_id: sun.sun
@@ -66,6 +67,7 @@ automation:
   - alias: Living Room Speakers Power On with TV
     id: living_room_speakers_power_on_with_tv
     description: "Turn on speakers automatically when TV is turned on"
+    mode: restart
     trigger:
       - platform: state
         entity_id: media_player.samsung_tv
@@ -81,6 +83,7 @@ automation:
   - alias: Living Room Speakers Standby OFF
     id: living_room_speakers_standby_off
     description: "Turn off speakers when in standby mode for a while and TV is off"
+    mode: restart
     trigger:
       - platform: state
         entity_id: binary_sensor.monolith_speakers_above_power_threshold
@@ -101,6 +104,7 @@ automation:
   - alias: Living Room Speakers Auto Power Down
     id: living_room_speakers_auto_power_down
     description: "Turn off speakers if power consumption remains low after powering on"
+    mode: restart
     trigger:
       - platform: state
         entity_id: switch.monolith_speakers
