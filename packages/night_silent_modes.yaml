@@ -193,8 +193,6 @@ automation:
     mode: single
     triggers:
       - trigger: state
-        entity_id: media_player.yandex_station
-      - trigger: state
         entity_id: media_player.yandex_station_midi
     conditions:
       - condition: time
