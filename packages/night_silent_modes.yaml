@@ -228,9 +228,6 @@ automation:
       - condition: time
         after: "06:00:00"
         before: "12:00:00"
-      - condition: state
-        entity_id: binary_sensor.bedroom_door_contact
-        state: "on"
     actions:
       - action: input_boolean.turn_off
         entity_id:
