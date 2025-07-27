@@ -9,14 +9,16 @@
 ######################################################################
 
 ###############################################
-## SETTINGS AND VARIABLES
+## BINARY SENSORS
 ###############################################
-homeassistant:
-  customize:
-    package.node_anchors:
-      # Backlight + speakers active = ~15W, backlight + speakers standby = ~8W
-      speakers_pwr_threshold: &speakers_pwr_threshold 12       # Power threshold (W) for determining standby mode
-      speakers_pwr_down_timeout: &speakers_pwr_down_timeout 5  # Minutes to wait before powering off speakers
+binary_sensor:
+  - platform: template
+    sensors:
+      monolith_speakers_above_power_threshold:
+        friendly_name: "Monolith Speakers Above Power Threshold"
+        # Backlight + speakers active = ~32W, backlight + speakers standby = ~8W
+        value_template: "{{ states('sensor.monolith_speakers_active_power') | float(0) > 12 }}"
+        device_class: power
 
 ###############################################
 ## AUTOMATIONS
@@ -80,11 +82,11 @@ automation:
     id: living_room_speakers_standby_off
     description: "Turn off speakers when in standby mode for a while and TV is off"
     trigger:
-      - platform: numeric_state
-        entity_id: sensor.monolith_speakers_active_power
-        below: *speakers_pwr_threshold
+      - platform: state
+        entity_id: binary_sensor.monolith_speakers_above_power_threshold
+        to: "off"
         for:
-          minutes: *speakers_pwr_down_timeout
+          minutes: 5
     condition:
       - condition: state
         entity_id: switch.monolith_speakers
@@ -101,21 +103,19 @@ automation:
     description: "Turn off speakers if power consumption remains low after powering on"
     trigger:
       - platform: state
-        entity_id: sensor.monolith_speakers
+        entity_id: switch.monolith_speakers
         to: "on"
     action:
       - alias: "Check if power consumption exceeds threshold"
         wait_for_trigger:
-          - platform: numeric_state
-            entity_id: sensor.monolith_speakers_active_power
-            above: *speakers_pwr_threshold
+          - platform: state
+            entity_id: binary_sensor.monolith_speakers_above_power_threshold
+            to: "on"
         timeout:
-          minutes: *speakers_pwr_down_timeout
-      - alias: "Power off if threshold not exceeded"
-        if:
-          - condition: numeric_state
-            entity_id: sensor.monolith_speakers_active_power
-            below: *speakers_pwr_threshold
+          minutes: 5
+      - if:
+          - "{{ not wait.completed }}"
         then:
-          - action: switch.turn_off
+          - alias: "Power off if threshold not exceeded"
+            action: switch.turn_off
             entity_id: switch.monolith_speakers
