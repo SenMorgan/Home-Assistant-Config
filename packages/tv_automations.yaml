@@ -26,28 +26,23 @@ automation:
     id: living_room_tv_lights_by_sunset_or_tv_on
     description: "Turn on TV lights automatically by sunset or when TV is turned on"
     triggers:
-      - trigger: sun
-        id: "SUNSET"
-        event: sunset
-        offset: -00:15:00
+      - trigger: numeric_state
+        entity_id: sun.sun
+        attribute: elevation
+        below: 1.20
       - trigger: state
-        id: "TV_ON"
         entity_id: media_player.samsung_tv
         to: "on"
     conditions:
-      - or:
-          - and:
-              - condition: trigger
-                id: "SUNSET"
-              - condition: state
-                entity_id: media_player.samsung_tv
-                state: "on"
-          - and:
-              - condition: trigger
-                id: "TV_ON"
-              - condition: sun
-                after: sunset
-                before_offset: 00:15:00
+      # For elevation trigger
+      - condition: state
+        entity_id: media_player.samsung_tv
+        state: "on"
+      # For TV trigger
+      - condition: numeric_state
+        entity_id: sun.sun
+        attribute: elevation
+        below: 1.20
     actions:
       - wait_template: >
           {{ states('switch.asus_pc') == 'off' and

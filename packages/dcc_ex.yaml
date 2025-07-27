@@ -276,21 +276,24 @@ automation:
   - alias: "DCC-EX Enable Power on Sunset"
     id: dcc_ex_enable_power_on_sunset
     triggers:
-      - trigger: sun
-        event: sunset
+      - trigger: numeric_state
+        entity_id: sun.sun
+        attribute: elevation
+        below: 1.20
       - trigger: state
         entity_id: person.sen
         to: "home"
     conditions:
-      # For sunset trigger
+      # For elevation trigger
       - condition: state
         entity_id: person.sen
         state: "home"
       # For person trigger
-      - condition: sun
-        after: sunset
-        before_offset: 00:15:00
-      # If night mode is off
+      - condition: numeric_state
+        entity_id: sun.sun
+        attribute: elevation
+        below: 1.20
+      # Only if night mode is off
       - condition: state
         entity_id: input_boolean.home_night_mode
         state: "off"
