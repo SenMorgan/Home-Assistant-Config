@@ -74,18 +74,10 @@ script:
           - input_boolean.bedroom_lights_and_cover_safety_switch
       # Remind via yandex station to check if the window in living room is closed properly
       - if:
-          # Only if silent mode is currently on
-          - condition: state
-            entity_id: input_boolean.silent_mode
-            state: "on"
           # Only if window is currently open
           - condition: state
             entity_id: binary_sensor.living_room_window_contact
             state: "on"
-          # Only if silent mode was on for more than 30 minutes
-          - condition: template
-            value_template: >
-              {{ (now() - states.input_boolean.silent_mode.last_changed).total_seconds() > 1800 }}
         then:
           - action: media_player.play_media
             entity_id: media_player.yandex_station_midi
