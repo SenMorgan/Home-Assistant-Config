@@ -117,8 +117,12 @@ automation:
             to: "on"
         timeout:
           minutes: 5
+      # Check if condition was NOT met and TV is still off
       - if:
           - "{{ not wait.completed }}"
+          - condition: state
+            entity_id: media_player.samsung_tv
+            state: "off"
         then:
           - alias: "Power off if threshold not exceeded"
             action: switch.turn_off
