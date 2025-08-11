@@ -413,6 +413,23 @@ automation:
       - action: switch.turn_on
         entity_id: switch.interactive_cz_map_enable
 
+  - id: "wireless_charger_reenable"
+    alias: Wireless Charger Reenable
+    triggers:
+      - trigger: state
+        entity_id: binary_sensor.people_home
+        to: "on"
+    conditions:
+      - condition: state
+        entity_id: input_boolean.home_night_mode
+        state: "off"
+      - condition: state
+        entity_id: light.wireless_charger
+        state: "off"
+    actions:
+      - action: light.turn_on
+        entity_id: light.wireless_charger
+
   - id: "parking_lights_on"
     alias: Parking Lights ON
     mode: queued

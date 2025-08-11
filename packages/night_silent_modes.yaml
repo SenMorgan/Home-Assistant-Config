@@ -379,6 +379,7 @@ scene:
       media_player.samsung_tv: off
       switch.moving_head_power: off
       switch.ex_commandstation_tracks_power: off
+      light.wireless_charger: off
       media_player.yandex_station: off
       media_player.yandex_station_midi: off
       media_player.bathroom_google_home_mini: off

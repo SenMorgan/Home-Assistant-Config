@@ -37,6 +37,7 @@ filter:
     - light.mi_desk_lamp
     - light.shelf_lighting
     - light.string_lights
+    - light.wireless_charger
     - media_player.model_railway
     - media_player.samsung_tv
     - scene.evening
@@ -119,6 +120,10 @@ entity_config:
   light.string_lights:
     name: Лампочки
     room: Кухня
+  light.wireless_charger:
+    name: Беспроводная зарядка
+    room: Кухня
+    slow: true
   light.kitchen_spotlights:
     name: Подсветка
     room: Кухня
