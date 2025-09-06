@@ -27,10 +27,15 @@ script:
   set_silent_mode:
     alias: Set Silent Mode
     sequence:
-      # Lower Yandex volume
-      - action: script.set_all_yandex_stations_volume_level
+      # Lower Yandex stations volume
+      - action: script.set_volume_level_repeatedly
         data:
+          media_player: media_player.yandex_station_midi
           volume_level: 0.2
+      - action: script.set_volume_level_repeatedly
+        data:
+          media_player: media_player.yandex_station
+          volume_level: 0.4
       # Notify via 7-Segment Clock that we are in silent mode
       - action: scene.turn_on
         entity_id: scene.7_seg_clock_red
@@ -52,10 +57,15 @@ script:
   reset_silent_mode:
     alias: Reset Silent Mode
     sequence:
-      # Rase Yandex volume
-      - action: script.set_all_yandex_stations_volume_level
+      # Raise Yandex stations volume
+      - action: script.set_volume_level_repeatedly
         data:
+          media_player: media_player.yandex_station_midi
           volume_level: 0.4
+      - action: script.set_volume_level_repeatedly
+        data:
+          media_player: media_player.yandex_station
+          volume_level: 0.5
       # Notify via 7-Segment Clock that we left silent mode
       - action: select.select_option
         data:
@@ -327,10 +337,15 @@ automation:
           {% set to = trigger.to_state.attributes.volume_level | float(0) %}
           {{ to > from and to > 0.4 }}
     actions:
-      # Lower Yandex volume
-      - action: script.set_all_yandex_stations_volume_level
+      # Lower Yandex stations volume
+      - action: script.set_volume_level_repeatedly
         data:
+          media_player: media_player.yandex_station_midi
           volume_level: 0.2
+      - action: script.set_volume_level_repeatedly
+        data:
+          media_player: media_player.yandex_station
+          volume_level: 0.4
 
   # Prevent accidental volume increase on Yandex Mini in normal conditions (not in silent mode).
   # Used to save ears from loud music when children play with the volume buttons.

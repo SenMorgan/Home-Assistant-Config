@@ -99,24 +99,6 @@ script:
         description: The media player to set volume for
         example: media_player.yandex_station_midi
 
-  set_all_yandex_stations_volume_level:
-    alias: Set All Yandex Stations Volume Level
-    mode: restart
-    max_exceeded: silent
-    sequence:
-      - action: script.set_volume_level_repeatedly
-        data:
-          media_player: media_player.yandex_station
-          volume_level: "{{ volume_level }}"
-      - action: script.set_volume_level_repeatedly
-        data:
-          media_player: media_player.yandex_station_midi
-          volume_level: "{{ volume_level }}"
-    fields:
-      volume_level:
-        description: The volume level to set
-        example: 0.2
-
   yandex_joke_before_cleaning_kitchen:
     alias: Yandex Joke Before Cleaning Kitchen
     sequence:
