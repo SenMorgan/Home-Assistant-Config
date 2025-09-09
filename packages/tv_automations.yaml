@@ -32,7 +32,7 @@ automation:
       - trigger: numeric_state
         entity_id: sun.sun
         attribute: elevation
-        below: 1.20
+        below: 4.0
       - trigger: state
         entity_id: media_player.samsung_tv
         to: "on"
@@ -45,7 +45,7 @@ automation:
       - condition: numeric_state
         entity_id: sun.sun
         attribute: elevation
-        below: 1.20
+        below: 4.0
     actions:
       - wait_template: >
           {{ states('switch.asus_pc') == 'off' and

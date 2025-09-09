@@ -279,7 +279,7 @@ automation:
       - trigger: numeric_state
         entity_id: sun.sun
         attribute: elevation
-        below: 1.20
+        below: 4.0
       - trigger: state
         entity_id: person.sen
         to: "home"
@@ -292,7 +292,7 @@ automation:
       - condition: numeric_state
         entity_id: sun.sun
         attribute: elevation
-        below: 1.20
+        below: 4.0
       # Only if night mode is off
       - condition: state
         entity_id: input_boolean.home_night_mode

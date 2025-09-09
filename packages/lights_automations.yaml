@@ -296,7 +296,7 @@ automation:
       - trigger: numeric_state
         entity_id: sun.sun
         attribute: elevation
-        below: 1.20
+        below: 4.0
       - trigger: state
         entity_id: switch.asus_pc
         from: "off"
@@ -314,7 +314,7 @@ automation:
       - condition: numeric_state
         entity_id: sun.sun
         attribute: elevation
-        below: 1.20
+        below: 4.0
     actions:
       - action: light.turn_on
         entity_id: light.gyver_lamp
