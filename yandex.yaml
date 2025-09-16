@@ -11,10 +11,9 @@ filter:
     - binary_sensor.kitchen_motion_alarm
     - binary_sensor.kitchen_window_contact
     - binary_sensor.living_room_window_contact
-    - input_button.dcc_ex_emergency_stop
-    - input_button.dcc_ex_reboot
-    - input_button.dcc_ex_route_300
-    - input_button.dcc_ex_route_301
+    - button.ex_commandstation_emergency_stop
+    - button.ex_commandstation_reboot
+    - button.ex_commandstation_route_300
     - input_boolean.child_lock
     - input_boolean.guest_mode
     - input_boolean.heating_allowed
@@ -50,9 +49,9 @@ filter:
     - sensor.sm_g991b_battery_level
     - sensor.sm_s901b_battery_level
     - switch.asus_pc
-    - switch.dcc_ex_vossloh_engine
-    - switch.dcc_ex_vossloh_horn
-    - switch.dcc_ex_cargo_power_sound
+    - switch.loco_vossloh_1701_engine_sound
+    - switch.loco_vossloh_1701_horn_hi
+    - switch.loco_sbb_cargo_re_482_power_sound
     - switch.interactive_cz_map_enable
     - switch.monolith_speakers
     - switch.moving_head_power
@@ -179,31 +178,27 @@ entity_config:
     name: Компьютер
     room: Кухня
     type: socket
-  input_button.dcc_ex_emergency_stop:
+  button.ex_commandstation_emergency_stop:
     name: Экстренная остановка
     room: Макет
     type: switch
-  input_button.dcc_ex_reboot:
+  button.ex_commandstation_reboot:
     name: Перезагрузка макета
     room: Макет
     type: switch
-  input_button.dcc_ex_route_300:
+  button.ex_commandstation_route_300:
     name: Маршрут 300
     room: Макет
     type: switch
-  input_button.dcc_ex_route_301:
-    name: Маршрут 301
-    room: Макет
-    type: switch
-  switch.dcc_ex_vossloh_engine:
+  switch.loco_vossloh_1701_engine_sound:
     name: Двигатель тепловоза
     room: Макет
     type: switch
-  switch.dcc_ex_vossloh_horn:
+  switch.loco_vossloh_1701_horn_hi:
     name: Гудок локомотива
     room: Макет
     type: switch
-  switch.dcc_ex_cargo_power_sound:
+  switch.loco_sbb_cargo_re_482_power_sound:
     name: Токоприёмник
     room: Макет
     type: openable

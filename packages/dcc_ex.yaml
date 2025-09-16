@@ -16,49 +16,6 @@
 ######################################################################
 
 ###############################################
-## SETTINGS AND VARIABLES
-###############################################
-homeassistant:
-  customize:
-    package.node_anchors:
-      defaults: &defaults
-        resource: !secret DCC-EX-SERVER-IP
-        port: !secret DCC-EX-SERVER-PORT
-        timeout: 0.2
-
-    ###############################################
-    ## CUSTOMIZATIONS
-    ###############################################
-    switch.dcc_ex_pause:
-      icon: mdi:play-pause
-    switch.dcc_ex_vossloh_engine:
-      icon: mdi:engine-outline
-    switch.dcc_ex_vossloh_horn:
-      icon: mdi:bullhorn-outline
-    switch.dcc_ex_vossloh_cabin_lights:
-      icon: mdi:wall-sconce-flat
-    switch.dcc_ex_cargo_power_sound:
-      icon: mdi:transmission-tower
-    switch.dcc_ex_cargo_horn:
-      icon: mdi:bullhorn-outline
-    switch.dcc_ex_cargo_horns_fancy:
-      icon: mdi:bugle
-    switch.dcc_ex_cargo_cab_start_up:
-      icon: mdi:car-cog
-    switch.dcc_ex_cargo_doors:
-      icon: mdi:door-sliding
-    switch.dcc_ex_cargo_safety_announcement:
-      icon: mdi:bullhorn-outline
-    switch.dcc_ex_cargo_destination_announcement:
-      icon: mdi:bullhorn-outline
-    switch.dcc_ex_cargo_guard_whistle:
-      icon: mdi:whistle-outline
-    switch.dcc_ex_cargo_general_station_sounds:
-      icon: mdi:town-hall
-    switch.dcc_ex_cargo_inspection_lights:
-      icon: mdi:light-flood-down
-
-###############################################
 ## SHELL COMMANDS
 ###############################################
 shell_command:
@@ -70,7 +27,7 @@ shell_command:
     -p '{{ dcc_ex_server_port }}'
 
 ###############################################
-## MEDIA PLAYER - Used for easier control of volume, power, etc.
+## MEDIA PLAYER - Used for easier control of volume via voice assistants
 ###############################################
 media_player:
   - platform: universal
@@ -111,168 +68,27 @@ media_player:
           dcc_ex_server_ip: !secret DCC-EX-SERVER-IP
           dcc_ex_server_port: !secret DCC-EX-SERVER-PORT
       media_play:
-        action: switch.turn_on
-        entity_id: input_button.dcc_ex_pause
+        action: shell_command.dcc_ex_command
+        data:
+          command_type: "cmd"
+          command_value: "</ RESUME>"
+          dcc_ex_server_ip: !secret DCC-EX-SERVER-IP
+          dcc_ex_server_port: !secret DCC-EX-SERVER-PORT
       media_pause:
-        action: switch.turn_off
-        entity_id: input_button.dcc_ex_pause
+        action: shell_command.dcc_ex_command
+        data:
+          command_type: "cmd"
+          command_value: "</ PAUSE>"
+          dcc_ex_server_ip: !secret DCC-EX-SERVER-IP
+          dcc_ex_server_port: !secret DCC-EX-SERVER-PORT
     attributes:
       state: switch.ex_commandstation_tracks_power
     device_class: speaker
 
 ###############################################
-## SWITCHES
-###############################################
-switch:
-  - platform: telnet
-    switches:
-      ###############################################
-      ## Common DCC-EX Commands
-      ###############################################
-      dcc_ex_pause:
-        <<: *defaults
-        name: "DCC-EX Pause"
-        # Pause all automations
-        command_on: "</ PAUSE>"
-        command_off: "</ RESUME>"
-
-      ###############################################
-      ## Vossloh 1701
-      ###############################################
-      dcc_ex_vossloh_engine:
-        <<: *defaults
-        name: "Vossloh Engine"
-        command_on: "<F 4 1 1>"
-        command_off: "<F 4 1 0>"
-      dcc_ex_vossloh_horn:
-        <<: *defaults
-        name: "Vossloh Horn"
-        command_on: "<F 4 2 1> <F 4 3 1>" # Enable both low and high horn
-        command_off: "<F 4 2 0> <F 4 3 0>"
-      dcc_ex_vossloh_cabin_lights:
-        <<: *defaults
-        name: "Vossloh Cabin Lights"
-        command_on: "<F 4 15 1>"
-        command_off: "<F 4 15 0>"
-
-      ###############################################
-      ## SBB Cargo Re 482
-      ###############################################
-      dcc_ex_cargo_power_sound:
-        <<: *defaults
-        name: "Cargo Power Sound"
-        command_on: "<F 5 1 1>"
-        command_off: "<F 5 1 0>"
-      dcc_ex_cargo_horn:
-        <<: *defaults
-        name: "Cargo Horn"
-        command_on: "<F 5 2 1>"
-        command_off: "<F 5 2 0>"
-      dcc_ex_cargo_horns_fancy:
-        <<: *defaults
-        name: "Cargo Horns Fancy"
-        command_on: "<F 5 3 1>"
-        command_off: "<F 5 3 0>"
-      dcc_ex_cargo_cab_start_up:
-        <<: *defaults
-        name: "Cargo Cab Start Up"
-        command_on: "<F 5 7 1>"
-        command_off: "<F 5 7 0>"
-      dcc_ex_cargo_doors:
-        <<: *defaults
-        name: "Cargo Doors"
-        command_on: "<F 5 8 1>"
-        command_off: "<F 5 8 0>"
-      dcc_ex_cargo_safety_announcement:
-        <<: *defaults
-        name: "Cargo Safety Announcement"
-        command_on: "<F 5 17 1>"
-        command_off: "<F 5 17 0>"
-      dcc_ex_cargo_destination_announcement:
-        <<: *defaults
-        name: "Cargo Destination Announcement"
-        command_on: "<F 5 18 1>"
-        command_off: "<F 5 18 0>"
-      dcc_ex_cargo_guard_whistle:
-        <<: *defaults
-        name: "Cargo Guard Whistle"
-        command_on: "<F 5 19 1>"
-        command_off: "<F 5 19 0>"
-      dcc_ex_cargo_general_station_sounds:
-        <<: *defaults
-        name: "Cargo General Station Sounds"
-        command_on: "<F 5 20 1>"
-        command_off: "<F 5 20 0>"
-      dcc_ex_cargo_inspection_lights:
-        <<: *defaults
-        name: "Cargo Inspection Lights"
-        command_on: "<F 5 21 1>"
-        command_off: "<F 5 21 0>"
-
-###############################################
-## INPUT BUTTONS
-###############################################
-input_button:
-  dcc_ex_emergency_stop:
-    name: "DCC-EX Emergency Stop"
-    icon: mdi:alert
-  dcc_ex_reboot:
-    name: "DCC-EX Reboot"
-    icon: mdi:restart
-  dcc_ex_route_300:
-    name: "DCC-EX Route 300"
-    icon: mdi:railroad-light
-  dcc_ex_route_301:
-    name: "DCC-EX Route 301"
-    icon: mdi:railroad-light
-
-###############################################
 ## AUTOMATIONS
 ###############################################
 automation:
-  - alias: "DCC-EX Handle Buttons Press"
-    description: "Handle buttons press for DCC-EX commands"
-    id: dcc_ex_handle_buttons_press
-    mode: restart
-    variables:
-      button_cmd_map:
-        input_button.dcc_ex_emergency_stop: "<!>"
-        input_button.dcc_ex_reboot: "<D RESET>"
-        input_button.dcc_ex_route_300: "</ START 300>"
-        input_button.dcc_ex_route_301: "</ START 301>"
-    triggers:
-      - trigger: state
-        entity_id:
-          - input_button.dcc_ex_emergency_stop
-          - input_button.dcc_ex_reboot
-          - input_button.dcc_ex_route_300
-          - input_button.dcc_ex_route_301
-    actions:
-      - action: shell_command.dcc_ex_command
-        data:
-          command_type: "cmd"
-          command_value: "{{ button_cmd_map[trigger.entity_id] }}"
-          dcc_ex_server_ip: !secret DCC-EX-SERVER-IP
-          dcc_ex_server_port: !secret DCC-EX-SERVER-PORT
-
-  - alias: "DCC-EX Reset Momentary Command Switches"
-    description: "Reset momentary switches after a short delay to allow them to be triggered again"
-    id: dcc_ex_reset_momentary_switches
-    triggers:
-      - trigger: state
-        entity_id:
-          - switch.dcc_ex_cargo_horn
-          - switch.dcc_ex_cargo_horns_fancy
-          - switch.dcc_ex_cargo_safety_announcement
-          - switch.dcc_ex_cargo_destination_announcement
-          - switch.dcc_ex_cargo_guard_whistle
-        to: "on"
-        for: "00:00:01"
-    actions:
-      - action: switch.turn_off
-        target:
-          entity_id: "{{ trigger.entity_id }}"
-
   - alias: "DCC-EX Enable Power on Sunset"
     id: dcc_ex_enable_power_on_sunset
     triggers:
