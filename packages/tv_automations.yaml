@@ -64,6 +64,21 @@ automation:
           - action: scene.turn_on
             entity_id: scene.movies
 
+  - alias: Living Room TV Lights by TV OFF
+    id: living_room_tv_lights_by_tv_off
+    description: "Turn off TV lights automatically when TV is turned off"
+    mode: restart
+    trigger:
+      - platform: state
+        entity_id: media_player.samsung_tv
+        from: "on"
+        to: "off"
+        for:
+          minutes: 5
+    action:
+      - action: light.turn_off
+        entity_id: light.tv_lights
+
   - alias: Living Room Speakers Power On with TV
     id: living_room_speakers_power_on_with_tv
     description: "Turn on speakers automatically when TV is turned on"
