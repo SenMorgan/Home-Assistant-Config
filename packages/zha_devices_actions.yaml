@@ -29,12 +29,11 @@ input_boolean:
 ###############################################
 automation:
   ###############################################
-  ## Aqara Switch Automations
+  ## Aqara Bedroom Switch
   ###############################################
-  - alias: Aqara Switch 1 Handler
-    id: "aqara_switch_1_handler"
+  - alias: Aqara Bedroom Switch Handler
+    id: "aqara_bedroom_switch_handler"
     mode: restart
-    max_exceeded: silent
     triggers:
       - trigger: event
         event_type: zha_event
@@ -86,10 +85,7 @@ automation:
                     entity_id: input_boolean.child_lock
                     state: "off"
                 then:
-                  - action: input_boolean.turn_off
-                    entity_id:
-                      - input_boolean.home_night_mode
-                      - input_boolean.silent_mode
+                  - action: script.home_day_mode
         default: []
 
   ###############################################
