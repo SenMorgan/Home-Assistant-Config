@@ -293,31 +293,40 @@ automation:
   - id: "kitchen_asus_pc_background_lights_on"
     alias: Kitchen Asus PC Background Lights ON
     triggers:
+      - trigger: state
+        entity_id: switch.asus_pc
+        from: "off"
+        to: "on"
       - trigger: numeric_state
         entity_id: sun.sun
         attribute: elevation
         below: 4.0
       - trigger: state
-        entity_id: switch.asus_pc
-        from: "off"
-        to: "on"
+        entity_id: weather.home_assistant_blue
     conditions:
       # Only if Sen is home
       - condition: state
         entity_id: person.sen
         state: "home"
-      # For elevation trigger
+      # Only if PC is ON
       - condition: state
         entity_id: switch.asus_pc
         state: "on"
-      # For PC trigger
-      - condition: numeric_state
-        entity_id: sun.sun
-        attribute: elevation
-        below: 4.0
+      # Either it's evening or weather is not sunny
+      - or:
+          - condition: numeric_state
+            entity_id: sun.sun
+            attribute: elevation
+            below: 4.0
+          - condition: template
+            value_template: "{{ states('weather.home_assistant_blue') not in ['sunny', 'partlycloudy'] }}"
     actions:
       - action: light.turn_on
         entity_id: light.gyver_lamp
+        data:
+          effect: "Oгoнь"
+          brightness: 150
+          rgb_color: [255, 39, 25]
       - if:
           - condition: template
             value_template: "{{ states('person.kris') == 'home'}}"
