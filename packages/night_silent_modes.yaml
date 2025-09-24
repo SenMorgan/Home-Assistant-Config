@@ -218,10 +218,7 @@ automation:
           {% set to = trigger.to_state.attributes.volume_level | float(0) %}
           {{ to > from }}
     actions:
-      - action: input_boolean.turn_off
-        entity_id:
-          - input_boolean.home_night_mode
-          - input_boolean.silent_mode
+      - action: script.home_day_mode
 
   - alias: Good Morning Handler
     id: good_morning_handler
@@ -240,10 +237,7 @@ automation:
         after: "06:00:00"
         before: "12:00:00"
     actions:
-      - action: input_boolean.turn_off
-        entity_id:
-          - input_boolean.home_night_mode
-          - input_boolean.silent_mode
+      - action: script.home_day_mode
 
   - alias: Silent Mode by Bedroom Door Enable
     id: silent_mode_by_bedroom_door_enable
