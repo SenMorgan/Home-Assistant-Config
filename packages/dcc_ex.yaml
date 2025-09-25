@@ -115,10 +115,10 @@ automation:
         state: "off"
     actions:
       - action: switch.turn_on
-        target:
-          entity_id:
-            - switch.ex_commandstation_tracks_power
-            - switch.loco_sbb_cargo_re_482_coupling
+        entity_id:
+          - switch.ex_commandstation_tracks_power
+          - switch.loco_vossloh_1701_lights
+          - switch.loco_sbb_cargo_re_482_coupling
 
   - alias: "DCC-EX Layout Lights by Motion Sensor"
     id: dcc_ex_layout_lights_by_motion_sensor
@@ -136,5 +136,5 @@ automation:
     actions:
       - action: switch.turn_{{ "on" if trigger.to_state.state == "on" else "off" }}
         entity_id:
-          - switch.dcc_ex_vossloh_cabin_lights
+          - switch.loco_vossloh_1701_cabin_light
           - switch.loco_sbb_cargo_re_482_inspection_lights
