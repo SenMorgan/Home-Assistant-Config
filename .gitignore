@@ -2,36 +2,23 @@
 *
 
 # Whitelist
-!*.yaml
 !.gitignore
+!*.yaml
 !*.md
 !*.py
 !*.sh
 !packages/
+!packages/**
 !python_scripts/
+!python_scripts/**
 !scripts/
+!scripts/**
 !mqtt/
+!mqtt/**
+!custom_sentences/
+!custom_sentences/**
 
-# Ignore folders
-.storage
-.ssh
-.cloud
-.google.token
-.vscode
-custom_components
-image
-tts
-zigbee2mqtt
-www
-
-# Ignore files
-.HA_VERSION
-google_project_id.json
-ip_bans.yaml
+# Ignore specific files
 secrets.yaml
-known_devices.yaml
 yandex-station.yaml
 private.yaml
-*.log*
-*.xml
-*.db*
