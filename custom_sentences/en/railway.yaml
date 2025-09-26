@@ -1,0 +1,67 @@
+######################################################################
+# File: railway.yaml                                                 #
+# Author: SenMorgan https://github.com/SenMorgan                     #
+# Date: 2025-09-25                                                   #
+#                                                                    #
+# Info: this file contains custom sentences for voice control of     #
+# locomotives via DCC-EX protocol.                                   #
+#                                                                    #
+# Copyright (c) 2025 Sen Morgan                                      #
+######################################################################
+
+language: "en"
+expansion_rules:
+  loco_naming: "(locomotive|train|engine)"
+
+intents:
+  SetLocoSpeed:
+    data:
+      - sentences:
+          - "[set|change|adjust|modify] <loco_naming> {loco_id} speed to {speed} [%][percent]"
+  IncreaseLocoSpeed:
+    data:
+      - sentences:
+          - "(increase|raise|boost|up) <loco_naming> {loco_id} speed"
+          - "(speed up|faster) <loco_naming> {loco_id}"
+  DecreaseLocoSpeed:
+    data:
+      - sentences:
+          - "(decrease|lower|reduce|down) <loco_naming> {loco_id} speed"
+          - "(slow down|slower) <loco_naming> {loco_id}"
+  SetLocoDirection:
+    data:
+      - sentences:
+          - "(set|change) <loco_naming> {loco_id} direction to {direction}"
+  ToggleLocoDirection:
+    data:
+      - sentences:
+          - "change <loco_naming> {loco_id} direction"
+          - "toggle <loco_naming> {loco_id} direction"
+          - "reverse <loco_naming> {loco_id} direction"
+  StopLoco:
+    data:
+      - sentences:
+          - "stop <loco_naming> {loco_id}"
+          - "halt <loco_naming> {loco_id}"
+  EmergencyStopAllLocos:
+    data:
+      - sentences:
+          - "emergency stop"
+
+lists:
+  loco_id:
+    range:
+      from: 0
+      to: 10293
+  speed:
+    range:
+      from: 0
+      to: 100
+  direction:
+    values:
+      - in: "forward"
+        out: "forward"
+      - in: "reverse"
+        out: "reverse"
+      - in: "backward"
+        out: "reverse"

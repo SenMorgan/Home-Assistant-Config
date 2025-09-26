@@ -138,3 +138,111 @@ automation:
         entity_id:
           - switch.loco_vossloh_1701_cabin_light
           - switch.loco_sbb_cargo_re_482_inspection_lights
+
+###############################################
+## INTENT SCRIPTS for Voice Control of Locomotives
+###############################################
+intent_script:
+  SetLocoSpeed:
+    description: "Set the speed of a locomotive"
+    mode: restart
+    platforms:
+      - number
+    action:
+      action: number.set_value
+      data:
+        entity_id: &loco_speed_entity >
+          {{ integration_entities('ex_habridge')
+            | select('match', 'number')
+            | select('is_device_attr', 'model_id', (loco_id | int(0) | string ))
+            | list | first }}
+        value: "{{ speed }}"
+    speech:
+      text: "Set locomotive {{ loco_id | int(0) | string }} speed to {{ speed | round(0) }}%"
+
+  IncreaseLocoSpeed:
+    description: "Increase the speed of a locomotive"
+    mode: restart
+    platforms:
+      - number
+    action:
+      - variables:
+          speed_entity: *loco_speed_entity
+      - service: number.set_value
+        data:
+          entity_id: "{{ speed_entity }}"
+          value: "{{ [ (states(speed_entity) | int(0)) + 10, 100] | min }}"
+    speech:
+      text: "Increased locomotive {{ loco_id | int(0) | string }} speed"
+
+  DecreaseLocoSpeed:
+    description: "Decrease the speed of a locomotive"
+    mode: restart
+    platforms:
+      - number
+    action:
+      - variables:
+          speed_entity: *loco_speed_entity
+      - service: number.set_value
+        data:
+          entity_id: "{{ speed_entity }}"
+          value: "{{ [ (states(speed_entity) | int(0)) - 10, 0] | max }}"
+    speech:
+      text: "Decreased locomotive {{ loco_id | int(0) | string }} speed"
+
+  SetLocoDirection:
+    description: "Set the direction of a locomotive"
+    mode: restart
+    platforms:
+      - select
+    action:
+      action: select.select_option
+      data:
+        entity_id: &loco_direction_entity >
+          {{ integration_entities('ex_habridge')
+            | select('match', 'select')
+            | select('is_device_attr', 'model_id', (loco_id | int(0) | string ))
+            | list | first }}
+        option: "{{ direction }}"
+    speech:
+      text: "Set locomotive {{ loco_id | int(0) | string }} direction to {{ direction }}"
+
+  ToggleLocoDirection:
+    description: "Toggle the direction of a locomotive"
+    mode: restart
+    platforms:
+      - select
+    action:
+      - variables:
+          direction_entity: *loco_direction_entity
+      - action: select.select_option
+        data:
+          entity_id: "{{ direction_entity }}"
+          option: "{{ 'reverse' if is_state(direction_entity, 'forward') else 'forward' }}"
+    speech:
+      text: "Changed locomotive {{ loco_id | int(0) | string }} direction"
+
+  StopLoco:
+    description: "Stop a locomotive"
+    mode: restart
+    platforms:
+      - number
+    action:
+      action: number.set_value
+      data:
+        entity_id: *loco_speed_entity
+        value: 0
+    speech:
+      text: "Stopped locomotive {{ loco_id | int(0) | string }}"
+
+  EmergencyStopAllLocos:
+    description: "Emergency stop all locomotives"
+    mode: restart
+    platforms:
+      - button
+    action:
+      - action: button.press
+        data:
+          entity_id: button.ex_commandstation_emergency_stop
+    speech:
+      text: "Locomotives emergency stop activated"
