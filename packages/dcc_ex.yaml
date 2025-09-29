@@ -154,8 +154,8 @@ intent_script:
         entity_id: &loco_speed_entity >
           {{ integration_entities('ex_habridge')
             | select('match', 'number')
-            | select('is_device_attr', 'model_id', (loco_id | int(0) | string ))
-            | list | first }}
+            | select('is_state_attr', 'dcc_id', (loco_id | int(-1) ))
+            | list | first | default }}
         value: "{{ speed }}"
     speech:
       text: "Set locomotive {{ loco_id | int(0) | string }} speed to {{ speed | round(0) }}%"
@@ -201,8 +201,8 @@ intent_script:
         entity_id: &loco_direction_entity >
           {{ integration_entities('ex_habridge')
             | select('match', 'select')
-            | select('is_device_attr', 'model_id', (loco_id | int(0) | string ))
-            | list | first }}
+            | select('is_state_attr', 'dcc_id', (loco_id | int(-1) ))
+            | list | first | default }}
         option: "{{ direction }}"
     speech:
       text: "Set locomotive {{ loco_id | int(0) | string }} direction to {{ direction }}"
