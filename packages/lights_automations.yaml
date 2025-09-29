@@ -433,11 +433,11 @@ automation:
         entity_id: input_boolean.home_night_mode
         state: "off"
       - condition: state
-        entity_id: light.wireless_charger
+        entity_id: switch.wireless_charger
         state: "off"
     actions:
       - action: light.turn_on
-        entity_id: light.wireless_charger
+        entity_id: switch.wireless_charger
 
   - id: "parking_lights_on"
     alias: Parking Lights ON
