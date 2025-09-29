@@ -246,3 +246,31 @@ intent_script:
           entity_id: button.ex_commandstation_emergency_stop
     speech:
       text: "Locomotives emergency stop activated"
+
+  SetTurnout:
+    description: "Set a turnout to a specific position"
+    mode: restart
+    platforms:
+      - switch
+    action:
+      action: switch.turn_{{ "on" if position == "diverging" else "off" }}
+      data:
+        entity_id: &turnout_entity >
+          {{ integration_entities('ex_habridge')
+            | select('match', 'switch')
+            | select('is_state_attr', 'dcc_id', (turnout_id | int(-1) ))
+            | list | first | default }}
+    speech:
+      text: "Set turnout {{ turnout_id | int(0) | string }} to {{ position }}"
+
+  ToggleTurnout:
+    description: "Toggle a turnout"
+    mode: restart
+    platforms:
+      - switch
+    action:
+      - action: switch.toggle
+        data:
+          entity_id: *turnout_entity
+    speech:
+      text: "Toggled turnout {{ turnout_id | int(0) | string }}"

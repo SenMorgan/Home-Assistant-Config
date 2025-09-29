@@ -47,8 +47,25 @@ intents:
     data:
       - sentences:
           - "emergency stop"
+  SetTurnout:
+    data:
+      - sentences:
+          - "[set|change] (turnout|switch|point) {turnout_id} [to] {position} [position]"
+      - sentences:
+          - "throw (turnout|switch|point) {turnout_id}"
+        slots:
+          position: "diverging"
+      - sentences:
+          - "straighten (turnout|switch|point) {turnout_id}"
+        slots:
+          position: "straight"
+  ToggleTurnout:
+    data:
+      - sentences:
+          - "(toggle|change|reverse|turn|switch) (turnout|switch|point) {turnout_id}"
 
 lists:
+  ######## Locomotive lists ########
   loco_id:
     range:
       from: 0
@@ -65,3 +82,17 @@ lists:
         out: "reverse"
       - in: "backward"
         out: "reverse"
+
+  ######## Turnout lists ########
+  turnout_id:
+    range:
+      from: 0
+      to: 10293
+  position:
+    values:
+      - in: "straight"
+        out: "straight"
+      - in: "diverging"
+        out: "diverging"
+      - in: "thrown"
+        out: "diverging"
