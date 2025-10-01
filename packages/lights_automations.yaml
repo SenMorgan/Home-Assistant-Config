@@ -319,7 +319,7 @@ automation:
             attribute: elevation
             below: 4.0
           - condition: template
-            value_template: "{{ states('weather.home_assistant_blue') not in ['sunny', 'partlycloudy'] }}"
+            value_template: "{{ not is_state('weather.home_assistant_blue', 'sunny') }}"
     actions:
       - action: light.turn_on
         entity_id: light.gyver_lamp
