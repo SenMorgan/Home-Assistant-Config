@@ -22,6 +22,7 @@ filter:
     - input_boolean.silent_mode
     - input_button.thermostat_10_minutes_heating
     - light.tv_lights
+    - light.banana_light
     - light.bedroom_ceiling_light
     - light.bedroom_nightlight
     - light.floor_lamp
@@ -142,6 +143,9 @@ entity_config:
   # light.living_room_christmas_lights:
   #   name: Гирлянда
   #   room: Зал
+  light.banana_light:
+    name: Банан
+    room: Кухня
   light.bedroom_ceiling_light:
     name: Люстра
     room: Спальня
