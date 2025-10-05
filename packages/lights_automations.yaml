@@ -389,6 +389,9 @@ automation:
       - condition: state
         entity_id: binary_sensor.people_home
         state: "on"
+      - condition: state
+        entity_id: input_boolean.home_night_mode
+        state: "off"
       - condition: time
         after: "05:00:00"
         before: "22:00:00"
@@ -415,6 +418,9 @@ automation:
       - condition: state
         entity_id: person.sen
         state: "home"
+      - condition: state
+        entity_id: input_boolean.home_night_mode
+        state: "off"
       - condition: time
         after: "05:00:00"
         before: "22:00:00"
@@ -428,16 +434,24 @@ automation:
       - trigger: state
         entity_id: binary_sensor.people_home
         to: "on"
+      - trigger: state
+        entity_id: input_boolean.home_night_mode
+        to: "off"
+      - trigger: state
+        entity_id: input_boolean.silent_mode
+        to: "off"
     conditions:
       - condition: state
         entity_id: input_boolean.home_night_mode
         state: "off"
-      - condition: state
-        entity_id: switch.wireless_charger
-        state: "off"
+      - condition: time
+        after: "05:00:00"
+        before: "22:00:00"
     actions:
-      - action: light.turn_on
+      - action: switch.turn_on
         entity_id: switch.wireless_charger
+      - action: light.turn_on
+        entity_id: light.banana_light  # also enable banana light
 
   - id: "parking_lights_on"
     alias: Parking Lights ON

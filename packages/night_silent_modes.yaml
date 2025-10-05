@@ -118,7 +118,7 @@ script:
             entity_id: binary_sensor.people_home
             state: "on"
         then:
-          - action: light.turn_on
+          - action: switch.turn_on
             entity_id: switch.wireless_charger
       # Enable Interactive CZ Map if Sen is home
       - if:
