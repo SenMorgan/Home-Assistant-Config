@@ -12,41 +12,103 @@
 language: "en"
 expansion_rules:
   loco_naming: "(locomotive|train|engine)"
+  diesel_loco: "(diesel locomotive|diesel train|diesel engine)"
+  electric_loco: "(electric locomotive|electric train|electric engine)"
 
 intents:
+  HassTurnOn:
+    data:
+      - sentences:
+          - "start [the] {name}"
+          - "raise [the] {name}"
+          - "activate [the] {name}"
+  HassTurnOff:
+    data:
+      - sentences:
+          - "stop [the] {name}"
+          - "lower [the] {name}"
+          - "deactivate [the] {name}"
   SetLocoSpeed:
     data:
       - sentences:
           - "[set|change|adjust|modify] <loco_naming> {loco_id} speed to {speed} [%][percent]"
+      - sentences:
+          - "[set|change|adjust|modify] <diesel_loco> speed to {speed} [%][percent]"
+        slots:
+          loco_id: 4
+      - sentences:
+          - "[set|change|adjust|modify] <electric_loco> speed to {speed} [%][percent]"
+        slots:
+          loco_id: 5
   IncreaseLocoSpeed:
     data:
       - sentences:
           - "(increase|raise|boost|up) <loco_naming> {loco_id} speed"
           - "(speed up|faster) <loco_naming> {loco_id}"
+      - sentences:
+          - "(increase|raise|boost|up) <diesel_loco> speed"
+        slots:
+          loco_id: 4
+      - sentences:
+          - "(increase|raise|boost|up) <electric_loco> speed"
+        slots:
+          loco_id: 5
   DecreaseLocoSpeed:
     data:
       - sentences:
           - "(decrease|lower|reduce|down) <loco_naming> {loco_id} speed"
           - "(slow down|slower) <loco_naming> {loco_id}"
+      - sentences:
+          - "(decrease|lower|reduce|down) <diesel_loco> speed"
+        slots:
+          loco_id: 4
+      - sentences:
+          - "(decrease|lower|reduce|down) <electric_loco> speed"
+        slots:
+          loco_id: 5
   SetLocoDirection:
     data:
       - sentences:
           - "(set|change) <loco_naming> {loco_id} direction to {direction}"
+      - sentences:
+          - "(set|change) <diesel_loco> direction to {direction}"
+        slots:
+          loco_id: 4
+      - sentences:
+          - "(set|change) <electric_loco> direction to {direction}"
+        slots:
+          loco_id: 5
   ToggleLocoDirection:
     data:
       - sentences:
           - "change <loco_naming> {loco_id} direction"
           - "toggle <loco_naming> {loco_id} direction"
           - "reverse <loco_naming> {loco_id} direction"
+      - sentences:
+          - "change <diesel_loco> direction"
+        slots:
+          loco_id: 4
+      - sentences:
+          - "change <electric_loco> direction"
+        slots:
+          loco_id: 5
   StopLoco:
     data:
       - sentences:
           - "stop <loco_naming> {loco_id}"
           - "halt <loco_naming> {loco_id}"
+      - sentences:
+          - "stop <diesel_loco>"
+        slots:
+          loco_id: 4
+      - sentences:
+          - "stop <electric_loco>"
+        slots:
+          loco_id: 5
   EmergencyStopAllLocos:
     data:
       - sentences:
-          - "emergency stop"
+          - "emergency stop [all] [locomotives]"
   SetTurnout:
     data:
       - sentences:
@@ -95,4 +157,6 @@ lists:
       - in: "diverging"
         out: "diverging"
       - in: "thrown"
+        out: "diverging"
+      - in: "curved"
         out: "diverging"
