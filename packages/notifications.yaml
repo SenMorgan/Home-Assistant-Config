@@ -273,6 +273,7 @@ automation:
         entity_id: todo.shopping_list
         above: 0
     action:
+      - action: script.update_shopping_list
       - action: notify.mobile_app_sm_s901b
         data:
           message: "🛒 Открыть список покупок?"
@@ -294,6 +295,7 @@ automation:
         entity_id: todo.shopping_list
         above: 0
     action:
+      - action: script.update_shopping_list
       - action: notify.mobile_app_sm_g991b
         data:
           message: "🛒 Открыть список покупок?"

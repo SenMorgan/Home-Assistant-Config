@@ -19,6 +19,15 @@ automation:
         to: "off"
         for: 00:05:00
     actions:
+      - action: script.update_shopping_list
+
+###############################################
+## SCRIPTS
+###############################################
+script:
+  update_shopping_list:
+    alias: Update Shopping List
+    sequence:
       # Save actual volume
       - action: input_number.set_value
         target:
@@ -38,8 +47,11 @@ automation:
                 entity_id: media_player.yandex_station_midi
                 volume_level: 0.01
             - delay: 0.5
-      - action: script.turn_on
-        entity_id: script.update_shopping_list
+      - action: media_player.play_media
+        entity_id: media_player.yandex_station_midi
+        data:
+          media_content_id: update
+          media_content_type: shopping_list
       - delay: 1
       - action: media_player.play_media
         entity_id: media_player.yandex_station_midi
@@ -60,19 +72,6 @@ automation:
                 entity_id: media_player.yandex_station_midi
                 volume_level: "{{ states('input_number.volume_yandex_station')}}"
             - delay: 1
-
-###############################################
-## SCRIPTS
-###############################################
-script:
-  update_shopping_list:
-    alias: Update Shopping List
-    sequence:
-      - action: media_player.play_media
-        entity_id: media_player.yandex_station_midi
-        data:
-          media_content_id: update
-          media_content_type: shopping_list
 
   set_volume_level_repeatedly:
     alias: Set Volume Level Repeatedly
