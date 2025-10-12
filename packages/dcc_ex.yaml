@@ -113,6 +113,10 @@ automation:
       - condition: state
         entity_id: input_boolean.home_night_mode
         state: "off"
+      # Only in daytime hours
+      - condition: time
+        after: "05:00:00"
+        before: "22:00:00"
     actions:
       - action: switch.turn_on
         entity_id:
