@@ -151,7 +151,7 @@ automation:
                         \ %}\n{% if suggested > 0 %} {{ suggested }} {% else %} 1 {% endif %}\n"
 
   ###############################################
-  ## Floorlamp Tradfri Switch Control
+  ## Tradfri Switch Control
   ###############################################
   - alias: Tradfri Switch 1 Handler
     id: "tradfri_switch_1_handler"
@@ -168,15 +168,43 @@ automation:
           command: "{{ trigger.event.data.command }}"
       - choose:
           - conditions:
-              - "{{ command == 'on' }}"
+              - "{{ command == 'on' }}"  # Single press UP
             sequence:
-              - action: input_boolean.turn_on
-                entity_id: input_boolean.scooter_charger
+              - if:
+                  - condition: state
+                    entity_id: light.hall_edison_bulb
+                    state: "off"
+                then:
+                  - action: light.turn_on
+                    entity_id: light.hall_edison_bulb
+                else:
+                  - action: light.turn_on
+                    entity_id: light.hall_lights
           - conditions:
-              - "{{ command == 'off' }}"
+              - "{{ command == 'off' }}"  # Single press DOWN
             sequence:
-              - action: input_boolean.turn_off
-                entity_id: input_boolean.scooter_charger
+              - if:
+                  - condition: state
+                    entity_id: light.hall_lights
+                    state: "on"
+                then:
+                  - action: light.turn_off
+                    entity_id: light.hall_lights
+                else:
+                  - action: light.turn_off
+                    entity_id: light.hall_edison_bulb
+          - conditions:
+              - "{{ command == 'move_with_on_off' }}"  # Hold UP
+            sequence:
+              - service: light.turn_on
+                target:
+                  area_id: hall
+          - conditions:
+              - "{{ command == 'move' }}"  # Hold DOWN
+            sequence:
+              - service: light.turn_off
+                target:
+                  area_id: hall
 
   ###############################################
   ## Ikea RODRET Dimmer Automations
