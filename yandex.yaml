@@ -35,7 +35,7 @@ filter:
     - light.living_room_ceiling_light
     # - light.living_room_christmas_lights
     - light.mi_desk_lamp
-    - light.philips_hue_hall
+    - light.hall_edison_bulb
     - light.shelf_lighting
     - light.string_lights
     - switch.wireless_charger
@@ -114,7 +114,7 @@ entity_config:
   light.mi_desk_lamp:
     name: Светильник
     room: Зал
-  light.philips_hue_hall:
+  light.hall_edison_bulb:
     name: Лампочка
     room: Коридор
   light.gyver_lamp:
