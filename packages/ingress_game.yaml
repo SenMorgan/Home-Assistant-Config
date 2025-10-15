@@ -26,11 +26,10 @@ rest:
       Referer: "https://intel.ingress.com/intel"
       User-Agent: "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/55.0.2883.95 Safari/537.36"
       X-CSRFToken: !secret INGRESS-X-CSRFToken  # Format: "****************"
-      INGRESS-Cookie: !secret INGRESS-Cookie  # Format: "csrftoken=********; sessionid.=********;"
+      Cookie: !secret INGRESS-Cookie  # Format: "csrftoken=********; sessionid.=********;"
     payload: !secret INGRESS-payload  # Format: '{"guid":"****************","v":"****************"}'
     sensor:
       - name: Ingress Portal Faction
-        json_attributes_path: "$.result"
         value_template: >-
           {% set t = value_json.result[1] | default(None) %}
           {% if t == 'E' %}Enlightened
@@ -47,7 +46,6 @@ rest:
           {% elif t == 'M' %}/local/images/ingress/machina.png
           {% else %}/local/images/ingress/neutral.png{% endif %}
       - name: Ingress Portal Energy Level
-        json_attributes_path: "$.result"
         value_template: "{{ value_json.result[5] | default(None) }}"
         availability: "{{ value_json.result[1] | default(None) in ['E','R','N','M'] }}"
         device_class: "battery"
