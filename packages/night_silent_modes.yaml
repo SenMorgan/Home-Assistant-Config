@@ -357,13 +357,13 @@ automation:
         value_template: >
           {% set from = trigger.from_state.attributes.volume_level | float(0) %}
           {% set to = trigger.to_state.attributes.volume_level | float(0) %}
-          {{ to > from and to > 0.6 }}
+          {{ to > from and to > 0.8 }}
     actions:
       # Lower Yandex volume
       - action: script.set_volume_level_repeatedly
         data:
           media_player: media_player.yandex_station
-          volume_level: 0.6
+          volume_level: 0.8
 
 ###############################################
 ## SCENES
