@@ -156,7 +156,7 @@ scene:
       light.shelf_lighting:
         state: "on"
         effect: "Fairy Twinkle"
-        brightness: 128
+        brightness: 40
         rgb_color: [8, 255, 0]
       select.shelf_lighting_color_palette: "Default"
       number.shelf_lighting_intensity: "255"
@@ -166,7 +166,7 @@ scene:
       light.shelf_lighting:
         state: "on"
         effect: "Fairy Twinkle"
-        brightness: 128
+        brightness: 40
         rgb_color: [0, 128, 255]
       select.shelf_lighting_color_palette: "Default"
       number.shelf_lighting_intensity: "255"
@@ -176,7 +176,7 @@ scene:
       light.shelf_lighting:
         state: "on"
         effect: "Fairy Twinkle"
-        brightness: 128
+        brightness: 40
         rgb_color: [255, 0, 0]
       select.shelf_lighting_color_palette: "Default"
       number.shelf_lighting_intensity: "255"
@@ -186,7 +186,7 @@ scene:
       light.shelf_lighting:
         state: "on"
         effect: "Fairy Twinkle"
-        brightness: 128
+        brightness: 40
         rgb_color: [255, 255, 255]
       select.shelf_lighting_color_palette: "Default"
       number.shelf_lighting_intensity: "255"
