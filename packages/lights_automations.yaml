@@ -435,10 +435,10 @@ automation:
         entity_id: binary_sensor.people_home
         to: "on"
       - trigger: state
-        entity_id: input_boolean.home_night_mode
+        entity_id: input_boolean.silent_mode
         to: "off"
       - trigger: state
-        entity_id: input_boolean.silent_mode
+        entity_id: input_boolean.home_night_mode
         to: "off"
     conditions:
       - condition: state
@@ -450,8 +450,29 @@ automation:
     actions:
       - action: switch.turn_on
         entity_id: switch.wireless_charger
+
+  - id: "banana_light_reenable"
+    alias: Banana Light Reenable
+    triggers:
+      - trigger: state
+        entity_id: person.sen
+        to: "home"
+      - trigger: state
+        entity_id: input_boolean.silent_mode
+        to: "off"
+      - trigger: state
+        entity_id: input_boolean.home_night_mode
+        to: "off"
+    conditions:
+      - condition: state
+        entity_id: input_boolean.home_night_mode
+        state: "off"
+      - condition: time
+        after: "05:00:00"
+        before: "22:00:00"
+    actions:
       - action: light.turn_on
-        entity_id: light.banana_light  # also enable banana light
+        entity_id: light.banana_light
 
   - id: "parking_lights_on"
     alias: Parking Lights ON
