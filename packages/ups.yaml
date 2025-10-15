@@ -145,25 +145,3 @@ automation:
           effect: "breathe"
       - action: automation.turn_on
         entity_id: automation.ups_grid_power_restored_light_notification
-
-  - alias: UPS Grid Power Restored Light Notification
-    id: "ups_grid_power_restored_light_notification"
-    mode: single
-    triggers:
-      - trigger: template
-        value_template: "{{ 'OL' in states('sensor.ups_status_data') }}"
-    actions:
-      - action: light.turn_on
-        data:
-          entity_id: light.tradfri_bulb
-          brightness: 255
-      - wait_template: "{{ not ('OL' in states('sensor.ups_status_data')) }}"
-        timeout: "00:00:10"
-      - if:
-          - condition: template
-            value_template: "{{ 'OL' in states('sensor.ups_status_data') }}"
-        then:
-          - action: light.turn_off
-            entity_id: light.tradfri_bulb
-      - action: automation.turn_off
-        entity_id: automation.ups_grid_power_restored_light_notification
