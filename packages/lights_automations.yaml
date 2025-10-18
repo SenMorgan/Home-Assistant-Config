@@ -108,7 +108,7 @@ automation:
             id: "SEN_CAME_HOME"
         then:
           - action: light.turn_on
-            entity_id: light.hall_lights
+            entity_id: light.hall_edison_bulb
       - wait_template: "{{ states('binary_sensor.hall_door_contact') == 'off' }}"
         timeout: 00:10:00
         continue_on_timeout: false
@@ -194,6 +194,26 @@ automation:
             data:
               title: *sys_notify_title_warning
               message: Автоматизация приветствия не смогла определить кто пришел домой
+
+  - id: "welcome_lights"
+    alias: Welcome Lights
+    mode: single
+    max_exceeded: silent
+    triggers:
+      - trigger: state
+        id: "SEN_CAME_HOME"
+        entity_id: person.sen
+        to: "home"
+      - trigger: state
+        id: "KRIS_CAME_HOME"
+        entity_id: person.kris
+        to: "home"
+    actions:
+      - wait_template: "{{ states('binary_sensor.hall_door_contact') == 'on' }}"
+        timeout: 00:15:00
+        continue_on_timeout: false
+      - action: light.turn_on
+        entity_id: light.hall_edison_bulb
 
   - id: "home_all_lights_off"
     alias: Home All Lights OFF
