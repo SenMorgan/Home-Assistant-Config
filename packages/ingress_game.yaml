@@ -79,7 +79,7 @@ automation:
         before: "22:00:00"
     actions:
       - alias: Turn on Scene based on Faction
-        service: script.set_scene_by_ingress_faction
+        service: script.set_lighting_by_ingress_faction
 
   - alias: Notify on Ingress Portal Faction Change
     id: notify_on_ingress_portal_faction_change
@@ -107,7 +107,7 @@ automation:
             state: "home"
         then:
           - alias: Turn on Scene based on Faction
-            service: script.set_scene_by_ingress_faction
+            service: script.set_lighting_by_ingress_faction
           - if:
               # Notify via Yandex Station only if Night Mode is off
               - condition: state
@@ -126,66 +126,38 @@ automation:
 ## SCRIPTS
 ###############################################
 script:
-  set_scene_by_ingress_faction:
-    alias: "Set Scene by Ingress Faction"
-    description: "Activate scene based on Ingress Portal Faction"
+  set_lighting_by_ingress_faction:
+    alias: "Set Lighting Based on Ingress Faction"
+    description: "Activate lighting based on Ingress Portal Faction"
     sequence:
-      - service: scene.turn_on
+      - service: light.turn_on
+        target:
+          entity_id: light.shelf_lighting
         data:
-          entity_id: >
+          effect: "Fairytwinkle"
+          brightness: 40
+          rgb_color: >
             {% if is_state('sensor.ingress_portal_faction', 'Enlightened') %}
-              scene.ingress_portal_faction_enlightened
+              [8, 255, 0]
             {% elif is_state('sensor.ingress_portal_faction', 'Resistance') %}
-              scene.ingress_portal_faction_resistance
+              [0, 128, 255]
             {% elif is_state('sensor.ingress_portal_faction', 'Machina') %}
-              scene.ingress_portal_faction_machina
-            {% elif is_state('sensor.ingress_portal_faction', 'Neutral') %}
-              scene.ingress_portal_faction_neutral
+              [255, 0, 0]
             {% else %}
-              scene.ingress_portal_faction_neutral
+              [255, 255, 255]
             {% endif %}
-
-###############################################
-## SCENES
-###############################################
-scene:
-  - name: Ingress Portal Faction Enlightened
-    entities:
-      light.shelf_lighting:
-        state: "on"
-        effect: "Fairy Twinkle"
-        brightness: 40
-        rgb_color: [8, 255, 0]
-      select.shelf_lighting_color_palette: "Default"
-      number.shelf_lighting_intensity: "255"
-      number.shelf_lighting_speed: "128"
-  - name: Ingress Portal Faction Resistance
-    entities:
-      light.shelf_lighting:
-        state: "on"
-        effect: "Fairy Twinkle"
-        brightness: 40
-        rgb_color: [0, 128, 255]
-      select.shelf_lighting_color_palette: "Default"
-      number.shelf_lighting_intensity: "255"
-      number.shelf_lighting_speed: "128"
-  - name: Ingress Portal Faction Machina
-    entities:
-      light.shelf_lighting:
-        state: "on"
-        effect: "Fairy Twinkle"
-        brightness: 40
-        rgb_color: [255, 0, 0]
-      select.shelf_lighting_color_palette: "Default"
-      number.shelf_lighting_intensity: "255"
-      number.shelf_lighting_speed: "128"
-  - name: Ingress Portal Faction Neutral
-    entities:
-      light.shelf_lighting:
-        state: "on"
-        effect: "Fairy Twinkle"
-        brightness: 40
-        rgb_color: [255, 255, 255]
-      select.shelf_lighting_color_palette: "Default"
-      number.shelf_lighting_intensity: "255"
-      number.shelf_lighting_speed: "128"
+      - service: select.select_option
+        target:
+          entity_id: select.shelf_lighting_color_palette
+        data:
+          option: "* Color 1"
+      - service: number.set_value
+        target:
+          entity_id: number.shelf_lighting_intensity
+        data:
+          value: 255
+      - service: number.set_value
+        target:
+          entity_id: number.shelf_lighting_speed
+        data:
+          value: 128
