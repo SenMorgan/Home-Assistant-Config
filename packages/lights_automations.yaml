@@ -401,6 +401,7 @@ automation:
 
   - id: "kitchen_clock_reenable"
     alias: Kitchen Clock Reenable
+    mode: restart
     triggers:
       - trigger: state
         entity_id: light.7_seg_clock
@@ -431,6 +432,7 @@ automation:
 
   - id: "interactive_cz_map_reenable"
     alias: Interactive CZ Map Reenable
+    mode: restart
     triggers:
       - trigger: state
         entity_id: person.sen
@@ -460,6 +462,7 @@ automation:
 
   - id: "wireless_charger_reenable"
     alias: Wireless Charger Reenable
+    mode: restart
     triggers:
       - trigger: state
         entity_id: binary_sensor.people_home
@@ -483,6 +486,7 @@ automation:
 
   - id: "banana_light_reenable"
     alias: Banana Light Reenable
+    mode: restart
     triggers:
       - trigger: state
         entity_id: person.sen
