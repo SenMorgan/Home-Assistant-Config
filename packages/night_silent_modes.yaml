@@ -229,6 +229,7 @@ automation:
       - trigger: state
         entity_id: cover.bedroom
         to: "open"
+        for: 00:00:15
     conditions:
       - condition: state
         entity_id: input_boolean.home_night_mode
