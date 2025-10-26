@@ -29,6 +29,9 @@ input_button:
   home_assistant_reboot:
     name: Home Assistant Reboot
     icon: mdi:restart
+  server_rack_power_off:
+    name: Server Rack Power Off
+    icon: mdi:power
 
 ###############################################
 ## SCRIPTS

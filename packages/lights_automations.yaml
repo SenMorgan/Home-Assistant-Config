@@ -17,12 +17,22 @@ homeassistant:
       sys_notify_title_critical: &sys_notify_title_critical "🚨 Внимание!"
 
 ###############################################
-## BUTTONS
+## INPUT BUTTONS
 ###############################################
 input_button:
+  parking_light:
+    name: Parking Light
+    icon: mdi:light-flood-down
   activate_night_mode:
     name: Activate Night Mode
     icon: mdi:moon-waning-crescent
+
+###############################################
+## INPUT BOOLEANS
+###############################################
+input_boolean:
+  flag_hall_lights_triggered_by_motion:
+    name: Flag - Hall Lights Was Triggered by Motion Sensor
 
 ###############################################
 ## SCRIPTS

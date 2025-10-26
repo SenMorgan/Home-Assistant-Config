@@ -53,28 +53,6 @@ camera:
 binary_sensor: !include binary_sensors.yaml
 sensor: !include sensors.yaml
 
-input_number:
-  volume_yandex_station:
-    name: Volume Yandex Station
-    min: 0
-    max: 100
-    initial: 0.1
-  power_monitor_low_voltage_threshold:
-    name: Power Monitor Low Voltage Threshold
-    min: 8
-    max: 16
-    step: 0.1
-
-input_boolean:
-  flag_spotlight_triggered_by_motion:
-    name: Flag - Spotlight Was Triggered by Motion Sensor
-    icon: mdi:engine-outline
-  flag_hall_lights_triggered_by_motion:
-    name: Flag - Hall Lights Was Triggered by Motion Sensor
-  show_cameras_in_lovelace:
-    name: Show Cameras in Lovelace
-    icon: mdi:camera
-
 switch:
   - platform: wake_on_lan
     name: Asus PC
@@ -89,14 +67,6 @@ switch:
     name: Lenovo ThinkBook
     mac: !secret LENOVO_NB_MAC
     host: !secret LENOVO_NB_LOCAL_IP
-
-input_button:
-  parking_light:
-    name: Parking Light
-    icon: mdi:light-flood-down
-  server_rack_power_off:
-    name: Server Rack Power Off
-    icon: mdi:power
 
 light:
   - platform: artnet_led

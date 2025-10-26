@@ -1,10 +1,18 @@
 ######################################################################
-# File: tags.yaml                                                  #
+# File: tags.yaml                                                    #
 # Author: SenMorgan https://github.com/SenMorgan                     #
 # Date: 2024-02-08                                                   #
 #                                                                    #                                                                    #
 # Copyright (c) 2024 Sen Morgan                                      #
 ######################################################################
+
+###############################################
+## INPUT BOOLEANS
+###############################################
+input_boolean:
+  show_cameras_in_lovelace:
+    name: Show Cameras in Lovelace
+    icon: mdi:camera
 
 ###############################################
 ## AUTOMATIONS
