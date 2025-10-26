@@ -28,13 +28,6 @@ input_button:
     icon: mdi:moon-waning-crescent
 
 ###############################################
-## INPUT BOOLEANS
-###############################################
-input_boolean:
-  flag_hall_lights_triggered_by_motion:
-    name: Flag - Hall Lights Was Triggered by Motion Sensor
-
-###############################################
 ## SCRIPTS
 ###############################################
 script:
@@ -282,40 +275,17 @@ automation:
             then:
               - action: script.enable_guest_mode
 
-  - id: "hall_lights_by_motion_on"
-    alias: Hall Lights by Motion ON
+  - id: "hall_edison_bulb_by_motion_off"
+    alias: Hall Edison Bulb by Motion OFF
+    mode: restart
     triggers:
       - trigger: state
-        entity_id: binary_sensor.hall_door_contact
-        to: "on"
-      - trigger: state
-        entity_id: binary_sensor.aqara_hall_motion_sensor_occupancy
-        to: "on"
-    conditions:
-      - condition: state
-        entity_id: light.hall_lights
-        state: "off"
-    actions:
-      - action: light.turn_on
-        entity_id: light.hall_lights
-      - action: input_boolean.turn_on
-        entity_id: input_boolean.flag_hall_lights_triggered_by_motion
-
-  - id: "hall_lights_by_motion_off"
-    alias: Hall Lights by Motion OFF
-    triggers:
-      - trigger: state
-        entity_id: binary_sensor.aqara_hall_motion_sensor_occupancy
+        entity_id: binary_sensor.aqara_hall_motion_sensor_motion
         to: "off"
-    conditions:
-      - condition: state
-        entity_id: input_boolean.flag_hall_lights_triggered_by_motion
-        state: "on"
+        for: 00:00:30
     actions:
       - action: light.turn_off
-        entity_id: light.hall_lights
-      - action: input_boolean.turn_off
-        entity_id: input_boolean.flag_hall_lights_triggered_by_motion
+        entity_id: light.hall_edison_bulb
 
   ###############################################
   ## Other Lights Automations
