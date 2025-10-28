@@ -45,9 +45,9 @@ filter:
     - scene.movies
     - sensor.electricity_meter_energy
     - sensor.electricity_meter_power
-    - sensor.pool_bme280_temperature
-    - sensor.pool_thermometer_bottom_water_temperature
-    - sensor.pool_thermometer_upper_water_temperature
+    - sensor.pool_monitor_air_temperature
+    - sensor.pool_monitor_bottom_water_temperature
+    - sensor.pool_monitor_upper_water_temperature
     - sensor.sm_g991b_battery_level
     - sensor.sm_s901b_battery_level
     - switch.asus_pc
@@ -266,20 +266,20 @@ entity_config:
         entity: sensor.ble_temperature_atc_toilet
       - type: humidity
         entity: sensor.ble_humidity_atc_toilet
-  sensor.pool_bme280_temperature:
+  sensor.pool_monitor_air_temperature:
     name: Погода во дворе
     room: Двор
     properties:
       - type: temperature
-        entity: sensor.pool_bme280_temperature
+        entity: sensor.pool_monitor_air_temperature
       - type: humidity
-        entity: sensor.pool_bme280_humidity
+        entity: sensor.pool_monitor_air_humidity
       - type: pressure
-        entity: sensor.pool_bme280_pressure
-  sensor.pool_thermometer_bottom_water_temperature:
+        entity: sensor.pool_monitor_air_pressure
+  sensor.pool_monitor_bottom_water_temperature:
     name: Температура воды снизу
     room: Бассейн
-  sensor.pool_thermometer_upper_water_temperature:
+  sensor.pool_monitor_upper_water_temperature:
     name: Температура воды сверху
     room: Бассейн
   sensor.sm_s901b_battery_level:
