@@ -225,10 +225,8 @@ automation:
             entity_id: switch.monolith_speakers
         off_press_action:
           - action: light.turn_off
-            entity_id:
-              - light.mi_desk_lamp
-              - light.tv_lights
-              # - light.living_room_christmas_lights
+            target:
+              area_id: living_room
           - action: switch.turn_off
             entity_id: switch.monolith_speakers
         on_hold_action:
