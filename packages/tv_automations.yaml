@@ -95,36 +95,29 @@ automation:
       - action: switch.turn_on
         entity_id: switch.monolith_speakers
 
-  - alias: Living Room Speakers Standby OFF
-    id: living_room_speakers_standby_off
-    description: "Turn off speakers when in standby mode for a while and TV is off"
+  - alias: Living Room Speakers Auto Power Down
+    id: living_room_speakers_auto_power_down
+    description: "Turn off speakers if power consumption remains low after any trigger"
     mode: restart
     trigger:
+      # When speakers are turned on
+      - platform: state
+        entity_id: switch.monolith_speakers
+        to: "on"
+      # When TV is turned off
+      - platform: state
+        entity_id: media_player.samsung_tv
+        to: "off"
+      # When power consumption drops below threshold
       - platform: state
         entity_id: binary_sensor.monolith_speakers_above_power_threshold
         to: "off"
-        for:
-          minutes: 5
     condition:
       - condition: state
         entity_id: switch.monolith_speakers
         state: "on"
-      - condition: state
-        entity_id: media_player.samsung_tv
-        state: "off"
     action:
-      - action: switch.turn_off
-        entity_id: switch.monolith_speakers
-
-  - alias: Living Room Speakers Auto Power Down
-    id: living_room_speakers_auto_power_down
-    description: "Turn off speakers if power consumption remains low after powering on"
-    mode: restart
-    trigger:
-      - platform: state
-        entity_id: switch.monolith_speakers
-        to: "on"
-    action:
+      # Wait up to 5 minutes to see if power consumption goes above threshold
       - alias: "Check if power consumption exceeds threshold"
         wait_for_trigger:
           - platform: state
@@ -132,7 +125,7 @@ automation:
             to: "on"
         timeout:
           minutes: 5
-      # Check if condition was NOT met and TV is still off
+      # Check if power consumption was not exceeded during the wait and TV is off
       - if:
           - "{{ not wait.completed }}"
           - condition: state
