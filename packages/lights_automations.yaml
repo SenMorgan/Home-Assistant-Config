@@ -282,10 +282,23 @@ automation:
       - trigger: state
         entity_id: binary_sensor.aqara_hall_motion_sensor_motion
         to: "off"
-        for: 00:00:30
+        for: 00:02:00
     actions:
-      - action: light.turn_off
-        entity_id: light.hall_edison_bulb
+      # If hall lights are off - turn off edison bulb immediately
+      - if:
+          - condition: state
+            entity_id: light.hall_lights
+            state: "off"
+        then:
+          - action: light.turn_off
+            entity_id: light.hall_edison_bulb
+        else:
+          # Otherwise, wait until they are turned off with a timeout
+          - wait_template: "{{ states('light.hall_lights') == 'off' }}"
+            timeout: 01:00:00
+            continue_on_timeout: false
+          - action: light.turn_off
+            entity_id: light.hall_edison_bulb
 
   ###############################################
   ## Other Lights Automations
