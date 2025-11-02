@@ -200,8 +200,7 @@ automation:
 
   - id: "welcome_lights"
     alias: Welcome Lights
-    mode: single
-    max_exceeded: silent
+    mode: restart
     triggers:
       - trigger: state
         id: "SEN_CAME_HOME"
@@ -212,11 +211,34 @@ automation:
         entity_id: person.kris
         to: "home"
     actions:
+      # Wait until hall door is opened
       - wait_template: "{{ states('binary_sensor.hall_door_contact') == 'on' }}"
         timeout: 00:15:00
         continue_on_timeout: false
-      - action: light.turn_on
-        entity_id: light.hall_edison_bulb
+      # If it is daytime - turn on welcome scene
+      - if:
+          - condition: time
+            after: "05:00:00"
+            before: "22:00:00"
+          - condition: state
+            entity_id: input_boolean.home_night_mode
+            state: "off"
+        then:
+          - action: scene.turn_on
+            entity_id: scene.welcome_home
+          # If Sen came home - turn on his welcome scene too
+          - if:
+              - condition: trigger
+                id: "SEN_CAME_HOME"
+            then:
+              - action: scene.turn_on
+                entity_id: scene.welcome_home_sen
+        else:
+          # If it is nighttime - just turn on hall edison bulb on half brightness
+          - action: light.turn_on
+            entity_id: light.hall_edison_bulb
+            data:
+              brightness_pct: 50
 
   - id: "home_all_lights_off"
     alias: Home All Lights OFF
@@ -594,6 +616,22 @@ automation:
 ## SCENES
 ###############################################
 scene:
+  # Common welcome home scene for Sen and Kris
+  - id: welcome_home
+    name: Welcome Home
+    entities:
+      light.hall_edison_bulb: on
+      light.7_seg_clock: on
+      switch.wireless_charger: on
+
+  # Welcome home scene for Sen with additional devices
+  - id: welcome_home_sen
+    name: Welcome Home Sen
+    entities:
+      light.banana_light: on
+      switch.wireless_charger: on
+      switch.interactive_cz_map_enable: on
+
   - id: movies
     name: Movies
     entities:
