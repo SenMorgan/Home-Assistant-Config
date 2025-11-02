@@ -101,12 +101,11 @@ automation:
           message: >
             New faction: {{ states('sensor.ingress_portal_faction') }}.
       - if:
-          # Set scene only if Sen is home
           - condition: state
             entity_id: person.sen
             state: "home"
         then:
-          - alias: Turn on Scene based on Faction
+          - alias: Set Lighting based on Faction
             service: script.set_lighting_by_ingress_faction
           - if:
               # Notify via Yandex Station only if Night Mode is off
