@@ -407,14 +407,16 @@ automation:
   - id: "kitchen_clock_reenable"
     alias: Kitchen Clock Reenable
     mode: restart
-    triggers:
-      - trigger: state
-        entity_id: light.7_seg_clock
-        to: "off"
-        for: 00:00:05
+    triggers: &any_kitchen_activity_trigger
       - trigger: state
         entity_id: binary_sensor.kitchen_motion_alarm
         to: "on"
+      - trigger: state
+        entity_id: switch.asus_pc
+        to: "on"
+      - trigger: state
+        entity_id: input_boolean.silent_mode
+        to: "off"
       - trigger: state
         entity_id: input_boolean.home_night_mode
         to: "off"
@@ -435,19 +437,42 @@ automation:
       - action: light.turn_on
         entity_id: light.7_seg_clock
 
-  - id: "interactive_cz_map_reenable"
-    alias: Interactive CZ Map Reenable
+  - id: "wireless_charger_reenable"
+    alias: Wireless Charger Reenable
     mode: restart
-    triggers:
+    triggers: &any_activity_trigger
       - trigger: state
-        entity_id: person.sen
-        to: "home"
+        entity_id: media_player.yandex_station_midi
       - trigger: state
         entity_id: switch.asus_pc
         to: "on"
       - trigger: state
+        entity_id: input_boolean.silent_mode
+        to: "off"
+      - trigger: state
         entity_id: input_boolean.home_night_mode
         to: "off"
+    conditions:
+      - condition: state
+        entity_id: switch.wireless_charger
+        state: "off"
+      - condition: state
+        entity_id: binary_sensor.people_home
+        state: "on"
+      - condition: state
+        entity_id: input_boolean.home_night_mode
+        state: "off"
+      - condition: time
+        after: "05:00:00"
+        before: "22:00:00"
+    actions:
+      - action: switch.turn_on
+        entity_id: switch.wireless_charger
+
+  - id: "interactive_cz_map_reenable"
+    alias: Interactive CZ Map Reenable
+    mode: restart
+    triggers: *any_activity_trigger
     conditions:
       - condition: state
         entity_id: switch.interactive_cz_map_enable
@@ -465,44 +490,17 @@ automation:
       - action: switch.turn_on
         entity_id: switch.interactive_cz_map_enable
 
-  - id: "wireless_charger_reenable"
-    alias: Wireless Charger Reenable
-    mode: restart
-    triggers:
-      - trigger: state
-        entity_id: binary_sensor.people_home
-        to: "on"
-      - trigger: state
-        entity_id: input_boolean.silent_mode
-        to: "off"
-      - trigger: state
-        entity_id: input_boolean.home_night_mode
-        to: "off"
-    conditions:
-      - condition: state
-        entity_id: input_boolean.home_night_mode
-        state: "off"
-      - condition: time
-        after: "05:00:00"
-        before: "22:00:00"
-    actions:
-      - action: switch.turn_on
-        entity_id: switch.wireless_charger
-
   - id: "banana_light_reenable"
     alias: Banana Light Reenable
     mode: restart
-    triggers:
-      - trigger: state
-        entity_id: person.sen
-        to: "home"
-      - trigger: state
-        entity_id: input_boolean.silent_mode
-        to: "off"
-      - trigger: state
-        entity_id: input_boolean.home_night_mode
-        to: "off"
+    triggers: *any_activity_trigger
     conditions:
+      - condition: state
+        entity_id: light.banana_light
+        state: "off"
+      - condition: state
+        entity_id: person.sen
+        state: "home"
       - condition: state
         entity_id: input_boolean.home_night_mode
         state: "off"
