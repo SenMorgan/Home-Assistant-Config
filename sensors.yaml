@@ -54,6 +54,20 @@
       unit_of_measurement: "Kč"
       device_class: monetary
 
+    grid_consumed_month_cost:
+      friendly_name: "Grid Consumed Month Cost"
+      # Fixed part - 225.07 Kč per month, divided by 30.4 days = 7.4 Kč per day
+      # Variable part - 5.316 Kč per kWh
+      # Total = (7.4 + (5.316 * consumed kWh today)) + 21% VAT
+      value_template: >
+        {% set fixed = 7.4 %}
+        {% set variable = 5.316 %}
+        {% set vat = 0.21 %}
+        {% set consumed = states('sensor.grid_consumed_month') | float(0.0) %}
+        {{ ((fixed + (variable * consumed)) * (1 + vat)) | round(2, default=0) }}
+      unit_of_measurement: "Kč"
+      device_class: monetary
+
 ###############################################
 ## ADS-B System / Flightradar 24
 ###############################################
