@@ -442,8 +442,6 @@ automation:
     mode: restart
     triggers: &any_activity_trigger
       - trigger: state
-        entity_id: media_player.yandex_station_midi
-      - trigger: state
         entity_id: switch.asus_pc
         to: "on"
       - trigger: state
