@@ -31,23 +31,23 @@ rest:
     sensor:
       - name: Ingress Portal Faction
         value_template: >-
-          {% set t = value_json.result[1] | default(None) %}
+          {% set t = value_json.result[1] if value_json is defined and value_json.result is defined else None %}
           {% if t == 'E' %}Enlightened
           {% elif t == 'R' %}Resistance
           {% elif t == 'N' %}Neutral
           {% elif t == 'M' %}Machina
           {% else %}{{ t }}{% endif %}
-        availability: "{{ value_json.result[1] | default(None) in ['E','R','N','M'] }}"
+        availability: "{{ value_json is defined and value_json.result is defined and value_json.result[1] in ['E','R','N','M'] }}"
         picture: >-
-          {% set t = value_json.result[1] | default(None) %}
+          {% set t = value_json.result[1] if value_json is defined and value_json.result is defined else None %}
           {% if t == 'E' %}/local/images/ingress/enlightened.png
           {% elif t == 'R' %}/local/images/ingress/resistance.png
           {% elif t == 'N' %}/local/images/ingress/neutral.png
           {% elif t == 'M' %}/local/images/ingress/machina.png
           {% else %}/local/images/ingress/neutral.png{% endif %}
       - name: Ingress Portal Energy Level
-        value_template: "{{ value_json.result[5] | default(None) }}"
-        availability: "{{ value_json.result[1] | default(None) in ['E','R','N','M'] }}"
+        value_template: "{{ value_json.result[5] if value_json is defined and value_json.result is defined else None }}"
+        availability: "{{ value_json is defined and value_json.result is defined and value_json.result[1] in ['E','R','N','M'] }}"
         device_class: "battery"
         unit_of_measurement: "%"
 
