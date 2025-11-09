@@ -142,8 +142,10 @@ script:
               [0, 128, 255]
             {% elif is_state('sensor.ingress_portal_faction', 'Machina') %}
               [255, 0, 0]
-            {% else %}
+            {% elif is_state('sensor.ingress_portal_faction', 'Neutral') %}
               [255, 255, 255]
+            {% else %}
+              [255, 191, 0]
             {% endif %}
       - service: select.select_option
         target:
