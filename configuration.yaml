@@ -20,7 +20,7 @@ yandex_smart_home: !include yandex.yaml
 # Controlling of Yandex Station and TTS
 yandex_station: !include yandex-station.yaml
 # Controlling of Xiaomi Vacuum via Yandex Station
-vacuum_zones: !include vacuum-zones.yaml
+# vacuum_zones: !include vacuum-zones.yaml
 # Yandex devices icons
 frontend:
   extra_module_url:
