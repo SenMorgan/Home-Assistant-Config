@@ -47,6 +47,8 @@ automation:
         attribute: elevation
         below: 4.0
     actions:
+      - action: light.turn_on
+        entity_id: light.tv_lights
       - wait_template: >
           {{ states('switch.asus_pc') == 'off' and
             states('light.kitchen_spotlights') == 'off' and
