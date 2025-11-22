@@ -118,10 +118,19 @@ automation:
         after: "05:00:00"
         before: "22:00:00"
     actions:
+      # Enable track power
+      - action: switch.turn_on
+        entity_id: switch.ex_commandstation_tracks_power
+      # Set volume to 20%
+      - action: media_player.volume_set
+        entity_id: media_player.model_railway
+        data:
+          volume_level: 0.2
+      # Turn on trains lights and other accessories
       - action: switch.turn_on
         entity_id:
-          - switch.ex_commandstation_tracks_power
           - switch.loco_vossloh_1701_lights
+          - switch.loco_sbb_cargo_re_482_lights
           - switch.loco_sbb_cargo_re_482_coupling
 
   - alias: "DCC-EX Layout Lights by Motion Sensor"
