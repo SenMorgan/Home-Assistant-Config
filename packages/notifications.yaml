@@ -109,8 +109,6 @@ automation:
                   option: Gender
                 action: select.select_option
 
-
-
   - id: "notification_ads_b_receiver_disconnected"
     alias: Notification ADS-B Receiver Disconnected
     triggers:
@@ -441,3 +439,24 @@ automation:
             sticky: true
             clickAction: entityId:{{ weather_entity }}
             notification_icon: mdi:weather-cloudy-alert
+
+  - id: "notification_github_repo_stars_changed"
+    alias: Notification GitHub Repo Stars Changed
+    trigger:
+      - trigger: state
+        entity_id:
+          - sensor.senmorgan_ex_habridge_stars
+          - sensor.senmorgan_home_assistant_config_stars
+    condition:
+      - condition: template
+        value_template: >
+          {{ trigger.from_state.state != trigger.to_state.state }}
+    action:
+      - action: notify.mobile_app_sm_s901b
+        data:
+          title: "⭐ GitHub Repository Stars"
+          message: >
+            Репозиторий {{ state_attr(trigger.entity_id, 'friendly_name') | replace(' Stars', '') }}
+            {{ 'получил' if trigger.from_state.state | int < trigger.to_state.state | int else 'потерял' }}
+            звезду!
+            Звёзд сейчас: {{ trigger.to_state.state }} (было: {{ trigger.from_state.state }})
