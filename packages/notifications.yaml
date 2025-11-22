@@ -329,3 +329,115 @@ automation:
             data:
               media_content_type: text
               media_content_id: "Часы заряжены на 80%"
+
+  - id: "weather_forecast_alert_helper"
+    alias: Weather Forecast Alert Helper
+    mode: single
+    triggers:
+      - trigger: time_pattern
+        hours: "1"
+    actions:
+      - variables:
+          weather_entity: weather.home_assistant_blue
+          temp_unit: "{{ state_attr(weather_entity, 'temperature_unit') }}"
+          notify_group: mobile_app_sm_s901b
+          enable_snow: true
+          enable_rain: true
+          enable_cold: true
+          enable_hot: false
+          low_temp_threshold: 0
+          high_temp_threshold: 100
+          num_hours_threshold: 2
+          num_hours_lookahead: 12
+        alias: Define variables from input params
+      - action: weather.get_forecasts
+        metadata: {}
+        data:
+          type: hourly
+        target:
+          entity_id: "{{ weather_entity }}"
+        response_variable: action_response
+        alias: Get hourly weather for given entity
+      - variables:
+          forecast: "{{ action_response[weather_entity]['forecast'][:num_hours_lookahead] }}"
+          datetimes: >-
+            {{ forecast | map(attribute='datetime') | map('as_datetime') |
+            map('as_local') | list }}
+          temps: "{{ forecast | map(attribute='temperature') | list }}"
+          min_temp: "{{ temps | min }}"
+          max_temp: "{{ temps | max }}"
+          min_temp_idx: "{{ temps.index(min_temp) }}"
+          max_temp_idx: "{{ temps.index(max_temp) }}"
+          min_temp_hour: "{{ forecast[min_temp_idx]['datetime'] | as_datetime | as_local }}"
+          max_temp_hour: "{{ forecast[max_temp_idx]['datetime'] | as_datetime | as_local }}"
+          avg_temp: "{{ temps | average | round(1) }}"
+          cold_hours: >-
+            {{ forecast | selectattr('temperature', 'le', low_temp_threshold) | list
+            }}
+          hot_hours: >-
+            {{ forecast | selectattr('temperature', 'ge', high_temp_threshold) |
+            list }}
+          snowy_hours: >-
+            {{ forecast | selectattr('condition', 'search', '(?i)snow|flurr(y|ies)')
+            | list }}
+          rainy_hours: "{{ forecast | selectattr('condition', 'search', '(?i)rain') | list }}"
+          precip_prob_snowy_hours: "{{ snowy_hours | map(attribute='precipitation_probability') | list }}"
+          precip_prob_rainy_hours: "{{ rainy_hours | map(attribute='precipitation_probability') | list }}"
+          cold_alert: "{{ enable_cold and cold_hours | count > num_hours_threshold }}"
+          hot_alert: "{{ enable_hot and hot_hours | count > num_hours_threshold }}"
+          rain_alert: "{{ enable_rain and rainy_hours | count > num_hours_threshold }}"
+          snow_alert: "{{ enable_snow and snowy_hours | count > num_hours_threshold }}"
+        alias: Parse response and define new variables
+      - alias: If any weather conditions warrant notification
+        condition: template
+        value_template: "{{ cold_alert or rain_alert or snow_alert or hot_alert}}"
+      - variables:
+          notification_message: >
+            {% macro format_datetime(d) %}{{ d | as_timestamp |
+            timestamp_custom("%I:%M %p") }}{% endmacro %}
+
+
+            Over the next {{ num_hours_lookahead }} hours:
+
+            {% if cold_alert %}
+
+            Temperature: Temps will dip below {{ low_temp_threshold }}{{ temp_unit
+            }} for {{ cold_hours | count }} hours, initially reaching a minimum of
+            {{ min_temp }}{{ temp_unit }} at {{format_datetime(min_temp_hour)}}
+            (avg={{ avg_temp }}{{ temp_unit }}).{%endif%}
+
+            {%- if hot_alert %}
+
+            Temperature: Temps will rise_above {{ high_temp_threshold }}{{ temp_unit
+            }} for {{ hot_hours | count }} hours, initially reaching a maximum of {{
+            max_temp }}{{ temp_unit }} at {{format_datetime(max_temp_hour)}} (avg={{
+            avg_temp }}{{ temp_unit }}).{%endif%}
+
+            {%- if rain_alert %}
+
+            Rain: It will be rainy for {{ rainy_hours | count }} hours (max_prob={{
+            (precip_prob_rainy_hours or [0]) | max }}%,
+            avg_prob={{(precip_prob_rainy_hours or [0]) | average | round(1) }}%).
+            {% endif%}
+
+            {%- if snow_alert %}
+
+            Snow: It will be snowy for {{ snowy_hours | count }} hours (max_prob={{
+            (precip_prob_snowy_hours or [0]) | max }}%,
+            avg_prob={{(precip_prob_snowy_hours or [0]) | average | round(1) }}%).
+            {% endif%}
+          notification_title: >-
+            Weather alert: {{ ["Temperature" if (cold_alert or hot_alert), "Rain" if
+            rain_alert, "Snow" if snow_alert] | select() | join(", ") }}
+      - action: notify.{{ notify_group }}
+        metadata: {}
+        data:
+          message: "{{ notification_message }}"
+          title: "{{ notification_title }}"
+          data:
+            ttl: 0
+            priority: high
+            tag: WEATHER_ALERT
+            sticky: true
+            clickAction: entityId:{{ weather_entity }}
+            notification_icon: mdi:weather-cloudy-alert
