@@ -141,43 +141,50 @@ automation:
       - wait_template: "{{ states('binary_sensor.people_home') == 'off' }}"
         timeout: "00:30:00"
         continue_on_timeout: false
-      # Check if guest mode is still disabled after waiting
+      # Wait 2 minutes and check if binary_sensor.people_home is still off to prevent accidental triggers
+      - delay: 00:02:00
       - if:
           - condition: state
-            entity_id: input_boolean.guest_mode
+            entity_id: binary_sensor.people_home
             state: "off"
         then:
-          - action: script.turn_on
-            entity_id: script.turn_off_all_lights
-          - action: scene.turn_on
-            entity_id: scene.no_people_home
-          - variables:
-              # Including an id in the action allows us to identify this script run
-              # and not accidentally trigger for other notification actions
-              action_enable_guest_mode: "{{ 'action_enable_guest_mode' ~ context.id }}"
-          - action: notify.mobile_app_sm_s901b
-            data:
-              title: "👋 До свидания"
-              message: >
-                {% if is_state('input_boolean.heating_season', 'on') %}
-                  Термостат и свет были отключены
-                {% else %}
-                  Весь свет был отключен
-                {% endif %}
-              data:
-                actions:
-                  - action: "{{ action_enable_guest_mode }}"
-                    title: 👤 Включить гостевой режим
-          - wait_for_trigger:
-              - trigger: event
-                event_type: mobile_app_notification_action
-                event_data:
-                  action: "{{ action_enable_guest_mode }}"
+          # Check if guest mode is still disabled after waiting
           - if:
-              - condition: template
-                value_template: "{{ wait.trigger.event.data.action == action_enable_guest_mode }}"
+              - condition: state
+                entity_id: input_boolean.guest_mode
+                state: "off"
             then:
-              - action: script.enable_guest_mode
+              - action: script.turn_on
+                entity_id: script.turn_off_all_lights
+              - action: scene.turn_on
+                entity_id: scene.no_people_home
+              - variables:
+                  # Including an id in the action allows us to identify this script run
+                  # and not accidentally trigger for other notification actions
+                  action_enable_guest_mode: "{{ 'action_enable_guest_mode' ~ context.id }}"
+              - action: notify.mobile_app_sm_s901b
+                data:
+                  title: "👋 До свидания"
+                  message: >
+                    {% if is_state('input_boolean.heating_season', 'on') %}
+                      Термостат и свет были отключены
+                    {% else %}
+                      Весь свет был отключен
+                    {% endif %}
+                  data:
+                    actions:
+                      - action: "{{ action_enable_guest_mode }}"
+                        title: 👤 Включить гостевой режим
+              - wait_for_trigger:
+                  - trigger: event
+                    event_type: mobile_app_notification_action
+                    event_data:
+                      action: "{{ action_enable_guest_mode }}"
+              - if:
+                  - condition: template
+                    value_template: "{{ wait.trigger.event.data.action == action_enable_guest_mode }}"
+                then:
+                  - action: script.enable_guest_mode
 
   - id: "hall_edison_bulb_by_motion_off"
     alias: Hall Edison Bulb by Motion OFF
