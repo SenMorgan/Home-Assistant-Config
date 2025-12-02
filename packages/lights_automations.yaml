@@ -293,9 +293,8 @@ automation:
       - action: light.turn_on
         entity_id: light.7_seg_clock
 
-  - id: "wireless_charger_reenable"
-    alias: Wireless Charger Reenable
-    mode: restart
+  - id: "shelf_lighting_reenable"
+    alias: Shelf Lighting Reenable
     triggers: &any_activity_trigger
       - trigger: state
         entity_id: switch.asus_pc
@@ -306,6 +305,34 @@ automation:
       - trigger: state
         entity_id: input_boolean.home_night_mode
         to: "off"
+      - trigger: state
+        entity_id: person.sen
+        to: "home"
+      - trigger: numeric_state
+        entity_id: sun.sun
+        attribute: elevation
+        below: 4.0
+    conditions:
+      - condition: state
+        entity_id: light.shelf_lighting
+        state: "off"
+      - condition: state
+        entity_id: person.sen
+        state: "home"
+      - condition: state
+        entity_id: input_boolean.home_night_mode
+        state: "off"
+      - condition: time
+        after: "05:00:00"
+        before: "22:00:00"
+    actions:
+      - action: light.turn_on
+        entity_id: light.shelf_lighting
+
+  - id: "wireless_charger_reenable"
+    alias: Wireless Charger Reenable
+    mode: restart
+    triggers: *any_activity_trigger
     conditions:
       - condition: state
         entity_id: switch.wireless_charger
