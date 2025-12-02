@@ -51,9 +51,12 @@ automation:
         above: 0
     actions:
       - action: notify.mobile_app_sm_s901b
-        data_template:
-          title: ❄️ Уведомление о снеге
-          message: Должно выпадать {{ states('sensor.openweathermap_snow') }} мм/ч снега!
+        data:
+          title: ❄️ Snow Alert
+          message: Должно выпадать {{ states('sensor.openweathermap_snow') }} мм/ч снега в {{ states('sensor.time') }}!
+          data:
+            tag: WEATHER_ALERT
+            notification_icon: mdi:snowflake
 
   - id: "notification_door_opened"
     alias: Notification Door Opened
