@@ -23,10 +23,15 @@ automation:
   - id: "sync_shopping_list"
     alias: Sync Shopping List
     mode: single
+    max_exceeded: silent
     triggers:
       - trigger: state
-        entity_id: binary_sensor.people_home
-        to: "off"
+        entity_id: person.sen
+        to: "not_home"
+        for: 00:05:00
+      - trigger: state
+        entity_id: person.kris
+        to: "not_home"
         for: 00:05:00
     actions:
       - action: script.update_shopping_list
@@ -43,28 +48,28 @@ script:
         target:
           entity_id: input_number.volume_yandex_station
         data:
-          value: "{{ state_attr('media_player.yandex_station_midi', 'volume_level')}}"
+          value: "{{ state_attr('media_player.yandex_station', 'volume_level')}}"
       # Repeat the command to ensure that the volume is muted
       - repeat:
           while:
             - condition: template
-              value_template: "{{ not is_state_attr('media_player.yandex_station_midi', 'volume_level', 0.01) }}"
+              value_template: "{{ not is_state_attr('media_player.yandex_station', 'volume_level', 0.01) }}"
             - condition: template
               value_template: "{{ repeat.index <= 3 }}"
           sequence:
             - action: media_player.volume_set
               data:
-                entity_id: media_player.yandex_station_midi
+                entity_id: media_player.yandex_station
                 volume_level: 0.01
             - delay: 0.5
       - action: media_player.play_media
-        entity_id: media_player.yandex_station_midi
+        entity_id: media_player.yandex_station
         data:
           media_content_id: update
           media_content_type: shopping_list
       - delay: 1
       - action: media_player.play_media
-        entity_id: media_player.yandex_station_midi
+        entity_id: media_player.yandex_station
         data:
           media_content_id: stop
           media_content_type: command
@@ -73,13 +78,13 @@ script:
       - repeat:
           while:
             - condition: template
-              value_template: "{{ not is_state_attr('media_player.yandex_station_midi', 'volume_level', states('input_number.volume_yandex_station')) }}"
+              value_template: "{{ not is_state_attr('media_player.yandex_station', 'volume_level', states('input_number.volume_yandex_station')) }}"
             - condition: template
               value_template: "{{ repeat.index <= 3 }}"
           sequence:
             - action: media_player.volume_set
               data:
-                entity_id: media_player.yandex_station_midi
+                entity_id: media_player.yandex_station
                 volume_level: "{{ states('input_number.volume_yandex_station')}}"
             - delay: 1
 
