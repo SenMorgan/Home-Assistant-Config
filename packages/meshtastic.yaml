@@ -1,0 +1,31 @@
+######################################################################
+# File: meshtastic.yaml                                              #
+# Author: SenMorgan https://github.com/SenMorgan                     #
+# Date: 2025-12-02                                                   #
+#                                                                    #
+# Copyright (c) 2025 Sen Morgan                                      #
+######################################################################
+
+
+###############################################
+## Automations
+###############################################
+automation:
+  - alias: Meshtastic Echo Morgans Channel
+    id: meshtastic_echo_morgans_channel
+    mode: single
+    triggers:
+      - domain: meshtastic
+        device_id: 5dd840db1c76b5319a4478ab33c7b33b
+        type: channel_message.received
+        entity_id: meshtastic.gateway_lrnr_channel_morgans
+        trigger: device
+    actions:
+      - delay:
+          seconds: 5
+      - action: meshtastic.broadcast_channel_message
+        metadata: {}
+        data:
+          ack: true
+          channel: meshtastic.gateway_lrnr_channel_morgans
+          message: "ECHO: {{ trigger.event.data.message }}"
