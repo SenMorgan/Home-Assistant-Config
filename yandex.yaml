@@ -24,6 +24,7 @@ filter:
     - light.banana_light
     - light.bedroom_ceiling_light
     - light.bedroom_nightlight
+    - light.christmas_tree
     - light.floor_lamp
     - light.gyver_lamp
     - light.hall_lights
@@ -137,6 +138,9 @@ entity_config:
   light.bedroom_nightlight:
     name: Ночник
     room: Спальня
+  light.christmas_tree:
+    name: Ёлка
+    room: Зал
   light.living_room_ceiling_light:
     name: Люстра
     room: Зал
