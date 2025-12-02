@@ -18,7 +18,6 @@ filter:
     - input_boolean.guest_mode
     - input_boolean.heating_allowed
     - input_boolean.home_night_mode
-    - input_boolean.scooter_charger
     - input_boolean.silent_mode
     - input_button.thermostat_10_minutes_heating
     - light.tv_lights
@@ -98,22 +97,21 @@ entity_config:
     name: Детский замок
     room: Дом
     type: switch
-  input_boolean.scooter_charger:
-    name: Зарядка самоката
-    room: Дом
-    type: socket
   light.hall_lights:
     name: Люстра
     room: Коридор
+    type: light.ceiling
   light.shelf_lighting:
     name: Подсветка полки
     room: Кухня
+    type: light.strip
   light.floor_lamp:
     name: Торшер
     room: Кухня
   light.mi_desk_lamp:
     name: Светильник
     room: Зал
+    type: light.lamp
   light.hall_edison_bulb:
     name: Лампочка
     room: Коридор
@@ -121,6 +119,7 @@ entity_config:
     name: Лампа Гайвера
     room: Кухня
     slow: true
+    type: light.lamp
   light.string_lights:
     name: Лампочки
     room: Кухня
@@ -134,27 +133,33 @@ entity_config:
   light.kitchen_led_strip:
     name: Светодиодная лента
     room: Кухня
+    type: light.strip
   light.bedroom_nightlight:
     name: Ночник
     room: Спальня
   light.living_room_ceiling_light:
     name: Люстра
     room: Зал
+    type: light.ceiling
   light.living_room_christmas_lights:
     name: Гирлянда
     room: Зал
   light.banana_light:
     name: Банан
     room: Кухня
+    slow: true
   light.bedroom_ceiling_light:
     name: Люстра
     room: Спальня
+    type: light.ceiling
   light.kitchen_ceiling_light:
     name: Люстра
     room: Кухня
+    type: light.ceiling
   light.tv_lights:
     name: Подсветка телевизора
     room: Зал
+    type: light.strip
   light.kitchen_christmas_lights:
     name: Гирлянда
     room: Кухня
