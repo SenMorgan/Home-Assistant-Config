@@ -392,6 +392,26 @@ automation:
       - action: light.turn_on
         entity_id: light.banana_light
 
+  - id: "disable_decorative_lights_when_sen_leaves"
+    alias: Disable Decorative Lights When Sen Leaves
+    mode: single
+    max_exceeded: silent
+    triggers:
+      - trigger: state
+        entity_id: person.sen
+        to: "not_home"
+        for: 00:10:00
+    actions:
+      - action: light.turn_off
+        entity_id:
+          - light.banana_light
+          - light.gyver_lamp
+          - light.shelf_lighting
+      - action: switch.turn_off
+        entity_id:
+          - switch.interactive_cz_map_enable
+          - switch.ex_commandstation_tracks_power
+
   - id: "parking_lights_on"
     alias: Parking Lights ON
     mode: queued
