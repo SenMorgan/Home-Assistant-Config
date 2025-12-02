@@ -221,29 +221,11 @@ automation:
         entity_id: switch.asus_pc
         from: "off"
         to: "on"
-      - trigger: numeric_state
-        entity_id: sun.sun
-        attribute: elevation
-        below: 4.0
-      - trigger: state
-        entity_id: weather.home_assistant_blue
     conditions:
       # Only if Sen is home
       - condition: state
         entity_id: person.sen
         state: "home"
-      # Only if PC is ON
-      - condition: state
-        entity_id: switch.asus_pc
-        state: "on"
-      # Either it's evening or weather is not sunny
-      - or:
-          - condition: numeric_state
-            entity_id: sun.sun
-            attribute: elevation
-            below: 4.0
-          - condition: template
-            value_template: "{{ not is_state('weather.home_assistant_blue', 'sunny') }}"
     actions:
       - action: light.turn_on
         entity_id: light.gyver_lamp
@@ -251,19 +233,6 @@ automation:
           effect: "Oгoнь"
           brightness: 150
           rgb_color: [255, 39, 25]
-      - if:
-          - condition: template
-            value_template: "{{ states('person.kris') == 'home'}}"
-        then:
-          - action: switch.turn_off
-            entity_id: switch.pc_backlight_sync_send
-        else:
-          - action: light.turn_on
-            entity_id:
-              - light.shelf_lighting
-              - light.pc_backlight
-          - action: switch.turn_on
-            entity_id: switch.pc_backlight_sync_send
 
   - id: "kitchen_asus_pc_background_lights_off"
     alias: Kitchen Asus PC Background Lights OFF
@@ -274,9 +243,7 @@ automation:
         to: "off"
     actions:
       - action: light.turn_off
-        entity_id:
-          - light.gyver_lamp
-          - light.shelf_lighting
+        entity_id: light.gyver_lamp
 
   - id: "kitchen_clock_disable_by_presence"
     alias: Kitchen Clock Disable by Presence
