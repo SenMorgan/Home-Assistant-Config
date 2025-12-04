@@ -541,10 +541,12 @@ scene:
       light.kitchen_ceiling_light: off
       light.kitchen_led_strip: off
       light.kitchen_spotlights: off
+      light.kitchen_christmas_lights: off
+      light.living_room_christmas_lights: on
+      light.christmas_tree: on
       light.living_room_ceiling_light: off
       light.shelf_lighting: off
       light.string_lights: off
-      # light.living_room_christmas_lights: on
       media_player.samsung_tv: on
       switch.monolith_speakers: on
       switch.interactive_cz_map_enable: off
@@ -555,7 +557,6 @@ scene:
       light.tv_lights: on
       light.bedroom_ceiling_light: off
       light.bedroom_nightlight: off
-      # light.kitchen_christmas_lights: on
       light.gyver_lamp:
         brightness: 100
         state: on
@@ -563,7 +564,9 @@ scene:
       light.kitchen_ceiling_light: off
       light.kitchen_led_strip: off
       light.kitchen_spotlights: on
-      # light.living_room_christmas_lights: on
+      light.kitchen_christmas_lights: on
+      light.living_room_christmas_lights: on
+      light.christmas_tree: on
       light.mi_desk_lamp:
         brightness: 255
         color_temp_kelvin: 3000
