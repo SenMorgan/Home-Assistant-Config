@@ -528,6 +528,9 @@ scene:
     name: Welcome Home Sen
     entities:
       light.banana_light: on
+      light.cocktail_bar_neon_sign:
+        brightness: 255
+        state: on
       switch.wireless_charger: on
       switch.interactive_cz_map_enable: on
 
@@ -547,6 +550,10 @@ scene:
       light.living_room_ceiling_light: off
       light.shelf_lighting: off
       light.string_lights: off
+      light.banana_light: on
+      light.cocktail_bar_neon_sign:
+        brightness: 128
+        state: on
       media_player.samsung_tv: on
       switch.monolith_speakers: on
       switch.interactive_cz_map_enable: off
@@ -558,7 +565,7 @@ scene:
       light.bedroom_ceiling_light: off
       light.bedroom_nightlight: off
       light.gyver_lamp:
-        brightness: 100
+        brightness: 110
         state: on
       light.hall_lights: off
       light.kitchen_ceiling_light: off
@@ -574,5 +581,9 @@ scene:
       light.pc_backlight: on
       light.shelf_lighting: on
       light.string_lights: on
+      light.banana_light: on
+      light.cocktail_bar_neon_sign:
+        brightness: 3
+        state: on
       switch.ex_commandstation_tracks_power: on
       switch.interactive_cz_map_enable: on
