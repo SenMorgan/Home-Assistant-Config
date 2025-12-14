@@ -12,14 +12,6 @@ sensor.gas_meter:
   state_class: total_increasing
 #  state_class: measurement
 #  last_reset: '2022-10-05T18:35:00.740703+00:00'
-sensor.fr24_feeder:
-  hidden: true
-sensor.fr24_feeder_aircraft_tracked:
-  icon: mdi:airplane
-sensor.fr24_feeder_aircraft_uploaded:
-  icon: mdi:airplane
-sensor.fr24_feeder_radar_code:
-  icon: mdi:radar
 sensor.air_quality_station_pm2_5:
   icon: mdi:blur
 switch.asus_pc:

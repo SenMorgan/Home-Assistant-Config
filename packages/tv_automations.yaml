@@ -9,16 +9,13 @@
 ######################################################################
 
 ###############################################
-## BINARY SENSORS
+## TEMPLATES ENTITIES
 ###############################################
-binary_sensor:
-  - platform: template
-    sensors:
-      monolith_speakers_above_power_threshold:
-        friendly_name: "Monolith Speakers Above Power Threshold"
+template:
+  - binary_sensor:
+      - name: Monolith Speakers Above Power Threshold
         # Backlight + speakers active = ~32W, backlight + speakers standby = ~8W
-        value_template: "{{ states('sensor.monolith_speakers_active_power') | float(0) > 12 }}"
-        device_class: power
+        state: "{{ states('sensor.monolith_speakers_active_power') | float(0) > 12 }}"
 
 ###############################################
 ## AUTOMATIONS

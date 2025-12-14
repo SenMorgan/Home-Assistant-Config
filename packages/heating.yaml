@@ -86,57 +86,13 @@ timer:
 ## BINARY SENSORS
 ###############################################
 binary_sensor:
-  - platform: template
-    sensors:
-      thermostat_heating:
-        friendly_name: Thermostat is heating
-        device_class: heat
-        value_template: >
-          {{ is_state_attr('climate.family_room', 'hvac_action', "heating") }}
-      thermostat_active:
-        friendly_name: Thermostat Active
-        device_class: running
-        value_template: >-
-          {{ not is_state_attr('climate.family_room', 'hvac_action', "off") }}
-      freeze_alert_at_night:
-        friendly_name: Temperature is below 20°C at night
-        device_class: cold
-        value_template: >
-          {{ ((now().hour >= 21 and now().hour <= 23) or (now().hour >= 0 and now().hour <= 6)) and
-            ((state_attr('climate.family_room', 'current_temperature') | float(0) < 20.0) or
-            (states('sensor.ble_temperature_atc_bedroom') | float(0) < 20.0) or
-            (states('sensor.ble_temperature_atc_living_room') | float(0) < 20.0)) }}
-      heating_request_bedroom:
-        friendly_name: Heating Request Bedroom
-        device_class: heat
-        # Heat only if it is requested by the ETRV and heat demand is above the threshold
-        value_template: >
-          {{ is_state('binary_sensor.danfoss_etrv0100_bedroom_heat_required', 'on') and
-            states('sensor.danfoss_etrv0100_bedroom_pi_heating_demand') | int(0) >=
-            states('input_number.pi_heating_demand_threshold') | int(20) }}
-      heating_request_kitchen:
-        friendly_name: Heating Request Kitchen
-        device_class: heat
-        # Heat only if it is requested by the ETRV and heat demand is above the threshold
-        value_template: >
-          {{ is_state('binary_sensor.danfoss_etrv0103_kitchen_heat_required', 'on') and
-            states('sensor.danfoss_etrv0103_kitchen_pi_heating_demand') | int(0) >=
-            states('input_number.pi_heating_demand_threshold') | int(20) }}
-      heating_request_living_room:
-        friendly_name: Heating Request Living Room
-        device_class: heat
-        # Heat only if it is requested by the ETRV and heat demand is above the threshold
-        value_template: >
-          {{ is_state('binary_sensor.danfoss_etrv0103_living_room_heat_required', 'on') and
-            states('sensor.danfoss_etrv0103_living_room_pi_heating_demand') | int(0) >=
-            states('input_number.pi_heating_demand_threshold') | int(20) }}
-      heating_request_bathroom:
-        friendly_name: Heating Request Bathroom
-        device_class: heat
-        value_template: >
-          {{ (states('sensor.ble_temperature_atc_bathroom') | float(0) <
-            states('input_number.bathroom_heating_target_temperature') | float(24)) and
-            is_state('schedule.bathroom_heating_evening', 'on') }}
+  - platform: group
+    name: Windows
+    device_class: window
+    entities:
+      - binary_sensor.bedroom_window_contact
+      - binary_sensor.kitchen_window_contact
+      - binary_sensor.living_room_window_contact
   - platform: group
     name: ETRVs requesting heat
     device_class: heat
@@ -144,6 +100,49 @@ binary_sensor:
       - binary_sensor.heating_request_bedroom
       - binary_sensor.heating_request_kitchen
       - binary_sensor.heating_request_living_room
+
+###############################################
+## TEMPLATE ENTITIES
+###############################################
+template:
+  - binary_sensor:
+      - name: Thermostat heating
+        device_class: heat
+        state: "{{ is_state_attr('climate.family_room', 'hvac_action', 'heating') }}"
+      - name: Thermostat Active
+        device_class: running
+        state: "{{ not is_state_attr('climate.family_room', 'hvac_action', 'off') }}"
+      - name: Freeze Alert at Night
+        device_class: cold
+        state: >
+          {{ ((now().hour >= 21 and now().hour <= 23) or (now().hour >= 0 and now().hour <= 6)) and
+            ((state_attr('climate.family_room', 'current_temperature') | float(0) < 20.0) or
+            (states('sensor.ble_temperature_atc_bedroom') | float(0) < 20.0) or
+            (states('sensor.ble_temperature_atc_living_room') | float(0) < 20.0)) }}
+      - name: Heating Request Bedroom
+        device_class: heat
+        state: >
+          {{ is_state('binary_sensor.danfoss_etrv0100_bedroom_heat_required', 'on') and
+            states('sensor.danfoss_etrv0100_bedroom_pi_heating_demand') | int(0) >=
+            states('input_number.pi_heating_demand_threshold') | int(20) }}
+      - name: Heating Request Kitchen
+        device_class: heat
+        state: >
+          {{ is_state('binary_sensor.danfoss_etrv0103_kitchen_heat_required', 'on') and
+            states('sensor.danfoss_etrv0103_kitchen_pi_heating_demand') | int(0) >=
+            states('input_number.pi_heating_demand_threshold') | int(20) }}
+      - name: Heating Request Living Room
+        device_class: heat
+        state: >
+          {{ is_state('binary_sensor.danfoss_etrv0103_living_room_heat_required', 'on') and
+            states('sensor.danfoss_etrv0103_living_room_pi_heating_demand') | int(0) >=
+            states('input_number.pi_heating_demand_threshold') | int(20) }}
+      - name: Heating Request Bathroom
+        device_class: heat
+        state: >
+          {{ (states('sensor.ble_temperature_atc_bathroom') | float(0) <
+            states('input_number.bathroom_heating_target_temperature') | float(24)) and
+            is_state('schedule.bathroom_heating_evening', 'on') }}
 
 ###############################################
 ## HISTORY STATS SENSORS

@@ -34,37 +34,37 @@ input_button:
     icon: mdi:power
 
 ###############################################
-## SCRIPTS
+## SENSORS
 ###############################################
-script:
-  home_assistant_shutdown:
-    alias: Home Assistant Shutdown
-    mode: single
-    sequence:
-      - action: hassio.host_shutdown
-
-  home_assistant_reboot:
-    alias: Home Assistant Reboot
-    mode: single
-    sequence:
-      - action: hassio.host_reboot
+sensor:
+  - platform: history_stats
+    name: "Asus PC Work Time Today"
+    entity_id: switch.asus_pc
+    state: "on"
+    type: time
+    start: "{{ today_at('00:00:00') }}"
+    end: "{{ now() }}"
+  - platform: history_stats
+    name: "Lenovo Laptop Work Time Today"
+    entity_id: switch.lenovo_thinkbook
+    state: "on"
+    type: time
+    start: "{{ today_at('00:00:00') }}"
+    end: "{{ now() }}"
 
 ###############################################
-## BINARY SENSORS
+## TEMPLATE ENTITIES
 ###############################################
-binary_sensor:
-  - platform: template
-    sensors:
-      any_battery_device_low:
-        friendly_name: "Any Battery Device Low"
-        value_template: >-
-          {{ expand('group.low_battery_devices') | list | count > 0 }}
+template:
+  - binary_sensor:
+      - name: People Home
+        device_class: presence
+        state: "{{ is_state('person.sen', 'home') or is_state('person.kris', 'home') }}"
+      - name: Any Battery Device Low
+        state: "{{ expand('group.low_battery_devices') | list | count > 0 }}"
+      - name: HA CPU Overheat
+        state: "{{ states('sensor.processor_temperature') | float > 60 }}"
 
-  - platform: template
-    sensors:
-      ha_cpu_overheat:
-        friendly_name: "HA CPU Overheat"
-        value_template: "{{ states('sensor.processor_temperature') | float > 60 }}"
 
 ###############################################
 ## ALERTS
@@ -95,6 +95,22 @@ alert:
     title: *sys_notify_title_critical
     message: >-
       Внимание! Температура CPU Home Assistant превышает пороговое значение: {{ states('sensor.processor_temperature') }}°C
+
+###############################################
+## SCRIPTS
+###############################################
+script:
+  home_assistant_shutdown:
+    alias: Home Assistant Shutdown
+    mode: single
+    sequence:
+      - action: hassio.host_shutdown
+
+  home_assistant_reboot:
+    alias: Home Assistant Reboot
+    mode: single
+    sequence:
+      - action: hassio.host_reboot
 
 ###############################################
 ## AUTOMATIONS

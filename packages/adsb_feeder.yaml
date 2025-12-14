@@ -1,0 +1,164 @@
+######################################################################
+# File: adsb_feeder.yaml                                             #
+# Author: SenMorgan https://github.com/SenMorgan                     #
+# Date: 2025-12-14                                                   #
+#                                                                    #
+# Info: this file contains entities that are associated to the       #
+# ADS-B feeder.                                                      #
+#                                                                    #
+# Copyright (c) 2025 Sen Morgan                                      #
+######################################################################
+
+###############################################
+## SETTINGS AND VARIABLES
+###############################################
+homeassistant:
+  customize:
+    package.node_anchors:
+      sys_notify_title_info: &sys_notify_title_info "💬 Системное уведомление"
+      sys_notify_title_warning: &sys_notify_title_warning "⚠️ Предупреждение"
+      sys_notify_title_critical: &sys_notify_title_critical "🚨 Внимание!"
+
+###############################################
+## SENSORS
+###############################################
+sensor:
+  - platform: rest
+    name: FR24 Feeder
+    resource: http://127.0.0.1:8754/monitor.json
+    value_template: "{{ value_json.feed_alias }}"
+    method: GET
+    scan_interval: 60
+    json_attributes:
+      - rx_connected
+      - feed_status
+      - d11_map_size
+      - feed_num_ac_tracked
+      - build_version
+      - feed_alias
+  - platform: rest
+    name: FR24 Aircraft
+    resource: http://127.0.0.1:8080/data/aircraft.json
+    value_template: "{{ value_json.messages }}"
+    method: GET
+    scan_interval: 15
+    json_attributes:
+      - now
+      - aircraft
+
+###############################################
+## TEMPLATE ENTITIES
+###############################################
+template:
+  - binary_sensor:
+      - name: FR24 Feeder Receiver Connected
+        device_class: connectivity
+        state: "{{ is_state_attr('sensor.fr24_feeder', 'rx_connected', '1') }}"
+      - name: FR24 Feeder Link Connected
+        device_class: connectivity
+        state: "{{ is_state_attr('sensor.fr24_feeder', 'feed_status', 'connected') }}"
+
+  - sensor:
+      - name: FR24 Feeder Aircraft Tracked
+        unit_of_measurement: "aircrafts"
+        icon: mdi:airplane
+        state: "{{ state_attr('sensor.fr24_feeder', 'd11_map_size') | round(0, default=none) }}"
+      - name: Grid Consumed Today Cost
+        unit_of_measurement: "Kč"
+        device_class: monetary
+        # Cote: calculations made 09.2025
+        # Fixed part - 225.07 Kč per month, divided by 30.4 days = 7.4 Kč per day
+        # Variable part - 5.316 Kč per kWh
+        # Total = (7.4 + (5.316 * consumed kWh today)) + 21% VAT
+        state: >
+          {% set fixed = 7.4 %}
+          {% set variable = 5.316 %}
+          {% set vat = 0.21 %}
+          {% set consumed = states('sensor.grid_consumed_today') | float(0.0) %}
+          {{ ((fixed + (variable * consumed)) * (1 + vat)) | round(2, default=0) }}
+      - name: Grid Consumed Month Cost
+        unit_of_measurement: "Kč"
+        device_class: monetary
+        # Fixed part - 225.07 Kč per month, divided by 30.4 days = 7.4 Kč per day
+        # Variable part - 5.316 Kč per kWh
+        # Total = (7.4 + (5.316 * consumed kWh today)) + 21% VAT
+        state: >
+          {% set fixed = 7.4 %}
+          {% set variable = 5.316 %}
+          {% set vat = 0.21 %}
+          {% set consumed = states('sensor.grid_consumed_month') | float(0.0) %}
+          {{ ((fixed + (variable * consumed)) * (1 + vat)) | round(2, default=0) }}
+
+###############################################
+## AUTOMATIONS
+###############################################
+automation:
+  - id: "notification_ads_b_receiver_disconnected"
+    alias: Notification ADS-B Receiver Disconnected
+    triggers:
+      - trigger: state
+        entity_id: binary_sensor.fr24_feeder_receiver_connected
+        from: "on"
+        to: "off"
+        for: "00:05:00"
+    actions:
+      - variables:
+          timestamp: "{{ trigger.to_state.last_changed.astimezone(now().tzinfo).strftime('%H:%M:%S') }}"
+      - action: script.notify_and_create_persistent_notification
+        data:
+          title: *sys_notify_title_warning
+          message: Связь с ADS-B приёмником была потеряна в {{ timestamp }}
+      - action: automation.turn_on
+        entity_id: automation.notification_ads_b_receiver_connection_restored
+
+  - id: "notification_ads_b_receiver_connection_restored"
+    alias: Notification ADS-B Receiver Connection Restored
+    triggers:
+      - trigger: state
+        entity_id: binary_sensor.fr24_feeder_receiver_connected
+        from: "off"
+        to: "on"
+        for: "00:01:00"
+    actions:
+      - variables:
+          timestamp: "{{ trigger.to_state.last_changed.astimezone(now().tzinfo).strftime('%H:%M:%S') }}"
+      - action: script.notify_and_create_persistent_notification
+        data:
+          title: *sys_notify_title_info
+          message: Связь с ADS-B приёмником была восстановлена в {{ timestamp }}
+      - action: automation.turn_off
+        entity_id: automation.notification_ads_b_receiver_connection_restored
+
+  # This automation in define in my private.yaml, so here is only a snippet
+  # - id: "notification_aircraft_detected"
+  #   alias: Notification Aircraft Detected
+  #   triggers:
+  #     - trigger: state
+  #       entity_id: sensor.fr24_aircraft
+  #   conditions:
+  #     - condition: template
+  #       value_template: "{{ state_attr('sensor.fr24_aircraft', 'aircraft') | regex_search('AIRCRAFT1|AIRCRAFT2|AIRCRAFT3') }}"
+  #     - condition: template
+  #       value_template: >
+  #         {{ now() - state_attr('automation.notification_aircraft_detected', 'last_triggered') > timedelta(minutes=5) }}
+  #   actions:
+  #     - variables:
+  #         aircrafts_to_track: 'AIRCRAFT1|AIRCRAFT2|AIRCRAFT3'
+  #     - action: notify.mobile_app_sm_s901b
+  #       data:
+  #         title: "✈️ Known Aircraft Detected"
+  #         message: |
+  #           {% set aircraft = namespace(flight='', alt_baro='', gs='') %}
+  #           {% set aircrafts_list = state_attr('sensor.fr24_aircraft', 'aircraft') %}
+  #           {% for element in aircrafts_list if element | regex_search(aircrafts_to_track) %}
+  #                   {% set aircraft.flight = element['flight'] %}
+  #                   {% set aircraft.alt = (((element['alt_baro'] | float) * 0.3048) | int(0)) | string %}
+  #                   {% set aircraft.gs = (((element['gs'] | float) * 1.852) | int(0)) | string %}
+  #           {% endfor %}
+  #           {% if aircraft.flight == '' %}
+  #                   {{ 'Aircraft data not received' }}
+  #           {% else %}
+  #                   {{ 'Flight number: ' + aircraft.flight }}
+  #                   {{ 'Altitude: ' + aircraft.alt + ' m' }}
+  #                   {{ 'Speed: ' + aircraft.gs + ' km/h' }}
+  #           {% endif %}

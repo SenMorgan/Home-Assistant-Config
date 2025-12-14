@@ -55,9 +55,6 @@ wake_on_lan:
 #     attributes:
 #       - calibration_points
 
-binary_sensor: !include binary_sensors.yaml
-sensor: !include sensors.yaml
-
 switch:
   - platform: wake_on_lan
     name: Asus PC

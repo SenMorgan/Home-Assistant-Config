@@ -37,15 +37,13 @@ input_datetime:
     has_time: true
 
 ###############################################
-## SENSORS
+## TEMPLATES ENTITIES
 ###############################################
-sensor:
-  - platform: template
-    sensors:
-      scooter_charger_energy_consumed:
-        friendly_name: "Scooter Charger Energy Consumed"
-        unit_of_measurement: "Wh"
-        value_template: >
+template:
+  - sensor:
+      - name: Scooter Charger Energy Consumed
+        unit_of_measurement: Wh
+        state: >
           {{ ((states('sensor.scooter_charger_summation_delivered') | float(0) -
             states('input_number.scooter_charger_energy_start') | float(0)) * 1000) | round }}
 

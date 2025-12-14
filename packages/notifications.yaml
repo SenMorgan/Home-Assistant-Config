@@ -17,6 +17,19 @@ homeassistant:
       sys_notify_title_critical: &sys_notify_title_critical "🚨 Внимание!"
 
 ###############################################
+## BINARY SENSORS
+###############################################
+binary_sensor:
+  - platform: trend
+    sensors:
+      diesel_price_ono_trend:
+        friendly_name: "Diesel Price ONO Trend"
+        entity_id: sensor.diesel_price_ono
+      gasoline_price_ono_trend:
+        friendly_name: "Gasoline Price ONO Trend"
+        entity_id: sensor.gasoline_price_ono
+
+###############################################
 ## SCRIPTS
 ###############################################
 script:
@@ -112,41 +125,6 @@ automation:
                   option: Gender
                 action: select.select_option
 
-  - id: "notification_ads_b_receiver_disconnected"
-    alias: Notification ADS-B Receiver Disconnected
-    triggers:
-      - trigger: state
-        entity_id: binary_sensor.fr24_feeder_receiver_connected
-        from: "on"
-        to: "off"
-        for: "00:05:00"
-    actions:
-      - variables:
-          timestamp: "{{ trigger.to_state.last_changed.astimezone(now().tzinfo).strftime('%H:%M:%S') }}"
-      - action: script.notify_and_create_persistent_notification
-        data:
-          title: *sys_notify_title_warning
-          message: Связь с ADS-B приёмником была потеряна в {{ timestamp }}
-      - action: automation.turn_on
-        entity_id: automation.notification_ads_b_receiver_connection_restored
-
-  - id: "notification_ads_b_receiver_connection_restored"
-    alias: Notification ADS-B Receiver Connection Restored
-    triggers:
-      - trigger: state
-        entity_id: binary_sensor.fr24_feeder_receiver_connected
-        from: "off"
-        to: "on"
-        for: "00:01:00"
-    actions:
-      - variables:
-          timestamp: "{{ trigger.to_state.last_changed.astimezone(now().tzinfo).strftime('%H:%M:%S') }}"
-      - action: script.notify_and_create_persistent_notification
-        data:
-          title: *sys_notify_title_info
-          message: Связь с ADS-B приёмником была восстановлена в {{ timestamp }}
-      - action: automation.turn_off
-        entity_id: automation.notification_ads_b_receiver_connection_restored
 
   - id: "notification_diesel_price_changed"
     alias: Notification Diesel Price Changed
@@ -197,40 +175,6 @@ automation:
               - action: "URI"
                 title: 📈 Open Chart
                 uri: "/lovelace/gasoline-price"
-
-  # This automation in define in my private.yaml, so here is only a snippet
-  # - id: "notification_aircraft_detected"
-  #   alias: Notification Aircraft Detected
-  #   triggers:
-  #     - trigger: state
-  #       entity_id: sensor.fr24_aircraft
-  #   conditions:
-  #     - condition: template
-  #       value_template: "{{ state_attr('sensor.fr24_aircraft', 'aircraft') | regex_search('AIRCRAFT1|AIRCRAFT2|AIRCRAFT3') }}"
-  #     - condition: template
-  #       value_template: >
-  #         {{ now() - state_attr('automation.notification_aircraft_detected', 'last_triggered') > timedelta(minutes=5) }}
-  #   actions:
-  #     - variables:
-  #         aircrafts_to_track: 'AIRCRAFT1|AIRCRAFT2|AIRCRAFT3'
-  #     - action: notify.mobile_app_sm_s901b
-  #       data:
-  #         title: "✈️ Known Aircraft Detected"
-  #         message: |
-  #           {% set aircraft = namespace(flight='', alt_baro='', gs='') %}
-  #           {% set aircrafts_list = state_attr('sensor.fr24_aircraft', 'aircraft') %}
-  #           {% for element in aircrafts_list if element | regex_search(aircrafts_to_track) %}
-  #                   {% set aircraft.flight = element['flight'] %}
-  #                   {% set aircraft.alt = (((element['alt_baro'] | float) * 0.3048) | int(0)) | string %}
-  #                   {% set aircraft.gs = (((element['gs'] | float) * 1.852) | int(0)) | string %}
-  #           {% endfor %}
-  #           {% if aircraft.flight == '' %}
-  #                   {{ 'Aircraft data not received' }}
-  #           {% else %}
-  #                   {{ 'Flight number: ' + aircraft.flight }}
-  #                   {{ 'Altitude: ' + aircraft.alt + ' m' }}
-  #                   {{ 'Speed: ' + aircraft.gs + ' km/h' }}
-  #           {% endif %}
 
   - id: "notification_solar_panel_power_above_threshold"
     alias: Notification Solar Panel Power Above Threshold

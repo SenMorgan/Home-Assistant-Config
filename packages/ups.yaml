@@ -3,8 +3,7 @@
 # Author: SenMorgan https://github.com/SenMorgan                     #
 # Date: 2022-11-28                                                   #
 #                                                                    #
-# Info: this file contains automations that are associated to the    #
-# UPS.                                                               #
+# Info: this file contains entities that are associated to the UPS.  #
 #                                                                    #
 # Copyright (c) 2022 Sen Morgan                                      #
 ######################################################################
@@ -20,19 +19,17 @@ homeassistant:
       sys_notify_title_critical: &sys_notify_title_critical "🚨 Внимание!"
 
 ###############################################
-## SENSORS
+## TEMPLATES ENTITIES
 ###############################################
-sensor:
-  - platform: template
-    sensors:
-      ups_power:
-        friendly_name: UPS Power
-        value_template: |
-          {{ (states('sensor.ups_load') | int(0)  * 0.01 *
-              states('sensor.ups_nominal_real_power') | int(0)) | round(2, default=none) }}
-        unit_of_measurement: "W"
-        icon_template: "mdi:gauge"
+template:
+  - sensor:
+      - name: UPS Power
+        unit_of_measurement: W
         device_class: power
+        icon: mdi:gauge
+        state: >
+          {{ (states('sensor.ups_load') | int(0) * 0.01 * states('sensor.ups_nominal_real_power') | int(0)) |
+            round(2, default=none) }}
 
 ###############################################
 ## ALERTS
