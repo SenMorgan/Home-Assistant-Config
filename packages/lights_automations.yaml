@@ -566,7 +566,6 @@ scene:
       light.kitchen_led_strip: off
       light.kitchen_spotlights: off
       light.kitchen_christmas_lights: off
-      light.living_room_christmas_lights: on
       light.christmas_tree: on
       light.shelf_lighting: off
       light.string_lights: off
@@ -592,7 +591,6 @@ scene:
       light.kitchen_led_strip: off
       light.kitchen_spotlights: on
       light.kitchen_christmas_lights: on
-      light.living_room_christmas_lights: on
       light.christmas_tree: on
       light.mi_desk_lamp:
         brightness: 255

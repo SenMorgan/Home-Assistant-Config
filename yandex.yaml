@@ -34,7 +34,6 @@ filter:
     - light.kitchen_led_strip
     - light.kitchen_spotlights
     - light.living_room_ceiling_light
-    - light.living_room_christmas_lights
     - light.mi_desk_lamp
     - light.hall_edison_bulb
     - light.shelf_lighting
@@ -149,9 +148,6 @@ entity_config:
     name: Люстра
     room: Зал
     type: light.ceiling
-  light.living_room_christmas_lights:
-    name: Гирлянда
-    room: Зал
   light.banana_light:
     name: Банан
     room: Кухня
