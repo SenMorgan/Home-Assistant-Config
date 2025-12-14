@@ -392,6 +392,27 @@ automation:
       - action: light.turn_on
         entity_id: light.banana_light
 
+  - id: "kitchen_christmas_lights_reenable"
+    alias: Kitchen Christmas Lights Reenable
+    mode: restart
+    triggers: *any_activity_trigger
+    conditions:
+      - condition: state
+        entity_id: light.kitchen_christmas_lights
+        state: "off"
+      - condition: state
+        entity_id: binary_sensor.people_home
+        state: "on"
+      - condition: state
+        entity_id: input_boolean.home_night_mode
+        state: "off"
+      - condition: time
+        after: "05:00:00"
+        before: "22:00:00"
+    actions:
+      - action: light.turn_on
+        entity_id: light.kitchen_christmas_lights
+
   - id: "disable_decorative_lights_when_sen_leaves"
     alias: Disable Decorative Lights When Sen Leaves
     mode: single
