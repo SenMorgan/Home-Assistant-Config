@@ -51,6 +51,11 @@ sensor:
     type: time
     start: "{{ today_at('00:00:00') }}"
     end: "{{ now() }}"
+  # Time and Date sensor used in notifications
+  - platform: time_date
+    display_options:
+      - "time"
+      - "date"
 
 ###############################################
 ## TEMPLATE ENTITIES
