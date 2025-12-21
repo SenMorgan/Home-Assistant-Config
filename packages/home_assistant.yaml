@@ -70,6 +70,32 @@ template:
       - name: HA CPU Overheat
         state: "{{ states('sensor.processor_temperature') | float > 60 }}"
 
+  - sensor:
+      - name: Grid Consumed Today Cost
+        unit_of_measurement: "Kč"
+        device_class: monetary
+        # Cote: calculations made 09.2025
+        # Fixed part - 225.07 Kč per month, divided by 30.4 days = 7.4 Kč per day
+        # Variable part - 5.316 Kč per kWh
+        # Total = (7.4 + (5.316 * consumed kWh today)) + 21% VAT
+        state: >
+          {% set fixed = 7.4 %}
+          {% set variable = 5.316 %}
+          {% set vat = 0.21 %}
+          {% set consumed = states('sensor.grid_consumed_today') | float(0.0) %}
+          {{ ((fixed + (variable * consumed)) * (1 + vat)) | round(2, default=0) }}
+      - name: Grid Consumed Month Cost
+        unit_of_measurement: "Kč"
+        device_class: monetary
+        # Fixed part - 225.07 Kč per month, divided by 30.4 days = 7.4 Kč per day
+        # Variable part - 5.316 Kč per kWh
+        # Total = (7.4 + (5.316 * consumed kWh today)) + 21% VAT
+        state: >
+          {% set fixed = 7.4 %}
+          {% set variable = 5.316 %}
+          {% set vat = 0.21 %}
+          {% set consumed = states('sensor.grid_consumed_month') | float(0.0) %}
+          {{ ((fixed + (variable * consumed)) * (1 + vat)) | round(2, default=0) }}
 
 ###############################################
 ## ALERTS
