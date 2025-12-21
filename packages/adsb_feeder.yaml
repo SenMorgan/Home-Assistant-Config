@@ -32,7 +32,6 @@ sensor:
     json_attributes:
       - rx_connected
       - feed_status
-      - d11_map_size
       - feed_num_ac_tracked
       - build_version
       - feed_alias
@@ -62,7 +61,7 @@ template:
       - name: FR24 Feeder Aircraft Tracked
         unit_of_measurement: "aircrafts"
         icon: mdi:airplane
-        state: "{{ state_attr('sensor.fr24_feeder', 'd11_map_size') | round(0, default=none) }}"
+        state: "{{ state_attr('sensor.fr24_feeder', 'feed_num_ac_tracked') | round(0, default=none) }}"
 
 ###############################################
 ## AUTOMATIONS
