@@ -48,7 +48,7 @@ filter:
     - sensor.pool_monitor_air_temperature
     - sensor.pool_monitor_bottom_water_temperature
     - sensor.pool_monitor_upper_water_temperature
-    - sensor.sm_g991b_battery_level
+    - sensor.sm_s931b_battery_level
     - sensor.sm_s901b_battery_level
     - switch.asus_pc
     - switch.loco_vossloh_1701_engine_sound
@@ -299,14 +299,14 @@ entity_config:
         entity: sensor.sm_s901b_battery_level
       - type: temperature
         entity: sensor.sm_s901b_battery_temperature
-  sensor.sm_g991b_battery_level:
+  sensor.sm_s931b_battery_level:
     name: Телефон Крис
     room: Телефоны
     properties:
       - type: battery_level
-        entity: sensor.sm_g991b_battery_level
+        entity: sensor.sm_s931b_battery_level
       - type: temperature
-        entity: sensor.sm_g991b_battery_temperature
+        entity: sensor.sm_s931b_battery_temperature
   sensor.electricity_meter_power:
     name: Электричество
     room: Дом

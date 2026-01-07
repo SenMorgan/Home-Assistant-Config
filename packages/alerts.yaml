@@ -29,7 +29,7 @@ alert:
     skip_first: true
     notifiers:
       - mobile_app_sm_s901b
-      - mobile_app_sm_g991b
+      - mobile_app_sm_s931b
     title: *sys_notify_title_critical
     message: Water leakage detected in bathroom at {{ states('sensor.time') }}.
     done_message: Bathroom water leakage resolved at {{ states('sensor.time') }}.
@@ -46,7 +46,7 @@ alert:
     skip_first: true
     notifiers:
       - mobile_app_sm_s901b
-      - mobile_app_sm_g991b
+      - mobile_app_sm_s931b
     title: *sys_notify_title_critical
     message: Water leakage detected in kitchen at {{ states('sensor.time') }}.
     done_message: Kitchen water leakage resolved at {{ states('sensor.time') }}.
@@ -62,7 +62,7 @@ alert:
     repeat: 1
     notifiers:
       - mobile_app_sm_s901b
-      - mobile_app_sm_g991b
+      - mobile_app_sm_s931b
     title: *sys_notify_title_critical
     message: >
       Обнаружена высокая концентрация угарного газа на кухне в {{ states('sensor.time') }}.
@@ -80,7 +80,7 @@ alert:
     repeat: 1
     notifiers:
       - mobile_app_sm_s901b
-      - mobile_app_sm_g991b
+      - mobile_app_sm_s931b
     title: *sys_notify_title_critical
     message: >
       Обнаружена утечка газа на кухне в {{ states('sensor.time') }}.

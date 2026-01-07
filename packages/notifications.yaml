@@ -164,7 +164,7 @@ automation:
         value_template: >
           {{ is_number(trigger.from_state.state) and is_number(trigger.to_state.state) }}
     actions:
-      - action: notify.mobile_app_sm_g991b
+      - action: notify.mobile_app_sm_s931b
         data:
           title: *sys_notify_title_info
           message: >
@@ -241,7 +241,7 @@ automation:
         above: 0
     action:
       - action: script.update_shopping_list
-      - action: notify.mobile_app_sm_g991b
+      - action: notify.mobile_app_sm_s931b
         data:
           message: "🛒 Открыть список покупок?"
           data:
