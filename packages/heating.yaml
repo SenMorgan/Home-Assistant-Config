@@ -548,8 +548,7 @@ automation:
       - action: notify.mobile_app_sm_s901b
         data:
           title: *sys_notify_title_info
-          message: &notification_freeze_alert_at_night >-
-            Термостат был снова включен в {{ states('sensor.time') }}, чтобы вы не замёрзли
+          message: "Термостат был снова включен в {{ states('sensor.time') }}, чтобы вы не замёрзли"
       # Set default temperature on thermostat
       - action: script.thermostat_stop_heating
         data:
