@@ -28,7 +28,7 @@ alert:
     repeat: [ 1, 1, 2, 10, 30, 60 ]
     skip_first: true
     notifiers:
-      - mobile_app_sm_s901b
+      - mobile_app_sen_s25
       - mobile_app_sm_s931b
     title: *sys_notify_title_critical
     message: Water leakage detected in bathroom at {{ states('sensor.time') }}.
@@ -45,7 +45,7 @@ alert:
     repeat: [ 1, 1, 2, 10, 30, 60 ]
     skip_first: true
     notifiers:
-      - mobile_app_sm_s901b
+      - mobile_app_sen_s25
       - mobile_app_sm_s931b
     title: *sys_notify_title_critical
     message: Water leakage detected in kitchen at {{ states('sensor.time') }}.
@@ -61,7 +61,7 @@ alert:
     state: "on"
     repeat: 1
     notifiers:
-      - mobile_app_sm_s901b
+      - mobile_app_sen_s25
       - mobile_app_sm_s931b
     title: *sys_notify_title_critical
     message: >
@@ -79,7 +79,7 @@ alert:
     state: "on"
     repeat: 1
     notifiers:
-      - mobile_app_sm_s901b
+      - mobile_app_sen_s25
       - mobile_app_sm_s931b
     title: *sys_notify_title_critical
     message: >
@@ -123,7 +123,7 @@ automation:
           - condition: template
             value_template: "{{ trigger.to_state.state in ['on', 'idle'] }}"
         then:
-          - action: notify.mobile_app_sm_s901b
+          - action: notify.mobile_app_sen_s25
             data:
               message: TTS
               data:

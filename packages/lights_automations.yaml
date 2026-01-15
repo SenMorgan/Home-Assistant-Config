@@ -162,7 +162,7 @@ automation:
                   # Including an id in the action allows us to identify this script run
                   # and not accidentally trigger for other notification actions
                   action_enable_guest_mode: "{{ 'action_enable_guest_mode' ~ context.id }}"
-              - action: notify.mobile_app_sm_s901b
+              - action: notify.mobile_app_sen_s25
                 data:
                   title: "👋 До свидания"
                   message: >
@@ -461,7 +461,7 @@ automation:
           sequence:
             - action: switch.turn_on
               entity_id: switch.parking_light
-            - action: notify.mobile_app_sm_s901b
+            - action: notify.mobile_app_sen_s25
               data:
                 title: *sys_notify_title_info
                 message: Реле освещения парковки было отключено более часа. Автоматическое включение в {{ states('sensor.time') }}

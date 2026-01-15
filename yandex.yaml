@@ -49,7 +49,6 @@ filter:
     - sensor.pool_monitor_bottom_water_temperature
     - sensor.pool_monitor_upper_water_temperature
     - sensor.sm_s931b_battery_level
-    - sensor.sm_s901b_battery_level
     - switch.asus_pc
     - switch.loco_vossloh_1701_engine_sound
     - switch.loco_vossloh_1701_horn_hi
@@ -291,14 +290,6 @@ entity_config:
   sensor.pool_monitor_upper_water_temperature:
     name: Температура воды сверху
     room: Бассейн
-  sensor.sm_s901b_battery_level:
-    name: Телефон Арсений
-    room: Телефоны
-    properties:
-      - type: battery_level
-        entity: sensor.sm_s901b_battery_level
-      - type: temperature
-        entity: sensor.sm_s901b_battery_temperature
   sensor.sm_s931b_battery_level:
     name: Телефон Крис
     room: Телефоны

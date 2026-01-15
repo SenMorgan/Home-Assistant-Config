@@ -118,7 +118,7 @@ automation:
   #   actions:
   #     - variables:
   #         aircrafts_to_track: 'AIRCRAFT1|AIRCRAFT2|AIRCRAFT3'
-  #     - action: notify.mobile_app_sm_s901b
+  #     - action: notify.mobile_app_sen_s25
   #       data:
   #         title: "✈️ Known Aircraft Detected"
   #         message: |

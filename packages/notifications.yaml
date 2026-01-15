@@ -36,7 +36,7 @@ script:
   notify_and_create_persistent_notification:
     alias: Notify and Create Persistent Notification
     sequence:
-      - action: notify.mobile_app_sm_s901b
+      - action: notify.mobile_app_sen_s25
         data:
           title: "{{ title }}"
           message: "{{ message }}"
@@ -63,7 +63,7 @@ automation:
         entity_id: sensor.openweathermap_snow
         above: 0
     actions:
-      - action: notify.mobile_app_sm_s901b
+      - action: notify.mobile_app_sen_s25
         data:
           title: ❄️ Snow Alert
           message: Должно выпадать {{ states('sensor.openweathermap_snow') }} мм/ч снега в {{ states('sensor.time') }}!
@@ -82,7 +82,7 @@ automation:
         value_template: >
           {{ not states('person.sen') == 'home'}}
     actions:
-      - action: notify.mobile_app_sm_s901b
+      - action: notify.mobile_app_sen_s25
         data:
           title: *sys_notify_title_info
           message: Входная дверь была открыта в {{ states('sensor.time') }}
@@ -101,7 +101,7 @@ automation:
       - data:
           title: "{{ '👩‍🦰' }} Семейное уведомление"
           message: Кристина пришла домой в {{ states('sensor.time') }}
-        action: notify.mobile_app_sm_s901b
+        action: notify.mobile_app_sen_s25
       - if:
           - condition: template
             value_template: "{{ is_state('person.sen', 'home') }}"
@@ -184,7 +184,7 @@ automation:
         above: 40
         for: "00:05:00"
     actions:
-      - action: notify.mobile_app_sm_s901b
+      - action: notify.mobile_app_sen_s25
         data:
           title: "🌞 Солнечная панель"
           message: "Мощность выше порога: {{ states('sensor.solar_panel_power') }} W"
@@ -219,7 +219,7 @@ automation:
         above: 0
     action:
       - action: script.update_shopping_list
-      - action: notify.mobile_app_sm_s901b
+      - action: notify.mobile_app_sen_s25
         data:
           message: "🛒 Открыть список покупок?"
           data:
@@ -259,7 +259,7 @@ automation:
         entity_id: person.sen
         state: "home"
     action:
-      - action: notify.mobile_app_sm_s901b
+      - action: notify.mobile_app_sen_s25
         data:
           title: "{{ '🔋' }} Часы заряжены"
           message: "Твои Galaxy Watch заряжены уже на 80%!"
@@ -285,7 +285,7 @@ automation:
       - variables:
           weather_entity: weather.home_assistant_blue
           temp_unit: "{{ state_attr(weather_entity, 'temperature_unit') }}"
-          notify_group: mobile_app_sm_s901b
+          notify_group: mobile_app_sen_s25
           enable_snow: true
           enable_rain: true
           enable_cold: true
@@ -399,7 +399,7 @@ automation:
         value_template: >
           {{ trigger.from_state.state != trigger.to_state.state }}
     action:
-      - action: notify.mobile_app_sm_s901b
+      - action: notify.mobile_app_sen_s25
         data:
           title: "⭐ GitHub Repository Stars"
           message: >

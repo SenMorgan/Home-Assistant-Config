@@ -107,7 +107,7 @@ alert:
     state: "on"
     repeat: 180
     notifiers:
-      - mobile_app_sm_s901b
+      - mobile_app_sen_s25
       - persistent_notification
     title: *sys_notify_title_warning
     message: >-
@@ -121,7 +121,7 @@ alert:
     state: "on"
     repeat: 60
     notifiers:
-      - mobile_app_sm_s901b
+      - mobile_app_sen_s25
       - persistent_notification
     title: *sys_notify_title_critical
     message: >-
@@ -221,7 +221,7 @@ automation:
         from: "off"
         to: "on"
     actions:
-      - action: notify.mobile_app_sm_s901b
+      - action: notify.mobile_app_sen_s25
         data:
           title: *sys_notify_title_info
           message: Update!🎉 Доступна новая версия {{ states('sensor.home_assistant_versions') }}
@@ -283,7 +283,7 @@ automation:
             {% else %}
               None
             {% endif %}
-      - action: notify.mobile_app_sm_s901b
+      - action: notify.mobile_app_sen_s25
         data:
           title: "⚠️ HA: {{ trigger.notification.title }}"
           message: "{{trigger.notification.message}} Time: {{ now().strftime('%d %b, %X') }}"
@@ -419,7 +419,7 @@ automation:
               # and not accidentally trigger for other notification actions
               action_power_off: "{{ 'action_power_off' ~ context.id }}"
               action_cancel: "{{ 'action_cancel' ~ context.id }}"
-          - action: notify.mobile_app_sm_s901b
+          - action: notify.mobile_app_sen_s25
             data:
               message: TTS
               data:
@@ -427,7 +427,7 @@ automation:
                 channel: alarm_stream_max
                 media_stream: "alarm_stream_max"
                 tts_text: Synology DS220+ недоступен, продолжить выключение Home Assistant?
-          - action: notify.mobile_app_sm_s901b
+          - action: notify.mobile_app_sen_s25
             data:
               title: *sys_notify_title_critical
               message: Synology DS220+ недоступен, продолжить выключение Home Assistant?

@@ -41,7 +41,7 @@ alert:
     state: "OB DISCHRG"
     repeat: 1
     can_acknowledge: false
-    notifiers: mobile_app_sm_s901b
+    notifiers: mobile_app_sen_s25
     title: *sys_notify_title_critical
     message: |
       UPS отключится через {{ states('sensor.ups_battery_runtime') | int(0) | timestamp_custom('%M:%S') }} минут
@@ -100,7 +100,7 @@ automation:
         entity_id: sensor.ups_battery_charge
         below: 21
     actions:
-      - action: notify.mobile_app_sm_s901b
+      - action: notify.mobile_app_sen_s25
         data:
           title: *sys_notify_title_critical
           message: >
@@ -119,7 +119,7 @@ automation:
       - trigger: template
         value_template: "{{ 'OB DISCHRG LB' in states('sensor.ups_status_data') }}"
     actions:
-      - action: notify.mobile_app_sm_s901b
+      - action: notify.mobile_app_sen_s25
         data:
           title: *sys_notify_title_critical
           message: |

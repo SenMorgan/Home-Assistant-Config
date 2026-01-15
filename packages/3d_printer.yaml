@@ -52,7 +52,7 @@ automation:
         from: "on"
         to: "off"
     actions:
-      - action: notify.mobile_app_sm_s901b
+      - action: notify.mobile_app_sen_s25
         data:
           title: "3D Printer"
           message: "🎉 Печать завершена!"
@@ -72,7 +72,7 @@ automation:
             ((trigger.to_state.state | int(0)) != (trigger.from_state.state | int(0))) and
             (trigger.to_state.state | int(0)) % 10 == 0 }}
     actions:
-      - action: notify.mobile_app_sm_s901b
+      - action: notify.mobile_app_sen_s25
         data_template:
           title: "3D Printer"
           message: "📈 Деталь готова на {{ states('sensor.octoprint_job_percentage') | int(0) }}%"
@@ -90,7 +90,7 @@ automation:
           - "Paused"
           - "Pausing"
     actions:
-      - action: notify.mobile_app_sm_s901b
+      - action: notify.mobile_app_sen_s25
         data:
           title: "⚠️ 3D Printer"
           message: "Печать приостановлена!"
@@ -108,7 +108,7 @@ automation:
           - "Pausing"
         to: "Printing"
     actions:
-      - action: notify.mobile_app_sm_s901b
+      - action: notify.mobile_app_sen_s25
         data:
           title: "⚠️ 3D Printer"
           message: "Печать возобновлена"
@@ -132,7 +132,7 @@ automation:
             value_template: >
               {{ states('sensor.octoprint_actual_tool0_temp') | int(0) > 250 }}
     actions:
-      - action: notify.mobile_app_sm_s901b
+      - action: notify.mobile_app_sen_s25
         data:
           title: "🌡️ 3D Printer перегрелся!"
           message: |
@@ -206,7 +206,7 @@ automation:
         then:
           - action: input_boolean.turn_on
             entity_id: input_boolean.3d_printer_and_octo_power
-          - action: notify.mobile_app_sm_s901b
+          - action: notify.mobile_app_sen_s25
             data:
               title: "⚠️ 3D Printer"
               message: |
@@ -225,7 +225,7 @@ automation:
             then:
               - action: input_boolean.turn_on
                 entity_id: input_boolean.3d_printer_and_octo_power
-              - action: notify.mobile_app_sm_s901b
+              - action: notify.mobile_app_sen_s25
                 data:
                   title: "⚠️ 3D Printer"
                   message: |

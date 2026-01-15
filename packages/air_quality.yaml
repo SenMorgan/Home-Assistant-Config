@@ -68,7 +68,7 @@ automation:
                     в гостинной.
                   {% endif %}
                 {% endif %}
-      - action: notify.mobile_app_sm_s901b
+      - action: notify.mobile_app_sen_s25
         data:
           title: "🌬 Качество воздуха"
           message: >
@@ -136,7 +136,7 @@ automation:
             data:
               media_content_type: text
               media_content_id: Качество воздуха в доме вернулось в норму.
-      - action: notify.mobile_app_sm_s901b
+      - action: notify.mobile_app_sen_s25
         data:
           title: "🌬 Качество воздуха"
           message: >

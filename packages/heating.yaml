@@ -360,7 +360,7 @@ script:
       - condition: state
         entity_id: binary_sensor.windows
         state: "on"
-      - action: notify.mobile_app_sm_s901b
+      - action: notify.mobile_app_sen_s25
         data:
           title: *sys_notify_title_warning
           message: >-
@@ -545,7 +545,7 @@ automation:
           entity_id: input_text.heating_log
           value: "Температура упала ниже порога"
       # Notify about low temperature on mobile app
-      - action: notify.mobile_app_sm_s901b
+      - action: notify.mobile_app_sen_s25
         data:
           title: *sys_notify_title_info
           message: "Термостат был снова включен в {{ states('sensor.time') }}, чтобы вы не замёрзли"
