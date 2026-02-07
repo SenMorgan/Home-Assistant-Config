@@ -216,19 +216,20 @@ automation:
       input:
         remote_device: 51724530dc1fcac3561d2fcb39f40048
         on_press_action:
+          - action: switch.turn_on
+            entity_id: switch.monolith_speakers
           - action: light.turn_on
             entity_id:
               - light.mi_desk_lamp
               - light.tv_lights
+              - light.banana_light
               - light.christmas_tree
-          - action: switch.turn_on
-            entity_id: switch.monolith_speakers
         off_press_action:
+          - action: switch.turn_off
+            entity_id: switch.monolith_speakers
           - action: light.turn_off
             target:
               area_id: living_room
-          - action: switch.turn_off
-            entity_id: switch.monolith_speakers
         on_hold_action:
           - action: light.turn_on
             entity_id: light.mi_desk_lamp

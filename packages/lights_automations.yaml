@@ -392,6 +392,29 @@ automation:
       - action: light.turn_on
         entity_id: light.banana_light
 
+  - id: "cocktail_bar_neon_sign_reenable"
+    alias: Cocktail Bar Neon Sign Reenable
+    mode: restart
+    triggers: *any_activity_trigger
+    conditions:
+      - condition: state
+        entity_id: light.cocktail_bar_neon_sign
+        state: "off"
+      - condition: state
+        entity_id: person.sen
+        state: "home"
+      - condition: state
+        entity_id: input_boolean.home_night_mode
+        state: "off"
+      - condition: time
+        after: "05:00:00"
+        before: "22:00:00"
+    actions:
+      - action: light.turn_on
+        entity_id: light.cocktail_bar_neon_sign
+        data:
+          brightness: 255
+
   - id: "kitchen_christmas_lights_reenable"
     alias: Kitchen Christmas Lights Reenable
     mode: restart
@@ -425,7 +448,7 @@ automation:
     actions:
       - action: light.turn_off
         entity_id:
-          - light.banana_light
+          - light.cocktail_bar_neon_sign
           - light.gyver_lamp
           - light.shelf_lighting
       - action: switch.turn_off
@@ -571,7 +594,7 @@ scene:
       light.string_lights: off
       light.banana_light: on
       light.cocktail_bar_neon_sign:
-        brightness: 128
+        brightness: 10
         state: on
       media_player.samsung_tv: on
       switch.monolith_speakers: on
