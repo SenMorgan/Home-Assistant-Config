@@ -73,3 +73,38 @@ mqtt:
       unit_of_measurement: "%"
       device:
         identifiers: ["pool_monitor"]
+
+###############################################
+## Compensation Sensors for Calculating Battery SoC
+###############################################
+compensation:
+  pool_monitor_battery_soc:
+    name: "Pool Monitor Battery SoC"
+    source: sensor.pool_monitor_battery_voltage
+    device_class: battery
+    unit_of_measurement: "%"
+    upper_limit: true
+    lower_limit: true
+    precision: 0
+    data_points:
+      - [4200, 100]
+      - [4150, 95]
+      - [4110, 90]
+      - [4080, 85]
+      - [4020, 80]
+      - [3980, 75]
+      - [3950, 70]
+      - [3910, 65]
+      - [3870, 60]
+      - [3850, 55]
+      - [3840, 50]
+      - [3820, 45]
+      - [3800, 40]
+      - [3790, 35]
+      - [3770, 30]
+      - [3750, 25]
+      - [3730, 20]
+      - [3710, 15]
+      - [3690, 10]
+      - [3610, 5]
+      - [3270, 0]
