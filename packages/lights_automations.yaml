@@ -413,7 +413,7 @@ automation:
       - action: light.turn_on
         entity_id: light.cocktail_bar_neon_sign
         data:
-          brightness: 255
+          brightness: 100
 
   - id: "kitchen_christmas_lights_reenable"
     alias: Kitchen Christmas Lights Reenable
