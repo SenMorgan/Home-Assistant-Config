@@ -20,7 +20,6 @@ filter:
     - input_boolean.home_night_mode
     - input_boolean.silent_mode
     - input_button.thermostat_10_minutes_heating
-    - light.tv_lights
     - light.banana_light
     - light.bedroom_ceiling_light
     - light.bedroom_nightlight
@@ -28,6 +27,7 @@ filter:
     - light.cocktail_bar_neon_sign
     - light.floor_lamp
     - light.gyver_lamp
+    - light.hall_edison_bulb
     - light.hall_lights
     - light.kitchen_ceiling_light
     - light.kitchen_christmas_lights
@@ -35,10 +35,9 @@ filter:
     - light.kitchen_spotlights
     - light.living_room_ceiling_light
     - light.mi_desk_lamp
-    - light.hall_edison_bulb
     - light.shelf_lighting
     - light.string_lights
-    - switch.wireless_charger
+    - light.tv_lights
     - media_player.model_railway
     - media_player.samsung_tv
     - scene.evening
@@ -50,12 +49,13 @@ filter:
     - sensor.pool_monitor_upper_water_temperature
     - sensor.sm_s931b_battery_level
     - switch.asus_pc
+    - switch.interactive_cz_map_enable
+    - switch.loco_sbb_cargo_re_482_power_sound
     - switch.loco_vossloh_1701_engine_sound
     - switch.loco_vossloh_1701_horn_hi
-    - switch.loco_sbb_cargo_re_482_power_sound
-    - switch.interactive_cz_map_enable
     - switch.monolith_speakers
     - switch.moving_head_power
+    - switch.wireless_charger
 
 entity_config:
   binary_sensor.bedroom_window_contact:
