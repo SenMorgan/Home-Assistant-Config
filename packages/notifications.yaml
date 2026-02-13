@@ -259,6 +259,8 @@ automation:
         entity_id: person.sen
         state: "home"
     action:
+      - action: switch.turn_off
+        entity_id: switch.galaxy_watch_charger
       - action: notify.mobile_app_sen_s25
         data:
           title: "{{ '🔋' }} Часы заряжены"

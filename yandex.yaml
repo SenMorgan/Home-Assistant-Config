@@ -56,6 +56,7 @@ filter:
     - switch.loco_vossloh_1701_horn_hi
     - switch.monolith_speakers
     - switch.moving_head_power
+    - switch.galaxy_watch_charger
     - switch.wireless_charger
 
 entity_config:
@@ -124,9 +125,15 @@ entity_config:
   light.string_lights:
     name: Лампочки
     room: Кухня
+  switch.galaxy_watch_charger:
+    name: Зарядка часов
+    room: Кухня
+    type: switch
+    slow: true
   switch.wireless_charger:
     name: Беспроводная зарядка
     room: Кухня
+    type: switch
     slow: true
   light.kitchen_spotlights:
     name: Подсветка

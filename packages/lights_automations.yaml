@@ -350,6 +350,29 @@ automation:
       - action: switch.turn_on
         entity_id: switch.wireless_charger
 
+  - id: "galaxy_watch_charger_reenable"
+    alias: Galaxy Watch Charger Reenable
+    mode: restart
+    triggers:
+      - trigger: state
+        entity_id: person.sen
+        to: "home"
+      - trigger: time
+        at: "09:00:00"
+    conditions:
+      - condition: state
+        entity_id: switch.galaxy_watch_charger
+        state: "off"
+      - condition: state
+        entity_id: binary_sensor.people_home
+        state: "on"
+      - condition: time
+        after: "05:00:00"
+        before: "22:00:00"
+    actions:
+      - action: switch.turn_on
+        entity_id: switch.galaxy_watch_charger
+
   - id: "interactive_cz_map_reenable"
     alias: Interactive CZ Map Reenable
     mode: restart
