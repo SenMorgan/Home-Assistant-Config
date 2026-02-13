@@ -44,17 +44,7 @@ notify:
 # Enables the ability to send magic packets to Wake on LAN capable devices to turn them on
 wake_on_lan:
 
-# camera:
-#   - platform: xiaomi_cloud_map_extractor
-#     host: !secret XIAOMI_VACUUM_HOST
-#     token: !secret XIAOMI_VACUUM_TOKEN
-#     username: !secret XIAOMI_CLOUD_USERNAME
-#     password: !secret XIAOMI_CLOUD_PASSWORD
-#     country: "de"
-#     draw: ["all"]
-#     attributes:
-#       - calibration_points
-
+# Wake on LAN switch platform
 switch:
   - platform: wake_on_lan
     name: Asus PC
