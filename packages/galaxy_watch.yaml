@@ -47,8 +47,8 @@ automation:
       - action: switch.turn_on
         entity_id: switch.galaxy_watch_charger
 
-  - alias: Notification Watch Charged
-    id: notification_watch_charged
+  - alias: Galaxy Watch Charger Disable When Charged
+    id: galaxy_watch_charger_disable_when_charged
     trigger:
       - platform: numeric_state
         entity_id: sensor.galaxy_watch6_classic_r7dh_battery_level
@@ -60,18 +60,4 @@ automation:
     action:
       - action: switch.turn_off
         entity_id: switch.galaxy_watch_charger
-      - action: notify.mobile_app_sen_s25
-        data:
-          title: "{{ '🔋' }} Часы заряжены"
-          message: "Твои Galaxy Watch заряжены уже на 80%!"
-      # If silent mode is not enabled, then notify via Yandex Station also
-      - if:
-          - condition: state
-            entity_id: input_boolean.silent_mode
-            state: "off"
-        then:
-          - action: media_player.play_media
-            entity_id: media_player.yandex_station_midi
-            data:
-              media_content_type: text
-              media_content_id: "Часы заряжены на 80%"
+
