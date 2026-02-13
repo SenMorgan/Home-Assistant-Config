@@ -8,13 +8,9 @@ light.floor_lamp:
     - Breathe
     - Lightning
     - Solid
-sensor.gas_meter:
-  state_class: total_increasing
-#  state_class: measurement
-#  last_reset: '2022-10-05T18:35:00.740703+00:00'
 sensor.air_quality_station_pm2_5:
   icon: mdi:blur
 switch.asus_pc:
-    icon: mdi:desktop-tower-monitor
+  icon: mdi:desktop-tower-monitor
 switch.lenovo_thinkbook:
-    icon: mdi:laptop
+  icon: mdi:laptop
