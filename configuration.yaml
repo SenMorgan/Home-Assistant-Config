@@ -49,7 +49,7 @@ switch:
   - platform: wake_on_lan
     name: Asus PC
     mac: !secret ASUS_PC_MAC
-    host: !secret ASUS_PC_LOCAL_IP
+    host: !secret ASUS_PC_IP
     turn_off:
       - action: hassio.addon_stdin
         data:
@@ -58,7 +58,7 @@ switch:
   - platform: wake_on_lan
     name: Lenovo ThinkBook
     mac: !secret LENOVO_NB_MAC
-    host: !secret LENOVO_NB_LOCAL_IP
+    host: !secret LENOVO_NB_IP
 
 light:
   - platform: artnet_led
