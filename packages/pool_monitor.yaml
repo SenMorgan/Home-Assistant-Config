@@ -80,6 +80,7 @@ mqtt:
 compensation:
   pool_monitor_battery_soc:
     name: "Pool Monitor Battery SoC"
+    unique_id: "pool_monitor_battery_soc"
     source: sensor.pool_monitor_battery_voltage
     device_class: battery
     unit_of_measurement: "%"
