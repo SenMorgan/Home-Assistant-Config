@@ -228,8 +228,8 @@ automation:
           data:
             actions:
               - action: "URI"
-                title: "Open Config"
-                uri: "/config"
+                title: "Open Settings"
+                uri: "/config/dashboard"
 
   # Used blueprint from: https://community.home-assistant.io/t/blueprint-notify-when-zigbee-zwave-any-battery-device-has-gone-offline/537631
   - id: "notification_battery_device_gone_offline"
