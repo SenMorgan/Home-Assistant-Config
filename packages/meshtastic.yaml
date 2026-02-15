@@ -6,7 +6,6 @@
 # Copyright (c) 2025 Sen Morgan                                      #
 ######################################################################
 
-
 ###############################################
 ## Automations
 ###############################################
@@ -32,3 +31,29 @@ automation:
           ack: true
           channel: meshtastic.gateway_lrnr_channel_morgans
           message: "PONG: {{ trigger.event.data.message }}"
+
+  - alias: Meshtastic Echo Home Temperature Sensors
+    id: meshtastic_echo_home_temperature_sensors
+    mode: single
+    triggers:
+      - domain: meshtastic
+        device_id: 5dd840db1c76b5319a4478ab33c7b33b
+        type: channel_message.received
+        entity_id: meshtastic.gateway_lrnr_channel_morgans
+        trigger: device
+    conditions:
+      - condition: template
+        value_template: '{{ "status" in (trigger.event.data.message | lower) }}'
+    actions:
+      - delay:
+          seconds: 5
+      - action: meshtastic.broadcast_channel_message
+        metadata: {}
+        data:
+          ack: true
+          channel: meshtastic.gateway_lrnr_channel_morgans
+          message: >
+            Home Temperature Sensors:
+            {% for entity_id in states.sensor | selectattr('entity_id', 'match', 'sensor.ble_temperature_atc_.*|sensor.ikea_vindstyrka_.*') | map(attribute='entity_id') | list %}
+              {{ states(entity_id) | round(1, default=0) }}°C ({{ state_attr(entity_id, 'friendly_name') }}) - {{ states[entity_id].last_updated | as_timestamp | timestamp_custom('%Y-%m-%d %H:%M:%S') }}
+            {% endfor %}
