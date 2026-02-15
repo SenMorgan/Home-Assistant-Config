@@ -20,6 +20,9 @@ automation:
         type: channel_message.received
         entity_id: meshtastic.gateway_lrnr_channel_morgans
         trigger: device
+    conditions:
+      - condition: template
+        value_template: '{{ "test" in (trigger.event.data.message | lower) or "ping" in (trigger.event.data.message | lower) }}'
     actions:
       - delay:
           seconds: 5
@@ -28,4 +31,4 @@ automation:
         data:
           ack: true
           channel: meshtastic.gateway_lrnr_channel_morgans
-          message: "ECHO: {{ trigger.event.data.message }}"
+          message: "PONG: {{ trigger.event.data.message }}"
