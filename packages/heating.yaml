@@ -114,8 +114,10 @@ template:
         state: "{{ not is_state_attr('climate.family_room', 'hvac_action', 'off') }}"
       - name: Freeze Alert at Night
         device_class: cold
+        # Detects if temperature drops below 20°C during night hours (21:00-06:00) when people are home or guest mode is enabled
         state: >
           {{ ((now().hour >= 21 and now().hour <= 23) or (now().hour >= 0 and now().hour <= 6)) and
+            (is_state('binary_sensor.people_home', 'on') or is_state('input_boolean.guest_mode', 'on')) and
             ((state_attr('climate.family_room', 'current_temperature') | float(0) < 20.0) or
             (states('sensor.ble_temperature_atc_bedroom') | float(0) < 20.0) or
             (states('sensor.ble_temperature_atc_living_room') | float(0) < 20.0)) }}
