@@ -85,3 +85,32 @@ automation:
                 message: "{{ repeat.item }}"
             - delay:
                 seconds: 1
+
+  - alias: Meshtastic Notification Internet Connection
+    id: meshtastic_notification_internet_connection
+    mode: queued
+    triggers:
+      - trigger: state
+        entity_id: binary_sensor.internet_connection
+    conditions:
+      - condition: template
+        value_template: "{{ trigger.to_state.state in ['on', 'off'] }}"
+    actions:
+      - if:
+          - condition: state
+            entity_id: binary_sensor.internet_connection
+            state: "off"
+        then:
+          - action: meshtastic.broadcast_channel_message
+            metadata: {}
+            data:
+              ack: true
+              channel: meshtastic.gateway_lrnr_channel_morgans
+              message: "⚠️ Home Assistant: Интернет соединение потеряно в {{ states('sensor.time') }}"
+        else:
+          - action: meshtastic.broadcast_channel_message
+            metadata: {}
+            data:
+              ack: true
+              channel: meshtastic.gateway_lrnr_channel_morgans
+              message: "✅ Home Assistant: Интернет соединение восстановлено в {{ states('sensor.time') }}"
