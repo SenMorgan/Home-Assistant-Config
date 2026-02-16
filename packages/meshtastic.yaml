@@ -24,7 +24,7 @@ automation:
         value_template: '{{ "test" in (trigger.event.data.message | lower) or "ping" in (trigger.event.data.message | lower) }}'
     actions:
       - delay:
-          seconds: 5
+          seconds: 2
       - action: meshtastic.broadcast_channel_message
         metadata: {}
         data:
@@ -46,14 +46,42 @@ automation:
         value_template: '{{ "status" in (trigger.event.data.message | lower) }}'
     actions:
       - delay:
-          seconds: 5
-      - action: meshtastic.broadcast_channel_message
-        metadata: {}
-        data:
-          ack: true
-          channel: meshtastic.gateway_lrnr_channel_morgans
-          message: >
-            Home Temperature Sensors:
-            {% for entity_id in states.sensor | selectattr('entity_id', 'match', 'sensor.ble_temperature_atc_.*|sensor.ikea_vindstyrka_.*') | map(attribute='entity_id') | list %}
-              {{ states(entity_id) | round(1, default=0) }}°C ({{ state_attr(entity_id, 'friendly_name') }}) - {{ states[entity_id].last_updated | as_timestamp | timestamp_custom('%Y-%m-%d %H:%M:%S') }}
+          seconds: 2
+      - variables:
+          entity_pattern: 'sensor.ble_temperature_atc_.*|sensor.ikea_vindstyrka_.*'  # Pattern to match relevant sensors
+          max_message_length: 200  # 200 characters is a common limit for mesh messages
+          message_header: "Home Sensors:"  # Header for each message chunk
+          message_chunks: >-
+            {% set lines = states.sensor | selectattr('entity_id', 'match', entity_pattern) | map(attribute='entity_id') | list %}
+            {% set ns = namespace(chunks=[], current=message_header) %}
+            {% for line in lines %}
+              {% set state_value = states(line) | float(0) | round(2) if (states(line) | is_number) else 'N/A' %}
+              {% set state_name = state_attr(line, 'friendly_name') | default(line) %}
+              {% set state_time = states[line].last_updated | default('N/A') %}
+              {% set row = '🌡' ~(state_value) ~ '°C — ' ~ state_name ~ ' (' ~ (state_time | relative_time) ~ ' ago)' %}
+              {% set candidate = ns.current ~ '\n' ~ row %}
+              {% if candidate | length > max_message_length and ns.current != message_header %}
+                {% set ns.chunks = ns.chunks + [ns.current] %}
+                {% set ns.current = message_header ~ '\n' ~ row %}
+              {% else %}
+                {% set ns.current = candidate %}
+              {% endif %}
             {% endfor %}
+            {% if ns.current != message_header %}
+              {% set ns.chunks = ns.chunks + [ns.current] %}
+            {% endif %}
+            {% if ns.chunks | length == 0 %}
+              {% set ns.chunks = [message_header ~ '\nNo sensor data available'] %}
+            {% endif %}
+            {{ ns.chunks }}
+      - repeat:
+          for_each: "{{ message_chunks }}"
+          sequence:
+            - action: meshtastic.broadcast_channel_message
+              metadata: {}
+              data:
+                ack: true
+                channel: meshtastic.gateway_lrnr_channel_morgans
+                message: "{{ repeat.item }}"
+            - delay:
+                seconds: 1
