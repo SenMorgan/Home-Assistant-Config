@@ -555,6 +555,9 @@ automation:
       - action: script.thermostat_stop_heating
         data:
           message: "Температура упала ниже порога ночью → термостат переведён на 22°C"
+      # Enable hall heater too
+      - action: switch.turn_on
+        entity_id: switch.hall_heater
 
   - alias: Thermostat Preheat Alert
     id: thermostat_preheat_alert
@@ -739,6 +742,9 @@ automation:
           - timer.heating_quarantine
           - timer.short_heating
           - timer.pause_heating
+      # Disable hall heater
+      - action: switch.turn_off
+        entity_id: switch.hall_heater
       # Set "eco" mode on thermostat
       - action: script.thermostat_set_eco_mode
         data:
@@ -761,6 +767,9 @@ automation:
         entity_id: binary_sensor.thermostat_active
         state: "off"
     actions:
+      # Enable hall heater
+      - action: switch.turn_on
+        entity_id: switch.hall_heater
       # If some window is opened, restore thermostat in "off" mode
       - if:
           - condition: state
@@ -779,7 +788,7 @@ automation:
               message: "Возвращение домой → отопление включено"
 
   ###############################################
-  ## Main home heating logic
+  ## Heat request handlers
   ###############################################
 
   # If one of ETRV is in "heat" state and climate.family_room is not in "heat" state,
