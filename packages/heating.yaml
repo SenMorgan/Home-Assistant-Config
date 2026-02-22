@@ -115,7 +115,9 @@ template:
       - name: Thermostat Active
         unique_id: thermostat_active
         device_class: running
-        state: "{{ not is_state_attr('climate.family_room', 'hvac_action', 'off') }}"
+        state: >
+          {{ not is_state_attr('climate.family_room', 'hvac_action', 'off') and
+          not is_state_attr('climate.family_room', 'preset_mode', 'eco') }}
       - name: Freeze Alert at Night
         unique_id: freeze_alert_at_night
         device_class: cold
