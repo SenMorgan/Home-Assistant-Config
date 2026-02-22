@@ -63,17 +63,23 @@ sensor:
 template:
   - binary_sensor:
       - name: People Home
+        unique_id: people_home
         device_class: presence
         state: "{{ is_state('person.sen', 'home') or is_state('person.kris', 'home') }}"
       - name: Any Battery Device Low
+        unique_id: any_battery_device_low
         state: "{{ expand('group.low_battery_devices') | list | count > 0 }}"
       - name: HA CPU Overheat
+        unique_id: ha_cpu_overheat
+        device_class: problem
         state: "{{ states('sensor.processor_temperature') | float > 60 }}"
 
   - sensor:
       - name: Grid Consumed Today Cost
+        unique_id: grid_consumed_today_cost
         unit_of_measurement: "Kč"
         device_class: monetary
+        state_class: total_increasing
         # Cote: calculations made 09.2025
         # Fixed part - 225.07 Kč per month, divided by 30.4 days = 7.4 Kč per day
         # Variable part - 5.316 Kč per kWh
@@ -85,8 +91,10 @@ template:
           {% set consumed = states('sensor.grid_consumed_today') | float(0.0) %}
           {{ ((fixed + (variable * consumed)) * (1 + vat)) | round(2, default=0) }}
       - name: Grid Consumed Month Cost
+        unique_id: grid_consumed_month_cost
         unit_of_measurement: "Kč"
         device_class: monetary
+        state_class: total_increasing
         # Fixed part - 225.07 Kč per month, divided by 30.4 days = 7.4 Kč per day
         # Variable part - 5.316 Kč per kWh
         # Total = (7.4 + (5.316 * consumed kWh today)) + 21% VAT
