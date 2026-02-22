@@ -207,7 +207,7 @@ automation:
                   area_id: hall
 
   ###############################################
-  ## Ikea RODRET Dimmer Automations
+  ## Ikea RODRET Dimmer
   ###############################################
   - alias: Rodret Dimmer 1 Handler
     id: "rodret_dimmer_1_handler"
@@ -222,7 +222,6 @@ automation:
             entity_id:
               - light.mi_desk_lamp
               - light.tv_lights
-              - light.banana_light
               - light.christmas_tree
         off_press_action:
           - action: switch.turn_off
