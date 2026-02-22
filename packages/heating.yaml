@@ -88,6 +88,7 @@ timer:
 binary_sensor:
   - platform: group
     name: Windows
+    unique_id: windows
     device_class: window
     entities:
       - binary_sensor.bedroom_window_contact
@@ -95,6 +96,7 @@ binary_sensor:
       - binary_sensor.living_room_window_contact
   - platform: group
     name: ETRVs requesting heat
+    unique_id: etrvs_requesting_heat
     device_class: heat
     entities:
       - binary_sensor.heating_request_bedroom
@@ -107,12 +109,15 @@ binary_sensor:
 template:
   - binary_sensor:
       - name: Thermostat heating
+        unique_id: thermostat_heating
         device_class: heat
         state: "{{ is_state_attr('climate.family_room', 'hvac_action', 'heating') }}"
       - name: Thermostat Active
+        unique_id: thermostat_active
         device_class: running
         state: "{{ not is_state_attr('climate.family_room', 'hvac_action', 'off') }}"
       - name: Freeze Alert at Night
+        unique_id: freeze_alert_at_night
         device_class: cold
         # Detects if temperature drops below 20°C during night hours (21:00-06:00) when people are home or guest mode is enabled
         state: >
@@ -122,24 +127,28 @@ template:
             (states('sensor.ble_temperature_atc_bedroom') | float(0) < 20.0) or
             (states('sensor.ble_temperature_atc_living_room') | float(0) < 20.0)) }}
       - name: Heating Request Bedroom
+        unique_id: heating_request_bedroom
         device_class: heat
         state: >
           {{ is_state('binary_sensor.danfoss_etrv0100_bedroom_heat_required', 'on') and
             states('sensor.danfoss_etrv0100_bedroom_pi_heating_demand') | int(0) >=
             states('input_number.pi_heating_demand_threshold') | int(20) }}
       - name: Heating Request Kitchen
+        unique_id: heating_request_kitchen
         device_class: heat
         state: >
           {{ is_state('binary_sensor.danfoss_etrv0103_kitchen_heat_required', 'on') and
             states('sensor.danfoss_etrv0103_kitchen_pi_heating_demand') | int(0) >=
             states('input_number.pi_heating_demand_threshold') | int(20) }}
       - name: Heating Request Living Room
+        unique_id: heating_request_living_room
         device_class: heat
         state: >
           {{ is_state('binary_sensor.danfoss_etrv0103_living_room_heat_required', 'on') and
             states('sensor.danfoss_etrv0103_living_room_pi_heating_demand') | int(0) >=
             states('input_number.pi_heating_demand_threshold') | int(20) }}
       - name: Heating Request Bathroom
+        unique_id: heating_request_bathroom
         device_class: heat
         state: >
           {{ (states('sensor.ble_temperature_atc_bathroom') | float(0) <
