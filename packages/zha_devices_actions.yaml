@@ -177,6 +177,8 @@ automation:
                 then:
                   - action: light.turn_on
                     entity_id: light.hall_edison_bulb
+                    data:
+                      brightness: 255
                 else:
                   - action: light.turn_on
                     entity_id: light.hall_lights

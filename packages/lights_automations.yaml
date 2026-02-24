@@ -563,7 +563,9 @@ scene:
   - id: welcome_home
     name: Welcome Home
     entities:
-      light.hall_edison_bulb: on
+      light.hall_edison_bulb:
+        brightness_pct: 100
+        state: on
       light.7_seg_clock: on
       switch.wireless_charger: on
 
