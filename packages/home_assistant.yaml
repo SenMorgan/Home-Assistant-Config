@@ -95,11 +95,11 @@ template:
         unit_of_measurement: "Kč"
         device_class: monetary
         state_class: total_increasing
-        # Fixed part - 225.07 Kč per month, divided by 30.4 days = 7.4 Kč per day
+        # Fixed part - 225.07 Kč per month
         # Variable part - 5.316 Kč per kWh
-        # Total = (7.4 + (5.316 * consumed kWh today)) + 21% VAT
+        # Total = (225.07 + (5.316 * consumed kWh today)) + 21% VAT
         state: >
-          {% set fixed = 7.4 %}
+          {% set fixed = 225.07 %}
           {% set variable = 5.316 %}
           {% set vat = 0.21 %}
           {% set consumed = states('sensor.grid_consumed_month') | float(0.0) %}
