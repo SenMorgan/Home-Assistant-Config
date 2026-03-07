@@ -58,6 +58,7 @@ filter:
     - switch.moving_head_power
     - switch.galaxy_watch_charger
     - switch.wireless_charger
+    - vacuum.johnny
 
 entity_config:
   binary_sensor.bedroom_window_contact:
@@ -350,3 +351,7 @@ entity_config:
   fan.wc_and_bathroom:
     name: Вентиляция
     room: Туалет
+  vacuum.johnny:
+    name: Джонни
+    room: Дом
+    type: vacuum
