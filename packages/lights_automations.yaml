@@ -120,7 +120,7 @@ automation:
           - action: light.turn_on
             entity_id: light.hall_edison_bulb
             data:
-              brightness_pct: 50
+              brightness: 128
 
   - id: "home_all_lights_off"
     alias: Home All Lights OFF
@@ -564,7 +564,7 @@ scene:
     name: Welcome Home
     entities:
       light.hall_edison_bulb:
-        brightness_pct: 100
+        brightness: 255
         state: on
       light.7_seg_clock: on
       switch.wireless_charger: on
