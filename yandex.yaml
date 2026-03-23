@@ -354,4 +354,3 @@ entity_config:
   vacuum.johnny:
     name: Джонни
     room: Дом
-    type: vacuum
