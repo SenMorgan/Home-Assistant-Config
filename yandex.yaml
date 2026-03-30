@@ -14,6 +14,7 @@ filter:
     - button.ex_commandstation_emergency_stop
     - button.ex_commandstation_reboot
     - button.ex_commandstation_route_300
+    - climate.hollandis_climate
     - input_boolean.child_lock
     - input_boolean.guest_mode
     - input_boolean.heating_allowed
@@ -50,6 +51,7 @@ filter:
     - sensor.sm_s931b_battery_level
     - switch.asus_pc
     - switch.dehydrator
+    - switch.hollandis_charge
     - switch.interactive_cz_map_enable
     - switch.loco_sbb_cargo_re_482_power_sound
     - switch.loco_vossloh_1701_engine_sound
@@ -80,6 +82,9 @@ entity_config:
     name: Подогрев
     room: Дом
     type: switch
+  climate.hollandis_climate:
+    name: Климат
+    room: Тесла
   input_boolean.guest_mode:
     name: Гостевой режим
     room: Дом
@@ -190,6 +195,10 @@ entity_config:
   switch.dehydrator:
     name: Дегидратор
     room: Кухня
+    type: socket
+  switch.hollandis_charge:
+    name: Зарядка Теслы
+    room: Тесла
     type: socket
   switch.interactive_cz_map_enable:
     name: Карта
