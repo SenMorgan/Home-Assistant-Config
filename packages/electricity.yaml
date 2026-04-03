@@ -1,0 +1,46 @@
+######################################################################
+# File: home-electricity.yaml                                        #
+# Author: SenMorgan https://github.com/SenMorgan                     #
+# Date: 2026-04-03                                                   #
+#                                                                    #
+# Info: this file contains automations that are associated to the    #
+# Home Assistant electricity monitoring system.                      #
+#                                                                    #
+# Copyright (c) 2026 Sen Morgan                                      #
+######################################################################
+
+
+###############################################
+## TEMPLATE ENTITIES
+###############################################
+template:
+  - sensor:
+      - name: Grid Consumed Today Cost
+        unique_id: grid_consumed_today_cost
+        unit_of_measurement: "Kč"
+        device_class: monetary
+        state_class: total_increasing
+        # Cote: calculations made 09.2025
+        # Fixed part - 223.30 Kč per month, divided by 30.4 days = 7.35 Kč per day
+        # Variable part - 5.316 Kč per kWh
+        # Total = (7.35 + (5.316 * consumed kWh today)) + 21% VAT
+        state: >
+          {% set fixed = 7.35 %}
+          {% set variable = 5.316 %}
+          {% set vat = 0.21 %}
+          {% set consumed = states('sensor.grid_consumed_today') | float(0.0) %}
+          {{ ((fixed + (variable * consumed)) * (1 + vat)) | round(2, default=0) }}
+      - name: Grid Consumed Month Cost
+        unique_id: grid_consumed_month_cost
+        unit_of_measurement: "Kč"
+        device_class: monetary
+        state_class: total_increasing
+        # Fixed part - 223.30 Kč per month
+        # Variable part - 5.316 Kč per kWh
+        # Total = (223.30 + (5.316 * consumed kWh today)) + 21% VAT
+        state: >
+          {% set fixed = 223.30 %}
+          {% set variable = 5.316 %}
+          {% set vat = 0.21 %}
+          {% set consumed = states('sensor.grid_consumed_month') | float(0.0) %}
+          {{ ((fixed + (variable * consumed)) * (1 + vat)) | round(2, default=0) }}
