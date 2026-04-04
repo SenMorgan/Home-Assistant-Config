@@ -9,11 +9,41 @@
 # Copyright (c) 2026 Sen Morgan                                      #
 ######################################################################
 
+###############################################
+## SETTINGS AND VARIABLES
+###############################################
+homeassistant:
+  customize:
+    package.node_anchors:
+      sys_notify_title_info: &sys_notify_title_info "💬 Системное уведомление"
+      sys_notify_title_warning: &sys_notify_title_warning "⚠️ Предупреждение"
+      sys_notify_title_critical: &sys_notify_title_critical "🚨 Внимание!"
+
+###############################################
+## ALERTS
+###############################################
+alert:
+  high_power_consumption:
+    name: "High Power Consumption"
+    entity_id: binary_sensor.power_consumption_above_threshold
+    state: "on"
+    repeat: 60
+    notifiers:
+      - mobile_app_sen_s25
+      - persistent_notification
+    title: *sys_notify_title_critical
+    message: &high_power_consumption_message >
+      Внимание! Превышение лимита потребления мощности. Текущий уровень: {{ states('sensor.electricity_meter_power') | int(0) }} Вт.
 
 ###############################################
 ## TEMPLATE ENTITIES
 ###############################################
 template:
+  - binary_sensor:
+      - name: Power Consumption Above Threshold
+        unique_id: power_consumption_above_threshold
+        state: "{{ states('sensor.electricity_meter_power') | int(0) > 5500 }}"  # Threshold set to 5.5kW
+
   - sensor:
       - name: Grid Consumed Today Cost
         unique_id: grid_consumed_today_cost
@@ -44,3 +74,22 @@ template:
           {% set vat = 0.21 %}
           {% set consumed = states('sensor.grid_consumed_month') | float(0.0) %}
           {{ ((fixed + (variable * consumed)) * (1 + vat)) | round(2, default=0) }}
+
+##############################################
+# AUTOMATIONS
+##############################################
+automation:
+  - id: notify_high_power_consumption
+    alias: "Notify High Power Consumption"
+    trigger:
+      - platform: state
+        entity_id: alert.high_power_consumption
+        to: "on"
+        for:
+          minutes: 1
+    action:
+      - action: media_player.play_media
+        entity_id: media_player.yandex_station_midi
+        data:
+          media_content_id: *high_power_consumption_message
+          media_content_type: text
