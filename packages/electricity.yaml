@@ -75,6 +75,35 @@ template:
           {% set consumed = states('sensor.grid_consumed_month') | float(0.0) %}
           {{ ((fixed + (variable * consumed)) * (1 + vat)) | round(2, default=0) }}
 
+###############################################
+## SENSORS
+###############################################
+sensor:
+  - platform: history_stats
+    name: High Power Today
+    unique_id: high_power_today
+    entity_id: binary_sensor.high_power_consumption
+    state: "on"
+    type: time
+    start: "{{ today_at('00:00:00') }}"
+    end: "{{ now() }}"
+  - platform: history_stats
+    name: High Power Month
+    unique_id: high_power_month
+    entity_id: binary_sensor.high_power_consumption
+    state: "on"
+    type: time
+    start: "{{ today_at('00:00').replace(day=1) }}"
+    end: "{{ now() }}"
+  - platform: history_stats
+    name: High Power Previous Month
+    unique_id: high_power_previous_month
+    entity_id: binary_sensor.high_power_consumption
+    state: "on"
+    type: time
+    start: "{{ (today_at('00:00').replace(day=1) - timedelta(days=1)).replace(day=1) }}"
+    end: "{{ today_at('00:00').replace(day=1) }}"
+
 ##############################################
 # AUTOMATIONS
 ##############################################
