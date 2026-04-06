@@ -405,10 +405,6 @@ automation:
       - condition: state
         entity_id: input_boolean.heating_season
         state: "on"
-      # If thermostat is active and heating is not paused
-      - condition: state
-        entity_id: binary_sensor.thermostat_active
-        state: "on"
     action:
       # Stop "Pause Heating" timer if it is active without restoring the thermostat mode
       - action: timer.cancel
