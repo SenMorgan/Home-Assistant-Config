@@ -212,6 +212,106 @@ automation:
             entity_id: light.hall_edison_bulb
 
   ###############################################
+  ## FP2 Presence Sensor Lights Automations
+  ###############################################
+  - id: "hall_lights_by_presence"
+    alias: Hall Lights by Presence
+    mode: restart
+    triggers:
+      - trigger: state
+        entity_id: binary_sensor.presence_sensor_fp2_hall
+    conditions:
+      - condition: state
+        entity_id: binary_sensor.people_home
+        state: "on"
+      - condition: template
+        value_template: "{{ trigger.to_state.state in ['on', 'off'] }}"
+      - condition: time
+        after: "07:00:00"
+        before: "22:00:00"
+      - condition: numeric_state
+        entity_id: sensor.presence_sensor_fp2_light_sensor_kitchen
+        below: 100
+    actions:
+      - action: light.turn_{{ trigger.to_state.state }}
+        entity_id: light.hall_edison_bulb
+
+  - id: "kitchen_lights_by_presence"
+    alias: Kitchen Lights by Presence
+    mode: restart
+    triggers:
+      - trigger: state
+        entity_id: binary_sensor.presence_sensor_fp2_kitchen
+    conditions:
+      - condition: state
+        entity_id: binary_sensor.people_home
+        state: "on"
+      - condition: template
+        value_template: "{{ trigger.to_state.state in ['on', 'off'] }}"
+      - condition: time
+        after: "07:00:00"
+        before: "22:00:00"
+      - condition: numeric_state
+        entity_id: sensor.presence_sensor_fp2_light_sensor_kitchen
+        below: 50
+    actions:
+      - action: light.turn_{{ trigger.to_state.state }}
+        entity_id: light.kitchen_led_strip
+
+  - id: "pc_lights_by_presence"
+    alias: PC Lights by Presence
+    mode: restart
+    triggers:
+      - trigger: state
+        entity_id: binary_sensor.presence_sensor_fp2_pc
+    conditions:
+      - condition: state
+        entity_id: person.sen
+        state: "home"
+      - condition: template
+        value_template: "{{ trigger.to_state.state in ['on', 'off'] }}"
+      - condition: time
+        after: "07:00:00"
+        before: "21:00:00"
+    actions:
+      - action: light.turn_{{ trigger.to_state.state }}
+        entity_id: light.banana_light
+
+  - id: "decorative_lights_by_presence"
+    alias: Decorative Lights by Presence
+    mode: restart
+    triggers:
+      - trigger: state
+        entity_id: binary_sensor.presence_sensor_fp2_detection_zone_presence
+      - trigger: state
+        entity_id: sensor.presence_sensor_fp2_light_sensor_kitchen
+    conditions:
+      - condition: state
+        entity_id: person.sen
+        state: "home"
+      - condition: template
+        value_template: "{{ trigger.to_state.state in ['on', 'off'] }}"
+      - condition: time
+        after: "07:00:00"
+        before: "22:00:00"
+    actions:
+      - if:
+          - condition: template
+            value_template: "{{ trigger.to_state.state == 'on' }}"
+        then:
+          - action: light.turn_on
+            entity_id:
+              - light.cocktail_bar_neon_sign
+              - light.shelf_lighting
+            data:
+              brightness: "{{ [255, ((states('sensor.presence_sensor_fp2_light_sensor_kitchen') | int(1)) * 7)] | min }}"
+        else:
+          - action: light.turn_off
+            entity_id:
+              - light.cocktail_bar_neon_sign
+              - light.shelf_lighting
+
+  ###############################################
   ## Other Lights Automations
   ###############################################
   - id: "kitchen_asus_pc_background_lights_on"
@@ -263,7 +363,7 @@ automation:
   - id: "kitchen_clock_reenable"
     alias: Kitchen Clock Reenable
     mode: restart
-    triggers: &any_kitchen_activity_trigger
+    triggers:
       - trigger: state
         entity_id: binary_sensor.kitchen_motion_alarm
         to: "on"
