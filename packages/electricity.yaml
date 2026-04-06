@@ -49,7 +49,7 @@ template:
         unique_id: grid_consumed_today_cost
         unit_of_measurement: "Kč"
         device_class: monetary
-        state_class: total_increasing
+        state_class: total
         # Cote: calculations made 09.2025
         # Fixed part - 223.30 Kč per month, divided by 30.4 days = 7.35 Kč per day
         # Variable part - 5.316 Kč per kWh
@@ -64,7 +64,7 @@ template:
         unique_id: grid_consumed_month_cost
         unit_of_measurement: "Kč"
         device_class: monetary
-        state_class: total_increasing
+        state_class: total
         # Fixed part - 223.30 Kč per month
         # Variable part - 5.316 Kč per kWh
         # Total = (223.30 + (5.316 * consumed kWh today)) + 21% VAT
