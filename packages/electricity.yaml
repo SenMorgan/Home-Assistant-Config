@@ -42,7 +42,7 @@ template:
   - binary_sensor:
       - name: Power Consumption Above Threshold
         unique_id: power_consumption_above_threshold
-        state: "{{ states('sensor.electricity_meter_power') | int(0) > 5500 }}"  # Threshold set to 5.5kW
+        state: "{{ states('sensor.electricity_meter_power') | int(0) > 6000 }}"  # Threshold set to 6kW
 
   - sensor:
       - name: Grid Consumed Today Cost
