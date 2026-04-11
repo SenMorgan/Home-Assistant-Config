@@ -76,6 +76,21 @@ template:
           {{ ((fixed + (variable * consumed)) * (1 + vat)) | round(2, default=0) }}
 
 ###############################################
+# UTILITY METER (monthly accumulation)
+###############################################
+utility_meter:
+  grid_consumed_month:
+    name: Grid Consumed Month
+    unique_id: grid_consumed_month
+    source: sensor.grid_consumed_today
+    cycle: monthly
+  hollandis_charge_energy_added_month:
+    name: Hollandis Charge Energy Added Month
+    unique_id: hollandis_charge_energy_added_month
+    source: sensor.hollandis_charge_energy_added
+    cycle: monthly
+
+###############################################
 ## SENSORS
 ###############################################
 sensor:
