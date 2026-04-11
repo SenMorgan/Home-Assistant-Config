@@ -694,7 +694,7 @@ scene:
       light.christmas_tree: on
       light.shelf_lighting: off
       light.string_lights: off
-      light.banana_light: on
+      light.banana_light: off
       light.cocktail_bar_neon_sign:
         brightness: 10
         state: on

@@ -47,6 +47,51 @@ automation:
       - action: light.turn_on
         entity_id: light.tv_lights
 
+  - alias: Movies Scene by Sunset or TV ON
+    id: movies_scene_by_sunset_or_tv_on
+    mode: restart
+    triggers:
+      - trigger: numeric_state
+        entity_id: sun.sun
+        attribute: elevation
+        below: 4.0
+      - trigger: state
+        entity_id: media_player.samsung_tv
+        to: "on"
+    conditions:
+      # For elevation trigger
+      - condition: state
+        entity_id: media_player.samsung_tv
+        state: "on"
+      # For TV trigger
+      - condition: numeric_state
+        entity_id: sun.sun
+        attribute: elevation
+        below: 4.0
+      # Only if Sen is home
+      - condition: state
+        entity_id: person.sen
+        state: "home"
+      # Only from 20:00 to 22:30
+      - condition: time
+        after: "20:00:00"
+        before: "22:30:00"
+    actions:
+      # Wait till nobody is detected in the kitchen
+      - wait_template: >
+          {{ states('binary_sensor.presence_sensor_fp2_detection_zone_presence') == 'off' and
+            states('binary_sensor.kitchen_motion_alarm') == 'off' }}
+        timeout: 01:00:00
+        continue_on_timeout: false
+      # Check if it's still needed (TV is on)
+      - if:
+          - condition: state
+            entity_id: media_player.samsung_tv
+            state: "on"
+        then:
+          - action: scene.turn_on
+            entity_id: scene.movies
+
   - alias: Living Room TV Lights by TV OFF
     id: living_room_tv_lights_by_tv_off
     description: "Turn off TV lights automatically when TV is turned off"
