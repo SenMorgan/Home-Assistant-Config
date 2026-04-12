@@ -304,7 +304,6 @@ script:
               sequence:
                 - action: climate.set_hvac_mode
                   entity_id: climate.family_room
-                  continue_on_error: true
                   data:
                     hvac_mode: "heat"
                 - delay: "{{ 5 * repeat.index }}"
@@ -319,7 +318,6 @@ script:
               sequence:
                 - action: climate.set_preset_mode
                   entity_id: climate.family_room
-                  continue_on_error: true
                   data:
                     preset_mode: "none"
                 - delay: "{{ 5 * repeat.index }}"
@@ -329,7 +327,6 @@ script:
           sequence:
             - action: climate.set_temperature
               entity_id: climate.family_room
-              continue_on_error: true
               data:
                 temperature: "{{ temperature }}"
             - delay: "{{ 5 * repeat.index }}"
