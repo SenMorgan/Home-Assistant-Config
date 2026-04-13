@@ -240,14 +240,14 @@ entity_config:
     name: Токоприёмник
     room: Макет
     type: openable
-  sensor.family_room_temperature:
+  sensor.nest_thermostat_temperature:
     name: Погода на кухне
     room: Кухня
     properties:
       - type: temperature
-        entity: sensor.family_room_temperature
+        entity: sensor.nest_thermostat_temperature
       - type: humidity
-        entity: sensor.family_room_humidity
+        entity: sensor.nest_thermostat_humidity
       - type: pressure
         entity: sensor.air_quality_station_pressure
       - type: co2_level
@@ -334,14 +334,14 @@ entity_config:
     name: Счётчик электричества
     room: Дом
     type: smart_meter.electricity
-  climate.family_room:
+  climate.nest_thermostat:
     name: Главный термостат
     room: Кухня
     properties:
       - type: temperature
-        entity: sensor.family_room_temperature
+        entity: sensor.nest_thermostat_temperature
       - type: humidity
-        entity: sensor.family_room_humidity
+        entity: sensor.nest_thermostat_humidity
   climate.danfoss_etrv0100_bedroom_thermostat:
     name: Термостат
     room: Спальня
