@@ -220,6 +220,11 @@ automation:
     triggers:
       - trigger: state
         entity_id: binary_sensor.presence_sensor_fp2_hall
+        to: "on"
+      - trigger: state
+        entity_id: binary_sensor.presence_sensor_fp2_hall
+        to: "off"
+        for: 00:00:10
     conditions:
       - condition: state
         entity_id: binary_sensor.people_home
@@ -228,10 +233,10 @@ automation:
         value_template: "{{ trigger.to_state.state in ['on', 'off'] }}"
       - condition: time
         after: "07:00:00"
-        before: "22:00:00"
+        before: "21:00:00"
       - condition: numeric_state
         entity_id: sensor.presence_sensor_fp2_light_sensor_kitchen
-        below: 100
+        below: 80
     actions:
       - action: light.turn_{{ trigger.to_state.state }}
         entity_id: light.hall_edison_bulb
@@ -242,6 +247,11 @@ automation:
     triggers:
       - trigger: state
         entity_id: binary_sensor.presence_sensor_fp2_kitchen
+        to: "on"
+      - trigger: state
+        entity_id: binary_sensor.presence_sensor_fp2_kitchen
+        to: "off"
+        for: 00:00:10
     conditions:
       - condition: state
         entity_id: binary_sensor.people_home
@@ -250,10 +260,10 @@ automation:
         value_template: "{{ trigger.to_state.state in ['on', 'off'] }}"
       - condition: time
         after: "07:00:00"
-        before: "22:00:00"
+        before: "21:00:00"
       - condition: numeric_state
         entity_id: sensor.presence_sensor_fp2_light_sensor_kitchen
-        below: 50
+        below: 40
     actions:
       - action: light.turn_{{ trigger.to_state.state }}
         entity_id: light.kitchen_led_strip
@@ -264,6 +274,11 @@ automation:
     triggers:
       - trigger: state
         entity_id: binary_sensor.presence_sensor_fp2_pc
+        to: "on"
+      - trigger: state
+        entity_id: binary_sensor.presence_sensor_fp2_pc
+        to: "off"
+        for: 00:00:10
     conditions:
       - condition: state
         entity_id: person.sen
@@ -277,14 +292,17 @@ automation:
       - action: light.turn_{{ trigger.to_state.state }}
         entity_id: light.banana_light
 
-  - id: "decorative_lights_by_presence"
-    alias: Decorative Lights by Presence
+  - id: "shelf_lighting_by_presence"
+    alias: Shelf Lighting by Presence
     mode: restart
     triggers:
       - trigger: state
         entity_id: binary_sensor.presence_sensor_fp2_detection_zone_presence
+        to: "on"
       - trigger: state
-        entity_id: sensor.presence_sensor_fp2_light_sensor_kitchen
+        entity_id: binary_sensor.presence_sensor_fp2_detection_zone_presence
+        to: "off"
+        for: 00:00:10
     conditions:
       - condition: state
         entity_id: person.sen
@@ -293,23 +311,42 @@ automation:
         value_template: "{{ trigger.to_state.state in ['on', 'off'] }}"
       - condition: time
         after: "07:00:00"
-        before: "22:00:00"
+        before: "21:00:00"
+    actions:
+      - action: light.turn_{{ trigger.to_state.state }}
+        entity_id: light.shelf_lighting
+
+  - id: "neon_sign_by_presence"
+    alias: Neon Sign by Presence
+    mode: restart
+    triggers:
+      - trigger: state
+        entity_id: binary_sensor.presence_sensor_fp2_detection_zone_presence
+        to: "on"
+      - trigger: state
+        entity_id: binary_sensor.presence_sensor_fp2_detection_zone_presence
+        to: "off"
+        for: 00:00:10
+    conditions:
+      - condition: state
+        entity_id: person.sen
+        state: "home"
+      - condition: time
+        after: "07:00:00"
+        before: "21:00:00"
     actions:
       - if:
-          - condition: template
-            value_template: "{{ trigger.to_state.state == 'on' }}"
+          - condition: state
+            entity_id: binary_sensor.presence_sensor_fp2_detection_zone_presence
+            state: "on"
         then:
-          - action: light.turn_on
-            entity_id: light.shelf_lighting
           - action: light.turn_on
             entity_id: light.cocktail_bar_neon_sign
             data:
-              brightness: "{{ [255, ((states('sensor.presence_sensor_fp2_light_sensor_kitchen') | int(1)) * 8)] | min }}"
+              brightness: "{{ [255, ((states('sensor.presence_sensor_fp2_light_sensor_kitchen') | int(1)) * 10)] | min }}"
         else:
           - action: light.turn_off
-            entity_id:
-              - light.cocktail_bar_neon_sign
-              - light.shelf_lighting
+            entity_id: light.cocktail_bar_neon_sign
 
   ###############################################
   ## Other Lights Automations
