@@ -99,6 +99,7 @@ automation:
       - trigger: state
         entity_id: person.sen
         to: "home"
+        for: "00:02:00"
     conditions:
       # For elevation trigger
       - condition: state

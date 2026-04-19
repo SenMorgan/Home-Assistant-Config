@@ -16,8 +16,13 @@ automation:
     mode: restart
     triggers:
       - trigger: state
+        entity_id: binary_sensor.people_home
+        to: "on"
+        for: "00:02:00"
+      - trigger: state
         entity_id: person.sen
         to: "home"
+        for: "00:02:00"
       - trigger: time
         at: "09:00:00"
       - trigger: state
