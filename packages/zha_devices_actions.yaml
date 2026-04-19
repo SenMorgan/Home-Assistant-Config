@@ -198,13 +198,13 @@ automation:
           - conditions:
               - "{{ command == 'move_with_on_off' }}"  # Hold UP
             sequence:
-              - service: light.turn_on
+              - action: light.turn_on
                 target:
                   area_id: hall
           - conditions:
               - "{{ command == 'move' }}"  # Hold DOWN
             sequence:
-              - service: light.turn_off
+              - action: light.turn_off
                 target:
                   area_id: hall
 

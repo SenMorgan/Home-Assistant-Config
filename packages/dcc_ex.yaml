@@ -181,7 +181,7 @@ intent_script:
     action:
       - variables:
           speed_entity: *loco_speed_entity
-      - service: number.set_value
+      - action: number.set_value
         data:
           entity_id: "{{ speed_entity }}"
           value: "{{ [ (states(speed_entity) | int(0)) + 10, 100] | min }}"
@@ -196,7 +196,7 @@ intent_script:
     action:
       - variables:
           speed_entity: *loco_speed_entity
-      - service: number.set_value
+      - action: number.set_value
         data:
           entity_id: "{{ speed_entity }}"
           value: "{{ [ (states(speed_entity) | int(0)) - 10, 0] | max }}"
