@@ -40,9 +40,6 @@ automation:
       - condition: state
         entity_id: binary_sensor.people_home
         state: "on"
-      - condition: time
-        after: "08:00:00"
-        before: "21:00:00"
     actions:
       - action: switch.turn_on
         entity_id: switch.galaxy_watch_charger
