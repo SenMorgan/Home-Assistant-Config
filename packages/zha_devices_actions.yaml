@@ -151,10 +151,10 @@ automation:
                         \ %}\n{% if suggested > 0 %} {{ suggested }} {% else %} 1 {% endif %}\n"
 
   ###############################################
-  ## Tradfri Switch Control
+  ## Hall Lights Control with Tradfri Switch
   ###############################################
-  - alias: Tradfri Switch 1 Handler
-    id: "tradfri_switch_1_handler"
+  - alias: Hall Lights Control with Tradfri Switch Handler
+    id: "hall_lights_control_with_tradfri_switch_handler"
     mode: restart
     max_exceeded: silent
     triggers:
@@ -166,43 +166,88 @@ automation:
     actions:
       - variables:
           command: "{{ trigger.event.data.command }}"
+          hall_edison_bulb_on: "{{ is_state('light.hall_edison_bulb', 'on') }}"
+          hall_lights_on: "{{ is_state('light.hall_lights', 'on') }}"
+          hall_edison_brightness: "{{ state_attr('light.hall_edison_bulb', 'brightness') | int(0) }}"
+          dim_lights: "{{ now().hour >= 21 or now().hour < 5 }}"
+          no_hall_lights_on: "{{ not hall_edison_bulb_on and not hall_lights_on }}"
+          # We use 254 instead of 255 because of some weird behavior of Philips Hue bulbs
+          hall_edison_not_full: "{{ hall_edison_bulb_on and hall_edison_brightness < 254 }}"
+          hall_edison_full: "{{ hall_edison_bulb_on and hall_edison_brightness == 254 }}"
+          hall_lights_only_on: "{{ hall_lights_on and not hall_edison_bulb_on }}"
+          both_hall_lights_on: "{{ hall_lights_on and hall_edison_bulb_on }}"
       - choose:
           - conditions:
-              - "{{ command == 'on' }}"  # Single press UP
+              - "{{ command == 'on' }}" # Single press UP
             sequence:
-              - if:
-                  - condition: state
-                    entity_id: light.hall_edison_bulb
-                    state: "off"
-                then:
-                  - action: light.turn_on
-                    entity_id: light.hall_edison_bulb
-                    data:
-                      brightness: 255
-                else:
-                  - action: light.turn_on
-                    entity_id: light.hall_lights
+              - choose:
+                  - conditions:
+                      - "{{ no_hall_lights_on and dim_lights }}"
+                    sequence:
+                      - action: light.turn_on
+                        entity_id: light.hall_edison_bulb
+                        data:
+                          brightness: 128
+                  - conditions:
+                      - "{{ no_hall_lights_on and not dim_lights }}"
+                    sequence:
+                      - action: light.turn_on
+                        entity_id: light.hall_edison_bulb
+                        data:
+                          brightness: 255
+                  - conditions:
+                      - "{{ hall_edison_not_full }}"
+                    sequence:
+                      - action: light.turn_on
+                        entity_id: light.hall_edison_bulb
+                        data:
+                          brightness: 255
+                  - conditions:
+                      - "{{ hall_edison_full and not hall_lights_on }}"
+                    sequence:
+                      - action: light.turn_on
+                        entity_id: light.hall_lights
+                  - conditions:
+                      - "{{ hall_lights_only_on }}"
+                    sequence:
+                      - action: light.turn_on
+                        entity_id: light.hall_edison_bulb
+                        data:
+                          brightness: 255
           - conditions:
-              - "{{ command == 'off' }}"  # Single press DOWN
+              - "{{ command == 'off' }}" # Single press DOWN
             sequence:
-              - if:
-                  - condition: state
-                    entity_id: light.hall_lights
-                    state: "on"
-                then:
-                  - action: light.turn_off
-                    entity_id: light.hall_lights
-                else:
-                  - action: light.turn_off
-                    entity_id: light.hall_edison_bulb
+              - choose:
+                  - conditions:
+                      - "{{ hall_lights_on }}"
+                    sequence:
+                      - action: light.turn_off
+                        entity_id: light.hall_lights
+                  - conditions:
+                      - "{{ hall_edison_full and dim_lights }}"
+                    sequence:
+                      - action: light.turn_on
+                        entity_id: light.hall_edison_bulb
+                        data:
+                          brightness: 128
+                  - conditions:
+                      - "{{ hall_edison_full and not dim_lights }}"
+                    sequence:
+                      - action: light.turn_off
+                        entity_id: light.hall_edison_bulb
+                  - conditions:
+                      - "{{ hall_edison_not_full }}"
+                    sequence:
+                      - action: light.turn_off
+                        entity_id: light.hall_edison_bulb
           - conditions:
-              - "{{ command == 'move_with_on_off' }}"  # Hold UP
+              - "{{ command == 'move_with_on_off' }}" # Hold UP
             sequence:
               - action: light.turn_on
                 target:
                   area_id: hall
           - conditions:
-              - "{{ command == 'move' }}"  # Hold DOWN
+              - "{{ command == 'move' }}" # Hold DOWN
             sequence:
               - action: light.turn_off
                 target:
