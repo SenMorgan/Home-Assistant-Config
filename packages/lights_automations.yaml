@@ -218,135 +218,186 @@ automation:
     alias: Hall Lights by Presence
     mode: restart
     triggers:
+      # Presence detected in the hall
       - trigger: state
         entity_id: binary_sensor.presence_sensor_fp2_hall
         to: "on"
+        id: presence_on
+      # No presence for 10 seconds
       - trigger: state
         entity_id: binary_sensor.presence_sensor_fp2_hall
         to: "off"
-        for: 00:00:10
+        for: "00:00:10"
+        id: presence_off
     conditions:
+      # Run automation only when someone is home
       - condition: state
         entity_id: binary_sensor.people_home
         state: "on"
-      - condition: template
-        value_template: "{{ trigger.to_state.state in ['on', 'off'] }}"
-      - condition: time
-        after: "07:00:00"
-        before: "21:00:00"
-      - condition: numeric_state
-        entity_id: sensor.presence_sensor_fp2_light_sensor_kitchen
-        below: 80
     actions:
-      - action: light.turn_{{ trigger.to_state.state }}
-        entity_id: light.hall_edison_bulb
+      - choose:
+          # Turn lights on only during daytime and when ambient light is low
+          - conditions:
+              - condition: trigger
+                id: presence_on
+              - condition: time
+                after: "07:00:00"
+                before: "21:00:00"
+              - condition: numeric_state
+                entity_id: sensor.presence_sensor_fp2_light_sensor_kitchen
+                below: 80
+            sequence:
+              - action: light.turn_on
+                entity_id: light.hall_edison_bulb
+          # Turn lights off within an extended time window regardless of ambient light
+          - conditions:
+              - condition: trigger
+                id: presence_off
+              - condition: time
+                after: "07:00:00"
+                before: "23:00:00"
+            sequence:
+              - action: light.turn_off
+                entity_id: light.hall_edison_bulb
 
   - id: "kitchen_lights_by_presence"
     alias: Kitchen Lights by Presence
     mode: restart
     triggers:
+      # Presence detected in the kitchen
       - trigger: state
         entity_id: binary_sensor.presence_sensor_fp2_kitchen
         to: "on"
+        id: presence_on
+      # No presence for 10 seconds
       - trigger: state
         entity_id: binary_sensor.presence_sensor_fp2_kitchen
         to: "off"
-        for: 00:00:10
+        for: "00:00:10"
+        id: presence_off
     conditions:
+      # Run automation only when someone is home
       - condition: state
         entity_id: binary_sensor.people_home
         state: "on"
-      - condition: template
-        value_template: "{{ trigger.to_state.state in ['on', 'off'] }}"
-      - condition: time
-        after: "07:00:00"
-        before: "21:00:00"
-      - condition: numeric_state
-        entity_id: sensor.presence_sensor_fp2_light_sensor_kitchen
-        below: 40
     actions:
-      - action: light.turn_{{ trigger.to_state.state }}
-        entity_id: light.kitchen_led_strip
+      - choose:
+          # Turn lights on only during daytime and when ambient light is low
+          - conditions:
+              - condition: trigger
+                id: presence_on
+              - condition: time
+                after: "07:00:00"
+                before: "21:00:00"
+              - condition: numeric_state
+                entity_id: sensor.presence_sensor_fp2_light_sensor_kitchen
+                below: 40
+            sequence:
+              - action: light.turn_on
+                entity_id: light.kitchen_led_strip
+          # Turn lights off within an extended time window regardless of ambient light
+          - conditions:
+              - condition: trigger
+                id: presence_off
+              - condition: time
+                after: "07:00:00"
+                before: "23:00:00"
+            sequence:
+              - action: light.turn_off
+                entity_id: light.kitchen_led_strip
 
   - id: "pc_lights_by_presence"
     alias: PC Lights by Presence
     mode: restart
     triggers:
+      # Presence detected near the PC
       - trigger: state
         entity_id: binary_sensor.presence_sensor_fp2_pc
         to: "on"
+        id: presence_on
+      # No presence for 10 seconds
       - trigger: state
         entity_id: binary_sensor.presence_sensor_fp2_pc
         to: "off"
-        for: 00:00:10
+        for: "00:00:10"
+        id: presence_off
     conditions:
+      # Run automation only when Sen is home
       - condition: state
         entity_id: person.sen
         state: "home"
-      - condition: template
-        value_template: "{{ trigger.to_state.state in ['on', 'off'] }}"
-      - condition: time
-        after: "07:00:00"
-        before: "21:00:00"
     actions:
-      - action: light.turn_{{ trigger.to_state.state }}
-        entity_id: light.banana_light
+      - choose:
+          # Turn lights on only during daytime
+          - conditions:
+              - condition: trigger
+                id: presence_on
+              - condition: time
+                after: "07:00:00"
+                before: "21:00:00"
+            sequence:
+              - action: light.turn_on
+                entity_id: light.banana_light
+          # Turn lights off within an extended time window
+          - conditions:
+              - condition: trigger
+                id: presence_off
+              - condition: time
+                after: "07:00:00"
+                before: "23:00:00"
+            sequence:
+              - action: light.turn_off
+                entity_id: light.banana_light
 
-  - id: "shelf_lighting_by_presence"
-    alias: Shelf Lighting by Presence
+  - id: "shelf_and_neon_lighting_by_presence"
+    alias: Shelf and Neon Lighting by Presence
     mode: restart
     triggers:
+      # Presence detected in detection zone
       - trigger: state
         entity_id: binary_sensor.presence_sensor_fp2_detection_zone_presence
         to: "on"
+        id: presence_on
+      # No presence for 10 seconds
       - trigger: state
         entity_id: binary_sensor.presence_sensor_fp2_detection_zone_presence
         to: "off"
-        for: 00:00:10
+        for: "00:00:10"
+        id: presence_off
     conditions:
+      # Run automation only when Sen is home
       - condition: state
         entity_id: person.sen
         state: "home"
-      - condition: template
-        value_template: "{{ trigger.to_state.state in ['on', 'off'] }}"
-      - condition: time
-        after: "07:00:00"
-        before: "21:00:00"
     actions:
-      - action: light.turn_{{ trigger.to_state.state }}
-        entity_id: light.shelf_lighting
-
-  - id: "neon_sign_by_presence"
-    alias: Neon Sign by Presence
-    mode: restart
-    triggers:
-      - trigger: state
-        entity_id: binary_sensor.presence_sensor_fp2_detection_zone_presence
-        to: "on"
-      - trigger: state
-        entity_id: binary_sensor.presence_sensor_fp2_detection_zone_presence
-        to: "off"
-        for: 00:00:10
-    conditions:
-      - condition: state
-        entity_id: person.sen
-        state: "home"
-      - condition: time
-        after: "07:00:00"
-        before: "21:00:00"
-    actions:
-      - if:
-          - condition: state
-            entity_id: binary_sensor.presence_sensor_fp2_detection_zone_presence
-            state: "on"
-        then:
-          - action: light.turn_on
-            entity_id: light.cocktail_bar_neon_sign
-            data:
-              brightness: "{{ [255, ((states('sensor.presence_sensor_fp2_light_sensor_kitchen') | int(1)) * 10)] | min }}"
-        else:
-          - action: light.turn_off
-            entity_id: light.cocktail_bar_neon_sign
+      - choose:
+          # Turn lights on only during daytime
+          - conditions:
+              - condition: trigger
+                id: presence_on
+              - condition: time
+                after: "07:00:00"
+                before: "21:00:00"
+            sequence:
+              - action: light.turn_on
+                entity_id: light.shelf_lighting
+              # Brightness of the cocktail bar neon sign depends on ambient light level, but at least 10
+              - action: light.turn_on
+                entity_id: light.cocktail_bar_neon_sign
+                data:
+                  brightness: "{{ [255, ((states('sensor.presence_sensor_fp2_light_sensor_kitchen') | int(1)) * 10)] | min }}"
+          # Turn lights off within an extended time window
+          - conditions:
+              - condition: trigger
+                id: presence_off
+              - condition: time
+                after: "07:00:00"
+                before: "23:00:00"
+            sequence:
+              - action: light.turn_off
+                entity_id:
+                  - light.shelf_lighting
+                  - light.cocktail_bar_neon_sign
 
   ###############################################
   ## Other Lights Automations
