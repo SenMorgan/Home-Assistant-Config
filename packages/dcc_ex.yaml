@@ -20,7 +20,7 @@
 ###############################################
 shell_command:
   dcc_ex_command: >-
-    /config/scripts/dcc_ex_command.sh
+    bash /config/scripts/dcc_ex_command.sh
     -c '{{ command_type }}'
     -v '{{ command_value }}'
     -a '{{ dcc_ex_server_ip }}'
