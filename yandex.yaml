@@ -1,8 +1,6 @@
 filter:
   include_domains:
     - climate
-    - cover
-    - fan
   include_entity_globs:
     - sensor.ble_temperature_atc_*
   include_entities:
@@ -14,7 +12,10 @@ filter:
     - button.ex_commandstation_emergency_stop
     - button.ex_commandstation_reboot
     - button.ex_commandstation_route_300
+    - cover.bedroom
+    - cover.living_cover
     - climate.hollandis_climate
+    - fan.wc_and_bathroom
     - input_boolean.child_lock
     - input_boolean.guest_mode
     - input_boolean.heating_allowed
@@ -83,7 +84,7 @@ entity_config:
     room: Дом
     type: switch
   climate.hollandis_climate:
-    name: Климат
+    name: Тесла
     room: Тесла
   input_boolean.guest_mode:
     name: Гостевой режим
