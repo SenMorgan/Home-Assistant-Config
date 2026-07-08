@@ -16,6 +16,7 @@ filter:
     - cover.living_cover
     - climate.hollandis_climate
     - fan.wc_and_bathroom
+    - input_boolean.3d_printer_power
     - input_boolean.child_lock
     - input_boolean.guest_mode
     - input_boolean.heating_allowed
@@ -86,6 +87,10 @@ entity_config:
   climate.hollandis_climate:
     name: Тесла
     room: Тесла
+  input_boolean.3d_printer_power:
+    name: 3D принтер
+    room: 3D принтер
+    type: switch
   input_boolean.guest_mode:
     name: Гостевой режим
     room: Дом
