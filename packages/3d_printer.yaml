@@ -4,7 +4,7 @@
 # Date: 2023-02-19                                                   #
 #                                                                    #
 # Info: this file contains automations that are associated to the    #
-# 3D printer connected via Octoprint                                 #
+# 3D printer.                                                        #
 #                                                                    #
 # Copyright (c) 2023 Sen Morgan                                      #
 ######################################################################
@@ -13,34 +13,44 @@
 ## INPUT BOOLEANS
 ###############################################
 input_boolean:
-  3d_printer_and_octo_power:
+  3d_printer_power:
     name: 3D Printer Power
     icon: mdi:printer-3d
-
-###############################################
-## REST COMMANDS
-###############################################
-rest_command:
-  octoprint_shutdown:
-    url: !secret OCTOPRINT_SHUTDOWN_URL
-    method: POST
-    headers:
-      X-Api-Key: !secret OCTOPRINT_API_KEY
-
-###############################################
-## SCRIPTS
-###############################################
-script:
-  octoprint_shutdown:
-    alias: Octoprint Shutdown
-    mode: single
-    sequence:
-      - action: rest_command.octoprint_shutdown
 
 ###############################################
 ## AUTOMATIONS
 ###############################################
 automation:
+  ###############################################
+  ## Turn on light during preparation
+  ###############################################
+  - alias: "3D Printer - Preparation Light"
+    id: "3d_printer_preparation_light"
+    mode: restart
+    triggers:
+      - trigger: state
+        entity_id: sensor.3d_printer_bambu_lab_a1_print_status
+        to: "prepare"
+    actions:
+      - action: light.turn_on
+        entity_id: light.hall_edison_bulb
+
+  ###############################################
+  ## Turn off light after some time after print started
+  ###############################################
+  - alias: "3D Printer - Print Light Off"
+    id: "3d_printer_print_light_off"
+    mode: restart
+    triggers:
+      - trigger: state
+        entity_id: sensor.3d_printer_bambu_lab_a1_print_status
+        from: "prepare"
+        to: "running"
+    actions:
+      - delay: "00:10:00"
+      - action: light.turn_off
+        entity_id: light.hall_edison_bulb
+
   ###############################################
   ## Remind me when the print is done
   ###############################################
@@ -48,34 +58,56 @@ automation:
     id: "3d_printer_print_done"
     triggers:
       - trigger: state
-        entity_id: binary_sensor.octoprint_printing
-        from: "on"
-        to: "off"
+        entity_id: sensor.3d_printer_bambu_lab_a1_print_status
+        from: "running"
+        to: "finish"
     actions:
+      - variables:
+          start_time: "{{ states('sensor.3d_printer_bambu_lab_a1_start_time') | as_timestamp | default(now().timestamp()) }}"
+          spent_time: "{{ (now().timestamp() - start_time) | int }}"
+          spent_hours: "{{ (spent_time / 3600) | int }}"
+          spent_minutes: "{{ ((spent_time % 3600) / 60) | int }}"
+          task_name: "{{ states('sensor.3d_printer_bambu_lab_a1_task_name') }}"
       - action: notify.mobile_app_sen_s25
-        data:
+        data_template:
           title: "3D Printer"
-          message: "🎉 Печать завершена!"
+          message: |
+            🎉 Печать завершена ({{ task_name }})
+            ⏱️ Время печати: {{ spent_hours }}ч {{ spent_minutes }}мин
+      - action: media_player.play_media
+        entity_id: media_player.yandex_station_midi
+        data:
+          media_content_type: text
+          media_content_id: >
+            3Д печать детали {{ task_name }} завершена! Время печати:
+            {% if spent_hours > 0 %} {{ spent_hours }} часов {% endif %}
+            {% if spent_minutes > 0 %} {{ spent_minutes }} минут {% endif %}
 
   ###############################################
-  ## Remind me every 10% of the print
+  ## Remind me about print progress
   ###############################################
   - alias: "3D Printer - Print Progress"
     id: "3d_printer_print_progress"
     triggers:
       - trigger: state
-        entity_id: sensor.octoprint_job_percentage
+        entity_id: sensor.3d_printer_bambu_lab_a1_print_progress
     conditions:
       - condition: template
         value_template: >
-          {{ (trigger.to_state.state | int(0)) > 0 and
+          {{ (trigger.to_state.state | int(0)) > 0 and (trigger.to_state.state | int(0)) < 100 and
             ((trigger.to_state.state | int(0)) != (trigger.from_state.state | int(0))) and
-            (trigger.to_state.state | int(0)) % 10 == 0 }}
+            (trigger.to_state.state | int(0)) % 20 == 0 }}
     actions:
+      - variables:
+          remaining_time: "{{ states('sensor.3d_printer_bambu_lab_a1_remaining_time') | float(0) }}"
+          remaining_hours: "{{ (remaining_time | int) }}"
+          remaining_minutes: "{{ ((remaining_time % 1) * 60) | int }}"
       - action: notify.mobile_app_sen_s25
         data_template:
           title: "3D Printer"
-          message: "📈 Деталь готова на {{ states('sensor.octoprint_job_percentage') | int(0) }}%"
+          message: >
+            📈 Деталь готова на {{ trigger.to_state.state | int(0) }}%
+            ⏱️ Осталось {{ remaining_hours }}ч {{ remaining_minutes }}мин
 
   ###############################################
   ## Remind me when print is paused
@@ -84,11 +116,11 @@ automation:
     id: "3d_printer_print_paused"
     triggers:
       - trigger: state
-        entity_id: sensor.octoprint_current_state
-        from: "Printing"
+        entity_id: sensor.3d_printer_bambu_lab_a1_print_status
+        from: "running"
         to:
-          - "Paused"
-          - "Pausing"
+          - "pause"
+          - "failed"
     actions:
       - action: notify.mobile_app_sen_s25
         data:
@@ -102,42 +134,16 @@ automation:
     id: "3d_printer_print_resumed"
     triggers:
       - trigger: state
-        entity_id: sensor.octoprint_current_state
+        entity_id: sensor.3d_printer_bambu_lab_a1_print_status
         from:
-          - "Paused"
-          - "Pausing"
-        to: "Printing"
+          - "pause"
+          - "failed"
+        to: "running"
     actions:
       - action: notify.mobile_app_sen_s25
         data:
           title: "⚠️ 3D Printer"
           message: "Печать возобновлена"
-
-  ###############################################
-  ## Remind me when bed or hotend is overheated
-  ###############################################
-  - alias: "3D Printer - Overheated"
-    id: "3d_printer_overheated"
-    triggers:
-      - trigger: state
-        entity_id:
-          - sensor.octoprint_actual_bed_temp
-          - sensor.octoprint_actual_tool0_temp
-    conditions:
-      - or:
-          - condition: template
-            value_template: >
-              {{ states('sensor.octoprint_actual_bed_temp') | int(0) > 100 }}
-          - condition: template
-            value_template: >
-              {{ states('sensor.octoprint_actual_tool0_temp') | int(0) > 250 }}
-    actions:
-      - action: notify.mobile_app_sen_s25
-        data:
-          title: "🌡️ 3D Printer перегрелся!"
-          message: |
-            🛏️ Температура стола: {{ states('sensor.octoprint_actual_bed_temp') }}°C
-            🔥 Температура хотенда: {{ states('sensor.octoprint_actual_tool0_temp') }}°C
 
   ###############################################
   ## Power control
@@ -147,10 +153,10 @@ automation:
     mode: restart
     triggers:
       - trigger: state
-        entity_id: input_boolean.3d_printer_and_octo_power
+        entity_id: input_boolean.3d_printer_power
         from: "off"
         to: "on"
-    # Check if new state was not set by «3d_printer_sync_power_state» to awoid infinite loop
+    # Check if new state was not set by «3d_printer_sync_power_state» to avoid infinite loop
     conditions:
       - condition: state
         entity_id: switch.3d_printer_socket
@@ -168,7 +174,7 @@ automation:
     conditions:
       - condition: template
         value_template: >
-          {{ states('switch.3d_printer_socket') != states('input_boolean.3d_printer_and_octo_power') }}
+          {{ states('switch.3d_printer_socket') != states('input_boolean.3d_printer_power') }}
         # Check if 3d_printer_power_off automation is not running
       - condition: template
         value_template: >
@@ -180,60 +186,69 @@ automation:
             state: "on"
         then:
           - action: input_boolean.turn_on
-            entity_id: input_boolean.3d_printer_and_octo_power
+            entity_id: input_boolean.3d_printer_power
         else:
           - action: input_boolean.turn_off
-            entity_id: input_boolean.3d_printer_and_octo_power
+            entity_id: input_boolean.3d_printer_power
 
   - alias: 3D Printer - Power Off
     id: 3d_printer_power_off
     mode: restart
     triggers:
       - trigger: state
-        entity_id: input_boolean.3d_printer_and_octo_power
+        entity_id: input_boolean.3d_printer_power
         from: "on"
         to: "off"
-    # Check if new state was not set by «3d_printer_sync_power_state» to awoid infinite loop
+    # Check if new state was not set by «3d_printer_sync_power_state» to avoid infinite loop
     conditions:
       - condition: state
         entity_id: switch.3d_printer_socket
         state: "on"
     actions:
-      # If server is not in state "operational" — send me notification and stop powering off
+      - variables:
+          # Get the current print status
+          printer_status: "{{ states('sensor.3d_printer_bambu_lab_a1_print_status') }}"
       - if:
+          # If printer is not in state "finish" or "idle" - send me notification and stop powering off
           - condition: template
-            value_template: "{{ states('sensor.octoprint_current_state') != 'Operational' }}"
+            value_template: "{{ printer_status == 'finish' or printer_status == 'idle' }}"
         then:
-          - action: input_boolean.turn_on
-            entity_id: input_boolean.3d_printer_and_octo_power
-          - action: notify.mobile_app_sen_s25
-            data:
-              title: "⚠️ 3D Printer"
-              message: |
-                Невозможно выключить Octoprint сервер в состонии «{{ states('sensor.octoprint_current_state') }}».
-                Питания НЕ отключено!
-        else:
-          - action: script.turn_on
-            entity_id: script.octoprint_shutdown
-          # Wait until server is down
-          - wait_template: "{{ states('sensor.octoprint_current_state') == 'unavailable' }}"
-            timeout: "00:03:00"
-            # If server is still up — send me notification
           - if:
-              - condition: template
-                value_template: "{{ states('sensor.octoprint_current_state') != 'unavailable' }}"
+              # If printer nozzle temperature is above 60°C - send me notification and stop powering off
+              - condition: numeric_state
+                entity_id: sensor.3d_printer_bambu_lab_a1_nozzle_temperature
+                above: 60
             then:
-              - action: input_boolean.turn_on
-                entity_id: input_boolean.3d_printer_and_octo_power
               - action: notify.mobile_app_sen_s25
                 data:
                   title: "⚠️ 3D Printer"
                   message: |
-                    Не удалось выключить Octoprint сервер.
+                    Нельзя выключить принтер, так как температура сопла {{ states('sensor.3d_printer_bambu_lab_a1_nozzle_temperature') }}°C.
                     Питания НЕ отключено!
+              - action: media_player.play_media
+                entity_id: media_player.yandex_station_midi
+                data:
+                  media_content_type: text
+                  media_content_id: >
+                    ⚠️ Внимание! Питание 3D принтера НЕ отключено, так как температура сопла {{ states('sensor.3d_printer_bambu_lab_a1_nozzle_temperature') }}°C.
             else:
-              # If server is down, turn off power socket
+              # If printer is in a state that allows powering off, turn off power socket
               - action: switch.turn_off
                 entity_id: switch.3d_printer_socket
               - action: input_boolean.turn_off
-                entity_id: input_boolean.3d_printer_and_octo_power
+                entity_id: input_boolean.3d_printer_power
+        else:
+          - action: input_boolean.turn_on
+            entity_id: input_boolean.3d_printer_power
+          - action: notify.mobile_app_sen_s25
+            data:
+              title: "⚠️ 3D Printer"
+              message: |
+                Нельзя выключить принтер, так как он находится в состоянии «{{ printer_status }}».
+                Питания НЕ отключено!
+          - action: media_player.play_media
+            entity_id: media_player.yandex_station_midi
+            data:
+              media_content_type: text
+              media_content_id: >
+                ⚠️ Внимание! Питание 3D принтера НЕ отключено, так как он находится в состоянии «{{ printer_status }}».
