@@ -10,11 +10,6 @@ homeassistant:
   customize: !include customize.yaml
   packages: !include_dir_named packages
 
-# Yandex devices icons
-frontend:
-  extra_module_url:
-    - /hacsfiles/ha-yandex-icons/yandex-icons.js
-
 recorder:
   db_url: !secret DATABASE_URL
   purge_keep_days: 180
@@ -24,6 +19,14 @@ recorder:
       - sensor.flightradar_*
       - sensor.fr24_*
 
+# Sharing devices with Yandex Smart Home
+yandex_smart_home: !include yandex.yaml
+
+# Yandex devices icons
+frontend:
+  extra_module_url:
+    - /hacsfiles/ha-yandex-icons/yandex-icons.js
+    
 # Write Python scripts that are exposed as services in Home Assistant
 python_script:
 
