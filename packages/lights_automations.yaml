@@ -198,11 +198,11 @@ automation:
         entity_id: binary_sensor.presence_sensor_fp2_hall
         to: "on"
         id: presence_on
-      # No presence for 10 seconds
+      # No presence for 5 minutess
       - trigger: state
         entity_id: binary_sensor.presence_sensor_fp2_hall
         to: "off"
-        for: "00:00:10"
+        for: "00:05:00"
         id: presence_off
     conditions:
       # Run automation only when someone is home
