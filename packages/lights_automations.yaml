@@ -197,21 +197,21 @@ automation:
     mode: restart
     triggers:
       # Presence detected in the hall
-      - trigger: state
-        entity_id: binary_sensor.presence_sensor_fp2_hall
-        to: "on"
-        id: presence_on
+    #  - trigger: state
+    #    entity_id: binary_sensor.presence_sensor_fp2_hall
+    #    to: "on"
+    #    id: presence_on
       # No presence for some time
       - trigger: state
         entity_id: binary_sensor.presence_sensor_fp2_hall
         to: "off"
         for: "00:01:00"
         id: presence_off
-    conditions:
-      # Run automation only when someone is home
-      - condition: state
-        entity_id: binary_sensor.people_home
-        state: "on"
+    # conditions:
+    #   # Run automation only when someone is home
+    #   - condition: state
+    #     entity_id: binary_sensor.people_home
+    #     state: "on"
     actions:
       - choose:
           # Turn lights on only during daytime and when ambient light is low
