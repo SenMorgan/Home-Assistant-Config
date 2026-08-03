@@ -27,6 +27,9 @@ script:
   set_silent_mode:
     alias: Set Silent Mode
     sequence:
+      # Power on Baby Monitor Plug
+      - action: switch.turn_on
+        entity_id: switch.bedroom_baby_monitor_plug
       # Lower Yandex stations volume
       - action: script.set_volume_level_repeatedly
         data:
@@ -57,6 +60,9 @@ script:
   reset_silent_mode:
     alias: Reset Silent Mode
     sequence:
+      # Power off Baby Monitor Plug
+      - action: switch.turn_off
+        entity_id: switch.bedroom_baby_monitor_plug
       # Raise Yandex stations volume
       - action: script.set_volume_level_repeatedly
         data:

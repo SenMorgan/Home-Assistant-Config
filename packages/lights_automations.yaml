@@ -36,8 +36,11 @@ script:
     sequence:
       - action: light.turn_off
         entity_id: all
+      # Power off other devices that are not lights but should be turned off when no one is home
       - action: switch.turn_off
         entity_id:
+          - switch.wireless_charger
+          - switch.bedroom_baby_monitor_plug
           - switch.monolith_speakers
           - switch.interactive_cz_map_enable
           - switch.ex_commandstation_tracks_power
