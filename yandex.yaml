@@ -51,6 +51,7 @@ filter:
     - sensor.pool_monitor_upper_water_temperature
     - sensor.sm_s931b_battery_level
     - switch.asus_pc
+    - switch.bedroom_baby_monitor_plug
     - switch.hollandis_charge
     - switch.interactive_cz_map_enable
     - switch.loco_sbb_cargo_re_482_power_sound
@@ -211,6 +212,10 @@ entity_config:
   switch.asus_pc:
     name: Компьютер
     room: Кухня
+    type: socket
+  switch.bedroom_baby_monitor_plug:
+    name: Видео-няня
+    room: Спальня
     type: socket
   button.ex_commandstation_emergency_stop:
     name: Экстренная остановка
