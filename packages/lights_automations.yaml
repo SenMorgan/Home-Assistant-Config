@@ -701,9 +701,6 @@ automation:
         to: "off"
     conditions:
       - condition: state
-        entity_id: input_boolean.child_lock
-        state: "off"
-      - condition: state
         entity_id: input_boolean.guest_mode
         state: "off"
     actions:

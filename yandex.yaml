@@ -17,7 +17,6 @@ filter:
     - climate.hollandis_climate
     - fan.wc_and_bathroom
     - input_boolean.3d_printer_power
-    - input_boolean.child_lock
     - input_boolean.guest_mode
     - input_boolean.heating_allowed
     - input_boolean.home_night_mode
@@ -104,10 +103,6 @@ entity_config:
     type: switch
   input_boolean.silent_mode:
     name: Тихий режим
-    room: Дом
-    type: switch
-  input_boolean.child_lock:
-    name: Детский замок
     room: Дом
     type: switch
   light.hall_lights:

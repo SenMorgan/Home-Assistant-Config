@@ -19,10 +19,6 @@ input_boolean:
   cube_1_control:
     name: Cube Control
     icon: mdi:gesture-double-tap
-  child_lock:
-    name: Child Lock
-    icon: mdi:lock
-    initial: off
 
 ###############################################
 ## AUTOMATIONS
@@ -47,12 +43,7 @@ automation:
           - conditions:
               - "{{ command == 'single' }}"
             sequence:
-              - if:
-                  - condition: state
-                    entity_id: input_boolean.child_lock
-                    state: "off"
-                then:
-                  - action: script.activate_night_mode
+              - action: script.activate_night_mode
           - conditions:
               - "{{ command == 'double' }}"
             sequence:
@@ -80,12 +71,8 @@ automation:
               # Open cover and make another actions
               - action: cover.open_cover
                 entity_id: cover.bedroom
-              - if:
-                  - condition: state
-                    entity_id: input_boolean.child_lock
-                    state: "off"
-                then:
-                  - action: script.home_day_mode
+              # Activate day mode script
+              - action: script.home_day_mode
         default: []
 
   ###############################################
