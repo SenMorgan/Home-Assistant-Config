@@ -52,7 +52,6 @@ filter:
     - sensor.pool_monitor_upper_water_temperature
     - sensor.sm_s931b_battery_level
     - switch.asus_pc
-    - switch.dehydrator
     - switch.hollandis_charge
     - switch.interactive_cz_map_enable
     - switch.loco_sbb_cargo_re_482_power_sound
@@ -198,10 +197,6 @@ entity_config:
   scene.movies:
     name: Сцена Кино
     room: Зал
-  switch.dehydrator:
-    name: Дегидратор
-    room: Кухня
-    type: socket
   switch.hollandis_charge:
     name: Зарядка Теслы
     room: Тесла
