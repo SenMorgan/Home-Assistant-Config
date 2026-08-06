@@ -96,14 +96,14 @@ automation:
     id: living_room_tv_lights_by_tv_off
     description: "Turn off TV lights automatically when TV is turned off"
     mode: restart
-    trigger:
-      - platform: state
+    triggers:
+      - trigger: state
         entity_id: media_player.samsung_tv
         from: "on"
         to: "off"
         for:
           minutes: 5
-    action:
+    actions:
       - action: light.turn_off
         entity_id: light.tv_lights
 
@@ -111,15 +111,15 @@ automation:
     id: living_room_speakers_power_on_with_tv
     description: "Turn on speakers automatically when TV is turned on"
     mode: restart
-    trigger:
-      - platform: state
+    triggers:
+      - trigger: state
         entity_id: media_player.samsung_tv
         to: "on"
-    condition:
+    conditions:
       - condition: state
         entity_id: switch.monolith_speakers
         state: "off"
-    action:
+    actions:
       - action: switch.turn_on
         entity_id: switch.monolith_speakers
 
@@ -127,28 +127,28 @@ automation:
     id: living_room_speakers_auto_power_down
     description: "Turn off speakers if power consumption remains low after any trigger"
     mode: restart
-    trigger:
+    triggers:
       # When speakers are turned on
-      - platform: state
+      - trigger: state
         entity_id: switch.monolith_speakers
         to: "on"
       # When TV is turned off
-      - platform: state
+      - trigger: state
         entity_id: media_player.samsung_tv
         to: "off"
       # When power consumption drops below threshold
-      - platform: state
+      - trigger: state
         entity_id: binary_sensor.monolith_speakers_above_power_threshold
         to: "off"
-    condition:
+    conditions:
       - condition: state
         entity_id: switch.monolith_speakers
         state: "on"
-    action:
+    actions:
       # Wait up to 5 minutes to see if power consumption goes above threshold
       - alias: "Check if power consumption exceeds threshold"
         wait_for_trigger:
-          - platform: state
+          - trigger: state
             entity_id: binary_sensor.monolith_speakers_above_power_threshold
             to: "on"
         timeout:
