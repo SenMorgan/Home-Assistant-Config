@@ -128,6 +128,9 @@ script:
           - condition: state
             entity_id: person.sen
             state: "home"
+          - condition: time
+            after: "06:00:00"
+            before: "21:00:00"
         then:
           - action: switch.turn_on
             entity_id: switch.interactive_cz_map_enable
