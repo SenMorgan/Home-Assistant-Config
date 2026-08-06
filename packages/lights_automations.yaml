@@ -44,6 +44,7 @@ script:
           - switch.monolith_speakers
           - switch.interactive_cz_map_enable
           - switch.ex_commandstation_tracks_power
+      - action: script.turn_off_samsung_tv
 
   switch_on_parking_light:
     alias: Switch On Parking Light

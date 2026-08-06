@@ -18,6 +18,22 @@ template:
         state: "{{ states('sensor.monolith_speakers_active_power') | float(0) > 12 }}"
 
 ###############################################
+## SCRIPTS
+###############################################
+script:
+  # Script that fixes the Samsung TV toggling instead of turning off when the TV is already off
+  turn_off_samsung_tv:
+    alias: "Turn Off Samsung TV"
+    sequence:
+      - if:
+          - condition: state
+            entity_id: media_player.samsung_tv
+            state: "on"
+        then:
+          - action: media_player.turn_off
+            entity_id: media_player.samsung_tv
+
+###############################################
 ## AUTOMATIONS
 ###############################################
 automation:

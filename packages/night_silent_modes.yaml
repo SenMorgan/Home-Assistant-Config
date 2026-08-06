@@ -392,7 +392,6 @@ scene:
     id: no_people_home
     entities:
       # Turning off all lights is called from script.turn_off_all_lights
-      media_player.samsung_tv: off
       switch.moving_head_power: off
       switch.ex_commandstation_tracks_power: off
       switch.wireless_charger: off
