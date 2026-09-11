@@ -208,11 +208,11 @@ automation:
         to: "off"
         for: "00:01:00"
         id: presence_off
-    # conditions:
-    #   # Run automation only when someone is home
-    #   - condition: state
-    #     entity_id: binary_sensor.people_home
-    #     state: "on"
+    conditions:
+      # Run automation only when someone is home
+      - condition: state
+        entity_id: binary_sensor.people_home
+        state: "on"
     actions:
       - choose:
           # Turn lights on only during daytime and when ambient light is low
