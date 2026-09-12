@@ -348,6 +348,24 @@ automation:
           media_player: media_player.yandex_station
           volume_level: 0.4
 
+  # Autoenable Baby Monitor Plug at 20:00 if anyone is home and Baby Monitor Plug is off
+  - alias: Autoenable Bedroom Baby Monitor Plug at 20:00
+    id: autoenable_bedroom_baby_monitor_plug_at_20_00
+    mode: single
+    triggers:
+      - trigger: time
+        at: "20:00:00"
+    conditions:
+      - condition: state
+        entity_id: binary_sensor.people_home
+        state: "on"
+      - condition: state
+        entity_id: switch.bedroom_baby_monitor_plug
+        state: "off"
+    actions:
+      - action: switch.turn_on
+        entity_id: switch.bedroom_baby_monitor_plug
+
   # Prevent accidental volume increase on Yandex Mini in normal conditions (not in silent mode).
   # Used to save ears from loud music when children play with the volume buttons.
   - alias: Prevent Accidental Yandex Mini Volume Increase
