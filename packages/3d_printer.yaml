@@ -68,12 +68,16 @@ automation:
           spent_hours: "{{ (spent_time / 3600) | int }}"
           spent_minutes: "{{ ((spent_time % 3600) / 60) | int }}"
           task_name: "{{ states('sensor.3d_printer_bambu_lab_a1_task_name') }}"
+          print_weight: "{{ states('sensor.3d_printer_bambu_lab_a1_print_weight') }}"
+          print_length: "{{ states('sensor.3d_printer_bambu_lab_a1_print_length') }}"
       - action: notify.mobile_app_sen_s25
         data_template:
           title: "3D Printer"
           message: |
             🎉 Печать завершена ({{ task_name }})
             ⏱️ Время печати: {{ spent_hours }}ч {{ spent_minutes }}мин
+            ⚖️ Вес: {{ print_weight }}
+            📏 Длина прутка: {{ print_length }}
       - if:
           - condition: state
             entity_id: input_boolean.silent_mode
@@ -87,6 +91,7 @@ automation:
                 3Д печать детали {{ task_name }} завершена! Время печати:
                 {% if spent_hours > 0 %} {{ spent_hours }} {% if spent_hours == 1 %} час {% else %} часов {% endif %} {% endif %}
                 {% if spent_minutes > 0 %} {{ spent_minutes }} {% if spent_minutes == 1 %} минута {% else %} минут {% endif %} {% endif %}
+                Использовано {{ print_weight }} грамм пластика.
 
   ###############################################
   ## Remind me about print progress
