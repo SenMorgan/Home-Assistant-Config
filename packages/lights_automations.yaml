@@ -134,10 +134,13 @@ automation:
         entity_id: binary_sensor.hall_door_contact
         from: "on"
         to: "off"
-    conditions:
-      - condition: state
+        for: "00:01:00"
+      - trigger: state
         entity_id: binary_sensor.people_home
-        state: "on"
+        from: "on"
+        to: "off"
+        for: "00:05:00"
+    conditions:
       - condition: state
         entity_id: input_boolean.guest_mode
         state: "off"
@@ -145,7 +148,7 @@ automation:
       - wait_template: "{{ states('binary_sensor.people_home') == 'off' }}"
         timeout: "00:30:00"
         continue_on_timeout: false
-      # Wait 2 minutes and check if binary_sensor.people_home is still off to prevent accidental triggers
+      # Wait extra 2 minutes after the initial wait to ensure no one is home
       - delay: 00:02:00
       - if:
           - condition: state
