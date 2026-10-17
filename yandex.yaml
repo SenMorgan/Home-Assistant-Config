@@ -26,6 +26,7 @@ filter:
     - light.bedroom_ceiling_light
     - light.bedroom_nightlight
     - light.christmas_tree
+    - light.dollhouse_lights
     - light.cocktail_bar_neon_sign
     - light.floor_lamp
     - light.gyver_lamp
@@ -149,6 +150,10 @@ entity_config:
   light.christmas_tree:
     name: Ёлка
     room: Зал
+  light.dollhouse_lights:
+    name: Кукольный домик
+    room: Зал
+    type: light.strip
   light.cocktail_bar_neon_sign:
     name: Неоновая вывеска
     room: Кухня
