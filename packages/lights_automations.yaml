@@ -688,8 +688,24 @@ automation:
   ###############################################
   ## BUSY WALL SWITCHES
   ###############################################
-  - id: "busy_wall_switch_1"
-    alias: Busy Wall Switch 1
+  - id: "busy_wall_switch_left"
+    alias: Busy Wall Switch Left
+    mode: restart
+    triggers:
+      - trigger: state
+        entity_id: binary_sensor.air_quality_station_digital_input_2
+        from: "off"
+        to: "on"
+      - trigger: state
+        entity_id: binary_sensor.air_quality_station_digital_input_2
+        from: "on"
+        to: "off"
+    actions:
+      - action: light.toggle
+        entity_id: light.floor_lamp
+
+  - id: "busy_wall_switch_right"
+    alias: Busy Wall Switch Right
     mode: restart
     triggers:
       - trigger: state
@@ -706,23 +722,7 @@ automation:
         state: "off"
     actions:
       - action: light.toggle
-        entity_id: light.living_room_ceiling_light
-
-  - id: "busy_wall_switch_2"
-    alias: Busy Wall Switch 2
-    mode: restart
-    triggers:
-      - trigger: state
-        entity_id: binary_sensor.air_quality_station_digital_input_2
-        from: "off"
-        to: "on"
-      - trigger: state
-        entity_id: binary_sensor.air_quality_station_digital_input_2
-        from: "on"
-        to: "off"
-    actions:
-      - action: light.toggle
-        entity_id: light.floor_lamp
+        entity_id: light.dollhouse_lights
 
 ###############################################
 ## SCENES
