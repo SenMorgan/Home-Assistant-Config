@@ -43,14 +43,14 @@ media_player:
         action: shell_command.dcc_ex_command
         data:
           command_type: "volume"
-          command_value: "64"
+          command_value: "1.0"
           dcc_ex_server_ip: !secret DCC-EX-SERVER-IP
           dcc_ex_server_port: !secret DCC-EX-SERVER-PORT
       volume_down:
         action: shell_command.dcc_ex_command
         data:
           command_type: "volume"
-          command_value: "20"
+          command_value: "0.3"
           dcc_ex_server_ip: !secret DCC-EX-SERVER-IP
           dcc_ex_server_port: !secret DCC-EX-SERVER-PORT
       volume_set:

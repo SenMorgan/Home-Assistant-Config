@@ -25,13 +25,13 @@ case "$COMMAND_TYPE" in
             echo "Volume command requires a volume level (0.0 to 1.0)."
             exit 1
         fi
-        if (( $(echo "$COMMAND_VALUE < 0.0" | bc -l) || $(echo "$COMMAND_VALUE > 1.0" | bc -l) )); then
+        if ! awk -v v="$COMMAND_VALUE" 'BEGIN { exit !(v ~ /^[0-9]*\.?[0-9]+$/ && v >= 0 && v <= 1) }'; then
             echo "Volume level must be between 0.0 and 1.0."
             exit 1
         fi
 
         # Calculate the volume value 0-64
-        VOLUME_VAL_64=$(printf "%.0f" "$(echo "$COMMAND_VALUE * 64" | bc -l)")
+        VOLUME_VAL_64=$(awk -v v="$COMMAND_VALUE" 'BEGIN { printf "%.0f", v * 64 }')
         COMMAND="<w 4 63 $VOLUME_VAL_64> "   # Vossloh volume set (CV63)
         COMMAND+="<w 5 158 $VOLUME_VAL_64>"  # SBB Cargo volume set (CV158)
         ;;
