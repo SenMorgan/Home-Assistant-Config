@@ -370,7 +370,7 @@ automation:
               # Brightness of the cocktail bar neon sign depends on ambient light level, but at least 10
               - action: light.turn_on
                 entity_id: light.cocktail_bar_neon_sign
-                data:
+                data: &cocktail_bar_neon_sign_brightness
                   brightness: "{{ [255, ((states('sensor.presence_sensor_fp2_light_sensor_kitchen') | int(1)) * 10)] | min }}"
           # Turn lights off within an extended time window
           - conditions:
@@ -591,8 +591,7 @@ automation:
     actions:
       - action: light.turn_on
         entity_id: light.cocktail_bar_neon_sign
-        data:
-          brightness: 100
+        data: *cocktail_bar_neon_sign_brightness
 
   - id: "kitchen_christmas_lights_reenable"
     alias: Kitchen Christmas Lights Reenable
