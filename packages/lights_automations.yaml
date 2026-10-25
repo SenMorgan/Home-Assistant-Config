@@ -238,6 +238,10 @@ automation:
               - condition: time
                 after: "07:00:00"
                 before: "23:00:00"
+              # Not running the 3D printer preparation light automation
+              - condition: state
+                entity_id: automation.3d_printer_preparation_light
+                state: "off"
             sequence:
               - action: light.turn_off
                 entity_id: light.hall_edison_bulb

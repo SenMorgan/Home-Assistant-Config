@@ -32,6 +32,16 @@ automation:
         entity_id: sensor.3d_printer_bambu_lab_a1_print_status
         to: "prepare"
     actions:
+      # Wait till both presence and motion sensors are off
+      - wait_for_trigger:
+          - trigger: template
+            value_template: >
+              {{ is_state('binary_sensor.presence_sensor_fp2_hall', 'off') and
+              is_state('binary_sensor.aqara_hall_motion_sensor_motion', 'off') }}
+            for:
+              minutes: 1
+        timeout:
+          minutes: 20
       - action: light.turn_on
         entity_id: light.hall_edison_bulb
 
