@@ -10,6 +10,16 @@
 ######################################################################
 
 ###############################################
+## SETTINGS AND VARIABLES
+###############################################
+homeassistant:
+  customize:
+    package.node_anchors:
+      sys_notify_title_info: &sys_notify_title_info "💬 Системное уведомление"
+      sys_notify_title_warning: &sys_notify_title_warning "⚠️ Предупреждение"
+      sys_notify_title_critical: &sys_notify_title_critical "🚨 Внимание!"
+
+###############################################
 ## INPUT BOOLEANS
 ###############################################
 input_boolean:
@@ -72,6 +82,15 @@ automation:
         from: "running"
         to: "finish"
     actions:
+      # Light up if somebody is home
+      - if:
+          - condition: state
+            entity_id: binary_sensor.people_home
+            state: "on"
+        then:
+          - action: light.turn_on
+            entity_id: light.hall_edison_bulb
+      # Set variables for print details
       - variables:
           start_time: "{{ states('sensor.3d_printer_bambu_lab_a1_start_time') | as_timestamp | default(now().timestamp()) }}"
           spent_time: "{{ (now().timestamp() - start_time) | int }}"
@@ -239,6 +258,8 @@ automation:
                 entity_id: sensor.3d_printer_bambu_lab_a1_nozzle_temperature
                 above: 60
             then:
+              - action: input_boolean.turn_on
+                entity_id: input_boolean.3d_printer_power
               - action: notify.mobile_app_sen_s25
                 data:
                   title: "⚠️ 3D Printer"
@@ -282,3 +303,63 @@ automation:
                   media_content_type: text
                   media_content_id: >
                     ⚠️ Внимание! Питание 3D принтера НЕ отключено, так как он находится в состоянии «{{ printer_status }}».
+
+  ###############################################
+  ## Automatic power off for 3D printer after print completion and cooldown, during night hours
+  ###############################################
+  - alias: "3D Printer - Automatic Power Off"
+    id: "3d_printer_automatic_power_off"
+    mode: restart
+    triggers:
+      - trigger: state
+        entity_id: sensor.3d_printer_bambu_lab_a1_print_status
+        from: "running"
+        to: "finish"
+        for:
+          minutes: 15
+    conditions:
+      - condition: time
+        after: "22:00:00"
+        before: "06:00:00"
+    actions:
+      # Wait for the printer to cool down below 50°C or timeout after 30 minutes
+      - wait_template: "{{ states('sensor.3d_printer_bambu_lab_a1_nozzle_temperature') | float(100) < 50 }}"
+        timeout:
+          minutes: 30
+        continue_on_timeout: true
+      - variables:
+          timestamp: "{{ now().strftime('%H:%M:%S') }}"
+          printer_status: "{{ states('sensor.3d_printer_bambu_lab_a1_print_status') }}"
+          nozzle_temp: "{{ states('sensor.3d_printer_bambu_lab_a1_nozzle_temperature') }}"
+      # Break if printer if socket is already off
+      - if:
+          - condition: state
+            entity_id: input_boolean.3d_printer_power
+            state: "off"
+        then:
+          # Silently stop execution if printer power is already off
+          - stop: "Printer power already off"
+      # Check that the printer is still finished/idle and has actually cooled down
+      - if:
+          - condition: template
+            value_template: >
+              {{ printer_status in ['finish', 'idle'] and nozzle_temp | float(100) < 50 }}
+        then:
+          # Disable power using virtual button
+          - action: input_boolean.turn_off
+            entity_id: input_boolean.3d_printer_power
+          - action: script.notify_and_create_persistent_notification
+            data:
+              title: *sys_notify_title_info
+              message: Питание 3D принтера было отключено автоматически в {{ timestamp }}
+        else:
+          - action: script.notify_and_create_persistent_notification
+            data:
+              title: *sys_notify_title_warning
+              message: >
+                Питание 3D принтера НЕ отключено в {{ timestamp }}.
+                {% if printer_status not in ['finish', 'idle'] -%}
+                  Причина: принтер находится в состоянии «{{ printer_status }}».
+                {% else %}
+                  Причина: сопло не остыло ниже 50°C (сейчас {{ nozzle_temp }}°C).
+                {% endif %}
