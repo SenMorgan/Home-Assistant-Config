@@ -53,7 +53,9 @@ automation:
         timeout:
           minutes: 20
       - action: light.turn_on
-        entity_id: light.hall_edison_bulb
+        entity_id:
+          - light.hall_edison_bulb
+          - light.3d_printer_bambu_lab_a1_chamber_light
 
   ###############################################
   ## Turn off light after some time after print started
@@ -89,7 +91,9 @@ automation:
             state: "on"
         then:
           - action: light.turn_on
-            entity_id: light.hall_edison_bulb
+            entity_id:
+              - light.hall_edison_bulb
+              - light.3d_printer_bambu_lab_a1_chamber_light
       # Set variables for print details
       - variables:
           start_time: "{{ states('sensor.3d_printer_bambu_lab_a1_start_time') | as_timestamp | default(now().timestamp()) }}"
