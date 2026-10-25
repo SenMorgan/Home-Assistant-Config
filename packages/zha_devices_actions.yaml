@@ -68,11 +68,16 @@ automation:
               # Allow to turn on bedroom lights and open cover
               - action: input_boolean.turn_off
                 entity_id: input_boolean.bedroom_lights_and_cover_safety_switch
-              # Open cover and make another actions
+              # Open cover
               - action: cover.open_cover
                 entity_id: cover.bedroom
               # Activate day mode script
               - action: script.home_day_mode
+              # Switch on floor lamp with half brightness
+              - action: light.turn_on
+                entity_id: light.floor_lamp
+                data:
+                  brightness: 128
         default: []
 
   ###############################################
