@@ -380,3 +380,36 @@ automation:
             {{ 'получил' if trigger.from_state.state | int < trigger.to_state.state | int else 'потерял' }}
             звезду!
             Звёзд сейчас: {{ trigger.to_state.state }} (было: {{ trigger.from_state.state }})
+
+  - id: "notification_lights_on_while_away"
+    alias: Notification Lights On While Away
+    triggers:
+      - trigger: state
+        entity_id: binary_sensor.people_home
+        to: "off"
+        for:
+          minutes: 15
+      - trigger: time_pattern
+        minutes: "0"
+    variables:
+      lights_on_while_away: >
+        {% for light in states.light
+           | selectattr('state', 'eq', 'on')
+           | selectattr('last_changed', 'le', now() - timedelta(minutes=5)) %}
+          {{ light.name }}{% if not loop.last %}, {% endif %}
+        {% endfor %}
+    conditions:
+      - condition: state
+        entity_id: binary_sensor.people_home
+        state: "off"
+        for:
+          minutes: 30
+      - condition: template
+        value_template: >
+          {{ lights_on_while_away | length > 0 }}
+    actions:
+      - action: notify.mobile_app_sen_s25
+        data:
+          title: "⚠️ Включенный свет"
+          message: >
+            Включенные светильники, пока никого нет дома: {{ lights_on_while_away }}
