@@ -371,7 +371,7 @@ automation:
               - action: light.turn_on
                 entity_id: light.cocktail_bar_neon_sign
                 data: &cocktail_bar_neon_sign_brightness
-                  brightness: "{{ [255, ((states('sensor.presence_sensor_fp2_light_sensor_kitchen') | int(1)) * 10)] | min }}"
+                  brightness: "{{ [10, [255, ((states('sensor.presence_sensor_fp2_light_sensor_kitchen') | int(1)) * 10)] | min] | max }}"
           # Turn lights off within an extended time window
           - conditions:
               - condition: trigger
