@@ -1,0 +1,44 @@
+######################################################################
+# File: tesla.yaml                                                   #
+# Author: SenMorgan https://github.com/SenMorgan                     #
+# Date: 2026-10-26                                                   #
+#                                                                    #
+# Info: this file contains sensors and automations related           #
+# to Tesla integration.                                              #
+#                                                                    #
+# Copyright (c) 2026 Sen Morgan                                      #
+######################################################################
+
+
+###############################################
+## INPUT DATETIME HELPERS
+###############################################
+input_datetime:
+  tesla_last_full_charge_date:
+    name: Tesla Last Full Charge Date
+    icon: mdi:battery-charging-100
+    has_date: true
+    has_time: true
+
+###############################################
+## AUTOMATIONS - Track Full Charge Events
+###############################################
+automation:
+  - alias: "Tesla: Log Full Charge DateTime"
+    id: "tesla_log_full_charge_datetime"
+    description: "Record the date and time when Tesla battery reaches 100%"
+    trigger:
+      - platform: numeric_state
+        entity_id: sensor.hollandis_battery_level
+        above: 99.5
+    condition:
+      - condition: state
+        entity_id: sensor.hollandis_battery_level
+        state: "100"
+    action:
+      - service: input_datetime.set_datetime
+        target:
+          entity_id: input_datetime.tesla_last_full_charge_date
+        data:
+          date: "{{ now().strftime('%Y-%m-%d') }}"
+          time: "{{ now().strftime('%H:%M:%S') }}"
