@@ -196,56 +196,6 @@ automation:
   ###############################################
   ## FP2 Presence Sensor Lights Automations
   ###############################################
-  - id: "hall_lights_by_presence"
-    alias: Hall Lights by Presence
-    mode: restart
-    triggers:
-      # Presence detected in the hall
-    #  - trigger: state
-    #    entity_id: binary_sensor.presence_sensor_fp2_hall
-    #    to: "on"
-    #    id: presence_on
-      # No presence for some time
-      - trigger: state
-        entity_id: binary_sensor.presence_sensor_fp2_hall
-        to: "off"
-        for: "00:01:00"
-        id: presence_off
-    conditions:
-      # Run automation only when someone is home
-      - condition: state
-        entity_id: binary_sensor.people_home
-        state: "on"
-    actions:
-      - choose:
-          # Turn lights on only during daytime and when ambient light is low
-          - conditions:
-              - condition: trigger
-                id: presence_on
-              - condition: time
-                after: "07:00:00"
-                before: "21:00:00"
-              - condition: numeric_state
-                entity_id: sensor.presence_sensor_fp2_light_sensor_kitchen
-                below: 80
-            sequence:
-              - action: light.turn_on
-                entity_id: light.hall_edison_bulb
-          # Turn lights off within an extended time window regardless of ambient light
-          - conditions:
-              - condition: trigger
-                id: presence_off
-              - condition: time
-                after: "07:00:00"
-                before: "23:00:00"
-              # Not running the 3D printer preparation light automation
-              - condition: state
-                entity_id: automation.3d_printer_preparation_light
-                state: "off"
-            sequence:
-              - action: light.turn_off
-                entity_id: light.hall_edison_bulb
-
   - id: "kitchen_lights_by_presence"
     alias: Kitchen Lights by Presence
     mode: restart
@@ -655,10 +605,13 @@ automation:
         for: 1:00:00
     actions:
       - repeat:
+          # Give up after 5 attempts (e.g. relay unavailable) instead of notifying every minute forever
           until:
-            - condition: state
-              entity_id: switch.parking_light
-              state: "on"
+            - or:
+                - condition: state
+                  entity_id: switch.parking_light
+                  state: "on"
+                - "{{ repeat.index >= 5 }}"
           sequence:
             - action: switch.turn_on
               entity_id: switch.parking_light
