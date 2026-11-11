@@ -22,6 +22,18 @@ homeassistant:
 ## TEMPLATES ENTITIES
 ###############################################
 template:
+  # Keeps its last value while NUT is unreachable, so an outage is not reported as "restored"
+  # when the Synology (NUT server) shuts down first
+  - binary_sensor:
+      - name: UPS On Battery
+        unique_id: ups_on_battery
+        device_class: problem
+        state: >
+          {% if has_value('sensor.ups_status_data') %}
+            {{ 'OB' in states('sensor.ups_status_data') }}
+          {% else %}
+            {{ is_state('binary_sensor.ups_on_battery', 'on') }}
+          {% endif %}
   - sensor:
       - name: UPS Power
         unit_of_measurement: W
@@ -37,8 +49,8 @@ template:
 alert:
   ups_lost_power:
     name: UPS lost power
-    entity_id: sensor.ups_status_data
-    state: "OB DISCHRG"
+    entity_id: binary_sensor.ups_on_battery
+    state: "on"
     repeat: 1
     can_acknowledge: false
     notifiers: mobile_app_sen_s25
@@ -118,10 +130,28 @@ automation:
         below: 300
       - trigger: template
         value_template: "{{ 'OB DISCHRG LB' in states('sensor.ups_status_data') }}"
+      # Re-check thresholds once the UPS has been on battery for a minute
+      # (a threshold crossed earlier on grid power does not fire again)
+      - trigger: state
+        entity_id: binary_sensor.ups_on_battery
+        to: "on"
+        for: "00:01:00"
+      # NUT server (on the Synology) disappeared while we were on battery
+      - trigger: state
+        entity_id: sensor.ups_status_data
+        to: "unavailable"
+        for: "00:02:00"
+        id: nut_lost
     conditions:
-      # Act only when the UPS is actually on battery (ignore self-tests, NUT restarts, worn-battery runtime estimates)
+      # Act only when on battery AND low (ignore self-tests, NUT restarts, worn-battery runtime estimates),
+      # or when NUT was lost during an outage
       - condition: template
-        value_template: "{{ 'OB' in states('sensor.ups_status_data') }}"
+        value_template: >-
+          {% set st = states('sensor.ups_status_data') %}
+          {{ ('OB' in st and ('LB' in st
+                or states('sensor.ups_battery_charge') | float(100) < 10
+                or states('sensor.ups_battery_runtime') | float(99999) < 300))
+             or (trigger.id == 'nut_lost' and is_state('binary_sensor.ups_on_battery', 'on')) }}
     actions:
       - action: notify.mobile_app_sen_s25
         data:
