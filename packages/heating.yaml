@@ -156,9 +156,10 @@ template:
         unique_id: heating_request_bathroom
         device_class: heat
         state: >
-          {{ (states('sensor.ble_temperature_atc_bathroom') | float(0) <
-            states('input_number.bathroom_heating_target_temperature') | float(24)) and
-            is_state('schedule.bathroom_heating_evening', 'on') }}
+          {% set t = states('sensor.ble_temperature_atc_bathroom') %}
+          {{ t | is_number
+             and t | float < states('input_number.bathroom_heating_target_temperature') | float(24)
+             and is_state('schedule.bathroom_heating_evening', 'on') }}
 
 ###############################################
 ## HISTORY STATS SENSORS
@@ -600,7 +601,7 @@ automation:
       - condition: template
         value_template: >
           {{ states('climate.nest_thermostat') == 'heat' and
-              state_attr('climate.nest_thermostat', 'temperature') >= 25.0 }}
+              state_attr('climate.nest_thermostat', 'temperature') | float(0) >= 25.0 }}
     actions:
       - action: script.notify_and_create_persistent_notification
         data:
@@ -744,28 +745,31 @@ automation:
         for: "00:05:00"
     conditions:
       - condition: state
-        entity_id: input_boolean.heating_season
-        state: "on"
-      - condition: state
-        entity_id: binary_sensor.thermostat_active
-        state: "on"
-      - condition: state
         entity_id: input_boolean.guest_mode
         state: "off"
     actions:
-      # Reset all active timers that could affect heating
-      - action: timer.cancel
-        entity_id:
-          - timer.heating_quarantine
-          - timer.short_heating
-          - timer.pause_heating
-      # Disable hall heater
+      # Disable hall heater regardless of the thermostat state (it may be on while a window put the Nest in eco)
       - action: switch.turn_off
+        continue_on_error: true
         entity_id: switch.hall_heater
-      # Set "eco" mode on thermostat
-      - action: script.thermostat_set_eco_mode
-        data:
-          message: "Никого нет дома → переход в режим экономии"
+      - if:
+          - condition: state
+            entity_id: input_boolean.heating_season
+            state: "on"
+          - condition: state
+            entity_id: binary_sensor.thermostat_active
+            state: "on"
+        then:
+          # Reset all active timers that could affect heating
+          - action: timer.cancel
+            entity_id:
+              - timer.heating_quarantine
+              - timer.short_heating
+              - timer.pause_heating
+          # Set "eco" mode on thermostat
+          - action: script.thermostat_set_eco_mode
+            data:
+              message: "Никого нет дома → переход в режим экономии"
 
   - alias: Restore Heating When Someone Home
     id: restore_heating_when_someone_home
@@ -815,6 +819,9 @@ automation:
     id: start_heating_by_etrv_request
     mode: single
     max_exceeded: silent
+    # Runs every 2 minutes; keep enough traces to see a real run
+    trace:
+      stored_traces: 20
     triggers:
       # Trigger if some of ETRVs are requesting heat
       - trigger: state
@@ -904,6 +911,9 @@ automation:
     id: stop_heating_by_etrv_request
     mode: single
     max_exceeded: silent
+    # Runs every 2 minutes; keep enough traces to see a real run
+    trace:
+      stored_traces: 20
     triggers:
       # Trigger if all ETRVs are not requesting heat
       - trigger: state
@@ -965,10 +975,7 @@ automation:
       - condition: state
         entity_id: input_boolean.heating_season
         state: "on"
-      # If actually heating
-      - condition: state
-        entity_id: binary_sensor.thermostat_heating
-        state: "on"
+      # Pause always (also while the boiler is idle); "Start Heating by ETRV Request" waits for the timer
     action:
       # If short heating is in progress, notify that heating was stopped
       - if:
