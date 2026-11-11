@@ -98,8 +98,9 @@ alert:
 automation:
   - alias: Alert to TTS Handler
     id: alert_to_tts_handler
-    mode: single
-    max_exceeded: silent
+    # Queued: simultaneous alerts must each be announced
+    mode: queued
+    max: 5
     variables:
       alerts_map:
         alert.water_leakage_bathroom: ["Обнаружена утечка воды в ванной", "Утечка воды в ванной устранена"]
@@ -124,6 +125,19 @@ automation:
             value_template: "{{ trigger.to_state.state in ['on', 'idle'] }}"
         then:
           - action: notify.mobile_app_sen_s25
+            data:
+              message: TTS
+              data:
+                priority: high
+                channel: alarm_stream_max
+                media_stream: "alarm_stream_max"
+                tts_text: >
+                  {% if trigger.to_state.state == 'on' %}
+                    Внимание! {{ alerts_map[trigger.entity_id][0] }}!
+                  {% else %}
+                    {{ alerts_map[trigger.entity_id][1] }}.
+                  {% endif %}
+          - action: notify.mobile_app_sm_s931b
             data:
               message: TTS
               data:
