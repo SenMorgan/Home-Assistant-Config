@@ -187,6 +187,8 @@ automation:
                     event_type: mobile_app_notification_action
                     event_data:
                       action: "{{ action_enable_guest_mode }}"
+                timeout: "03:00:00"
+                continue_on_timeout: false
               - if:
                   - condition: template
                     value_template: "{{ wait.trigger.event.data.action == action_enable_guest_mode }}"

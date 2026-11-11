@@ -32,6 +32,8 @@ input_datetime:
 script:
   enable_guest_mode:
     alias: Enable Guest Mode
+    # A new call (NFC tag, button) replaces a run that is still waiting for the "disable" action
+    mode: restart
     sequence:
       - action: input_boolean.turn_on
         entity_id: input_boolean.guest_mode
@@ -61,6 +63,8 @@ script:
             event_type: mobile_app_notification_action
             event_data:
               action: "{{ action_disable }}"
+        timeout: "03:00:00"
+        continue_on_timeout: false
       - if:
           - condition: template
             value_template: "{{ wait.trigger.event.data.action == action_disable }}"
@@ -116,6 +120,8 @@ automation:
             event_type: mobile_app_notification_action
             event_data:
               action: "{{ action_enable_back_on }}"
+        timeout: "03:00:00"
+        continue_on_timeout: false
       - if:
           - condition: template
             value_template: "{{ wait.trigger.event.data.action == action_enable_back_on }}"
