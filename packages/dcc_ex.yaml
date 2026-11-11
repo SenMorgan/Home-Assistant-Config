@@ -141,6 +141,8 @@ automation:
     triggers:
       - trigger: state
         entity_id: binary_sensor.kitchen_motion_alarm
+        to: ["on", "off"]
+        not_from: ["unavailable", "unknown"]
     conditions:
       - condition: state
         entity_id: switch.ex_commandstation_tracks_power
