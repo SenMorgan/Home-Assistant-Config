@@ -15,7 +15,7 @@ automation:
     mode: single
     triggers:
       - domain: meshtastic
-        device_id: 5dd840db1c76b5319a4478ab33c7b33b
+        device_id: 947c380b053ad3e802a5f3cea373825f
         type: channel_message.received
         entity_id: meshtastic.gateway_lrnr_channel_morgans
         trigger: device
@@ -37,7 +37,7 @@ automation:
     mode: single
     triggers:
       - domain: meshtastic
-        device_id: 5dd840db1c76b5319a4478ab33c7b33b
+        device_id: 947c380b053ad3e802a5f3cea373825f
         type: channel_message.received
         entity_id: meshtastic.gateway_lrnr_channel_morgans
         trigger: device
