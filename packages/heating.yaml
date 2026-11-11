@@ -336,7 +336,7 @@ script:
               data:
                 temperature: "{{ temperature }}"
             - delay: "{{ 5 * repeat.index }}"
-          until: "{{ state_attr('climate.nest_thermostat', 'temperature') == temperature or repeat.index > 5 }}"
+          until: "{{ (state_attr('climate.nest_thermostat', 'temperature') | float(0) - temperature | float(0)) | abs < 0.3 or repeat.index > 5 }}"
 
   thermostat_set_eco_mode:
     alias: Thermostat Set Eco Mode
@@ -362,12 +362,16 @@ script:
           - alias: "Repeat until thermostat is in 'eco' mode"
             repeat:
               sequence:
+                # Nest may reject a retry (FAILED_PRECONDITION) while the first command is still applying
                 - action: climate.set_preset_mode
-                  entity_id: climate.nest_thermostat
+                  continue_on_error: true
+                  target:
+                    entity_id: climate.nest_thermostat
                   data:
                     preset_mode: "eco"
-                - delay: "{{ 5 * repeat.index }}"
-              until: "{{ is_state_attr('climate.nest_thermostat', 'preset_mode', 'eco') or repeat.index > 5 }}"
+                - wait_template: "{{ is_state_attr('climate.nest_thermostat', 'preset_mode', 'eco') }}"
+                  timeout: "00:00:30"
+              until: "{{ is_state_attr('climate.nest_thermostat', 'preset_mode', 'eco') or repeat.index >= 3 }}"
 
   notify_if_some_window_is_opened_during_heating_season:
     alias: Notify If Some Window Opened During Heating Season
