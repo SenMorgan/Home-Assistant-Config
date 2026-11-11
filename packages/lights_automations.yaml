@@ -151,9 +151,16 @@ automation:
       # Wait extra 2 minutes after the initial wait to ensure no one is home
       - delay: 00:02:00
       - if:
+          # Nobody home, and stably so (ignores tracker flapping)
           - condition: state
             entity_id: binary_sensor.people_home
             state: "off"
+            for: "00:02:00"
+          # Not already done for this absence (door and presence triggers both start a run)
+          - condition: template
+            value_template: >-
+              {% set ran = state_attr('script.turn_off_all_lights', 'last_triggered') %}
+              {{ ran is none or ran < states.binary_sensor.people_home.last_changed }}
         then:
           # Check if guest mode is still disabled after waiting
           - if:
@@ -600,14 +607,31 @@ automation:
   # Send me notification if switch.parking_light is turned off for more than 1 hour and turn it ON
   - id: "parking_light_emergency_on"
     alias: Parking Light Emergency On
+    mode: single
     triggers:
       - trigger: state
         entity_id: switch.parking_light
         to: "off"
         for: 1:00:00
+      - trigger: state
+        entity_id: switch.parking_light
+        to: "unavailable"
+        for: 1:00:00
+        id: unavailable
     actions:
+      - if: "{{ trigger.id == 'unavailable' }}"
+        then:
+          - action: notify.mobile_app_sen_s25
+            data:
+              title: *sys_notify_title_warning
+              message: Реле освещения парковки недоступно более часа
+          - stop: Relay unavailable
+      - action: notify.mobile_app_sen_s25
+        data:
+          title: *sys_notify_title_info
+          message: Реле освещения парковки было отключено более часа. Автоматическое включение в {{ states('sensor.time') }}
+      # Give up after 5 attempts instead of retrying forever
       - repeat:
-          # Give up after 5 attempts (e.g. relay unavailable) instead of notifying every minute forever
           until:
             - or:
                 - condition: state
@@ -616,12 +640,21 @@ automation:
                 - "{{ repeat.index >= 5 }}"
           sequence:
             - action: switch.turn_on
+              continue_on_error: true
               entity_id: switch.parking_light
-            - action: notify.mobile_app_sen_s25
-              data:
-                title: *sys_notify_title_info
-                message: Реле освещения парковки было отключено более часа. Автоматическое включение в {{ states('sensor.time') }}
-            - delay: 00:01:00
+            - wait_template: "{{ is_state('switch.parking_light', 'on') }}"
+              timeout: "00:01:00"
+      - if:
+          - condition: not
+            conditions:
+              - condition: state
+                entity_id: switch.parking_light
+                state: "on"
+        then:
+          - action: notify.mobile_app_sen_s25
+            data:
+              title: *sys_notify_title_warning
+              message: Реле освещения парковки не включилось после 5 попыток
 
   - id: "kitchen_led_strip_sync_with_spotlights"
     alias: Kitchen LED Strip Sync with Spotlights
