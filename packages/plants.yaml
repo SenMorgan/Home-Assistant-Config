@@ -63,6 +63,10 @@ automation:
     triggers:
       - trigger: state
         entity_id: input_text.plants_to_water
+      # Also announce plants that dried out while the notification window was closed
+      - trigger: state
+        entity_id: schedule.plant_watering_notification
+        to: "on"
     conditions:
       - condition: template
         value_template: "{{ states('input_text.plants_to_water') | length > 0 }}"
