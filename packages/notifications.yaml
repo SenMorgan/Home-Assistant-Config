@@ -76,6 +76,7 @@ automation:
     triggers:
       - trigger: state
         entity_id: binary_sensor.hall_door_contact
+        from: "off"
         to: "on"
     conditions:
       - condition: template
@@ -196,11 +197,10 @@ automation:
       - trigger: state
         entity_id: sensor.washing_machine_washer_job_state
         to: "finish"
-    # Condition: only if the washing duration is less than 4 hours (otherwise, it's likely a SmartThings integration issue)
+    # Ignore "finish" after SmartThings reconnects (from unavailable/unknown/none) or repeated finish
     conditions:
       - condition: template
-        value_template: >
-          {{ (as_timestamp(now(), 0) - as_timestamp(states.sensor.washing_machine_washer_job_state.last_changed, 0)) < 14400 }}
+        value_template: "{{ trigger.from_state.state not in ['unavailable', 'unknown', 'none', 'finish'] }}"
     actions:
       - action: script.yandex_joke_after_washing_clothes
 
@@ -252,8 +252,8 @@ automation:
     alias: Weather Forecast Alert Helper
     mode: single
     triggers:
-      - trigger: time_pattern
-        hours: "1"
+      - trigger: time
+        at: "06:00:00"
     actions:
       - variables:
           weather_entity: weather.home_assistant_blue
@@ -370,7 +370,8 @@ automation:
     condition:
       - condition: template
         value_template: >
-          {{ trigger.from_state.state != trigger.to_state.state }}
+          {{ trigger.from_state.state | is_number and trigger.to_state.state | is_number
+             and trigger.from_state.state != trigger.to_state.state }}
     action:
       - action: notify.mobile_app_sen_s25
         data:
