@@ -53,26 +53,66 @@ script:
           message: "{{ message }}"
 
 ###############################################
+## TEMPLATE ENTITIES
+###############################################
+template:
+  # Snow expected in the next 3 hours according to the Met.no hourly forecast
+  - triggers:
+      - trigger: time_pattern
+        minutes: 7
+      - trigger: homeassistant
+        event: start
+    actions:
+      - action: weather.get_forecasts
+        continue_on_error: true
+        target:
+          entity_id: weather.home_assistant_blue
+        data:
+          type: hourly
+        response_variable: fc
+    binary_sensor:
+      - name: Snow Expected Soon
+        unique_id: snow_expected_soon
+        icon: mdi:weather-snowy
+        state: >-
+          {% set f = fc['weather.home_assistant_blue'].forecast[:3] if fc is defined and fc else [] %}
+          {{ f | selectattr('condition', 'in', ['snowy', 'snowy-rainy']) | list | count > 0 }}
+        attributes:
+          precipitation_mm: >-
+            {% set f = fc['weather.home_assistant_blue'].forecast[:3] if fc is defined and fc else [] %}
+            {{ f | selectattr('condition', 'in', ['snowy', 'snowy-rainy']) | map(attribute='precipitation') | map('float', 0) | sum | round(1) }}
+          first_hour: >-
+            {% set f = fc['weather.home_assistant_blue'].forecast[:3] if fc is defined and fc else [] %}
+            {% set snowy = f | selectattr('condition', 'in', ['snowy', 'snowy-rainy']) | list %}
+            {{ (snowy[0].datetime | as_datetime | as_local).strftime('%H:%M') if snowy else none }}
+          min_temperature: >-
+            {% set f = fc['weather.home_assistant_blue'].forecast[:3] if fc is defined and fc else [] %}
+            {% set snowy = f | selectattr('condition', 'in', ['snowy', 'snowy-rainy']) | list %}
+            {{ snowy | map(attribute='temperature') | min if snowy else none }}
+
+###############################################
 ## AUTOMATIONS
 ###############################################
 automation:
+  # Snow forecast from Met.no (replaces the OpenWeatherMap snow sensor, API 2.5 is deprecated)
   - id: "notification_snow"
     alias: Notification Snow
     triggers:
-      - trigger: numeric_state
-        entity_id: sensor.openweathermap_snow
-        above: 0
+      - trigger: state
+        entity_id: binary_sensor.snow_expected_soon
+        from: "off"
+        to: "on"
     actions:
       - action: notify.mobile_app_sen_s25
         data:
-          title: ❄️ Snow Alert
-          message: Должно выпадать {{ states('sensor.openweathermap_snow') }} мм/ч снега в {{ states('sensor.time') }}!
+          title: ❄️ Ожидается снег
+          message: >-
+            С {{ state_attr('binary_sensor.snow_expected_soon', 'first_hour') }}
+            · {{ state_attr('binary_sensor.snow_expected_soon', 'precipitation_mm') }} мм осадков
+            · до {{ state_attr('binary_sensor.snow_expected_soon', 'min_temperature') }} °C
           data:
-            tag: WEATHER_ALERT
+            tag: SNOW_ALERT
             notification_icon: mdi:snowflake
-
-
-
 
   - id: "notification_diesel_price_changed"
     alias: Notification Diesel Price Changed
