@@ -32,6 +32,9 @@ automation:
         entity_id: sensor.hollandis_battery_level
         above: 99.5
     condition:
+      # Only a real 99 -> 100 transition, not the car waking up (unavailable -> 100)
+      - condition: template
+        value_template: "{{ trigger.from_state.state | is_number }}"
       - condition: state
         entity_id: sensor.hollandis_battery_level
         state: "100"
