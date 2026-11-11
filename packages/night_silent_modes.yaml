@@ -183,29 +183,6 @@ automation:
         value_template: "{{ is_state(target_script, 'off') }}"
       - action: "{{ target_script }}"
 
-  - alias: Home Enable Night Mode at Evening
-    id: home_enable_night_mode_at_evening
-    mode: single
-    triggers:
-      - trigger: state
-        entity_id: binary_sensor.bedroom_door_contact
-        from: "on"
-        to: "off"
-        for: 00:00:30
-      - trigger: time
-        at: "21:00:00"
-    conditions:
-      - condition: time
-        after: "20:00:00"
-        before: "03:00:00"
-      - condition: state
-        entity_id: binary_sensor.people_home
-        state: "on"
-    actions:
-      - action: input_boolean.turn_on
-        entity_id:
-          - input_boolean.home_night_mode
-          - input_boolean.silent_mode
 
   - alias: Yandex Volume Increased Handler
     id: yandex_volume_increased_handler

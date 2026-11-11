@@ -162,17 +162,3 @@ automation:
       - delay: 00:00:05
       - action: hassio.host_shutdown
 
-  - alias: UPS Lost Grid Power Light Notification
-    id: "ups_lost_grid_power_light_notification"
-    mode: single
-    triggers:
-      - trigger: template
-        value_template: "{{ 'OB' in states('sensor.ups_status_data') }}"
-    actions:
-      - action: light.turn_on
-        data:
-          entity_id: light.tradfri_bulb
-          brightness: 255
-          effect: "breathe"
-      - action: automation.turn_on
-        entity_id: automation.ups_grid_power_restored_light_notification

@@ -127,54 +127,6 @@ automation:
               brightness: 128
 
 
-  ###############################################
-  ## FP2 Presence Sensor Lights Automations
-  ###############################################
-  - id: "kitchen_lights_by_presence"
-    alias: Kitchen Lights by Presence
-    mode: restart
-    triggers:
-      # Presence detected in the kitchen
-      - trigger: state
-        entity_id: binary_sensor.presence_sensor_fp2_kitchen
-        to: "on"
-        id: presence_on
-      # No presence for 10 seconds
-      - trigger: state
-        entity_id: binary_sensor.presence_sensor_fp2_kitchen
-        to: "off"
-        for: "00:00:10"
-        id: presence_off
-    conditions:
-      # Run automation only when someone is home
-      - condition: state
-        entity_id: binary_sensor.people_home
-        state: "on"
-    actions:
-      - choose:
-          # Turn lights on only during daytime and when ambient light is low
-          - conditions:
-              - condition: trigger
-                id: presence_on
-              - condition: time
-                after: "07:00:00"
-                before: "21:00:00"
-              - condition: numeric_state
-                entity_id: sensor.presence_sensor_fp2_light_sensor_kitchen
-                below: 40
-            sequence:
-              - action: light.turn_on
-                entity_id: light.kitchen_led_strip
-          # Turn lights off within an extended time window regardless of ambient light
-          - conditions:
-              - condition: trigger
-                id: presence_off
-              - condition: time
-                after: "07:00:00"
-                before: "23:00:00"
-            sequence:
-              - action: light.turn_off
-                entity_id: light.kitchen_led_strip
 
   - id: "pc_lights_by_presence"
     alias: PC Lights by Presence
