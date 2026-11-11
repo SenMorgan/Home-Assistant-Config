@@ -124,6 +124,24 @@ script:
 ## AUTOMATIONS
 ###############################################
 automation:
+  # Keep only 30 days of raw history for high-frequency diagnostic sensors
+  # (global retention stays 180 days; long-term statistics are not affected)
+  - id: "recorder_purge_heavy_writers"
+    alias: Recorder Purge Heavy Writers
+    mode: single
+    triggers:
+      - trigger: time
+        at: "03:37:00"
+    actions:
+      - action: recorder.purge_entities
+        target:
+          entity_id: light.7_seg_clock
+        data:
+          keep_days: 30
+          entity_globs:
+            - sensor.silicon_labs_ezsp_*
+            - sensor.*_uptime
+
   ###############################################
   ## Notifications
   ###############################################

@@ -14,10 +14,20 @@ recorder:
   db_url: !secret DATABASE_URL
   purge_keep_days: 180
   exclude:
+    # Raw Meshtastic API events: ~80% of all event rows, large payloads; automations still receive them
+    event_types:
+      - meshtastic_api_node_updated
+      - meshtastic_api_packet
+      - meshtastic_api_telemetry
+      - meshtastic_api_position
     entity_globs:
       - sensor.adsb_*
       - sensor.flightradar_*
       - sensor.fr24_*
+      # ble_monitor beacon diagnostics: one iBeacon alone wrote over half of all state rows
+      - sensor.ble_mac_*
+      - sensor.ble_measured_power_*
+      - sensor.ble_rssi_*
 
 # Sharing devices with Yandex Smart Home
 yandex_smart_home: !include yandex.yaml
