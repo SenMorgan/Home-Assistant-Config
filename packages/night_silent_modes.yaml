@@ -266,7 +266,7 @@ automation:
       - trigger: state
         entity_id: binary_sensor.bedroom_door_contact
         to: "on"
-        for: 00:00:30
+        for: 00:01:00
     conditions:
       - condition: state
         entity_id: input_boolean.home_night_mode
