@@ -45,4 +45,5 @@ for sensor in moisture_sensors:
 
 plants_to_water = ', '.join(plants_to_water).lstrip(', ')
 
-hass.states.set('input_text.plants_to_water', plants_to_water)
+# Use the input_text service so the value is validated and restored after a restart
+hass.services.call('input_text', 'set_value', {'entity_id': 'input_text.plants_to_water', 'value': plants_to_water[:255]})

@@ -22,7 +22,7 @@ input_number:
 input_text:
   plants_to_water:
     name: Plants to Water
-    initial: ""
+    max: 255
 
 ###############################################
 ## SCHEDULERS
