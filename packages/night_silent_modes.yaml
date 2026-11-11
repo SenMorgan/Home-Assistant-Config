@@ -157,29 +157,31 @@ script:
 automation:
   - alias: Silent Mode Handler
     id: silent_mode_handler
+    # Queued: a quick on -> off toggle must run both scripts in order
+    mode: queued
+    max: 5
     triggers:
       - trigger: state
         entity_id: input_boolean.silent_mode
+        to: ["on", "off"]
     actions:
-      service_template: >
-        {% if is_state('input_boolean.silent_mode', 'on') %}
-          script.set_silent_mode
-        {% else %}
-          script.reset_silent_mode
-        {% endif %}
+      - action: "{{ 'script.set_silent_mode' if trigger.to_state.state == 'on' else 'script.reset_silent_mode' }}"
 
   - alias: Night Mode Handler
     id: night_mode_handler
+    mode: queued
+    max: 5
     triggers:
       - trigger: state
         entity_id: input_boolean.home_night_mode
+        to: ["on", "off"]
     actions:
-      service_template: >
-        {% if is_state('input_boolean.home_night_mode', 'on') %}
-          script.home_night_mode
-        {% else %}
-          script.home_day_mode
-        {% endif %}
+      - variables:
+          target_script: "{{ 'script.home_night_mode' if trigger.to_state.state == 'on' else 'script.home_day_mode' }}"
+      # The day/night scripts switch this boolean themselves; don't call a script that is already running
+      - condition: template
+        value_template: "{{ is_state(target_script, 'off') }}"
+      - action: "{{ target_script }}"
 
   - alias: Home Enable Night Mode at Evening
     id: home_enable_night_mode_at_evening
@@ -211,6 +213,7 @@ automation:
     triggers:
       - trigger: state
         entity_id: media_player.yandex_station_midi
+        attribute: volume_level
     conditions:
       - condition: time
         after: "06:00:00"
@@ -326,12 +329,20 @@ automation:
     triggers:
       - trigger: state
         entity_id: media_player.yandex_station
+        attribute: volume_level
       - trigger: state
         entity_id: media_player.yandex_station_midi
+        attribute: volume_level
     conditions:
       - condition: state
         entity_id: input_boolean.silent_mode
         state: "on"
+      # 06:00-12:00 a volume increase means "good morning" (Yandex Volume Increased Handler wins)
+      - condition: not
+        conditions:
+          - condition: time
+            after: "06:00:00"
+            before: "12:00:00"
       - condition: template
         value_template: >
           {% set from = trigger.from_state.attributes.volume_level | float(0) %}
@@ -374,6 +385,7 @@ automation:
     triggers:
       - trigger: state
         entity_id: media_player.yandex_station
+        attribute: volume_level
     conditions:
       # Allow volume to be changed externally (not by buttons on the device)
       - condition: template
@@ -404,7 +416,6 @@ scene:
       switch.wireless_charger: off
       media_player.yandex_station: off
       media_player.yandex_station_midi: off
-      media_player.bathroom_google_home_mini: off
 
   - name: No People Home
     id: no_people_home
@@ -415,7 +426,6 @@ scene:
       switch.wireless_charger: off
       media_player.yandex_station: off
       media_player.yandex_station_midi: off
-      media_player.bathroom_google_home_mini: off
 
   - name: 7 Seg Clock Red
     id: 7_seg_clock_red
