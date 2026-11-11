@@ -168,45 +168,6 @@ automation:
           title: *sys_notify_title_warning
           message: Home Assistant начал процесс выключения в {{ states('sensor.time') }}
 
-  - id: "home_assistant_new_device_connected_notification"
-    alias: Notification New Device Connected Notification
-    mode: queued
-    triggers:
-      - trigger: event
-        event_type: entity_registry_updated
-        event_data:
-          action: create
-    conditions:
-      - "{{trigger.event.data.entity_id.startswith('device_tracker')}}"
-    actions:
-      - variables:
-          entity: "{{trigger.event.data.entity_id}}"
-          notify_title: 📡 В сети обнаружено новое устройство
-          notify_message: |
-            Entity: {{entity}}
-            Host: {{state_attr(entity,'host_name')}}
-            Ip: {{state_attr(entity,'ip')}}
-            Mac-address: {{state_attr(entity,'mac')}}
-            Full data: {{trigger.event.data}}
-      # Notify via mobile app and create persistent notification
-      - action: script.notify_and_create_persistent_notification
-        data:
-          title: "{{ notify_title }}"
-          message: "{{ notify_message }}"
-      # Write to system log
-      - action: system_log.write
-        data:
-          message: >
-            New device registrered: {{ entity }}
-          level: warning
-          logger: homeassistant.components.device_tracker
-      # Notify via Yandex Station
-      - action: media_player.play_media
-        entity_id: media_player.yandex_station_midi
-        data:
-          media_content_id: >
-            К локальной сети было подключено новое устройство с именем {{ entity }}
-          media_content_type: text
 
   - id: "home_assistant_update_available_notification"
     alias: Home Assistant Update Available Notification
@@ -259,44 +220,6 @@ automation:
           title: *sys_notify_title_warning
           message: "{{ message }}"
 
-  - id: "notification_on_failed_login"
-    alias: Notification on Failed Login
-    mode: queued
-    max: 5
-    trigger:
-      - platform: persistent_notification
-        update_type: added
-    condition:
-      - condition: template
-        value_template: "{{ trigger.notification.notification_id == 'http-login' }}"
-    action:
-      - variables:
-          source_ip: >
-            {% set message = trigger.notification.message %}
-            {% if 'invalid authentication' in message or 'login attempt' in message %}
-              {{ message.split('(')[1].split(')')[0] }}
-            {% else %}
-              None
-            {% endif %}
-      - action: notify.mobile_app_sen_s25
-        data:
-          title: "⚠️ HA: {{ trigger.notification.title }}"
-          message: "{{trigger.notification.message}} Time: {{ now().strftime('%d %b, %X') }}"
-          data:
-            actions:
-              - action: "URI"
-                title: >
-                  {% if source_ip != None %}
-                  Track IP
-                  {% else %}
-                  Open Home Assistant
-                  {% endif %}
-                uri: >
-                  {% if source_ip != None %}
-                  http://www.ip-tracker.org/locator/ip-lookup.php?ip={{source_ip}}
-                  {% else %}
-                  /config/logs
-                  {% endif %}
 
   - id: "notification_internet_connection"
     alias: Notification Internet Connection

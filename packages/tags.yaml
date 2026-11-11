@@ -55,11 +55,3 @@ automation:
           title: "👁️ Режим камер"
           message: "Камеры включены автоматически в {{ states('sensor.time') }}"
 
-  - alias: Tag Near Entrance was scanned
-    id: tag_near_entrance_was_scanned
-    mode: restart
-    triggers:
-      - trigger: tag
-        tag_id: 5954e702-f87d-4955-969c-5231af33ece8
-    actions:
-      - action: script.enable_guest_mode
