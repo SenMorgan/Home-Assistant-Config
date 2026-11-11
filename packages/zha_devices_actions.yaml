@@ -136,11 +136,10 @@ automation:
                 sequence:
                   - action: light.turn_on
                     entity_id: light.floor_lamp
-                    data_template:
-                      brightness:
-                        "{% set suggested = state_attr('light.floor_lamp', 'brightness')\
-                        \ | int(0) + \n  relative_degrees | int(0) + 1\
-                        \ %}\n{% if suggested > 0 %} {{ suggested }} {% else %} 1 {% endif %}\n"
+                    data:
+                      # Clamp to the valid 1..255 range
+                      brightness: >-
+                        {{ [[state_attr('light.floor_lamp', 'brightness') | int(0) + relative_degrees | int(0), 1] | max, 255] | min }}
 
   ###############################################
   ## Hall Lights Control with Tradfri Switch
