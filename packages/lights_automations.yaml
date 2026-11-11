@@ -28,14 +28,51 @@ input_button:
     icon: mdi:moon-waning-crescent
 
 ###############################################
+## LIGHT GROUPS
+###############################################
+light:
+  # Lights switched off by script.turn_off_all_lights (leave home, night mode, cube shake)
+  - platform: group
+    name: All Home Lights
+    unique_id: all_home_lights
+    entities:
+      - light.backyard_bar_light_led_strip_6
+      - light.banana_light
+      - light.bedroom_ceiling_light
+      - light.bedroom_nightlight
+      - light.christmas_tree
+      - light.cocktail_bar_neon_sign
+      - light.dollhouse_lights
+      - light.floor_lamp
+      - light.gyver_lamp
+      - light.hall_edison_bulb
+      - light.hall_lights
+      - light.ikea_table_lamp
+      - light.kitchen_ceiling_light
+      - light.kitchen_led_strip
+      - light.kitchen_spotlights
+      - light.led_strip_4
+      - light.led_strip_5
+      - light.living_room_ceiling_light
+      - light.mi_desk_lamp
+      - light.obk66763280
+      - light.pc_backlight
+      - light.shelf_lighting
+      - light.smart_light_bulb
+      - light.smart_light_bulb_2
+      - light.string_lights
+      - light.tv_lights
+
+###############################################
 ## SCRIPTS
 ###############################################
 script:
   turn_off_all_lights:
     alias: Turn Off All Lights
     sequence:
+      # Explicit group instead of "all": keeps DMX channels, printer chamber light, camera flash and indicator LEDs untouched
       - action: light.turn_off
-        entity_id: all
+        entity_id: light.all_home_lights
       # Power off other devices that are not lights but should be turned off when no one is home
       - action: switch.turn_off
         entity_id:
