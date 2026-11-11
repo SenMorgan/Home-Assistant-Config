@@ -2,15 +2,13 @@
 ## Air Quality Station Sensors
 ###############################################
 - name: "Air Quality Station Digital Input 1"
-  payload_available: "online"
-  payload_not_available: "offline"
+  unique_id: mqtt_binary_sensor_air_quality_station_digital_input_1
   state_topic: "/air-quality-station/dig_input_1"
   payload_on: "1"
   payload_off: "0"
   device_class: power
 - name: "Air Quality Station Digital Input 2"
-  payload_available: "online"
-  payload_not_available: "offline"
+  unique_id: mqtt_binary_sensor_air_quality_station_digital_input_2
   state_topic: "/air-quality-station/dig_input_2"
   payload_on: "1"
   payload_off: "0"

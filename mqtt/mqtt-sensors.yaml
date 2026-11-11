@@ -2,6 +2,9 @@
 ## Air Quality Station Sensors
 ###############################################
 - name: "Air Quality Station Temperature"
+  unique_id: mqtt_sensor_air_quality_station_temperature
+  # Station reports every few seconds; mark stale after 15 minutes without data
+  expire_after: 900
   state_topic: "/air-quality-station/temperature"
   icon: mdi:temperature-celsius
   device_class: temperature
@@ -9,12 +12,18 @@
   unit_of_measurement: "°C"
 
 - name: "Air Quality Station Humidity"
+  unique_id: mqtt_sensor_air_quality_station_humidity
+  # Station reports every few seconds; mark stale after 15 minutes without data
+  expire_after: 900
   state_topic: "/air-quality-station/humidity"
   device_class: humidity
   value_template: "{{ value | default(0) | float(0) }}"
   unit_of_measurement: "%"
 
 - name: "Air Quality Station Pressure"
+  unique_id: mqtt_sensor_air_quality_station_pressure
+  # Station reports every few seconds; mark stale after 15 minutes without data
+  expire_after: 900
   state_topic: "/air-quality-station/pressure"
   device_class: pressure
   value_template: "{{ value | default(0) | float(0) }}"
@@ -28,8 +37,12 @@
   # consistent IAQ performance. The calibration process considers the recent measurement history (typ. up to four
   # days) to ensure that IAQ=25 corresponds to typical good air and IAQ=250 indicates typical polluted air.
 - name: "Air Quality Station IAQ"
+  unique_id: mqtt_sensor_air_quality_station_iaq
+  # Station reports every few seconds; mark stale after 15 minutes without data
+  expire_after: 900
   state_topic: "/air-quality-station/iaq"
-  value_template: "{{ value | default(0) | float(0) }}"
+  # A bad payload becomes "unknown" instead of 0 (0 would look like perfect air)
+  value_template: "{{ value | float(none) }}"
   unit_of_measurement: "IAQ"
 
 # The IAQ accuracy is reflects the current state of the background calibration process, such as:
@@ -42,27 +55,39 @@
 # IAQ Accuracy=3 means BSEC calibrated successfully.
 
 - name: "Air Quality Station IAQ Accuracy"
+  unique_id: mqtt_sensor_air_quality_station_iaq_accuracy
+  # Station reports every few seconds; mark stale after 15 minutes without data
+  expire_after: 900
   state_topic: "/air-quality-station/iaqAccuracy"
   value_template: "{{ value | default(0) }}"
   unit_of_measurement: "IAQ Acc"
 
   # CO2 equivalent estimate [ppm]
 - name: "Air Quality Station CO2"
+  unique_id: mqtt_sensor_air_quality_station_co2
+  # Station reports every few seconds; mark stale after 15 minutes without data
+  expire_after: 900
   state_topic: "/air-quality-station/co2Equivalent"
   device_class: carbon_dioxide
-  value_template: "{{ value | default(0) | float(0) }}"
+  value_template: "{{ value | float(none) }}"
   unit_of_measurement: "ppm"
 
   # breath VOC concentration estimate [µg/m]
 - name: "Air Quality Station VOC"
+  unique_id: mqtt_sensor_air_quality_station_voc
+  # Station reports every few seconds; mark stale after 15 minutes without data
+  expire_after: 900
   state_topic: "/air-quality-station/breathVocEquivalent"
   device_class: volatile_organic_compounds
   # Sensor value is in ppm, but HA needs it in 'µg/m³', so we convert it by multiplying by 1000
-  value_template: "{{ ((value | default(0)) | float(0) * 1000) | round(2, default=0)}}"
+  value_template: "{% set v = value | float(none) %}{{ (v * 1000) | round(2) if v is not none else none }}"
   unit_of_measurement: "µg/m³"
 
   # PM2.5 concentration, got from Ikea Vindriktning air quality sensor
 - name: "Air Quality Station PM2.5"
+  unique_id: mqtt_sensor_air_quality_station_pm2_5
+  # Station reports every few seconds; mark stale after 15 minutes without data
+  expire_after: 900
   state_topic: "/air-quality-station/pm25"
   device_class: pm25
   value_template: "{{ value | default(0) }}"
@@ -72,6 +97,7 @@
 ## Solar Station Sensors
 ###############################################
 - name: "Solar Panel Voltage"
+  unique_id: mqtt_sensor_solar_panel_voltage
   device_class: voltage
   state_topic: "/solar-inverter-monitor/state/volt"
   value_template: "{{ value | default(0) | round(2) }}"
@@ -79,6 +105,7 @@
   state_class: measurement
 
 - name: "Solar Panel Current"
+  unique_id: mqtt_sensor_solar_panel_current
   device_class: current
   state_topic: "/solar-inverter-monitor/state/amp"
   value_template: "{{ value | default(0) | round(2) }}"
@@ -86,6 +113,7 @@
   state_class: measurement
 
 - name: "Solar Panel Power"
+  unique_id: mqtt_sensor_solar_panel_power
   device_class: power
   state_topic: "/solar-inverter-monitor/state/watt"
   value_template: "{{ value | default(0) | round(2) }}"
@@ -93,6 +121,7 @@
   state_class: measurement
 
 - name: "Solar Panel Energy"
+  unique_id: mqtt_sensor_solar_panel_energy
   device_class: energy
   state_topic: "/solar-inverter-monitor/state/wh"
   value_template: "{{ value | default(0) }}"
@@ -100,6 +129,7 @@
   state_class: total_increasing
 
 - name: "Solar Panel Inverter Temperature"
+  unique_id: mqtt_sensor_solar_panel_inverter_temperature
   device_class: temperature
   state_topic: "/solar-inverter-monitor/state/temp"
   value_template: "{{ value | default(0) | round(2) }}"
@@ -107,19 +137,23 @@
   state_class: measurement
 
 - name: "Solar Panel State"
+  unique_id: mqtt_sensor_solar_panel_state
   state_topic: "/solar-inverter-monitor/state/mppt"
   value_template: "{{ value }}"
 
 - name: "Solar Panel Error"
+  unique_id: mqtt_sensor_solar_panel_error
   state_topic: "/solar-inverter-monitor/state/error"
   value_template: "{{ value }}"
 
 - name: "Solar Panel Signal Strength"
+  unique_id: mqtt_sensor_solar_panel_signal_strength
   state_topic: "/solar-inverter-monitor/state/signal-quality"
   value_template: "{{ value }}"
   unit_of_measurement: "%"
 
 - name: "Solar Panel Uptime"
+  unique_id: mqtt_sensor_solar_panel_uptime
   state_topic: "/solar-inverter-monitor/state/uptime"
   value_template: "{{ value | default(0) }}"
   state_class: total_increasing
@@ -130,24 +164,28 @@
 ## Power Monitor Sensors
 ###############################################
 - name: "Power Monitor Voltage"
+  unique_id: mqtt_sensor_power_monitor_voltage
   device_class: voltage
   state_topic: "/power-monitor/state/volt"
   value_template: "{{ value }}"
   unit_of_measurement: "V"
 
 - name: "Power Monitor Current"
+  unique_id: mqtt_sensor_power_monitor_current
   device_class: current
   state_topic: "/power-monitor/state/amp"
   value_template: "{{ value }}"
   unit_of_measurement: "A"
 
 - name: "Power Monitor Power"
+  unique_id: mqtt_sensor_power_monitor_power
   device_class: power
   state_topic: "/power-monitor/state/watt"
   value_template: "{{ value }}"
   unit_of_measurement: "W"
 
 - name: "Power Monitor Energy"
+  unique_id: mqtt_sensor_power_monitor_energy
   device_class: energy
   state_topic: "/power-monitor/state/wh"
   value_template: "{{ value }}"
@@ -155,11 +193,13 @@
   state_class: total_increasing
 
 - name: "Power Monitor Signal Quality"
-  device_class: signal_strength
+  unique_id: mqtt_sensor_power_monitor_signal_quality
   state_topic: "/power-monitor/state/signal-quality"
   value_template: "{{ value }}"
+  unit_of_measurement: "%"
 
 - name: "Power Monitor Uptime"
+  unique_id: mqtt_sensor_power_monitor_uptime
   state_topic: "/power-monitor/state/uptime"
   value_template: "{{ value }}"
   state_class: total_increasing

@@ -2,12 +2,14 @@
 ## Power Monitor Buttons
 ###############################################
 - name: "Power Monitor Reset"
+  unique_id: mqtt_button_power_monitor_reset
   command_topic: "/power-monitor/set/reset"
   payload_press: "1"
   retain: true
   entity_category: "config"
   device_class: "restart"
 - name: "Power Monitor Reset Wh"
+  unique_id: mqtt_button_power_monitor_reset_wh
   command_topic: "/power-monitor/set/wh-reset"
   payload_press: "1"
   retain: true
@@ -17,11 +19,13 @@
 ## Solar Station Buttons
 ###############################################
 - name: "Solar Inverter Monitor Reset"
+  unique_id: mqtt_button_solar_inverter_monitor_reset
   command_topic: "/solar-inverter-monitor/set/reset"
   payload_press: "1"
   entity_category: "config"
   device_class: "restart"
 - name: "Solar Inverter Monitor Reset Wh"
+  unique_id: mqtt_button_solar_inverter_monitor_reset_wh
   command_topic: "/solar-inverter-monitor/set/wh-reset"
   payload_press: "1"
   entity_category: "config"
@@ -30,6 +34,7 @@
 ## Electric Heater Controller Buttons
 ###############################################
 - name: "Electric Heater Controller Reset"
+  unique_id: mqtt_button_electric_heater_controller_reset
   command_topic: "/electric-heater-controller/set/reset"
   payload_press: "1"
   retain: false
