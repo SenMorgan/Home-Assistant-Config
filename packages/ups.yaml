@@ -118,6 +118,10 @@ automation:
         below: 300
       - trigger: template
         value_template: "{{ 'OB DISCHRG LB' in states('sensor.ups_status_data') }}"
+    conditions:
+      # Act only when the UPS is actually on battery (ignore self-tests, NUT restarts, worn-battery runtime estimates)
+      - condition: template
+        value_template: "{{ 'OB' in states('sensor.ups_status_data') }}"
     actions:
       - action: notify.mobile_app_sen_s25
         data:
