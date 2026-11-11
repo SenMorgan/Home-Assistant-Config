@@ -151,6 +151,9 @@ automation:
         from: "off"
         to: "on"
     conditions:
+      # Only manual switching (physical switch, UI, voice); fan starts by other automations have a parent context
+      - condition: template
+        value_template: "{{ trigger.to_state.context.parent_id is none }}"
       # Run that only if new timer finish time is greater than the current one or if timer is inactive
       - condition: template
         value_template:
