@@ -320,11 +320,7 @@ automation:
         from: "running"
         to: "finish"
         for:
-          minutes: 15
-    conditions:
-      - condition: time
-        after: "22:00:00"
-        before: "06:00:00"
+          minutes: 20
     actions:
       # Wait for the printer to cool down below 50°C or timeout after 30 minutes
       - wait_template: "{{ states('sensor.3d_printer_bambu_lab_a1_nozzle_temperature') | float(100) < 50 }}"
@@ -352,6 +348,9 @@ automation:
           # Disable power using virtual button
           - action: input_boolean.turn_off
             entity_id: input_boolean.3d_printer_power
+            # Disable light also
+          - action: light.turn_off
+            entity_id: light.hall_edison_bulb
           - action: script.notify_and_create_persistent_notification
             data:
               title: *sys_notify_title_info
