@@ -96,7 +96,10 @@ automation:
               - light.3d_printer_bambu_lab_a1_chamber_light
       # Set variables for print details
       - variables:
-          start_time: "{{ states('sensor.3d_printer_bambu_lab_a1_start_time') | as_timestamp | default(now().timestamp()) }}"
+          # Fall back to the moment the printer entered "running" when start_time is unknown/unavailable
+          start_time: >-
+            {{ as_timestamp(states('sensor.3d_printer_bambu_lab_a1_start_time'),
+                            as_timestamp(trigger.from_state.last_changed)) }}
           spent_time: "{{ (now().timestamp() - start_time) | int }}"
           spent_hours: "{{ (spent_time / 3600) | int }}"
           spent_minutes: "{{ ((spent_time % 3600) / 60) | int }}"
@@ -104,7 +107,7 @@ automation:
           print_weight: "{{ states('sensor.3d_printer_bambu_lab_a1_print_weight') }}"
           print_length: "{{ states('sensor.3d_printer_bambu_lab_a1_print_length') }}"
       - action: notify.mobile_app_sen_s25
-        data_template:
+        data:
           title: "3D Printer"
           message: |
             🎉 Печать завершена ({{ task_name }})
@@ -146,7 +149,7 @@ automation:
           remaining_hours: "{{ (remaining_time | int) }}"
           remaining_minutes: "{{ ((remaining_time % 1) * 60) | int }}"
       - action: notify.mobile_app_sen_s25
-        data_template:
+        data:
           title: "3D Printer"
           message: >
             📈 Деталь готова на {{ trigger.to_state.state | int(0) }}%
