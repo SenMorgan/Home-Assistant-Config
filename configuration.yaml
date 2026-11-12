@@ -28,6 +28,9 @@ recorder:
       - sensor.ble_mac_*
       - sensor.ble_measured_power_*
       - sensor.ble_rssi_*
+      # Washer (SmartThings) flaps to unavailable ~80×/hour due to its Wi-Fi (M-15, 2026-11-12);
+      # temporary until the Wi-Fi is fixed. Automations still get the states, only history is lost.
+      - "*.washing_machine_*"
 
 # Sharing devices with Yandex Smart Home
 yandex_smart_home: !include yandex.yaml
