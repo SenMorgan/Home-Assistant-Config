@@ -36,7 +36,7 @@ yandex_smart_home: !include yandex.yaml
 frontend:
   extra_module_url:
     - /hacsfiles/ha-yandex-icons/yandex-icons.js
-    
+
 # Write Python scripts that are exposed as services in Home Assistant
 python_script:
 
@@ -45,6 +45,9 @@ notify:
 
 # Enables the ability to send magic packets to Wake on LAN capable devices to turn them on
 wake_on_lan:
+
+# Experimental LED control for ZBT2 devices
+zbt2_led:
 
 # Wake on LAN switch platform
 switch:
