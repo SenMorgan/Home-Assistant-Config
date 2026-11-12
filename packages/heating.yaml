@@ -576,6 +576,63 @@ automation:
             data:
               value: "Карантин перед включением отопления окончен, но обогрев запрещён → отопление не включено"
 
+  # AR-05: the window automations react only to off<->on transitions. A window opened or
+  # closed while HA was down/restarting comes back as unavailable -> on/off and was missed.
+  - id: heating_reconcile_windows_on_start
+    alias: Heating Reconcile Windows on Start
+    description: >-
+      After an HA start, re-applies the window logic once the sensors are back: an open window
+      runs "Stop Heating by Window Opened" (eco) if the Nest is not in eco yet; closed windows
+      with the Nest still in eco (and someone home) run "Start Quarantine by Window Closed",
+      which restores heating when the quarantine ends.
+    mode: single
+    triggers:
+      - trigger: homeassistant
+        event: start
+    conditions:
+      - condition: state
+        entity_id: input_boolean.heating_season
+        state: "on"
+    actions:
+      # Give Zigbee window contacts and the Nest time to come back after the restart
+      - delay: "00:02:00"
+      - choose:
+          # A window is open, but heating was not stopped
+          - conditions:
+              - condition: state
+                entity_id: binary_sensor.windows
+                state: "on"
+              - condition: template
+                value_template: "{{ not is_state_attr('climate.nest_thermostat', 'preset_mode', 'eco') }}"
+            sequence:
+              - action: automation.trigger
+                target:
+                  entity_id: automation.stop_heating_by_window_opened
+                data:
+                  skip_condition: false
+          # Windows are closed, but the Nest is still in eco from an earlier opening.
+          # Eco is also used when nobody is home, so only act if someone (or a guest) is home.
+          - conditions:
+              - condition: state
+                entity_id: binary_sensor.windows
+                state: "off"
+              - condition: template
+                value_template: "{{ is_state_attr('climate.nest_thermostat', 'preset_mode', 'eco') }}"
+              - condition: state
+                entity_id: timer.heating_quarantine
+                state: "idle"
+              - condition: template
+                value_template: >
+                  {{ is_state('binary_sensor.people_home', 'on') or
+                    is_state('input_boolean.guest_mode', 'on') }}
+            sequence:
+              - action: automation.trigger
+                target:
+                  entity_id: automation.start_quarantine_by_window_closed
+                data:
+                  skip_condition: false
+        # Otherwise (windows unavailable, or state already consistent) nothing to do
+
   ###############################################
   ## Thermostat Emergency Control
   ###############################################
