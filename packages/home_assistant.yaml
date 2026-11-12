@@ -73,6 +73,14 @@ template:
         unique_id: ha_cpu_overheat
         device_class: problem
         state: "{{ states('sensor.processor_temperature') | float > 60 }}"
+      # No successful automatic backup for 8 days (schedule is weekly). Catches silent failures
+      # like 18 Oct - 5 Nov 2026, when every attempt failed and nobody noticed for three weeks
+      - name: Backup Overdue
+        unique_id: backup_overdue
+        device_class: problem
+        state: >-
+          {% set last = states('sensor.backup_last_successful_automatic_backup') | as_datetime %}
+          {{ last is none or now() - last > timedelta(days=8) }}
 
 ###############################################
 ## ALERTS
@@ -91,6 +99,20 @@ alert:
       {% set devices = expand('group.low_battery_devices') | list %}
       {% set dev_names = devices | sort(attribute='name') | map(attribute='name') | join(', ') %}
       Устройств{{ iif(devices | length > 1, 'а', 'о') }} с низким зарядом батареи: {{ dev_names }}
+
+  backup_overdue:
+    name: "Backup Overdue"
+    entity_id: binary_sensor.backup_overdue
+    state: "on"
+    repeat: 720
+    notifiers:
+      - mobile_app_sen_s25
+      - persistent_notification
+    title: *sys_notify_title_warning
+    message: >-
+      Нет успешного автоматического бэкапа больше 8 дней. Последний успешный:
+      {{ as_timestamp(states('sensor.backup_last_successful_automatic_backup'), 0) | timestamp_custom('%d.%m.%Y %H:%M') }}
+    done_message: Автоматический бэкап снова успешен.
 
   home_assistant_cpu_temp_high:
     name: "Home Assistant CPU Temperature High"
@@ -126,6 +148,33 @@ script:
 ## AUTOMATIONS
 ###############################################
 automation:
+  - id: home_assistant_backup_failed_notification
+    alias: Home Assistant Backup Failed Notification
+    description: >-
+      Push + persistent notification when an automatic backup fails, including partial failures
+      (one storage location, e.g. Google Drive full). Ignores the event entity being restored
+      after a restart, which re-reports the last (possibly old) failure.
+    mode: queued
+    triggers:
+      - trigger: state
+        entity_id: event.backup_automatic_backup
+    conditions:
+      # A real new event: the previous state was valid and the timestamp changed
+      - condition: template
+        value_template: >-
+          {{ trigger.from_state is not none and trigger.to_state is not none
+             and trigger.from_state.state not in ['unavailable', 'unknown']
+             and trigger.to_state.state != trigger.from_state.state
+             and trigger.to_state.attributes.event_type == 'failed' }}
+    actions:
+      - action: script.notify_and_create_persistent_notification
+        data:
+          title: *sys_notify_title_warning
+          message: >-
+            Автоматический бэкап не удался
+            ({{ trigger.to_state.attributes.failed_reason | default('причина неизвестна', true) }}).
+            Подробности: Настройки → Система → Резервные копии.
+
   # Keep only 30 days of raw history for high-frequency diagnostic sensors
   # (global retention stays 180 days; long-term statistics are not affected)
   - id: recorder_purge_heavy_writers
