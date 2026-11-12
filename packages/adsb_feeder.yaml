@@ -67,8 +67,11 @@ template:
 ## AUTOMATIONS
 ###############################################
 automation:
-  - id: "notification_ads_b_receiver_disconnected"
+  - id: notification_ads_b_receiver_disconnected
     alias: Notification ADS-B Receiver Disconnected
+    description: >-
+      Notifies when the FR24 feeder has lost its ADS-B receiver for 5 minutes and arms the
+      connection-restored notification.
     triggers:
       - trigger: state
         entity_id: binary_sensor.fr24_feeder_receiver_connected
@@ -76,6 +79,7 @@ automation:
         to: "off"
         for: "00:05:00"
     actions:
+      # Time of the actual disconnect (not of this notification), in local time
       - variables:
           timestamp: "{{ trigger.to_state.last_changed.astimezone(now().tzinfo).strftime('%H:%M:%S') }}"
       - action: script.notify_and_create_persistent_notification
@@ -83,10 +87,12 @@ automation:
           title: *sys_notify_title_warning
           message: Связь с ADS-B приёмником была потеряна в {{ timestamp }}
       - action: automation.turn_on
-        entity_id: automation.notification_ads_b_receiver_connection_restored
+        target:
+          entity_id: automation.notification_ads_b_receiver_connection_restored
 
-  - id: "notification_ads_b_receiver_connection_restored"
+  - id: notification_ads_b_receiver_connection_restored
     alias: Notification ADS-B Receiver Connection Restored
+    description: Notifies once the receiver has been back for 1 minute after a disconnect, then disables itself.
     triggers:
       - trigger: state
         entity_id: binary_sensor.fr24_feeder_receiver_connected
@@ -101,7 +107,8 @@ automation:
           title: *sys_notify_title_info
           message: Связь с ADS-B приёмником была восстановлена в {{ timestamp }}
       - action: automation.turn_off
-        entity_id: automation.notification_ads_b_receiver_connection_restored
+        target:
+          entity_id: automation.notification_ads_b_receiver_connection_restored
 
   # This automation in define in my private.yaml, so here is only a snippet
   # - id: "notification_aircraft_detected"

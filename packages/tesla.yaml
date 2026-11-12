@@ -24,22 +24,25 @@ input_datetime:
 ## AUTOMATIONS - Track Full Charge Events
 ###############################################
 automation:
-  - alias: "Tesla: Log Full Charge DateTime"
-    id: "tesla_log_full_charge_datetime"
-    description: "Record the date and time when Tesla battery reaches 100%"
-    trigger:
-      - platform: numeric_state
+  - id: tesla_log_full_charge_datetime
+    alias: "Tesla: Log Full Charge DateTime"
+    description: >-
+      Record the date and time when the Tesla battery reaches 100%, so it is
+      visible when the car was last fully charged.
+    triggers:
+      - trigger: numeric_state
         entity_id: sensor.hollandis_battery_level
+        # 99.5 rather than 99 so the trigger fires only when the level reaches 100
         above: 99.5
-    condition:
+    conditions:
       # Only a real 99 -> 100 transition, not the car waking up (unavailable -> 100)
       - condition: template
         value_template: "{{ trigger.from_state.state | is_number }}"
       - condition: state
         entity_id: sensor.hollandis_battery_level
         state: "100"
-    action:
-      - service: input_datetime.set_datetime
+    actions:
+      - action: input_datetime.set_datetime
         target:
           entity_id: input_datetime.tesla_last_full_charge_date
         data:

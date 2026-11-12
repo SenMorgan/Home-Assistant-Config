@@ -244,21 +244,27 @@ input_number:
 script:
   thermostat_start_heating:
     alias: Thermostat Start Heating
+    description: >-
+      Force the Nest to start heating by setting its target 2 °C above the current
+      temperature, then log which rooms are requesting heat.
     mode: restart
     # Forces the thermostat to start heating by adding 2°C to the current temperature
     sequence:
       - action: input_number.set_value
-        data:
+        target:
           entity_id: input_number.thermostat_new_target_temperature
+        data:
           value: "{{ (state_attr('climate.nest_thermostat', 'current_temperature') | float(24)) + 2 }}"
       # Set thermostat new target temperature
       - action: script.thermostat_set_temperature
         data:
           temperature: "{{ states('input_number.thermostat_new_target_temperature') | float(24) }}"
       # Log what rooms are requesting heat
+      # Builds "... в спальне, кухне и гостиной" from raw ETRV heat_required sensors + bathroom request
       - action: input_text.set_value
-        data:
+        target:
           entity_id: input_text.heating_log
+        data:
           value: >-
             {% set room_names = {
               'binary_sensor.danfoss_etrv0100_bedroom_heat_required': 'спальне',
@@ -279,6 +285,9 @@ script:
 
   thermostat_stop_heating:
     alias: Thermostat Stop Heating
+    description: >-
+      End forced heating by returning the Nest to the default target temperature.
+      Optional `message` is written to the heating log.
     mode: restart
     # Stop forced heating by setting default target temperature
     sequence:
@@ -286,8 +295,9 @@ script:
       - if: "{{ message is defined }}"
         then:
           - action: input_text.set_value
-            data:
+            target:
               entity_id: input_text.heating_log
+            data:
               value: "{{ message }}"
       # Set default thermostat target temperature
       - action: script.thermostat_set_temperature
@@ -296,6 +306,9 @@ script:
 
   thermostat_set_temperature:
     alias: Thermostat Set Temperature
+    description: >-
+      Make sure the Nest is in heat mode without the eco preset, then set the target
+      `temperature`, retrying each step with growing delays because Nest commands may not apply on the first try.
     mode: restart
     sequence:
       # Check if thermostat is in "heat" mode and set it if not
@@ -307,10 +320,12 @@ script:
           - repeat:
               sequence:
                 - action: climate.set_hvac_mode
-                  entity_id: climate.nest_thermostat
+                  target:
+                    entity_id: climate.nest_thermostat
                   continue_on_error: true
                   data:
                     hvac_mode: "heat"
+                # Back off 5, 10, 15... s between attempts; give up after 6 tries
                 - delay: "{{ 5 * repeat.index }}"
               until: "{{ is_state('climate.nest_thermostat', 'heat') or repeat.index > 5 }}"
       # Disable "eco" mode if it is active
@@ -322,7 +337,8 @@ script:
           - repeat:
               sequence:
                 - action: climate.set_preset_mode
-                  entity_id: climate.nest_thermostat
+                  target:
+                    entity_id: climate.nest_thermostat
                   continue_on_error: true
                   data:
                     preset_mode: "none"
@@ -332,15 +348,20 @@ script:
       - repeat:
           sequence:
             - action: climate.set_temperature
-              entity_id: climate.nest_thermostat
+              target:
+                entity_id: climate.nest_thermostat
               continue_on_error: true
               data:
                 temperature: "{{ temperature }}"
             - delay: "{{ 5 * repeat.index }}"
+          # Done when the Nest reports a target within 0.3 °C of the requested one (allows for rounding)
           until: "{{ (state_attr('climate.nest_thermostat', 'temperature') | float(0) - temperature | float(0)) | abs < 0.3 or repeat.index > 5 }}"
 
   thermostat_set_eco_mode:
     alias: Thermostat Set Eco Mode
+    description: >-
+      Put the Nest into eco preset (used when windows are open or nobody is home).
+      Resets the target to default first; optional `message` is written to the heating log.
     mode: restart
     sequence:
       # Check if thermostat is not already in "eco" mode and set it if not
@@ -357,10 +378,11 @@ script:
           - if: "{{ message is defined }}"
             then:
               - action: input_text.set_value
-                data:
+                target:
                   entity_id: input_text.heating_log
+                data:
                   value: "{{ message }}"
-          - alias: "Repeat until thermostat is in 'eco' mode"
+          - alias: Repeat until thermostat is in 'eco' mode
             repeat:
               sequence:
                 # Nest may reject a retry (FAILED_PRECONDITION) while the first command is still applying
@@ -376,6 +398,7 @@ script:
 
   notify_if_some_window_is_opened_during_heating_season:
     alias: Notify If Some Window Opened During Heating Season
+    description: During heating season, notify the phone which rooms have an open window.
     mode: restart
     sequence:
       - condition: state
@@ -387,6 +410,7 @@ script:
       - action: notify.mobile_app_sen_s25
         data:
           title: *sys_notify_title_warning
+          # List the areas of the window contacts that are currently open
           message: >-
             {% set rooms = expand('binary_sensor.windows') | selectattr('state','eq','on') |
               map(attribute='entity_id') | map('area_name') | list %}
@@ -403,23 +427,27 @@ automation:
   ###############################################
   ## Window Opened Control
   ###############################################
-  - alias: Stop Heating by Window Opened
-    id: stop_heating_by_window_opened
+  - id: stop_heating_by_window_opened
+    alias: Stop Heating by Window Opened
+    description: >-
+      When any window has been open for 10 s during heating season, cancel all heating
+      timers (announcing an interrupted short heating) and switch the Nest to eco.
     mode: restart
-    trigger:
-      - platform: state
+    triggers:
+      - trigger: state
         entity_id: binary_sensor.windows
         from: "off"
         to: "on"
         for: "00:00:10"
-    condition:
+    conditions:
       - condition: state
         entity_id: input_boolean.heating_season
         state: "on"
-    action:
+    actions:
       # Stop "Pause Heating" timer if it is active without restoring the thermostat mode
       - action: timer.cancel
-        entity_id: timer.pause_heating
+        target:
+          entity_id: timer.pause_heating
       # Stop "Heating Quarantine" timer if it is active and log it
       - if:
           - condition: state
@@ -427,10 +455,12 @@ automation:
             state: "active"
         then:
           - action: timer.cancel
-            entity_id: timer.heating_quarantine
+            target:
+              entity_id: timer.heating_quarantine
           - action: input_text.set_value
-            data:
+            target:
               entity_id: input_text.heating_log
+            data:
               value: "Открыто окно → карантин перед включением отопления отменён"
       # Stop "Short Heating" timer if it is active and notify about it
       - if:
@@ -440,13 +470,16 @@ automation:
         then:
           # Stop "Short Heating" timer without restoring the thermostat mode
           - action: timer.cancel
-            entity_id: timer.short_heating
+            target:
+              entity_id: timer.short_heating
           - action: input_text.set_value
-            data:
+            target:
               entity_id: input_text.heating_log
+            data:
               value: "Открыто окно → кратковременное отопление отменено"
           - action: media_player.play_media
-            entity_id: media_player.yandex_station_midi
+            target:
+              entity_id: media_player.yandex_station_midi
             data:
               media_content_id: Подогрев квартиры окончен из-за открытого окна
               media_content_type: text
@@ -455,38 +488,46 @@ automation:
         data:
           message: "Открыто окно → переход в режим экономии"
 
-  - alias: Start Quarantine by Window Closed
-    id: start_quarantine_by_window_closed
+  - id: start_quarantine_by_window_closed
+    alias: Start Quarantine by Window Closed
+    description: >-
+      When all windows are closed for 10 s, start the heating quarantine timer so the
+      apartment is not heated right after airing.
     mode: restart
-    trigger:
-      - platform: state
+    triggers:
+      - trigger: state
         entity_id: binary_sensor.windows
         from: "on"
         to: "off"
         for: "00:00:10"
-    condition:
+    conditions:
       - condition: state
         entity_id: input_boolean.heating_season
         state: "on"
-    action:
+    actions:
       # Start "Heating Quarantine" timer
       - action: timer.start
-        entity_id: timer.heating_quarantine
+        target:
+          entity_id: timer.heating_quarantine
       - action: input_text.set_value
-        data:
+        target:
           entity_id: input_text.heating_log
+        data:
           value: Окна закрыты → карантин перед включением отопления начат
 
-  - alias: Restore Heating after Quarantine
-    id: restore_heating_after_quarantine
+  - id: restore_heating_after_quarantine
+    alias: Restore Heating after Quarantine
+    description: >-
+      When the quarantine ends and all windows are still closed, return the Nest from
+      eco to the default target, unless heating is paused or nobody (and no guest) is home.
     mode: single
     max_exceeded: silent
-    trigger:
-      - platform: event
+    triggers:
+      - trigger: event
         event_type: timer.finished
         event_data:
           entity_id: timer.heating_quarantine
-    condition:
+    conditions:
       - condition: state
         entity_id: input_boolean.heating_season
         state: "on"
@@ -494,7 +535,7 @@ automation:
       - condition: state
         entity_id: binary_sensor.windows
         state: "off"
-    action:
+    actions:
       # Set thermostat mode to «heat» only if someone is home
       - if:
           # Proceed only if heating is not paused and either people are home or guest mode is enabled
@@ -515,16 +556,21 @@ automation:
               message: "Карантин перед включением отопления окончен → отопление включено"
         else:
           - action: input_text.set_value
-            data:
+            target:
               entity_id: input_text.heating_log
+            data:
               value: "Карантин перед включением отопления окончен, но обогрев запрещён → отопление не включено"
 
   ###############################################
   ## Thermostat Emergency Control
   ###############################################
 
-  - alias: Thermostat Freeze Alert at Night
-    id: thermostat_freeze_alert_at_night
+  - id: thermostat_freeze_alert_at_night
+    alias: Thermostat Freeze Alert at Night
+    description: >-
+      Safety net: if it gets below 20 °C at night while someone is home, cancel all
+      heating timers, notify, set the Nest to the default target and turn on the hall heater.
+      Re-checked hourly while the alert stays on.
     mode: single
     max_exceeded: silent
     triggers:
@@ -533,6 +579,7 @@ automation:
         from: "off"
         to: "on"
         for: "00:05:00"
+      # Hourly re-check: repeat the rescue if it is still cold
       - trigger: time_pattern
         hours: "/1"
     conditions:
@@ -550,10 +597,11 @@ automation:
     actions:
       # Reset all active timers that could affect heating
       - action: timer.cancel
-        entity_id:
-          - timer.heating_quarantine
-          - timer.short_heating
-          - timer.pause_heating
+        target:
+          entity_id:
+            - timer.heating_quarantine
+            - timer.short_heating
+            - timer.pause_heating
       # Create persistent notification
       - action: script.notify_and_create_persistent_notification
         data:
@@ -561,8 +609,9 @@ automation:
           message: "Температура упала ниже порога"
       # Log the event
       - action: input_text.set_value
-        data:
+        target:
           entity_id: input_text.heating_log
+        data:
           value: "Температура упала ниже порога"
       # Notify about low temperature on mobile app
       - action: notify.mobile_app_sen_s25
@@ -575,10 +624,14 @@ automation:
           message: "Температура упала ниже порога ночью → термостат переведён на 22°C"
       # Enable hall heater too
       - action: switch.turn_on
-        entity_id: switch.hall_heater
+        target:
+          entity_id: switch.hall_heater
 
-  - alias: Thermostat Preheat Alert
-    id: thermostat_preheat_alert
+  - id: thermostat_preheat_alert
+    alias: Thermostat Preheat Alert
+    description: >-
+      Safety net: if it is above 25 °C while the Nest is still targeting 25 °C or more
+      (e.g. forced heating left on), notify and reset the Nest to the default target.
     mode: single
     max_exceeded: silent
     triggers:
@@ -587,6 +640,7 @@ automation:
         attribute: current_temperature
         above: 25.0
         for: "00:05:00"
+      # Hourly re-check while the temperature stays high
       - trigger: time_pattern
         hours: "/1"
     conditions:
@@ -598,6 +652,7 @@ automation:
         attribute: current_temperature
         above: 25.0
       # If thermostat is in «heat» mode and temperature is above the threshold
+      # (a target >= 25 °C means forced heating is still applied)
       - condition: template
         value_template: >
           {{ states('climate.nest_thermostat') == 'heat' and
@@ -614,8 +669,11 @@ automation:
           message: "Температура поднялась выше порога → термостат переведён на 22°C"
 
   # If Thermostat is heating for more then 1 hour - notify about it and disable heating for 1 hour
-  - alias: Thermostat Heating Duration Alert
-    id: thermostat_heating_duration_alert
+  - id: thermostat_heating_duration_alert
+    alias: Thermostat Heating Duration Alert
+    description: >-
+      If the boiler has been heating continuously for an hour, notify, pause heating
+      for 1 hour (pause timer) and reset the Nest to the default target.
     mode: single
     max_exceeded: silent
     triggers:
@@ -631,17 +689,19 @@ automation:
     actions:
       # Cancel all active timers that could affect heating
       - action: timer.cancel
-        entity_id:
-          - timer.heating_quarantine
-          - timer.short_heating
-          - timer.pause_heating
+        target:
+          entity_id:
+            - timer.heating_quarantine
+            - timer.short_heating
+            - timer.pause_heating
       - action: script.notify_and_create_persistent_notification
         data:
           title: *sys_notify_title_warning
           message: "Термостат работает более часа → отопление отключено на 1 час в {{ states('sensor.time') }}"
       # Start "Pause Heating" timer
       - action: timer.start
-        entity_id: timer.pause_heating
+        target:
+          entity_id: timer.pause_heating
       # Stop heating by setting default temperature on thermostat
       - action: script.thermostat_stop_heating
         data:
@@ -651,11 +711,15 @@ automation:
   ## Short Heating
   ###############################################
 
-  - alias: Short Heating Start
-    id: short_heating_start
+  - id: short_heating_start
+    alias: Short Heating Start
+    description: >-
+      The "Heat 10 Minutes" button starts forced heating for the short heating timer
+      duration, unless the boiler is already heating or a short heating is running.
     mode: single
     max_exceeded: silent
     triggers:
+      # input_button state is its last-press timestamp, so any change = a press
       - trigger: state
         entity_id: input_button.thermostat_10_minutes_heating
     actions:
@@ -669,23 +733,27 @@ automation:
                 state: "active"
         then:
           - action: media_player.play_media
-            entity_id: media_player.yandex_station_midi
+            target:
+              entity_id: media_player.yandex_station_midi
             data:
               media_content_id: Квартира уже подогревается
               media_content_type: text
         else:
           # Reset all active timers that could affect heating
           - action: timer.cancel
-            entity_id:
-              - timer.heating_quarantine
-              - timer.short_heating
-              - timer.pause_heating
+            target:
+              entity_id:
+                - timer.heating_quarantine
+                - timer.short_heating
+                - timer.pause_heating
           # Start "Short Heating" timer
           - action: timer.start
-            entity_id: timer.short_heating
+            target:
+              entity_id: timer.short_heating
           # Notify about heating start
           - action: media_player.play_media
-            entity_id: media_player.yandex_station_midi
+            target:
+              entity_id: media_player.yandex_station_midi
             data:
               media_content_id: Включен кратковременный подогрев квартиры
               media_content_type: text
@@ -694,13 +762,16 @@ automation:
             data:
               message: "Включен кратковременный подогрев квартиры"
 
-  - alias: Short Heating End
-    id: short_heating_end
+  - id: short_heating_end
+    alias: Short Heating End
+    description: >-
+      When the short heating timer finishes, announce it and reset the Nest to the
+      default target unless some room still requests heat.
     mode: single
     max_exceeded: silent
     triggers:
-      # Trigger on timer finish
-      - platform: event
+      # Trigger on timer finish (not on cancel, so a window/manual stop does not land here)
+      - trigger: event
         event_type: timer.finished
         event_data:
           entity_id: timer.short_heating
@@ -710,7 +781,8 @@ automation:
         state: "on"
     actions:
       - action: media_player.play_media
-        entity_id: media_player.yandex_station_midi
+        target:
+          entity_id: media_player.yandex_station_midi
         data:
           media_content_id: Кратковременный подогрев квартиры окончен
           media_content_type: text
@@ -733,8 +805,11 @@ automation:
   ## Presence Control
   ###############################################
 
-  - alias: Disable Heating When Noone Home
-    id: disable_heating_when_noone_home
+  - id: disable_heating_when_noone_home
+    alias: Disable Heating When Noone Home
+    description: >-
+      5 minutes after everyone leaves (and guest mode is off), turn off the hall heater
+      and, if the Nest is active in heating season, cancel heating timers and switch to eco.
     mode: single
     max_exceeded: silent
     triggers:
@@ -751,7 +826,8 @@ automation:
       # Disable hall heater regardless of the thermostat state (it may be on while a window put the Nest in eco)
       - action: switch.turn_off
         continue_on_error: true
-        entity_id: switch.hall_heater
+        target:
+          entity_id: switch.hall_heater
       - if:
           - condition: state
             entity_id: input_boolean.heating_season
@@ -762,17 +838,21 @@ automation:
         then:
           # Reset all active timers that could affect heating
           - action: timer.cancel
-            entity_id:
-              - timer.heating_quarantine
-              - timer.short_heating
-              - timer.pause_heating
+            target:
+              entity_id:
+                - timer.heating_quarantine
+                - timer.short_heating
+                - timer.pause_heating
           # Set "eco" mode on thermostat
           - action: script.thermostat_set_eco_mode
             data:
               message: "Никого нет дома → переход в режим экономии"
 
-  - alias: Restore Heating When Someone Home
-    id: restore_heating_when_someone_home
+  - id: restore_heating_when_someone_home
+    alias: Restore Heating When Someone Home
+    description: >-
+      When someone comes home and the Nest is idle/eco, turn on the hall heater and
+      restore the default target; if a window is open, keep the Nest in eco instead.
     mode: single
     max_exceeded: silent
     triggers:
@@ -790,7 +870,8 @@ automation:
     actions:
       # Enable hall heater
       - action: switch.turn_on
-        entity_id: switch.hall_heater
+        target:
+          entity_id: switch.hall_heater
       # If some window is opened, restore thermostat in "off" mode
       - if:
           - condition: state
@@ -815,8 +896,12 @@ automation:
   # If one of ETRV is in "heat" state and climate.nest_thermostat is not in "heat" state,
   # and all windows are closed - set new thermostat target temperature by adding 2°C to
   # the current temperature to force enable heating.
-  - alias: Start Heating by ETRV Request
-    id: start_heating_by_etrv_request
+  - id: start_heating_by_etrv_request
+    alias: Start Heating by ETRV Request
+    description: >-
+      Force the boiler on when any ETRV requests heat, all windows have been closed for
+      5 minutes, no timer (quarantine, pause, short heating) is running and someone is home.
+      Also re-allows heating (clears a manual block).
     mode: single
     max_exceeded: silent
     # Runs every 2 minutes; keep enough traces to see a real run
@@ -871,18 +956,22 @@ automation:
       - action: script.thermostat_start_heating
       # Reset flag cause all conditions are met and we could allow heating again
       - action: input_boolean.turn_on
-        entity_id: input_boolean.heating_allowed
+        target:
+          entity_id: input_boolean.heating_allowed
 
-  - alias: Start Heating in Bathroom
-    id: start_heating_in_bathroom
+  - id: start_heating_in_bathroom
+    alias: Start Heating in Bathroom
+    description: >-
+      Force the boiler on for the scheduled evening bathroom heating when the bathroom is
+      below its target, regardless of windows, unless heating is paused or a short heating runs.
     mode: single
     max_exceeded: silent
-    trigger:
-      - platform: state
+    triggers:
+      - trigger: state
         entity_id: binary_sensor.heating_request_bathroom
         from: "off"
         to: "on"
-    condition: # Ignore windows state, we need to heat the bathroom
+    conditions: # Ignore windows state, we need to heat the bathroom
       - condition: state
         entity_id: input_boolean.heating_season
         state: "on"
@@ -903,12 +992,15 @@ automation:
       - condition: state
         entity_id: binary_sensor.thermostat_heating
         state: "off"
-    action:
+    actions:
       - action: script.thermostat_start_heating
 
   # If all ETRVs are not in "heat" state - restore climate.nest_thermostat target temperature.
-  - alias: Stop Heating by ETRV Request
-    id: stop_heating_by_etrv_request
+  - id: stop_heating_by_etrv_request
+    alias: Stop Heating by ETRV Request
+    description: >-
+      When no ETRV and not the bathroom requests heat any more but the boiler is still
+      heating (and no short heating runs), reset the Nest to the default target.
     mode: single
     max_exceeded: silent
     # Runs every 2 minutes; keep enough traces to see a real run
@@ -927,7 +1019,7 @@ automation:
         from: "on"
         to: "off"
         for: 00:01:00
-      # Trigger every 2 minutes
+      # Trigger every 2 minutes (catches a still-heating boiler after missed transitions)
       - trigger: time_pattern
         minutes: "/2"
     conditions:
@@ -962,21 +1054,24 @@ automation:
 
   # Start "Pause Heating" timer if "Heating Allowed" flag was reset
   # Heating will be enabled again in "Start Heating by ETRV Request" automation
-  - alias: Start Pause Heating Manually
-    id: start_pause_heating_manually
+  - id: start_pause_heating_manually
+    alias: Start Pause Heating Manually
+    description: >-
+      Turning off "Heating Allowed" blocks heating: cancel all heating timers, start the
+      pause timer and reset the Nest to the default target.
     mode: single
     max_exceeded: silent
-    trigger:
-      - platform: state
+    triggers:
+      - trigger: state
         entity_id: input_boolean.heating_allowed
         from: "on"
         to: "off"
-    condition:
+    conditions:
       - condition: state
         entity_id: input_boolean.heating_season
         state: "on"
       # Pause always (also while the boiler is idle); "Start Heating by ETRV Request" waits for the timer
-    action:
+    actions:
       # If short heating is in progress, notify that heating was stopped
       - if:
           - condition: state
@@ -985,35 +1080,41 @@ automation:
         then:
           # Notify that heating was stopped
           - action: media_player.play_media
-            entity_id: media_player.yandex_station_midi
+            target:
+              entity_id: media_player.yandex_station_midi
             data:
               media_content_id: Подогрев квартиры окончен раньше вручную
               media_content_type: text
       # Reset all active timers that could affect heating
       - action: timer.cancel
-        entity_id:
-          - timer.heating_quarantine
-          - timer.short_heating
-          - timer.pause_heating
+        target:
+          entity_id:
+            - timer.heating_quarantine
+            - timer.short_heating
+            - timer.pause_heating
       # Start "Pause Heating" timer
       - action: timer.start
-        entity_id: timer.pause_heating
+        target:
+          entity_id: timer.pause_heating
       # Stop heating by setting default temperature on thermostat
       - action: script.thermostat_stop_heating
         data:
           message: "Отопление заблокировано вручную → температура возвращена на 22°C"
 
   # Cancel "Pause Heating" timer if "Heating Allowed" flag was set
-  - alias: Cancel Pause Heating Manually
-    id: cancel_pause_heating_manually
+  - id: cancel_pause_heating_manually
+    alias: Cancel Pause Heating Manually
+    description: >-
+      Turning "Heating Allowed" back on while the pause timer runs cancels the pause and
+      announces it.
     mode: single
     max_exceeded: silent
-    trigger:
-      - platform: state
+    triggers:
+      - trigger: state
         entity_id: input_boolean.heating_allowed
         from: "off"
         to: "on"
-    condition:
+    conditions:
       - condition: state
         entity_id: input_boolean.heating_season
         state: "on"
@@ -1021,20 +1122,23 @@ automation:
       - condition: state
         entity_id: timer.pause_heating
         state: "active"
-    action:
+    actions:
       # Cancel "Pause Heating" timer
       - action: timer.cancel
-        entity_id: timer.pause_heating
+        target:
+          entity_id: timer.pause_heating
       # Notify that heating was restored
       - action: media_player.play_media
-        entity_id: media_player.yandex_station_midi
+        target:
+          entity_id: media_player.yandex_station_midi
         data:
           media_content_id: Блокировка отопления отменена вручную
           media_content_type: text
       # Log the message
       - action: input_text.set_value
-        data:
+        target:
           entity_id: input_text.heating_log
+        data:
           value: "Блокировка отопления отменена вручную"
 
   ###############################################
@@ -1042,12 +1146,15 @@ automation:
   ###############################################
 
   # Log changes of all heating-related entities
-  - alias: Log Heating Changes
-    id: log_heating_changes
+  - id: log_heating_changes
+    alias: Log Heating Changes
+    description: >-
+      Write every state change of heating-related entities to the heating log
+      for troubleshooting.
     mode: parallel
     max: 10
-    trigger:
-      - platform: state
+    triggers:
+      - trigger: state
         entity_id:
           - binary_sensor.thermostat_heating
           - binary_sensor.thermostat_active
@@ -1064,13 +1171,14 @@ automation:
           - timer.short_heating
           - timer.pause_heating
     actions:
-      # Log changes only if from_state and to_state are defined
+      # Log changes only if from_state and to_state are defined (skips entity add/remove)
       - condition: template
         value_template: >-
           {{ trigger.from_state is not none and trigger.to_state is not none }}
       - action: input_text.set_value
-        data:
+        target:
           entity_id: input_text.heating_log
+        data:
           value: >-
             {% set entity_name = states[trigger.entity_id].name | default(trigger.entity_id) %}
             {% set new_state = trigger.to_state.state %}
@@ -1081,71 +1189,81 @@ automation:
   ## DANFOSS ETRV WINDOW SENSOR MAPPING
   ###############################################
 
-  - alias: Sync Danfoss ETRV Window Contact Kitchen
-    id: sync_danfoss_etrv_window_contact_kitchen
+  - id: sync_danfoss_etrv_window_contact_kitchen
+    alias: Sync Danfoss ETRV Window Contact Kitchen
+    description: >-
+      Mirror the kitchen window contact to the Danfoss ETRV external window sensor
+      switch so the valve closes while the window is open.
     mode: queued
     max: 3
-    trigger:
-      - platform: state
+    triggers:
+      - trigger: state
         entity_id: binary_sensor.kitchen_window_contact
         for: "00:00:10"
       # Trigger every X minutes
-      - platform: time_pattern
+      - trigger: time_pattern
         minutes: "/10"
-    condition:
+    conditions:
       - condition: state
         entity_id: input_boolean.heating_season
         state: "on"
       - condition: template
         value_template: >
           {{ states('binary_sensor.kitchen_window_contact') in ['on', 'off'] }}
-    action:
+    actions:
+      # Window open -> switch on (ETRV sees open window), closed -> off
       - action: "switch.turn_{{ states('binary_sensor.kitchen_window_contact') }}"
         target:
           entity_id: switch.danfoss_etrv0103_kitchen_external_window_sensor
 
-  - alias: Sync Danfoss ETRV Window Contact Bedroom
-    id: sync_danfoss_etrv_window_contact_bedroom
+  - id: sync_danfoss_etrv_window_contact_bedroom
+    alias: Sync Danfoss ETRV Window Contact Bedroom
+    description: >-
+      Mirror the bedroom window contact to the Danfoss ETRV external window sensor
+      switch so the valve closes while the window is open.
     mode: queued
     max: 3
-    trigger:
-      - platform: state
+    triggers:
+      - trigger: state
         entity_id: binary_sensor.bedroom_window_contact
         for: "00:00:10"
       # Trigger every X minutes
-      - platform: time_pattern
+      - trigger: time_pattern
         minutes: "/10"
-    condition:
+    conditions:
       - condition: state
         entity_id: input_boolean.heating_season
         state: "on"
       - condition: template
         value_template: >
           {{ states('binary_sensor.bedroom_window_contact') in ['on', 'off'] }}
-    action:
+    actions:
       - action: "switch.turn_{{ states('binary_sensor.bedroom_window_contact') }}"
         target:
           entity_id: switch.danfoss_etrv0100_bedroom_external_window_sensor
 
-  - alias: Sync Danfoss ETRV Window Contact Living Room
-    id: sync_danfoss_etrv_window_contact_living_room
+  - id: sync_danfoss_etrv_window_contact_living_room
+    alias: Sync Danfoss ETRV Window Contact Living Room
+    description: >-
+      Mirror the living room window contact to the Danfoss ETRV external window sensor
+      switch so the valve closes while the window is open.
     mode: queued
     max: 3
-    trigger:
-      - platform: state
+    triggers:
+      - trigger: state
         entity_id: binary_sensor.living_room_window_contact
         for: "00:00:10"
       # Trigger every X minutes
-      - platform: time_pattern
+      - trigger: time_pattern
         minutes: "/10"
-    condition:
+    conditions:
       - condition: state
         entity_id: input_boolean.heating_season
         state: "on"
       - condition: template
         value_template: >
           {{ states('binary_sensor.living_room_window_contact') in ['on', 'off'] }}
-    action:
+    actions:
       - action: "switch.turn_{{ states('binary_sensor.living_room_window_contact') }}"
         target:
           entity_id: switch.danfoss_etrv0103_living_room_external_window_sensor

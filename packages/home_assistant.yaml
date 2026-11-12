@@ -110,12 +110,14 @@ alert:
 script:
   home_assistant_shutdown:
     alias: Home Assistant Shutdown
+    description: Shuts down the Home Assistant host (Supervisor host shutdown, not just a core restart).
     mode: single
     sequence:
       - action: hassio.host_shutdown
 
   home_assistant_reboot:
     alias: Home Assistant Reboot
+    description: Reboots the Home Assistant host via the Supervisor.
     mode: single
     sequence:
       - action: hassio.host_reboot
@@ -126,13 +128,17 @@ script:
 automation:
   # Keep only 30 days of raw history for high-frequency diagnostic sensors
   # (global retention stays 180 days; long-term statistics are not affected)
-  - id: "recorder_purge_heavy_writers"
+  - id: recorder_purge_heavy_writers
     alias: Recorder Purge Heavy Writers
+    description: >-
+      Nightly purge of raw history for noisy diagnostic entities (7-segment clock light, ZBT
+      EZSP counters, uptime sensors), keeping only the last 30 days to limit database growth.
     mode: single
     triggers:
       - trigger: time
         at: "03:37:00"
     actions:
+      # The target entity and entity_globs are combined: both the light and all matching sensors are purged
       - action: recorder.purge_entities
         target:
           entity_id: light.7_seg_clock
@@ -146,8 +152,9 @@ automation:
   ## Notifications
   ###############################################
 
-  - id: "home_assistant_start_notification"
+  - id: home_assistant_start_notification
     alias: Home Assistant Start Notification
+    description: Sends a push and persistent notification each time Home Assistant starts.
     triggers:
       - trigger: homeassistant
         event: start
@@ -157,8 +164,9 @@ automation:
           title: *sys_notify_title_info
           message: Home Assistant запущен в {{ states('sensor.time') }}
 
-  - id: "home_assistant_shutdown_notification"
+  - id: home_assistant_shutdown_notification
     alias: Home Assistant Shutdown Notification
+    description: Sends a push and persistent notification when Home Assistant begins shutting down.
     triggers:
       - trigger: homeassistant
         event: shutdown
@@ -169,8 +177,9 @@ automation:
           message: Home Assistant начал процесс выключения в {{ states('sensor.time') }}
 
 
-  - id: "home_assistant_update_available_notification"
+  - id: home_assistant_update_available_notification
     alias: Home Assistant Update Available Notification
+    description: Notifies the phone when a new Home Assistant Core version becomes available, with a button opening Settings.
     triggers:
       - trigger: state
         entity_id: update.home_assistant_core_update
@@ -188,12 +197,18 @@ automation:
                 uri: "/config/dashboard"
 
   # Used blueprint from: https://community.home-assistant.io/t/blueprint-notify-when-zigbee-zwave-any-battery-device-has-gone-offline/537631
-  - id: "notification_battery_device_gone_offline"
+  - id: notification_battery_device_gone_offline
     alias: Notification Battery Device Gone Offline
+    description: >-
+      Daily at 20:00 reports all battery-powered sensors/binary sensors that are currently
+      unavailable (likely gone offline or with a dead battery), except entities listed in the
+      EXCLUDED_BATTERY_DEVICES secret.
     mode: single
     variables:
+      # Day of week to run on (1=Mon..7=Sun); 0 means every day
       day: 0
       excluded_entities: !secret EXCLUDED_BATTERY_DEVICES
+      # Names (without the " Battery" suffix) of all unavailable battery-class sensors and binary sensors
       sensors: >-
         {% set result = namespace(sensors=[]) %} {% for state in states.sensor |
         selectattr('attributes.device_class', 'defined') |
@@ -213,6 +228,7 @@ automation:
       - trigger: time
         at: "20:00:00"
     conditions:
+      # Only notify if something is offline and today is the configured day
       - "{{ sensors != '' and (day | int(0) == 0 or day | int(0) == now().isoweekday()) }}"
     actions:
       - action: script.notify_and_create_persistent_notification
@@ -221,13 +237,17 @@ automation:
           message: "{{ message }}"
 
 
-  - id: "notification_internet_connection"
+  - id: notification_internet_connection
     alias: Notification Internet Connection
+    description: >-
+      Push and persistent notification when the internet connection is lost or restored,
+      with the time of the change.
     mode: queued
     triggers:
       - trigger: state
         entity_id: binary_sensor.internet_connection
     conditions:
+      # Ignore transitions to/from unavailable/unknown (e.g. during startup)
       - condition: template
         value_template: "{{ trigger.to_state.state in ['on', 'off'] }}"
     actions:
@@ -250,8 +270,12 @@ automation:
   ## Low Battery Notifications
   ###############################################
 
-  - id: "home_assistant_monitor_battery_devices"
+  - id: home_assistant_monitor_battery_devices
     alias: Home Assistant Monitor Battery Devices
+    description: >-
+      Every 10 minutes (and at startup) rebuilds group.battery_devices with all battery sensors
+      (minus excluded ones) and group.low_battery_devices with those at or below 20%. The low
+      battery group drives binary_sensor.any_battery_device_low and its alert.
     triggers:
       # Trigger on startup
       - trigger: homeassistant
@@ -276,6 +300,7 @@ automation:
       - action: group.set
         data:
           object_id: low_battery_devices
+          # Members: battery devices with numeric state <= threshold (20%); empty list if none
           entities: >-
             {% set threshold = 20 %}
             {% set devices = expand('group.battery_devices') | selectattr('state', 'is_number') | list %}
@@ -288,8 +313,11 @@ automation:
             {% endif %}
 
   # Alert if any temperature sensor has not updated its state for 3 hours
-  - id: "notification_temperature_sensor_unchanged"
+  - id: notification_temperature_sensor_unchanged
     alias: Notification Temperature Sensor Unchanged
+    description: >-
+      Warns when one of the BLE (ATC) room temperature sensors has not changed state for 3 hours,
+      which usually means the sensor stopped reporting (dead battery or out of range).
     mode: queued
     max: 10
     max_exceeded: silent
@@ -327,24 +355,33 @@ automation:
 
   - id: home_assistant_power_off
     alias: Home Assistant - Power Off
+    description: Dashboard button handler that shuts down the Home Assistant host.
     triggers:
       - trigger: state
         entity_id: input_button.home_assistant_power_off
     actions:
       - action: script.turn_on
-        entity_id: script.home_assistant_shutdown
+        target:
+          entity_id: script.home_assistant_shutdown
 
-  - alias: Home Assistant - Reboot
-    id: home_assistant_reboot
+  - id: home_assistant_reboot
+    alias: Home Assistant - Reboot
+    description: Dashboard button handler that reboots the Home Assistant host.
     triggers:
       - trigger: state
         entity_id: input_button.home_assistant_reboot
     actions:
       - action: script.turn_on
-        entity_id: script.home_assistant_reboot
+        target:
+          entity_id: script.home_assistant_reboot
 
-  - alias: Home Assistant Server Rack - Power Off
-    id: home_assistant_server_rack_power_off
+  - id: home_assistant_server_rack_power_off
+    alias: Home Assistant Server Rack - Power Off
+    description: >-
+      Dashboard button to power off the whole server rack: shuts down the Synology NAS first,
+      waits 10 s, then shuts down the Home Assistant host. If the NAS is already unavailable,
+      asks for confirmation on the phone (TTS + actionable notification) before shutting down HA.
+    # restart: pressing the button again aborts a pending confirmation and starts over
     mode: restart
     triggers:
       - trigger: state
@@ -382,6 +419,7 @@ automation:
                     title: "Отмена"
           # Waiting for «action_power_off» or «action_cancel» avoids accidentally continuing
           # for another script/automation's notification action
+          # Note: no timeout, so the run waits until one of the actions is pressed (or the automation restarts)
           - wait_for_trigger:
               - trigger: event
                 event_type: mobile_app_notification_action
@@ -397,7 +435,8 @@ automation:
                 sequence:
                   # Turn OFF Home Assistant
                   - action: script.turn_on
-                    entity_id: script.home_assistant_shutdown
+                    target:
+                      entity_id: script.home_assistant_shutdown
               - conditions: "{{ wait.trigger.event.data.action == action_cancel }}"
                 sequence:
                   - action: script.notify_and_create_persistent_notification
@@ -411,8 +450,10 @@ automation:
               message: Выключение серверного шкафа началось в {{ states('sensor.time') }}
           # Turn OFF the Synology DS220+
           - action: button.press
-            entity_id: button.synology_ds220_shutdown
+            target:
+              entity_id: button.synology_ds220_shutdown
           - delay: 00:00:10
           # Turn OFF Home Assistant
           - action: script.turn_on
-            entity_id: script.home_assistant_shutdown
+            target:
+              entity_id: script.home_assistant_shutdown

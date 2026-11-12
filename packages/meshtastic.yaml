@@ -10,8 +10,11 @@
 ## Automations
 ###############################################
 automation:
-  - alias: Meshtastic Echo Morgans Channel
-    id: meshtastic_echo_morgans_channel
+  - id: meshtastic_echo_morgans_channel
+    alias: Meshtastic Echo Morgans Channel
+    description: >-
+      Diagnostic echo for the Meshtastic "Morgans" channel: replies with "PONG: <original text>"
+      to any message containing "test" or "ping" so senders can verify the gateway is alive.
     mode: single
     triggers:
       - domain: meshtastic
@@ -20,9 +23,11 @@ automation:
         entity_id: meshtastic.gateway_lrnr_channel_morgans
         trigger: device
     conditions:
+      # Case-insensitive match on the received message text
       - condition: template
         value_template: '{{ "test" in (trigger.event.data.message | lower) or "ping" in (trigger.event.data.message | lower) }}'
     actions:
+      # Short pause so the reply doesn't collide with the incoming transmission
       - delay:
           seconds: 2
       - action: meshtastic.broadcast_channel_message
@@ -32,8 +37,12 @@ automation:
           channel: meshtastic.gateway_lrnr_channel_morgans
           message: "PONG: {{ trigger.event.data.message }}"
 
-  - alias: Meshtastic Echo Home Temperature Sensors
-    id: meshtastic_echo_home_temperature_sensors
+  - id: meshtastic_echo_home_temperature_sensors
+    alias: Meshtastic Echo Home Temperature Sensors
+    description: >-
+      When a message containing "status" arrives on the Meshtastic "Morgans" channel, replies
+      with current readings of the home BLE (ATC) and IKEA Vindstyrka sensors, split into
+      several messages to fit the mesh message size limit.
     mode: single
     triggers:
       - domain: meshtastic
@@ -51,6 +60,8 @@ automation:
           entity_pattern: 'sensor.ble_temperature_atc_.*|sensor.ikea_vindstyrka_.*'  # Pattern to match relevant sensors
           max_message_length: 200  # 200 characters is a common limit for mesh messages
           message_header: "Home Sensors:"  # Header for each message chunk
+          # Build a list of message chunks: each starts with the header and gets rows appended
+          # until the next row would exceed max_message_length, then a new chunk is started
           message_chunks: >-
             {% set lines = states.sensor | selectattr('entity_id', 'match', entity_pattern) | map(attribute='entity_id') | list %}
             {% set ns = namespace(chunks=[], current=message_header) %}
@@ -74,6 +85,7 @@ automation:
               {% set ns.chunks = [message_header ~ '\nNo sensor data available'] %}
             {% endif %}
             {{ ns.chunks }}
+      # Send chunks one by one with a short gap to avoid flooding the mesh
       - repeat:
           for_each: "{{ message_chunks }}"
           sequence:
@@ -86,13 +98,17 @@ automation:
             - delay:
                 seconds: 1
 
-  - alias: Meshtastic Notification Internet Connection
-    id: meshtastic_notification_internet_connection
+  - id: meshtastic_notification_internet_connection
+    alias: Meshtastic Notification Internet Connection
+    description: >-
+      Broadcasts internet connection loss/restore to the Meshtastic "Morgans" channel, which
+      still works when the internet is down (unlike mobile push notifications).
     mode: queued
     triggers:
       - trigger: state
         entity_id: binary_sensor.internet_connection
     conditions:
+      # Ignore transitions to/from unavailable/unknown (e.g. during startup)
       - condition: template
         value_template: "{{ trigger.to_state.state in ['on', 'off'] }}"
     actions:

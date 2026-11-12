@@ -20,8 +20,9 @@ input_number:
 ## AUTOMATIONS
 ###############################################
 automation:
-  - id: "sync_shopping_list"
+  - id: sync_shopping_list
     alias: Sync Shopping List
+    description: Syncs the Yandex Station shopping list once Sen or Kris has been away for 5 minutes.
     mode: single
     max_exceeded: silent
     triggers:
@@ -42,6 +43,9 @@ automation:
 script:
   update_shopping_list:
     alias: Update Shopping List
+    description: >-
+      Silently makes the Yandex Station refresh its shopping list: saves the volume, mutes to 0.01,
+      sends the "update shopping list" command, stops playback and restores the saved volume.
     sequence:
       # Save actual volume
       - action: input_number.set_value
@@ -58,23 +62,28 @@ script:
               value_template: "{{ repeat.index <= 3 }}"
           sequence:
             - action: media_player.volume_set
-              data:
+              target:
                 entity_id: media_player.yandex_station
+              data:
                 volume_level: 0.01
             - delay: 0.5
       - action: media_player.play_media
-        entity_id: media_player.yandex_station
+        target:
+          entity_id: media_player.yandex_station
         data:
           media_content_id: update
           media_content_type: shopping_list
       - delay: 1
+      # Stop whatever the station started playing/saying after the update
       - action: media_player.play_media
-        entity_id: media_player.yandex_station
+        target:
+          entity_id: media_player.yandex_station
         data:
           media_content_id: stop
           media_content_type: command
       - delay: 1
       # Repeat the command to ensure that the volume is muted
+      # (i.e. restore the saved volume, retrying up to 3 times until it is applied)
       - repeat:
           while:
             - condition: template
@@ -86,16 +95,26 @@ script:
               value_template: "{{ repeat.index <= 3 }}"
           sequence:
             - action: media_player.volume_set
-              data:
+              target:
                 entity_id: media_player.yandex_station
+              data:
                 volume_level: "{{ states('input_number.volume_yandex_station') | float(0.5) }}"
             - delay: 1
 
   set_volume_level_repeatedly:
     alias: Set Volume Level Repeatedly
+    description: Sets a media player's volume, retrying up to 3 times until the reported level matches.
     # Queued: concurrent callers (different speakers) must not cancel each other
     mode: queued
     max: 10
+    fields:
+      volume_level:
+        description: The volume level to set
+        example: 0.2
+      media_player:
+        description: The media player to set volume for
+        example: media_player.yandex_station_midi
+
     sequence:
       - repeat:
           while:
@@ -105,23 +124,18 @@ script:
               value_template: "{{ repeat.index <= 3 }}"
           sequence:
             - action: media_player.volume_set
-              data:
+              target:
                 entity_id: "{{ media_player }}"
+              data:
                 volume_level: "{{ volume_level }}"
             - delay: 0.5
-    fields:
-      volume_level:
-        description: The volume level to set
-        example: 0.2
-      media_player:
-        description: The media player to set volume for
-        example: media_player.yandex_station_midi
-
   yandex_joke_before_cleaning_kitchen:
     alias: Yandex Joke Before Cleaning Kitchen
+    description: Yandex Station Midi says a random joke before the kitchen is cleaned.
     sequence:
       - action: media_player.play_media
-        entity_id: media_player.yandex_station_midi
+        target:
+          entity_id: media_player.yandex_station_midi
         data:
           media_content_id: >-
             {% set responses = [
@@ -148,9 +162,11 @@ script:
 
   yandex_joke_before_cleaning_rooms:
     alias: Yandex Joke Before Cleaning Rooms
+    description: Yandex Station Midi says a random joke before the rooms are cleaned.
     sequence:
       - action: media_player.play_media
-        entity_id: media_player.yandex_station_midi
+        target:
+          entity_id: media_player.yandex_station_midi
         data:
           media_content_id: >-
             {% set responses = [
@@ -173,9 +189,11 @@ script:
 
   yandex_joke_after_washing_clothes:
     alias: Yandex Joke After Washing Clothes
+    description: Yandex Station Midi announces with a random joke that the laundry is done.
     sequence:
       - action: media_player.play_media
-        entity_id: media_player.yandex_station_midi
+        target:
+          entity_id: media_player.yandex_station_midi
         data:
           media_content_type: text
           media_content_id: >-

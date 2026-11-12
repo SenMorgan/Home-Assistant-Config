@@ -10,6 +10,7 @@
 ## INPUT DATETIMEs
 ###############################################
 input_datetime:
+  # Deadline until which opening a window is praised (set to now + 2 min on bad air)
   air_quality_open_window_greeting_timeout:
     name: "Air Quality Open Window Greeting Timeout"
     has_date: true
@@ -19,8 +20,12 @@ input_datetime:
 ## AUTOMATIONS
 ###############################################
 automation:
-  - alias: Notification Air Quality Bad
-    id: "notification_air_quality_bad"
+  - id: notification_air_quality_bad
+    alias: Notification Air Quality Bad
+    description: >-
+      When IAQ stays above 200 for 2 minutes (not at night), Yandex Station Midi suggests opening
+      (or closing the named open) windows and a phone notification is sent. Then this automation
+      disables itself and arms the "restored" and "open window greeting" automations.
     triggers:
       - trigger: numeric_state
         entity_id: sensor.air_quality_station_iaq
@@ -37,7 +42,8 @@ automation:
             value_template: "{{ not is_state('media_player.yandex_station_midi', 'playing') }}"
         then:
           - action: media_player.play_media
-            entity_id: media_player.yandex_station_midi
+            target:
+              entity_id: media_player.yandex_station_midi
             data:
               # If some of windows are opened, notify to close exact opened window by telling it's name.
               # Otherwise, notify to open window.
@@ -74,20 +80,26 @@ automation:
           message: >
             Качество воздуха в доме ухудшилось и составляет {{ states('sensor.air_quality_station_iaq') }}.
       - action: automation.turn_on
-        entity_id:
-          - automation.notification_air_quality_restored
-          - automation.notification_air_quality_open_window_greeting
+        target:
+          entity_id:
+            - automation.notification_air_quality_restored
+            - automation.notification_air_quality_open_window_greeting
       # Set timeout for open window greeting notification
       - action: input_datetime.set_datetime
-        data:
+        target:
           entity_id: input_datetime.air_quality_open_window_greeting_timeout
+        data:
           datetime: "{{ now() + timedelta(minutes=2) }}"
       # Disable bad air quality notification till it will be restored
       - action: automation.turn_off
-        entity_id: automation.notification_air_quality_bad
+        target:
+          entity_id: automation.notification_air_quality_bad
 
-  - alias: Notification Air Quality Open Window Greeting
-    id: "notification_air_quality_open_window_greeting"
+  - id: notification_air_quality_open_window_greeting
+    alias: Notification Air Quality Open Window Greeting
+    description: >-
+      Praises the user via Yandex Station Midi if a window is opened within 2 minutes after the
+      bad air announcement. Disables itself after the first window opening either way.
     triggers:
       - trigger: state
         entity_id: binary_sensor.windows
@@ -107,15 +119,20 @@ automation:
             value_template: "{{ not is_state('media_player.yandex_station_midi', 'playing') }}"
         then:
           - action: media_player.play_media
-            entity_id: media_player.yandex_station_midi
+            target:
+              entity_id: media_player.yandex_station_midi
             data:
               media_content_type: text
               media_content_id: Молодец! Рада, что вы заботитесь о своём здоровье.
       - action: automation.turn_off
-        entity_id: automation.notification_air_quality_open_window_greeting
+        target:
+          entity_id: automation.notification_air_quality_open_window_greeting
 
-  - alias: Notification Air Quality Restored
-    id: "notification_air_quality_restored"
+  - id: notification_air_quality_restored
+    alias: Notification Air Quality Restored
+    description: >-
+      When IAQ stays below 50 for 2 minutes (not at night), announces it on Yandex Station Midi and the phone,
+      re-arms the bad air notification and disables itself and the window greeting.
     triggers:
       - trigger: numeric_state
         entity_id: sensor.air_quality_station_iaq
@@ -132,7 +149,8 @@ automation:
             value_template: "{{ not is_state('media_player.yandex_station_midi', 'playing') }}"
         then:
           - action: media_player.play_media
-            entity_id: media_player.yandex_station_midi
+            target:
+              entity_id: media_player.yandex_station_midi
             data:
               media_content_type: text
               media_content_id: Качество воздуха в доме вернулось в норму.
@@ -142,8 +160,10 @@ automation:
           message: >
             Качество воздуха в доме улучшилось и составляет {{ states('sensor.air_quality_station_iaq') }}.
       - action: automation.turn_on
-        entity_id: automation.notification_air_quality_bad
+        target:
+          entity_id: automation.notification_air_quality_bad
       - action: automation.turn_off
-        entity_id:
-          - automation.notification_air_quality_restored
-          - automation.notification_air_quality_open_window_greeting
+        target:
+          entity_id:
+            - automation.notification_air_quality_restored
+            - automation.notification_air_quality_open_window_greeting

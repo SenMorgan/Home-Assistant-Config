@@ -46,18 +46,25 @@ schedule:
 ## AUTOMATIONS
 ###############################################
 automation:
-  - alias: Update Plants to Water on Sensor Change
-    id: "update_plants_to_water_on_sensor_change"
+  - id: update_plants_to_water_on_sensor_change
+    alias: Update Plants to Water on Sensor Change
+    description: >-
+      Every 10 minutes run the python script that compares BLE moisture sensors
+      with the low threshold (with hysteresis) and updates the plants-to-water list.
     mode: single
     max_exceeded: silent
+    # Polled instead of triggered by sensor changes; the script scans all sensor.ble_moisture_* entities
     triggers:
       - trigger: time_pattern
         minutes: "/10"
     actions:
       - action: python_script.update_plants_to_water
 
-  - alias: Notify on Plants to Water
-    id: "notify_on_plants_to_water"
+  - id: notify_on_plants_to_water
+    alias: Notify on Plants to Water
+    description: >-
+      Send a watering reminder (mobile + persistent notification) listing the
+      plants that need water, but only within the notification schedule window.
     mode: single
     max_exceeded: silent
     triggers:
@@ -68,6 +75,7 @@ automation:
         entity_id: schedule.plant_watering_notification
         to: "on"
     conditions:
+      # Only when the list is not empty
       - condition: template
         value_template: "{{ states('input_text.plants_to_water') | length > 0 }}"
       - condition: state

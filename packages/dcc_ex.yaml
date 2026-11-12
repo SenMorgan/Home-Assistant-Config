@@ -90,8 +90,14 @@ media_player:
 ## AUTOMATIONS
 ###############################################
 automation:
-  - alias: "DCC-EX Enable Power on Sunset"
-    id: dcc_ex_enable_power_on_sunset
+  - id: dcc_ex_enable_power_on_sunset
+    alias: DCC-EX Enable Power on Sunset
+    description: >-
+      Powers up the model railway layout in the evening: when the sun drops below 4° elevation
+      while Sen is home, or when Sen comes home after that. Sets volume to 20% and turns on the
+      locomotive lights/accessories. Skipped in night mode and outside 05:00-22:00.
+    # Two triggers, each checked against the other's condition below,
+    # so it fires whichever happens last (sunset or arriving home)
     triggers:
       - trigger: numeric_state
         entity_id: sun.sun
@@ -122,22 +128,27 @@ automation:
     actions:
       # Enable track power
       - action: switch.turn_on
-        entity_id: switch.ex_commandstation_tracks_power
+        target:
+          entity_id: switch.ex_commandstation_tracks_power
       # Set volume to 20%
       - action: media_player.volume_set
-        entity_id: media_player.model_railway
+        target:
+          entity_id: media_player.model_railway
         data:
           volume_level: 0.2
       # Turn on trains lights and other accessories
       - action: switch.turn_on
-        entity_id:
-          - switch.loco_vossloh_1701_lights
-          - switch.loco_sbb_cargo_re_482_lights
-          - switch.loco_sbb_cargo_re_482_coupling
+        target:
+          entity_id:
+            - switch.loco_vossloh_1701_lights
+            - switch.loco_sbb_cargo_re_482_lights
+            - switch.loco_sbb_cargo_re_482_coupling
 
-  - alias: "DCC-EX Layout Lights by Motion Sensor"
-    id: dcc_ex_layout_lights_by_motion_sensor
-    description: "Control train layout lights based on motion sensor"
+  - id: dcc_ex_layout_lights_by_motion_sensor
+    alias: DCC-EX Layout Lights by Motion Sensor
+    description: >-
+      Mirrors the kitchen motion sensor onto the locomotive cabin/inspection lights
+      while track power is on.
     mode: restart
     triggers:
       - trigger: state
@@ -152,9 +163,10 @@ automation:
         value_template: "{{ trigger.to_state.state in ['on', 'off'] }}"
     actions:
       - action: switch.turn_{{ "on" if trigger.to_state.state == "on" else "off" }}
-        entity_id:
-          - switch.loco_vossloh_1701_cabin_light
-          - switch.loco_sbb_cargo_re_482_inspection_lights
+        target:
+          entity_id:
+            - switch.loco_vossloh_1701_cabin_light
+            - switch.loco_sbb_cargo_re_482_inspection_lights
 
 ###############################################
 ## INTENT SCRIPTS for Voice Control of Locomotives
@@ -168,6 +180,8 @@ intent_script:
     action:
       action: number.set_value
       data:
+        # Find the ex_habridge number entity whose dcc_id attribute equals the spoken loco_id
+        # (anchor reused by the other loco speed intents)
         entity_id: &loco_speed_entity >
           {{ integration_entities('ex_habridge')
             | select('match', 'number')
@@ -215,6 +229,7 @@ intent_script:
     action:
       action: select.select_option
       data:
+        # Find the ex_habridge select entity whose dcc_id equals the spoken loco_id
         entity_id: &loco_direction_entity >
           {{ integration_entities('ex_habridge')
             | select('match', 'select')
@@ -270,8 +285,10 @@ intent_script:
     platforms:
       - switch
     action:
+      # Turnout switch: on = diverging, off = straight (closed)
       action: switch.turn_{{ "on" if position == "diverging" else "off" }}
       data:
+        # Find the ex_habridge switch entity whose dcc_id equals the spoken turnout_id
         entity_id: &turnout_entity >
           {{ integration_entities('ex_habridge')
             | select('match', 'switch')

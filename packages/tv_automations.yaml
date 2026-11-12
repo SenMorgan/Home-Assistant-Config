@@ -14,6 +14,7 @@
 template:
   - binary_sensor:
       - name: Monolith Speakers Above Power Threshold
+        # On = speakers actively playing (power above 12 W)
         # Backlight + speakers active = ~32W, backlight + speakers standby = ~8W
         state: "{{ states('sensor.monolith_speakers_active_power') | float(0) > 12 }}"
 
@@ -23,7 +24,8 @@ template:
 script:
   # Script that fixes the Samsung TV toggling instead of turning off when the TV is already off
   turn_off_samsung_tv:
-    alias: "Turn Off Samsung TV"
+    alias: Turn Off Samsung TV
+    description: Turns the Samsung TV off only if it is on, because turn_off toggles it when it is already off.
     sequence:
       - if:
           - condition: state
@@ -31,14 +33,15 @@ script:
             state: "on"
         then:
           - action: media_player.turn_off
-            entity_id: media_player.samsung_tv
+            target:
+              entity_id: media_player.samsung_tv
 
 ###############################################
 ## AUTOMATIONS
 ###############################################
 automation:
-  - alias: Living Room TV Lights by Sunset or TV ON
-    id: living_room_tv_lights_by_sunset_or_tv_on
+  - id: living_room_tv_lights_by_sunset_or_tv_on
+    alias: Living Room TV Lights by Sunset or TV ON
     description: "Turn on TV lights automatically by sunset or when TV is turned on"
     mode: restart
     triggers:
@@ -61,10 +64,14 @@ automation:
         below: 4.0
     actions:
       - action: light.turn_on
-        entity_id: light.tv_lights
+        target:
+          entity_id: light.tv_lights
 
-  - alias: Movies Scene by Sunset or TV ON
-    id: movies_scene_by_sunset_or_tv_on
+  - id: movies_scene_by_sunset_or_tv_on
+    alias: Movies Scene by Sunset or TV ON
+    description: >-
+      In the evening (20:00-22:30, sun below 4 degrees) with the TV on and Sen home, activates the
+      Movies scene once nobody is in the kitchen (waits up to 1 hour) and the TV is still on.
     mode: restart
     triggers:
       - trigger: numeric_state
@@ -106,10 +113,11 @@ automation:
             state: "on"
         then:
           - action: scene.turn_on
-            entity_id: scene.movies
+            target:
+              entity_id: scene.movies
 
-  - alias: Living Room TV Lights by TV OFF
-    id: living_room_tv_lights_by_tv_off
+  - id: living_room_tv_lights_by_tv_off
+    alias: Living Room TV Lights by TV OFF
     description: "Turn off TV lights automatically when TV is turned off"
     mode: restart
     triggers:
@@ -121,10 +129,11 @@ automation:
           minutes: 5
     actions:
       - action: light.turn_off
-        entity_id: light.tv_lights
+        target:
+          entity_id: light.tv_lights
 
-  - alias: Living Room Speakers Power On with TV
-    id: living_room_speakers_power_on_with_tv
+  - id: living_room_speakers_power_on_with_tv
+    alias: Living Room Speakers Power On with TV
     description: "Turn on speakers automatically when TV is turned on"
     mode: restart
     triggers:
@@ -137,11 +146,14 @@ automation:
         state: "off"
     actions:
       - action: switch.turn_on
-        entity_id: switch.monolith_speakers
+        target:
+          entity_id: switch.monolith_speakers
 
-  - alias: Living Room Speakers Auto Power Down
-    id: living_room_speakers_auto_power_down
-    description: "Turn off speakers if power consumption remains low after any trigger"
+  - id: living_room_speakers_auto_power_down
+    alias: Living Room Speakers Auto Power Down
+    description: >-
+      Turns the Monolith speakers off if, within 5 minutes after they are switched on, the TV turns off
+      or their power drops, the power stays below the threshold and the TV is off.
     mode: restart
     triggers:
       # When speakers are turned on
@@ -162,7 +174,7 @@ automation:
         state: "on"
     actions:
       # Wait up to 5 minutes to see if power consumption goes above threshold
-      - alias: "Check if power consumption exceeds threshold"
+      - alias: Check if power consumption exceeds threshold
         wait_for_trigger:
           - trigger: state
             entity_id: binary_sensor.monolith_speakers_above_power_threshold
@@ -176,6 +188,7 @@ automation:
             entity_id: media_player.samsung_tv
             state: "off"
         then:
-          - alias: "Power off if threshold not exceeded"
+          - alias: Power off if threshold not exceeded
             action: switch.turn_off
-            entity_id: switch.monolith_speakers
+            target:
+              entity_id: switch.monolith_speakers

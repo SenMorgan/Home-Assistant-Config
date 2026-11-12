@@ -109,9 +109,13 @@ input_number:
 ## AUTOMATIONS
 ###############################################
 automation:
-  - alias: WC Accupancy Set
-    id: wc_accupancy_set
+  - id: wc_accupancy_set
+    alias: WC Accupancy Set
+    description: >-
+      Marks the WC as occupied once the door has been closed for the configured number of
+      seconds (input_number.wc_consider_occupied_after_seconds).
     triggers:
+      # Door closed ("off") long enough -> someone is inside
       - trigger: state
         entity_id: binary_sensor.wc_door_contact
         from: "on"
@@ -124,11 +128,16 @@ automation:
         state: "off"
     actions:
       - action: input_boolean.turn_on
-        entity_id: input_boolean.wc_occupied
+        target:
+          entity_id: input_boolean.wc_occupied
 
-  - alias: WC Accupancy Reset
-    id: wc_accupancy_reset
+  - id: wc_accupancy_reset
+    alias: WC Accupancy Reset
+    description: >-
+      Marks the WC as free once the door has been open for the configured number of
+      seconds (input_number.wc_consider_unoccupied_after_seconds).
     triggers:
+      # Door opened ("on") long enough -> WC is free
       - trigger: state
         entity_id: binary_sensor.wc_door_contact
         from: "off"
@@ -141,10 +150,14 @@ automation:
         state: "on"
     actions:
       - action: input_boolean.turn_off
-        entity_id: input_boolean.wc_occupied
+        target:
+          entity_id: input_boolean.wc_occupied
 
-  - alias: WC Ventilation Start Timer Manually
-    id: wc_ventilation_start_timer_manually
+  - id: wc_ventilation_start_timer_manually
+    alias: WC Ventilation Start Timer Manually
+    description: >-
+      When the fan is switched on by hand, starts the ventilation timer for the "manual" duration,
+      sets state MANUAL_ON and disables the humidity-based stop so it does not cut the manual run short.
     triggers:
       - trigger: state
         entity_id: fan.wc_and_bathroom
@@ -156,26 +169,29 @@ automation:
         value_template: "{{ trigger.to_state.context.parent_id is none }}"
       # Run that only if new timer finish time is greater than the current one or if timer is inactive
       - condition: template
-        value_template:
-          "{{ ((now() + timedelta(minutes=states('input_number.wc_ventilate_for_minutes_after_manual_trigger') | default(0) | float(0))).timestamp() >
-          as_timestamp(state_attr('timer.wc_ventilation', 'finishes_at'), 0)) or
-          (states('timer.wc_ventilation') in ['idle', 'paused']) }}"
+        value_template: "{{ ((now() + timedelta(minutes=states('input_number.wc_ventilate_for_minutes_after_manual_trigger') | default(0) | float(0))).timestamp() > as_timestamp(state_attr('timer.wc_ventilation', 'finishes_at'), 0)) or (states('timer.wc_ventilation') in ['idle', 'paused']) }}"
     actions:
       - action: timer.start
-        data:
+        target:
           entity_id: timer.wc_ventilation
+        data:
           duration:
             minutes: "{{ states('input_number.wc_ventilate_for_minutes_after_manual_trigger') | default(0) | float(0) }}"
       # Stop waitin to bathroom humidity is below threshold, cause we are ventilating manually
       - action: input_select.select_option
-        data:
+        target:
           entity_id: input_select.wc_ventilation_state
+        data:
           option: MANUAL_ON
       - action: automation.turn_off
-        entity_id: automation.wc_ventilation_stop_humidity_below_threshold
+        target:
+          entity_id: automation.wc_ventilation_stop_humidity_below_threshold
 
-  - alias: WC Ventilation Stop Timer Manually
-    id: wc_ventilation_stop_timer_manually
+  - id: wc_ventilation_stop_timer_manually
+    alias: WC Ventilation Stop Timer Manually
+    description: >-
+      When the fan is turned off while the ventilation timer is running, cancels both timers,
+      sets state MANUAL_OFF and disables the humidity-based stop.
     triggers:
       - trigger: state
         entity_id: fan.wc_and_bathroom
@@ -187,18 +203,25 @@ automation:
         state: "active"
     actions:
       - action: timer.cancel
-        entity_id: timer.wc_ventilation
+        target:
+          entity_id: timer.wc_ventilation
       - action: timer.cancel
-        entity_id: timer.wc_wait_for_open_to_ventilate
+        target:
+          entity_id: timer.wc_wait_for_open_to_ventilate
       - action: input_select.select_option
-        data:
+        target:
           entity_id: input_select.wc_ventilation_state
+        data:
           option: MANUAL_OFF
       - action: automation.turn_off
-        entity_id: automation.wc_ventilation_stop_humidity_below_threshold
+        target:
+          entity_id: automation.wc_ventilation_stop_humidity_below_threshold
 
-  - alias: WC Ventilation Timeout
-    id: wc_ventilation_timeout
+  - id: wc_ventilation_timeout
+    alias: WC Ventilation Timeout
+    description: >-
+      When the ventilation timer expires, turns the fan off, cancels the "wait for door open" timer,
+      sets state TIMEOUT and disables the humidity-based stop.
     triggers:
       - trigger: event
         event_type: timer.finished
@@ -206,18 +229,25 @@ automation:
           entity_id: timer.wc_ventilation
     actions:
       - action: fan.turn_off
-        entity_id: fan.wc_and_bathroom
+        target:
+          entity_id: fan.wc_and_bathroom
       - action: timer.cancel
-        entity_id: timer.wc_wait_for_open_to_ventilate
+        target:
+          entity_id: timer.wc_wait_for_open_to_ventilate
       - action: input_select.select_option
-        data:
+        target:
           entity_id: input_select.wc_ventilation_state
+        data:
           option: TIMEOUT
       - action: automation.turn_off
-        entity_id: automation.wc_ventilation_stop_humidity_below_threshold
+        target:
+          entity_id: automation.wc_ventilation_stop_humidity_below_threshold
 
-  - alias: WC Ventilation Start Timeout For Door Open State
-    id: wc_ventilation_start_timeout_for_door_open_state
+  - id: wc_ventilation_start_timeout_for_door_open_state
+    alias: WC Ventilation Start Timeout For Door Open State
+    description: >-
+      If the WC has been occupied long enough to need airing, starts a window timer during which
+      opening the door (leaving) will start ventilation.
     triggers:
       - trigger: state
         entity_id: input_boolean.wc_occupied
@@ -227,69 +257,87 @@ automation:
           seconds: "{{ states('input_number.wc_consider_ventilate_when_finished_if_occupied_for_seconds') | default(0) | float(0) }}"
     actions:
       - action: timer.start
-        data:
+        target:
           entity_id: timer.wc_wait_for_open_to_ventilate
+        data:
           duration:
             minutes: "{{ states('input_number.wc_wait_for_opening_after_considered_to_ventilate_minutes') | default(0) | float(0) }}"
 
-  - alias: WC Ventilation Start When Unoccupied
-    id: wc_ventilation_start_when_unoccupied
+  - id: wc_ventilation_start_when_unoccupied
+    alias: WC Ventilation Start When Unoccupied
+    description: >-
+      When the WC becomes free within the "wait for open" window, turns the fan on for the
+      "when finished" duration and sets state TOILET_ON. Never shortens a longer timer already running.
     triggers:
       - trigger: state
         entity_id: input_boolean.wc_occupied
         from: "on"
         to: "off"
     conditions:
+      # Only if the visit was long enough (window timer started by the automation above)
       - condition: state
         entity_id: timer.wc_wait_for_open_to_ventilate
         state: "active"
       # Run that only if new timer finish time is greater than the current one or if timer is inactive
       - condition: template
-        value_template:
-          "{{ ((now() + timedelta(minutes=states('input_number.wc_ventilate_for_minutes_when_finished') | default(0) | float(0))).timestamp() >
-          as_timestamp(state_attr('timer.wc_ventilation', 'finishes_at'), 0)) or
-          (states('timer.wc_ventilation') in ['idle', 'paused']) }}"
+        value_template: "{{ ((now() + timedelta(minutes=states('input_number.wc_ventilate_for_minutes_when_finished') | default(0) | float(0))).timestamp() > as_timestamp(state_attr('timer.wc_ventilation', 'finishes_at'), 0)) or (states('timer.wc_ventilation') in ['idle', 'paused']) }}"
     actions:
       - action: fan.turn_on
-        entity_id: fan.wc_and_bathroom
+        target:
+          entity_id: fan.wc_and_bathroom
       - action: timer.cancel
-        entity_id: timer.wc_wait_for_open_to_ventilate
+        target:
+          entity_id: timer.wc_wait_for_open_to_ventilate
       - action: timer.start
-        data:
+        target:
           entity_id: timer.wc_ventilation
+        data:
           duration:
             minutes: "{{ states('input_number.wc_ventilate_for_minutes_when_finished') | default(0) | float(0) }}"
       - action: input_select.select_option
-        data:
+        target:
           entity_id: input_select.wc_ventilation_state
+        data:
           option: TOILET_ON
 
-  - alias: WC Ventilation Start Humidity Exceeds Threshold
-    id: wc_ventilation_start_humidity_exceeds_threshold
+  - id: wc_ventilation_start_humidity_exceeds_threshold
+    alias: WC Ventilation Start Humidity Exceeds Threshold
+    description: >-
+      When bathroom humidity stays above the start threshold for 2 minutes, turns the fan on with the
+      maximum duration as a safety limit, sets state HUMIDITY_ON and enables the humidity-based stop.
     triggers:
       - trigger: numeric_state
         entity_id: sensor.ble_humidity_atc_bathroom
         above: input_number.wc_ventilation_start_humidity_threshold
         for: 00:02:00
     actions:
+      # Humidity mode takes over from the toilet flow; the timer acts as a max-duration limit
       - action: timer.cancel
-        entity_id: timer.wc_wait_for_open_to_ventilate
+        target:
+          entity_id: timer.wc_wait_for_open_to_ventilate
       - action: automation.turn_on
-        entity_id: automation.wc_ventilation_stop_humidity_below_threshold
+        target:
+          entity_id: automation.wc_ventilation_stop_humidity_below_threshold
       - action: timer.start
-        data:
+        target:
           entity_id: timer.wc_ventilation
+        data:
           duration:
             minutes: "{{ states('input_number.wc_max_ventilation_duration_minutes') | default(0) | float(0) }}"
       - action: fan.turn_on
-        entity_id: fan.wc_and_bathroom
+        target:
+          entity_id: fan.wc_and_bathroom
       - action: input_select.select_option
-        data:
+        target:
           entity_id: input_select.wc_ventilation_state
+        data:
           option: HUMIDITY_ON
 
-  - alias: WC Ventilation Stop Humidity Below Threshold
-    id: wc_ventilation_stop_humidity_below_threshold
+  - id: wc_ventilation_stop_humidity_below_threshold
+    alias: WC Ventilation Stop Humidity Below Threshold
+    description: >-
+      Enabled only by the humidity start automation. When humidity stays below the stop threshold for
+      2 minutes, turns the fan off, cancels the timer, sets state HUMIDITY_OFF and disables itself again.
     triggers:
       - trigger: numeric_state
         entity_id: sensor.ble_humidity_atc_bathroom
@@ -297,19 +345,27 @@ automation:
         for: 00:02:00
     actions:
       - action: timer.cancel
-        entity_id: timer.wc_ventilation
+        target:
+          entity_id: timer.wc_ventilation
       - action: fan.turn_off
-        entity_id: fan.wc_and_bathroom
+        target:
+          entity_id: fan.wc_and_bathroom
       - action: input_select.select_option
-        data:
+        target:
           entity_id: input_select.wc_ventilation_state
+        data:
           option: HUMIDITY_OFF
+      # One-shot: disable itself until the next humidity start re-enables it
       - action: automation.turn_off
-        entity_id: automation.wc_ventilation_stop_humidity_below_threshold
+        target:
+          entity_id: automation.wc_ventilation_stop_humidity_below_threshold
 
   # Emergency start WC ventilation timer to prevent infinite ventilation
-  - alias: WC Ventilation Start Timer Emergency
-    id: wc_ventilation_start_timer_emergency
+  - id: wc_ventilation_start_timer_emergency
+    alias: WC Ventilation Start Timer Emergency
+    description: >-
+      Safety net: if the fan has been on for 1 minute without a running timer (e.g. started outside
+      the flows above), starts the timer with the maximum duration so the fan cannot run forever.
     triggers:
       - trigger: state
         entity_id: fan.wc_and_bathroom
@@ -325,11 +381,13 @@ automation:
             state: "paused"
     actions:
       - action: timer.start
-        data:
+        target:
           entity_id: timer.wc_ventilation
+        data:
           duration:
             minutes: "{{ states('input_number.wc_max_ventilation_duration_minutes') | default(0) | float(0) }}"
       - action: input_select.select_option
-        data:
+        target:
           entity_id: input_select.wc_ventilation_state
+        data:
           option: EMERGENCY

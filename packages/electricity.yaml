@@ -52,6 +52,7 @@ template:
         state_class: total
         # Tariff (updated 2026-11): fixed 231.43 Kč/month + 5.03 Kč/kWh, both without 21 % VAT
         # Daily fixed part = monthly fixed part / number of days in the current month
+        # (days = last day of the month: day 28 + 4 days is always next month, its 1st minus 1 day)
         state: >
           {% set fixed_month = 231.43 %}
           {% set variable = 5.03 %}
@@ -124,16 +125,19 @@ sensor:
 ##############################################
 automation:
   - id: notify_high_power
-    alias: "Notify High Power Consumption"
-    trigger:
-      - platform: state
+    alias: Notify High Power Consumption
+    description: Announces on Yandex Station Midi when total power stays above 6 kW for 1 minute.
+    triggers:
+      - trigger: state
         entity_id: binary_sensor.high_power_consumption
         to: "on"
         for:
           minutes: 1
-    action:
+    actions:
       - action: media_player.play_media
-        entity_id: media_player.yandex_station_midi
+        target:
+          entity_id: media_player.yandex_station_midi
         data:
+          # Reuses the alert message text via the YAML anchor
           media_content_id: *high_power_message
           media_content_type: text

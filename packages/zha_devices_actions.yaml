@@ -27,8 +27,12 @@ automation:
   ###############################################
   ## Aqara Bedroom Switch
   ###############################################
-  - alias: Aqara Bedroom Switch Handler
-    id: "aqara_bedroom_switch_handler"
+  - id: aqara_bedroom_switch_handler
+    alias: Aqara Bedroom Switch Handler
+    description: >-
+      Bedroom Aqara button: single press activates night mode; double press toggles the bedroom
+      nightlight (only turns it on when night mode is off); hold "wakes up" the bedroom - unlocks
+      the lights/cover safety switch, opens the cover, runs day mode and turns the floor lamp on at 50%.
     mode: restart
     triggers:
       - trigger: event
@@ -47,6 +51,7 @@ automation:
           - conditions:
               - "{{ command == 'double' }}"
             sequence:
+              # Turn on only if night mode is off and the light is off; otherwise turn it off
               - if:
                   - condition: state
                     entity_id: input_boolean.home_night_mode
@@ -56,26 +61,31 @@ automation:
                     state: "off"
                 then:
                   - action: light.turn_on
-                    entity_id: light.bedroom_nightlight
+                    target:
+                      entity_id: light.bedroom_nightlight
                     data:
                       brightness: 255
                 else:
                   - action: light.turn_off
-                    entity_id: light.bedroom_nightlight
+                    target:
+                      entity_id: light.bedroom_nightlight
           - conditions:
               - "{{ command == 'hold' }}"
             sequence:
               # Allow to turn on bedroom lights and open cover
               - action: input_boolean.turn_off
-                entity_id: input_boolean.bedroom_lights_and_cover_safety_switch
+                target:
+                  entity_id: input_boolean.bedroom_lights_and_cover_safety_switch
               # Open cover
               - action: cover.open_cover
-                entity_id: cover.bedroom
+                target:
+                  entity_id: cover.bedroom
               # Activate day mode script
               - action: script.home_day_mode
               # Switch on floor lamp with half brightness
               - action: light.turn_on
-                entity_id: light.floor_lamp
+                target:
+                  entity_id: light.floor_lamp
                 data:
                   brightness: 128
         default: []
@@ -83,8 +93,12 @@ automation:
   ###############################################
   ## Aqara Cube Automations
   ###############################################
-  - alias: Aqara Cube 1 Handler
-    id: "aqara_cube_1_handler"
+  - id: aqara_cube_1_handler
+    alias: Aqara Cube 1 Handler
+    description: >-
+      Aqara cube gestures (only while input_boolean.cube_1_control is on): flip 90° toggles string
+      lights, flip 180° toggles the floor lamp, shake turns off all lights, tap activates the movies
+      scene, slide turns on the Gyver lamp and PC backlight, rotate adjusts floor lamp brightness.
     mode: restart
     max_exceeded: silent
     triggers:
@@ -99,6 +113,7 @@ automation:
             entity_id: input_boolean.cube_1_control
             state: "on"
         then:
+          # Not every cube event carries flip/rotation args; default them to 0
           - variables:
               command: "{{ trigger.event.data.command }}"
               flip_degrees: "{{ trigger.event.data.args.flip_degrees if trigger.event.data.args.flip_degrees is defined else 0 }}"
@@ -108,34 +123,41 @@ automation:
                   - "{{ flip_degrees == 90 }}"
                 sequence:
                   - action: light.toggle
-                    entity_id: light.string_lights
+                    target:
+                      entity_id: light.string_lights
               - conditions:
                   - "{{ flip_degrees == 180 }}"
                 sequence:
                   - action: light.toggle
-                    entity_id: light.floor_lamp
+                    target:
+                      entity_id: light.floor_lamp
               - conditions:
                   - "{{ command == 'shake' }}"
                 sequence:
                   - action: script.turn_on
-                    entity_id: script.turn_off_all_lights
+                    target:
+                      entity_id: script.turn_off_all_lights
               - conditions:
                   - "{{ command == 'tap' }}"
                 sequence:
                   - action: scene.turn_on
-                    entity_id: scene.movies
+                    target:
+                      entity_id: scene.movies
               - conditions:
                   - "{{ command == 'slide' }}"
                 sequence:
                   - action: light.turn_on
-                    entity_id:
-                      - light.gyver_lamp
-                      - light.pc_backlight
+                    target:
+                      entity_id:
+                        - light.gyver_lamp
+                        - light.pc_backlight
+              # Rotation angle (negative for left) is added directly to the current brightness
               - conditions:
                   - "{{ command == 'rotate_left' or command == 'rotate_right' }}"
                 sequence:
                   - action: light.turn_on
-                    entity_id: light.floor_lamp
+                    target:
+                      entity_id: light.floor_lamp
                     data:
                       # Clamp to the valid 1..255 range
                       brightness: >-
@@ -144,8 +166,12 @@ automation:
   ###############################################
   ## Hall Lights Control with Tradfri Switch
   ###############################################
-  - alias: Hall Lights Control with Tradfri Switch Handler
-    id: "hall_lights_control_with_tradfri_switch_handler"
+  - id: hall_lights_control_with_tradfri_switch_handler
+    alias: Hall Lights Control with Tradfri Switch Handler
+    description: >-
+      IKEA Tradfri on/off switch in the hall. Short UP steps the light up (Edison bulb dimmed at night
+      or full, then full, then main hall lights); short DOWN steps down in reverse (at night a full
+      bulb is dimmed first). Hold UP / hold DOWN turns all hall-area lights on / off.
     mode: restart
     max_exceeded: silent
     triggers:
@@ -160,6 +186,7 @@ automation:
           hall_edison_bulb_on: "{{ is_state('light.hall_edison_bulb', 'on') }}"
           hall_lights_on: "{{ is_state('light.hall_lights', 'on') }}"
           hall_edison_brightness: "{{ state_attr('light.hall_edison_bulb', 'brightness') | int(0) }}"
+          # Night hours (21:00-05:00): prefer dimmed Edison bulb instead of full brightness
           dim_lights: "{{ now().hour >= 21 or now().hour < 5 }}"
           no_hall_lights_on: "{{ not hall_edison_bulb_on and not hall_lights_on }}"
           # We use 254 instead of 255 because of some weird behavior of Philips Hue bulbs
@@ -171,66 +198,77 @@ automation:
           - conditions:
               - "{{ command == 'on' }}" # Single press UP
             sequence:
+              # Step up: off -> Edison (50% at night, else full) -> Edison full -> + main hall lights
               - choose:
                   - conditions:
                       - "{{ no_hall_lights_on and dim_lights }}"
                     sequence:
                       - action: light.turn_on
-                        entity_id: light.hall_edison_bulb
+                        target:
+                          entity_id: light.hall_edison_bulb
                         data:
                           brightness: 128
                   - conditions:
                       - "{{ no_hall_lights_on and not dim_lights }}"
                     sequence:
                       - action: light.turn_on
-                        entity_id: light.hall_edison_bulb
+                        target:
+                          entity_id: light.hall_edison_bulb
                         data:
                           brightness: 255
                   - conditions:
                       - "{{ hall_edison_not_full }}"
                     sequence:
                       - action: light.turn_on
-                        entity_id: light.hall_edison_bulb
+                        target:
+                          entity_id: light.hall_edison_bulb
                         data:
                           brightness: 255
                   - conditions:
                       - "{{ hall_edison_full and not hall_lights_on }}"
                     sequence:
                       - action: light.turn_on
-                        entity_id: light.hall_lights
+                        target:
+                          entity_id: light.hall_lights
                   - conditions:
                       - "{{ hall_lights_only_on }}"
                     sequence:
                       - action: light.turn_on
-                        entity_id: light.hall_edison_bulb
+                        target:
+                          entity_id: light.hall_edison_bulb
                         data:
                           brightness: 255
           - conditions:
               - "{{ command == 'off' }}" # Single press DOWN
             sequence:
+              # Step down: main hall lights off first, then Edison (dimmed to 50% at night before off)
               - choose:
                   - conditions:
                       - "{{ hall_lights_on }}"
                     sequence:
                       - action: light.turn_off
-                        entity_id: light.hall_lights
+                        target:
+                          entity_id: light.hall_lights
                   - conditions:
                       - "{{ hall_edison_full and dim_lights }}"
                     sequence:
                       - action: light.turn_on
-                        entity_id: light.hall_edison_bulb
+                        target:
+                          entity_id: light.hall_edison_bulb
                         data:
                           brightness: 128
                   - conditions:
                       - "{{ hall_edison_full and not dim_lights }}"
                     sequence:
                       - action: light.turn_off
-                        entity_id: light.hall_edison_bulb
+                        target:
+                          entity_id: light.hall_edison_bulb
                   - conditions:
                       - "{{ hall_edison_not_full }}"
                     sequence:
                       - action: light.turn_off
-                        entity_id: light.hall_edison_bulb
+                        target:
+                          entity_id: light.hall_edison_bulb
           - conditions:
               - "{{ command == 'move_with_on_off' }}" # Hold UP
             sequence:
@@ -247,8 +285,12 @@ automation:
   ###############################################
   ## Ikea RODRET Dimmer
   ###############################################
-  - alias: Rodret Dimmer 1 Handler
-    id: "rodret_dimmer_1_handler"
+  - id: rodret_dimmer_1_handler
+    alias: Rodret Dimmer 1 Handler
+    description: >-
+      IKEA RODRET dimmer (via blueprint): ON turns on the Monolith speakers, desk lamp, TV lights and
+      Christmas tree; OFF turns off the speakers and all living room lights; holding ON/OFF dims the
+      desk lamp up/down in 4% steps.
     use_blueprint:
       path: damru/ikea-rodret_E2201_ZHA-Z2M_control-anything.yaml
       input:

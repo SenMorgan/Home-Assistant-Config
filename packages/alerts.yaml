@@ -25,7 +25,9 @@ alert:
     name: "Water Leakage in Bathroom"
     entity_id: binary_sensor.water_leakage_bathroom_moisture
     state: "on"
-    repeat: [ 1, 1, 2, 10, 30, 60 ]
+    # Repeat intervals in minutes (the last one repeats); the first notification is sent
+    # after 1 minute (skip_first), so short false triggers are ignored
+    repeat: [1, 1, 2, 10, 30, 60]
     skip_first: true
     notifiers:
       - mobile_app_sen_s25
@@ -42,7 +44,7 @@ alert:
     name: "Water Leakage in Kitchen"
     entity_id: binary_sensor.water_leakage_kitchen_moisture
     state: "on"
-    repeat: [ 1, 1, 2, 10, 30, 60 ]
+    repeat: [1, 1, 2, 10, 30, 60]
     skip_first: true
     notifiers:
       - mobile_app_sen_s25
@@ -96,12 +98,16 @@ alert:
 ## Automations
 ###############################################
 automation:
-  - alias: Alert to TTS Handler
-    id: alert_to_tts_handler
+  - id: alert_to_tts_handler
     # Queued: simultaneous alerts must each be announced
+    alias: Alert to TTS Handler
+    description: >-
+      Speaks a TTS announcement on both phones (alarm stream, max volume) when a leak or gas alert
+      starts or is resolved.
     mode: queued
     max: 5
     variables:
+      # alert entity -> [text when it fires, text when it is resolved]
       alerts_map:
         alert.water_leakage_bathroom: ["Обнаружена утечка воды в ванной", "Утечка воды в ванной устранена"]
         alert.water_leakage_kitchen: ["Обнаружена утечка воды на кухне", "Утечка воды на кухне устранена"]

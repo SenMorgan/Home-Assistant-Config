@@ -26,10 +26,15 @@ input_boolean:
 script:
   set_silent_mode:
     alias: Set Silent Mode
+    description: >-
+      Applies silent mode: powers the baby monitor, lowers Yandex station and
+      model railway volume, turns the 7-segment clock red and enables the
+      bedroom lights/cover safety switch.
     sequence:
       # Power on Baby Monitor Plug
       - action: switch.turn_on
-        entity_id: switch.bedroom_baby_monitor_plug
+        target:
+          entity_id: switch.bedroom_baby_monitor_plug
       # Lower Yandex stations volume
       - action: script.set_volume_level_repeatedly
         data:
@@ -41,25 +46,33 @@ script:
           volume_level: 0.4
       # Notify via 7-Segment Clock that we are in silent mode
       - action: scene.turn_on
-        entity_id: scene.7_seg_clock_red
+        target:
+          entity_id: scene.7_seg_clock_red
       # Make DCC-EX volume lower
       - action: media_player.volume_set
-        data:
+        target:
           entity_id: media_player.model_railway
+        data:
           volume_level: 0.3
       - action: input_boolean.turn_on
-        entity_id:
+        target:
+          entity_id:
           # Ensure silent mode is enabled
-          - input_boolean.silent_mode
+            - input_boolean.silent_mode
           # Disallow control of bedroom lights and cover
-          - input_boolean.bedroom_lights_and_cover_safety_switch
+            - input_boolean.bedroom_lights_and_cover_safety_switch
 
   reset_silent_mode:
     alias: Reset Silent Mode
+    description: >-
+      Leaves silent mode: powers off the baby monitor, restores Yandex and model
+      railway volume, sets the clock back to Orange Candle, releases the bedroom
+      safety switch and reminds by voice if the living room window is open.
     sequence:
       # Power off Baby Monitor Plug
       - action: switch.turn_off
-        entity_id: switch.bedroom_baby_monitor_plug
+        target:
+          entity_id: switch.bedroom_baby_monitor_plug
       # Raise Yandex stations volume
       - action: script.set_volume_level_repeatedly
         data:
@@ -71,20 +84,23 @@ script:
           volume_level: 0.5
       # Notify via 7-Segment Clock that we left silent mode
       - action: select.select_option
-        data:
+        target:
           entity_id: select.7_seg_clock_preset
+        data:
           option: Orange Candle
       # Set DCC-EX max volume
       - action: media_player.volume_set
-        data:
+        target:
           entity_id: media_player.model_railway
+        data:
           volume_level: 1.0
       - action: input_boolean.turn_off
-        entity_id:
+        target:
+          entity_id:
           # Ensure silent mode is disabled
-          - input_boolean.silent_mode
+            - input_boolean.silent_mode
           # Allow control of bedroom lights and cover
-          - input_boolean.bedroom_lights_and_cover_safety_switch
+            - input_boolean.bedroom_lights_and_cover_safety_switch
       # Remind via yandex station to check if the window in living room is closed properly
       - if:
           # Only if window is currently open
@@ -93,28 +109,35 @@ script:
             state: "on"
         then:
           - action: media_player.play_media
-            entity_id: media_player.yandex_station_midi
+            target:
+              entity_id: media_player.yandex_station_midi
             data:
               media_content_type: text
               media_content_id: "Тихий режим выключен. Проверьте, закрыто ли окно в гостиной."
 
   home_night_mode:
     alias: Home Night Mode
+    description: Turns on the night mode and silent mode flags; their side effects run from the handler automations.
     sequence:
       # Ensure night and silent modes are enabled
       - action: input_boolean.turn_on
-        entity_id:
-          - input_boolean.home_night_mode
-          - input_boolean.silent_mode
+        target:
+          entity_id:
+            - input_boolean.home_night_mode
+            - input_boolean.silent_mode
 
   home_day_mode:
     alias: Home Day Mode
+    description: >-
+      Turns off night and silent mode, then re-enables the wireless charger if
+      anyone is home and the Interactive CZ Map if Sen is home during 06:00-21:00.
     sequence:
       # Ensure night and silent mode are disabled
       - action: input_boolean.turn_off
-        entity_id:
-          - input_boolean.home_night_mode
-          - input_boolean.silent_mode
+        target:
+          entity_id:
+            - input_boolean.home_night_mode
+            - input_boolean.silent_mode
       # Enable wireless charger if anyone is home
       - if:
           - condition: state
@@ -122,7 +145,8 @@ script:
             state: "on"
         then:
           - action: switch.turn_on
-            entity_id: switch.wireless_charger
+            target:
+              entity_id: switch.wireless_charger
       # Enable Interactive CZ Map if Sen is home
       - if:
           - condition: state
@@ -133,10 +157,12 @@ script:
             before: "21:00:00"
         then:
           - action: switch.turn_on
-            entity_id: switch.interactive_cz_map_enable
+            target:
+              entity_id: switch.interactive_cz_map_enable
 
   cover_correct_up:
     alias: Cover Correct Zero Position Up
+    description: Sends CORRECT_UP over MQTT to the blinds controller to nudge its zero position up.
     sequence:
       - action: mqtt.publish
         data:
@@ -145,6 +171,7 @@ script:
 
   cover_correct_down:
     alias: Cover Correct Zero Position Down
+    description: Sends CORRECT_DOWN over MQTT to the blinds controller to nudge its zero position down.
     sequence:
       - action: mqtt.publish
         data:
@@ -155,9 +182,10 @@ script:
 ## AUTOMATIONS
 ###############################################
 automation:
-  - alias: Silent Mode Handler
-    id: silent_mode_handler
+  - id: silent_mode_handler
     # Queued: a quick on -> off toggle must run both scripts in order
+    alias: Silent Mode Handler
+    description: Runs Set Silent Mode or Reset Silent Mode whenever the Silent Mode boolean changes.
     mode: queued
     max: 5
     triggers:
@@ -165,10 +193,14 @@ automation:
         entity_id: input_boolean.silent_mode
         to: ["on", "off"]
     actions:
+      # Pick the script by the new state (templated action name)
       - action: "{{ 'script.set_silent_mode' if trigger.to_state.state == 'on' else 'script.reset_silent_mode' }}"
 
-  - alias: Night Mode Handler
-    id: night_mode_handler
+  - id: night_mode_handler
+    alias: Night Mode Handler
+    description: >-
+      Runs Home Night Mode or Home Day Mode whenever the Home Night Mode boolean
+      changes, unless that script is already running (it toggled the boolean itself).
     mode: queued
     max: 5
     triggers:
@@ -184,8 +216,11 @@ automation:
       - action: "{{ target_script }}"
 
 
-  - alias: Yandex Volume Increased Handler
-    id: yandex_volume_increased_handler
+  - id: yandex_volume_increased_handler
+    alias: Yandex Volume Increased Handler
+    description: >-
+      Treats raising the Yandex Midi volume in the morning (06:00-12:00) while in
+      silent mode as a "good morning" signal and switches the home to day mode.
     mode: single
     triggers:
       - trigger: state
@@ -198,6 +233,7 @@ automation:
       - condition: state
         entity_id: input_boolean.silent_mode
         state: "on"
+      # Only react to an increase, not to any volume change
       - condition: template
         value_template: >
           {% set from = trigger.from_state.attributes.volume_level | float(0) %}
@@ -206,8 +242,11 @@ automation:
     actions:
       - action: script.home_day_mode
 
-  - alias: Good Morning Handler
-    id: good_morning_handler
+  - id: good_morning_handler
+    alias: Good Morning Handler
+    description: >-
+      Switches to day mode at 09:00, or when the bedroom cover has been open for
+      10 s, if silent mode is still on during the morning window (06:00-12:00).
     mode: single
     triggers:
       - trigger: time
@@ -226,8 +265,9 @@ automation:
     actions:
       - action: script.home_day_mode
 
-  - alias: Silent Mode by Bedroom Door Enable
-    id: silent_mode_by_bedroom_door_enable
+  - id: silent_mode_by_bedroom_door_enable
+    alias: Silent Mode by Bedroom Door Enable
+    description: Enables silent mode when the bedroom door has been closed for 30 seconds (any time of day).
     mode: single
     triggers:
       - trigger: state
@@ -237,10 +277,14 @@ automation:
     actions:
       # If bedroom door closed ("off" state), then turn on silent mode
       - action: input_boolean.turn_on
-        entity_id: input_boolean.silent_mode
+        target:
+          entity_id: input_boolean.silent_mode
 
-  - alias: Silent Mode by Bedroom Door Disable
-    id: silent_mode_by_bedroom_door_disable
+  - id: silent_mode_by_bedroom_door_disable
+    alias: Silent Mode by Bedroom Door Disable
+    description: >-
+      Disables silent mode when the bedroom door has been open for 1 minute during
+      the day (06:00-20:00), unless night mode is on.
     mode: single
     triggers:
       - trigger: state
@@ -257,10 +301,15 @@ automation:
     actions:
       # If bedroom door opened ("on" state), then turn off silent mode
       - action: input_boolean.turn_off
-        entity_id: input_boolean.silent_mode
+        target:
+          entity_id: input_boolean.silent_mode
 
-  - alias: Prevent Accidental Bedroom Lights ON
-    id: prevent_accidental_bedroom_lights_on
+  - id: prevent_accidental_bedroom_lights_on
+    alias: Prevent Accidental Bedroom Lights ON
+    description: >-
+      While the bedroom safety switch is on, turns bedroom lights back off when
+      they were switched on from HA by a user (UI/app); physical switches and
+      automations are not blocked.
     triggers:
       - trigger: state
         entity_id:
@@ -276,11 +325,15 @@ automation:
         value_template: "{{ trigger.to_state.context.user_id != None }}"
     actions:
       - action: light.turn_off
-        data:
+        target:
           entity_id: "{{ trigger.entity_id }}"
 
-  - alias: Prevent Accidental Bedroom Cover Open
-    id: prevent_accidental_bedroom_cover_open
+  - id: prevent_accidental_bedroom_cover_open
+    alias: Prevent Accidental Bedroom Cover Open
+    description: >-
+      While the bedroom safety switch is on, closes the bedroom cover again if a
+      user opened it from HA; physical buttons, automations and Yandex voice
+      commands are allowed.
     triggers:
       - trigger: state
         entity_id: cover.bedroom
@@ -293,16 +346,20 @@ automation:
       - condition: template
         value_template: "{{ trigger.to_state.context.user_id != None }}"
       # Allow the cover to be opened by Yandex Station
+      # Secret template: true unless the change came from the Yandex integration user
       - condition: template
         value_template: !secret TEMPLATE_NOT_A_YANDEX_USER_ID
     actions:
       - action: cover.close_cover
-        data:
+        target:
           entity_id: "{{ trigger.entity_id }}"
 
   # Prevent accidental volume increase on all Yandex devices in silent mode.
-  - alias: Prevent Accidental Yandex Volume Increase at Silent Mode
-    id: prevent_accidental_yandex_volume_increase_at_silent_mode
+  - id: prevent_accidental_yandex_volume_increase_at_silent_mode
+    alias: Prevent Accidental Yandex Volume Increase at Silent Mode
+    description: >-
+      In silent mode outside 06:00-12:00, resets both Yandex stations to quiet
+      levels (Midi 0.2, Mini 0.4) when either volume is raised above 0.4.
     triggers:
       - trigger: state
         entity_id: media_player.yandex_station
@@ -320,6 +377,7 @@ automation:
           - condition: time
             after: "06:00:00"
             before: "12:00:00"
+      # Only an increase that ends above 0.4 counts as accidental
       - condition: template
         value_template: >
           {% set from = trigger.from_state.attributes.volume_level | float(0) %}
@@ -337,8 +395,9 @@ automation:
           volume_level: 0.4
 
   # Autoenable Baby Monitor Plug at 20:00 if anyone is home and Baby Monitor Plug is off
-  - alias: Autoenable Bedroom Baby Monitor Plug at 20:00
-    id: autoenable_bedroom_baby_monitor_plug_at_20_00
+  - id: autoenable_bedroom_baby_monitor_plug_at_20_00
+    alias: Autoenable Bedroom Baby Monitor Plug at 20:00
+    description: Turns on the bedroom baby monitor plug at 20:00 if anyone is home and it is off.
     mode: single
     triggers:
       - trigger: time
@@ -352,12 +411,16 @@ automation:
         state: "off"
     actions:
       - action: switch.turn_on
-        entity_id: switch.bedroom_baby_monitor_plug
+        target:
+          entity_id: switch.bedroom_baby_monitor_plug
 
   # Prevent accidental volume increase on Yandex Mini in normal conditions (not in silent mode).
   # Used to save ears from loud music when children play with the volume buttons.
-  - alias: Prevent Accidental Yandex Mini Volume Increase
-    id: prevent_accidental_yandex_mini_volume_increase
+  - id: prevent_accidental_yandex_mini_volume_increase
+    alias: Prevent Accidental Yandex Mini Volume Increase
+    description: >-
+      Caps the Yandex Mini volume at 0.8 when it is raised above that by a change
+      without a HA user (device buttons), to protect ears when children play with it.
     mode: restart
     triggers:
       - trigger: state
@@ -367,6 +430,7 @@ automation:
       # Allow volume to be changed externally (not by buttons on the device)
       - condition: template
         value_template: "{{ trigger.to_state.context.user_id == None }}"
+      # Only an increase that ends above 0.8 is clamped; setting 0.8 itself won't retrigger
       - condition: template
         value_template: >
           {% set from = trigger.from_state.attributes.volume_level | float(0) %}

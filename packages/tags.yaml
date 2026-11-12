@@ -18,8 +18,11 @@ input_boolean:
 ## AUTOMATIONS
 ###############################################
 automation:
-  - alias: Tag Near PC was scanned
-    id: tag_near_pc_was_scanned
+  - id: tag_near_pc_was_scanned
+    alias: Tag Near PC was scanned
+    description: >-
+      Scanning the NFC tag near the PC toggles whether cameras are shown on the
+      dashboard and reports the new mode to the phone.
     mode: single
     triggers:
       - trigger: tag
@@ -28,6 +31,7 @@ automation:
       - action: input_boolean.toggle
         target:
           entity_id: input_boolean.show_cameras_in_lovelace
+      # Message reflects the state after the toggle above
       - action: notify.mobile_app_sen_s25
         data:
           title: "👁️ Режим камер"
@@ -38,8 +42,11 @@ automation:
               Камеры выключены
             {% endif %}
 
-  - alias: Reenable Cameras if Hided
-    id: reenable_cameras_if_hided
+  - id: reenable_cameras_if_hided
+    alias: Reenable Cameras if Hided
+    description: >-
+      Safety net: if cameras have been hidden from the dashboard for an hour,
+      show them again automatically and notify the phone.
     mode: single
     triggers:
       - trigger: state

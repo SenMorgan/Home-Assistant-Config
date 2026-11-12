@@ -34,8 +34,12 @@ automation:
   ###############################################
   ## Turn on light during preparation
   ###############################################
-  - alias: "3D Printer - Preparation Light"
-    id: "3d_printer_preparation_light"
+  - id: 3d_printer_preparation_light
+    alias: 3D Printer - Preparation Light
+    description: >-
+      When a print enters the "prepare" stage, waits until nobody is in the hall
+      (FP2 presence and motion both clear for 1 minute, max 20 minutes) and then
+      turns on the hall bulb and the printer chamber light.
     mode: restart
     triggers:
       - trigger: state
@@ -53,15 +57,17 @@ automation:
         timeout:
           minutes: 20
       - action: light.turn_on
-        entity_id:
-          - light.hall_edison_bulb
-          - light.3d_printer_bambu_lab_a1_chamber_light
+        target:
+          entity_id:
+            - light.hall_edison_bulb
+            - light.3d_printer_bambu_lab_a1_chamber_light
 
   ###############################################
   ## Turn off light after some time after print started
   ###############################################
-  - alias: "3D Printer - Print Light Off"
-    id: "3d_printer_print_light_off"
+  - id: 3d_printer_print_light_off
+    alias: 3D Printer - Print Light Off
+    description: Turns off the hall bulb 10 minutes after the print moves from "prepare" to "running".
     mode: restart
     triggers:
       - trigger: state
@@ -71,13 +77,18 @@ automation:
     actions:
       - delay: "00:10:00"
       - action: light.turn_off
-        entity_id: light.hall_edison_bulb
+        target:
+          entity_id: light.hall_edison_bulb
 
   ###############################################
   ## Remind me when the print is done
   ###############################################
-  - alias: "3D Printer - Print Done"
-    id: "3d_printer_print_done"
+  - id: 3d_printer_print_done
+    alias: 3D Printer - Print Done
+    description: >-
+      When a print finishes, lights the hall and chamber if someone is home, sends a phone
+      notification with job name, duration, weight and filament length, and announces it on
+      the Yandex Station unless silent mode is on.
     triggers:
       - trigger: state
         entity_id: sensor.3d_printer_bambu_lab_a1_print_status
@@ -91,9 +102,10 @@ automation:
             state: "on"
         then:
           - action: light.turn_on
-            entity_id:
-              - light.hall_edison_bulb
-              - light.3d_printer_bambu_lab_a1_chamber_light
+            target:
+              entity_id:
+                - light.hall_edison_bulb
+                - light.3d_printer_bambu_lab_a1_chamber_light
       # Set variables for print details
       - variables:
           # Fall back to the moment the printer entered "running" when start_time is unknown/unavailable
@@ -120,7 +132,8 @@ automation:
             state: "off"
         then:
           - action: media_player.play_media
-            entity_id: media_player.yandex_station_midi
+            target:
+              entity_id: media_player.yandex_station_midi
             data:
               media_content_type: text
               media_content_id: >
@@ -132,18 +145,21 @@ automation:
   ###############################################
   ## Remind me about print progress
   ###############################################
-  - alias: "3D Printer - Print Progress"
-    id: "3d_printer_print_progress"
+  - id: 3d_printer_print_progress
+    alias: 3D Printer - Print Progress
+    description: Sends a phone notification with progress and remaining time at every 20% step (20, 40, 60, 80).
     triggers:
       - trigger: state
         entity_id: sensor.3d_printer_bambu_lab_a1_print_progress
     conditions:
+      # Only real progress changes that land on a multiple of 20% (excluding 0 and 100)
       - condition: template
         value_template: >
           {{ (trigger.to_state.state | int(0)) > 0 and (trigger.to_state.state | int(0)) < 100 and
             ((trigger.to_state.state | int(0)) != (trigger.from_state.state | int(0))) and
             (trigger.to_state.state | int(0)) % 20 == 0 }}
     actions:
+      # Remaining time sensor is in hours (float); split it into whole hours and minutes
       - variables:
           remaining_time: "{{ states('sensor.3d_printer_bambu_lab_a1_remaining_time') | float(0) }}"
           remaining_hours: "{{ (remaining_time | int) }}"
@@ -158,8 +174,9 @@ automation:
   ###############################################
   ## Remind me when print is paused
   ###############################################
-  - alias: "3D Printer - Print Paused"
-    id: "3d_printer_print_paused"
+  - id: 3d_printer_print_paused
+    alias: 3D Printer - Print Paused
+    description: Notifies the phone when a running print is paused or fails.
     triggers:
       - trigger: state
         entity_id: sensor.3d_printer_bambu_lab_a1_print_status
@@ -176,8 +193,9 @@ automation:
   ###############################################
   ## Remind me when print is resumed
   ###############################################
-  - alias: "3D Printer - Print Resumed"
-    id: "3d_printer_print_resumed"
+  - id: 3d_printer_print_resumed
+    alias: 3D Printer - Print Resumed
+    description: Notifies the phone when a paused or failed print goes back to running.
     triggers:
       - trigger: state
         entity_id: sensor.3d_printer_bambu_lab_a1_print_status
@@ -194,8 +212,11 @@ automation:
   ###############################################
   ## Power control
   ###############################################
-  - alias: 3D Printer - Power On
-    id: 3d_printer_power_on
+  - id: 3d_printer_power_on
+    alias: 3D Printer - Power On
+    description: >-
+      Turns the printer socket on when the virtual power switch
+      (input_boolean.3d_printer_power) is switched on.
     mode: restart
     triggers:
       - trigger: state
@@ -209,15 +230,20 @@ automation:
         state: "off"
     actions:
       - action: switch.turn_on
-        entity_id: switch.3d_printer_socket
+        target:
+          entity_id: switch.3d_printer_socket
 
-  - alias: 3D Printer - Power Sync
-    id: 3d_printer_power_sync
+  - id: 3d_printer_power_sync
+    alias: 3D Printer - Power Sync
+    description: >-
+      Mirrors physical socket changes (e.g. button on the plug) back to the virtual power switch,
+      unless the Power Off automation is currently running and managing the state itself.
     mode: single
     triggers:
       - trigger: state
         entity_id: switch.3d_printer_socket
     conditions:
+      # Only act when the socket and the virtual switch disagree
       - condition: template
         value_template: >
           {{ states('switch.3d_printer_socket') != states('input_boolean.3d_printer_power') }}
@@ -232,13 +258,19 @@ automation:
             state: "on"
         then:
           - action: input_boolean.turn_on
-            entity_id: input_boolean.3d_printer_power
+            target:
+              entity_id: input_boolean.3d_printer_power
         else:
           - action: input_boolean.turn_off
-            entity_id: input_boolean.3d_printer_power
+            target:
+              entity_id: input_boolean.3d_printer_power
 
-  - alias: 3D Printer - Power Off
-    id: 3d_printer_power_off
+  - id: 3d_printer_power_off
+    alias: 3D Printer - Power Off
+    description: >-
+      Safe power-off when the virtual power switch is turned off: cuts the socket only if the
+      printer is finished/idle and the nozzle is at most 60°C. Otherwise switches the virtual
+      switch back on and warns via phone and (unless silent mode) the Yandex Station.
     mode: restart
     triggers:
       - trigger: state
@@ -266,7 +298,8 @@ automation:
                 above: 60
             then:
               - action: input_boolean.turn_on
-                entity_id: input_boolean.3d_printer_power
+                target:
+                  entity_id: input_boolean.3d_printer_power
               - action: notify.mobile_app_sen_s25
                 data:
                   title: "⚠️ 3D Printer"
@@ -279,7 +312,8 @@ automation:
                     state: "off"
                 then:
                   - action: media_player.play_media
-                    entity_id: media_player.yandex_station_midi
+                    target:
+                      entity_id: media_player.yandex_station_midi
                     data:
                       media_content_type: text
                       media_content_id: >
@@ -287,12 +321,15 @@ automation:
             else:
               # If printer is in a state that allows powering off, turn off power socket
               - action: switch.turn_off
-                entity_id: switch.3d_printer_socket
+                target:
+                  entity_id: switch.3d_printer_socket
               - action: input_boolean.turn_off
-                entity_id: input_boolean.3d_printer_power
+                target:
+                  entity_id: input_boolean.3d_printer_power
         else:
           - action: input_boolean.turn_on
-            entity_id: input_boolean.3d_printer_power
+            target:
+              entity_id: input_boolean.3d_printer_power
           - action: notify.mobile_app_sen_s25
             data:
               title: "⚠️ 3D Printer"
@@ -305,7 +342,8 @@ automation:
                 state: "off"
             then:
               - action: media_player.play_media
-                entity_id: media_player.yandex_station_midi
+                target:
+                  entity_id: media_player.yandex_station_midi
                 data:
                   media_content_type: text
                   media_content_id: >
@@ -314,8 +352,13 @@ automation:
   ###############################################
   ## Automatic power off for 3D printer after print completion and cooldown, during night hours
   ###############################################
-  - alias: "3D Printer - Automatic Power Off"
-    id: "3d_printer_automatic_power_off"
+  - id: 3d_printer_automatic_power_off
+    alias: 3D Printer - Automatic Power Off
+    description: >-
+      20 minutes after a print finishes, waits up to 30 minutes for the nozzle to cool below
+      50°C, then powers the printer off via the virtual switch (which goes through the safe
+      Power Off automation) and turns off the hall bulb. Reports the result or the reason it
+      did not power off.
     mode: restart
     triggers:
       - trigger: state
@@ -350,10 +393,12 @@ automation:
         then:
           # Disable power using virtual button
           - action: input_boolean.turn_off
-            entity_id: input_boolean.3d_printer_power
+            target:
+              entity_id: input_boolean.3d_printer_power
             # Disable light also
           - action: light.turn_off
-            entity_id: light.hall_edison_bulb
+            target:
+              entity_id: light.hall_edison_bulb
           - action: script.notify_and_create_persistent_notification
             data:
               title: *sys_notify_title_info
@@ -362,7 +407,7 @@ automation:
           - action: script.notify_and_create_persistent_notification
             data:
               title: *sys_notify_title_warning
-              message: >
+              message: >-
                 Питание 3D принтера НЕ отключено в {{ timestamp }}.
                 {% if printer_status not in ['finish', 'idle'] -%}
                   Причина: принтер находится в состоянии «{{ printer_status }}».

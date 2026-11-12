@@ -74,6 +74,9 @@ script:
   # The only place that sets the steady LED colour. Blinks for UPS states.
   zbt2_led_apply:
     alias: ZBT2 LED Apply Status
+    description: >-
+      Sets the ZBT-2 LED colour for the current ZBT2 LED Status (off when disabled or idle).
+      UPS states blink red/orange once per second until the status changes or the LED is disabled.
     icon: mdi:led-on
     mode: restart
     variables:
@@ -96,6 +99,8 @@ script:
       - if:
           - "{{ blink }}"
         then:
+          # Blink 1 s on / 1 s off while the status stays the same and the LED is enabled;
+          # mode: restart also stops the loop when the status automation calls the script again
           - repeat:
               while:
                 - "{{ states('sensor.zbt2_led_status') == status }}"
@@ -127,8 +132,9 @@ script:
 ## AUTOMATIONS
 ###############################################
 automation:
-  - alias: ZBT2 LED Status Update
-    id: "zbt2_led_status_update"
+  - id: zbt2_led_status_update
+    alias: ZBT2 LED Status Update
+    description: Re-applies the LED colour whenever the status sensor or the enable switch changes, and after HA start.
     mode: queued
     triggers:
       - trigger: state
@@ -143,8 +149,11 @@ automation:
         target:
           entity_id: script.zbt2_led_apply
 
-  - alias: ZBT2 LED Flash On Manual Interaction
-    id: "zbt2_led_flash_on_manual_interaction"
+  - id: zbt2_led_flash_on_manual_interaction
+    alias: ZBT2 LED Flash On Manual Interaction
+    description: >-
+      Flashes the LED Home Assistant blue for 0.5 s when a listed device is switched manually
+      or a Zigbee button is pressed, then restores the status colour. Skipped at night and during UPS states.
     mode: single
     max_exceeded: silent
     triggers:

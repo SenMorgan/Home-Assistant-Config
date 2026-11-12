@@ -63,22 +63,31 @@ light:
 script:
   turn_off_all_lights:
     alias: Turn Off All Lights
+    description: >-
+      Turns off every light in the All Home Lights group, powers off non-light
+      devices (charger, baby monitor, speakers, CZ map, railway track power) and
+      the Samsung TV. Used when leaving home and for night mode.
     sequence:
       # Explicit group instead of "all": keeps DMX channels, printer chamber light, camera flash and indicator LEDs untouched
       - action: light.turn_off
-        entity_id: light.all_home_lights
+        target:
+          entity_id: light.all_home_lights
       # Power off other devices that are not lights but should be turned off when no one is home
       - action: switch.turn_off
-        entity_id:
-          - switch.wireless_charger
-          - switch.bedroom_baby_monitor_plug
-          - switch.monolith_speakers
-          - switch.interactive_cz_map_enable
-          - switch.ex_commandstation_tracks_power
+        target:
+          entity_id:
+            - switch.wireless_charger
+            - switch.bedroom_baby_monitor_plug
+            - switch.monolith_speakers
+            - switch.interactive_cz_map_enable
+            - switch.ex_commandstation_tracks_power
       - action: script.turn_off_samsung_tv
 
   switch_on_parking_light:
     alias: Switch On Parking Light
+    description: >-
+      Power-cycles the parking light relay: turns it off, waits 15 s, then keeps
+      sending turn_on every second (max 300 tries) until the relay reports on.
     sequence:
       - action: switch.turn_off
         target:
@@ -102,13 +111,18 @@ script:
 
   activate_night_mode:
     alias: Activate Night Mode
+    description: >-
+      Good-night routine: applies the Good Night scene, enables night and silent
+      modes, turns off all lights and warns if a window is open during heating season.
     sequence:
       - action: scene.turn_on
-        entity_id: scene.good_night
+        target:
+          entity_id: scene.good_night
       - action: input_boolean.turn_on
-        entity_id:
-          - input_boolean.home_night_mode
-          - input_boolean.silent_mode
+        target:
+          entity_id:
+            - input_boolean.home_night_mode
+            - input_boolean.silent_mode
       - action: script.turn_off_all_lights
       - action: script.notify_if_some_window_is_opened_during_heating_season
 
@@ -116,8 +130,12 @@ script:
 ## AUTOMATIONS
 ###############################################
 automation:
-  - id: "welcome_lights"
+  - id: welcome_lights
     alias: Welcome Lights
+    description: >-
+      When Sen or Kris arrives home, waits up to 15 min for the hall door to open,
+      then turns on the welcome scene(s) during the day or only the hall Edison
+      bulb at half brightness at night.
     mode: restart
     triggers:
       - trigger: state
@@ -141,7 +159,8 @@ automation:
             state: "off"
         then:
           - action: scene.turn_on
-            entity_id: scene.welcome_home
+            target:
+              entity_id: scene.welcome_home
           # If Sen came home - turn on his welcome scene too
           - if:
               - condition: state
@@ -149,18 +168,23 @@ automation:
                 state: "home"
             then:
               - action: scene.turn_on
-                entity_id: scene.welcome_home_sen
+                target:
+                  entity_id: scene.welcome_home_sen
         else:
           # If it is nighttime - just turn on hall edison bulb on half brightness
           - action: light.turn_on
-            entity_id: light.hall_edison_bulb
+            target:
+              entity_id: light.hall_edison_bulb
             data:
               brightness: 128
 
 
 
-  - id: "pc_lights_by_presence"
+  - id: pc_lights_by_presence
     alias: PC Lights by Presence
+    description: >-
+      Turns the banana light on when the FP2 sensor detects presence at the PC
+      (07:00-21:00) and off after 10 s without presence (07:00-23:00); only when Sen is home.
     mode: restart
     triggers:
       # Presence detected near the PC
@@ -190,7 +214,8 @@ automation:
                 before: "21:00:00"
             sequence:
               - action: light.turn_on
-                entity_id: light.banana_light
+                target:
+                  entity_id: light.banana_light
           # Turn lights off within an extended time window
           - conditions:
               - condition: trigger
@@ -200,10 +225,15 @@ automation:
                 before: "23:00:00"
             sequence:
               - action: light.turn_off
-                entity_id: light.banana_light
+                target:
+                  entity_id: light.banana_light
 
-  - id: "shelf_and_neon_lighting_by_presence"
+  - id: shelf_and_neon_lighting_by_presence
     alias: Shelf and Neon Lighting by Presence
+    description: >-
+      Turns the shelf lighting and cocktail bar neon sign on when the FP2 detection
+      zone sees presence (07:00-21:00) and off after 10 s without presence
+      (07:00-23:00); only when Sen is home.
     mode: restart
     triggers:
       # Presence detected in detection zone
@@ -233,10 +263,13 @@ automation:
                 before: "21:00:00"
             sequence:
               - action: light.turn_on
-                entity_id: light.shelf_lighting
+                target:
+                  entity_id: light.shelf_lighting
               # Brightness of the cocktail bar neon sign depends on ambient light level, but at least 10
               - action: light.turn_on
-                entity_id: light.cocktail_bar_neon_sign
+                target:
+                  entity_id: light.cocktail_bar_neon_sign
+                # Lux x10, clamped to 10..255; anchor reused by Cocktail Bar Neon Sign Reenable
                 data: &cocktail_bar_neon_sign_brightness
                   brightness: "{{ [10, [255, ((states('sensor.presence_sensor_fp2_light_sensor_kitchen') | int(1)) * 10)] | min] | max }}"
           # Turn lights off within an extended time window
@@ -248,15 +281,17 @@ automation:
                 before: "23:00:00"
             sequence:
               - action: light.turn_off
-                entity_id:
-                  - light.shelf_lighting
-                  - light.cocktail_bar_neon_sign
+                target:
+                  entity_id:
+                    - light.shelf_lighting
+                    - light.cocktail_bar_neon_sign
 
   ###############################################
   ## Other Lights Automations
   ###############################################
-  - id: "kitchen_asus_pc_background_lights_on"
+  - id: kitchen_asus_pc_background_lights_on
     alias: Kitchen Asus PC Background Lights ON
+    description: Turns on the Gyver lamp with the fire effect when the Asus PC is switched on and Sen is home.
     triggers:
       - trigger: state
         entity_id: switch.asus_pc
@@ -269,14 +304,16 @@ automation:
         state: "home"
     actions:
       - action: light.turn_on
-        entity_id: light.gyver_lamp
+        target:
+          entity_id: light.gyver_lamp
         data:
           effect: "Oгoнь"
           brightness: 150
           rgb_color: [255, 39, 25]
 
-  - id: "kitchen_asus_pc_background_lights_off"
+  - id: kitchen_asus_pc_background_lights_off
     alias: Kitchen Asus PC Background Lights OFF
+    description: Turns off the Gyver lamp when the Asus PC is switched off.
     triggers:
       - trigger: state
         entity_id: switch.asus_pc
@@ -284,25 +321,31 @@ automation:
         to: "off"
     actions:
       - action: light.turn_off
-        entity_id: light.gyver_lamp
+        target:
+          entity_id: light.gyver_lamp
 
-  - id: "kitchen_clock_disable_by_presence"
+  - id: kitchen_clock_disable_by_presence
     alias: Kitchen Clock Disable by Presence
+    description: Turns off the 7-segment kitchen clock 1 minute after everyone has left, unless guest mode is on.
     triggers:
       - trigger: state
         entity_id: binary_sensor.people_home
         to: "off"
         for: 00:01:00
-    condition:
+    conditions:
       - condition: state
         entity_id: input_boolean.guest_mode
         state: "off"
     actions:
       - action: light.turn_off
-        entity_id: light.7_seg_clock
+        target:
+          entity_id: light.7_seg_clock
 
-  - id: "kitchen_clock_reenable"
+  - id: kitchen_clock_reenable
     alias: Kitchen Clock Reenable
+    description: >-
+      Turns the 7-segment kitchen clock back on after activity (kitchen motion, PC
+      on, silent/night mode off) when someone is home, outside night mode, 05:00-22:00.
     mode: restart
     triggers:
       - trigger: state
@@ -332,10 +375,15 @@ automation:
         before: "22:00:00"
     actions:
       - action: light.turn_on
-        entity_id: light.7_seg_clock
+        target:
+          entity_id: light.7_seg_clock
 
-  - id: "shelf_lighting_reenable"
+  - id: shelf_lighting_reenable
     alias: Shelf Lighting Reenable
+    description: >-
+      Turns the shelf lighting back on after any activity (see anchored triggers)
+      when Sen is home, outside night mode, 05:00-22:00.
+    # Shared "any activity" triggers (anchor), reused by the other *_reenable automations; includes dusk (sun elevation < 4)
     triggers: &any_activity_trigger
       - trigger: state
         entity_id: switch.asus_pc
@@ -373,10 +421,14 @@ automation:
         before: "22:00:00"
     actions:
       - action: light.turn_on
-        entity_id: light.shelf_lighting
+        target:
+          entity_id: light.shelf_lighting
 
-  - id: "wireless_charger_reenable"
+  - id: wireless_charger_reenable
     alias: Wireless Charger Reenable
+    description: >-
+      Turns the wireless charger back on after any activity when someone is home,
+      outside night mode, 05:00-22:00.
     mode: restart
     triggers: *any_activity_trigger
     conditions:
@@ -394,10 +446,14 @@ automation:
         before: "22:00:00"
     actions:
       - action: switch.turn_on
-        entity_id: switch.wireless_charger
+        target:
+          entity_id: switch.wireless_charger
 
-  - id: "interactive_cz_map_reenable"
+  - id: interactive_cz_map_reenable
     alias: Interactive CZ Map Reenable
+    description: >-
+      Turns the Interactive CZ Map back on after any activity when Sen is home,
+      outside night mode, 06:00-21:00.
     mode: restart
     triggers: *any_activity_trigger
     conditions:
@@ -415,10 +471,14 @@ automation:
         before: "21:00:00"
     actions:
       - action: switch.turn_on
-        entity_id: switch.interactive_cz_map_enable
+        target:
+          entity_id: switch.interactive_cz_map_enable
 
-  - id: "banana_light_reenable"
+  - id: banana_light_reenable
     alias: Banana Light Reenable
+    description: >-
+      Turns the banana light back on after any activity when Sen is home, outside
+      night mode, 05:00-22:00.
     mode: restart
     triggers: *any_activity_trigger
     conditions:
@@ -436,10 +496,14 @@ automation:
         before: "22:00:00"
     actions:
       - action: light.turn_on
-        entity_id: light.banana_light
+        target:
+          entity_id: light.banana_light
 
-  - id: "cocktail_bar_neon_sign_reenable"
+  - id: cocktail_bar_neon_sign_reenable
     alias: Cocktail Bar Neon Sign Reenable
+    description: >-
+      Turns the cocktail bar neon sign back on (brightness from ambient light) after
+      any activity when Sen is home, outside night mode, 05:00-22:00.
     mode: restart
     triggers: *any_activity_trigger
     conditions:
@@ -457,11 +521,15 @@ automation:
         before: "22:00:00"
     actions:
       - action: light.turn_on
-        entity_id: light.cocktail_bar_neon_sign
+        target:
+          entity_id: light.cocktail_bar_neon_sign
         data: *cocktail_bar_neon_sign_brightness
 
-  - id: "kitchen_christmas_lights_reenable"
+  - id: kitchen_christmas_lights_reenable
     alias: Kitchen Christmas Lights Reenable
+    description: >-
+      Turns the kitchen Christmas lights back on after any activity when someone is
+      home, outside night mode, 05:00-22:00.
     mode: restart
     triggers: *any_activity_trigger
     conditions:
@@ -479,10 +547,14 @@ automation:
         before: "22:00:00"
     actions:
       - action: light.turn_on
-        entity_id: light.kitchen_christmas_lights
+        target:
+          entity_id: light.kitchen_christmas_lights
 
-  - id: "disable_decorative_lights_when_sen_leaves"
+  - id: disable_decorative_lights_when_sen_leaves
     alias: Disable Decorative Lights When Sen Leaves
+    description: >-
+      Turns off Sen's decorative lights, the CZ map and railway track power once
+      Sen has been away for 10 minutes.
     mode: single
     max_exceeded: silent
     triggers:
@@ -492,17 +564,20 @@ automation:
         for: 00:10:00
     actions:
       - action: light.turn_off
-        entity_id:
-          - light.cocktail_bar_neon_sign
-          - light.gyver_lamp
-          - light.shelf_lighting
+        target:
+          entity_id:
+            - light.cocktail_bar_neon_sign
+            - light.gyver_lamp
+            - light.shelf_lighting
       - action: switch.turn_off
-        entity_id:
-          - switch.interactive_cz_map_enable
-          - switch.ex_commandstation_tracks_power
+        target:
+          entity_id:
+            - switch.interactive_cz_map_enable
+            - switch.ex_commandstation_tracks_power
 
-  - id: "parking_lights_on"
+  - id: parking_lights_on
     alias: Parking Lights ON
+    description: Starts the parking light power-cycle script when the Parking Light button is pressed.
     mode: queued
     triggers:
       - trigger: state
@@ -513,8 +588,12 @@ automation:
           entity_id: script.switch_on_parking_light
 
   # Send me notification if switch.parking_light is turned off for more than 1 hour and turn it ON
-  - id: "parking_light_emergency_on"
+  - id: parking_light_emergency_on
     alias: Parking Light Emergency On
+    description: >-
+      If the parking light relay stays off for 1 hour, notifies and tries to turn it
+      on (up to 5 attempts, alerting on failure); if it is unavailable for 1 hour,
+      only notifies.
     mode: single
     triggers:
       - trigger: state
@@ -527,6 +606,7 @@ automation:
         for: 1:00:00
         id: unavailable
     actions:
+      # Unavailable relay can't be switched: just warn and stop
       - if: "{{ trigger.id == 'unavailable' }}"
         then:
           - action: notify.mobile_app_sen_s25
@@ -549,7 +629,8 @@ automation:
           sequence:
             - action: switch.turn_on
               continue_on_error: true
-              entity_id: switch.parking_light
+              target:
+                entity_id: switch.parking_light
             - wait_template: "{{ is_state('switch.parking_light', 'on') }}"
               timeout: "00:01:00"
       - if:
@@ -564,20 +645,25 @@ automation:
               title: *sys_notify_title_warning
               message: Реле освещения парковки не включилось после 5 попыток
 
-  - id: "kitchen_led_strip_sync_with_spotlights"
+  - id: kitchen_led_strip_sync_with_spotlights
     alias: Kitchen LED Strip Sync with Spotlights
+    description: Mirrors the kitchen spotlights' on/off state to the kitchen LED strip.
     triggers:
       - trigger: state
         entity_id: light.kitchen_spotlights
     conditions:
+      # Ignore unavailable/unknown so the strip only follows real on/off
       - condition: template
         value_template: "{{ trigger.to_state.state in ['on', 'off'] }}"
     actions:
+      # Templated action: light.turn_on or light.turn_off
       - action: light.turn_{{ trigger.to_state.state }}
-        entity_id: light.kitchen_led_strip
+        target:
+          entity_id: light.kitchen_led_strip
 
-  - id: "activate_night_mode"
+  - id: activate_night_mode
     alias: Activate Night Mode
+    description: Runs the Activate Night Mode script when the Activate Night Mode button is pressed.
     mode: single
     max_exceeded: silent
     triggers:
@@ -585,15 +671,18 @@ automation:
         entity_id: input_button.activate_night_mode
     actions:
       - action: script.turn_on
-        entity_id: script.activate_night_mode
+        target:
+          entity_id: script.activate_night_mode
 
   ###############################################
   ## BUSY WALL SWITCHES
   ###############################################
-  - id: "busy_wall_switch_left"
+  - id: busy_wall_switch_left
     alias: Busy Wall Switch Left
+    description: Toggles the floor lamp whenever the left busy-wall switch is flipped either way.
     mode: restart
     triggers:
+      # Both edges toggle, so the lever works regardless of its current position
       - trigger: state
         entity_id: binary_sensor.air_quality_station_digital_input_2
         from: "off"
@@ -604,10 +693,12 @@ automation:
         to: "off"
     actions:
       - action: light.toggle
-        entity_id: light.floor_lamp
+        target:
+          entity_id: light.floor_lamp
 
-  - id: "busy_wall_switch_right"
+  - id: busy_wall_switch_right
     alias: Busy Wall Switch Right
+    description: Toggles the dollhouse lights whenever the right busy-wall switch is flipped either way, unless guest mode is on.
     mode: restart
     triggers:
       - trigger: state
@@ -624,7 +715,8 @@ automation:
         state: "off"
     actions:
       - action: light.toggle
-        entity_id: light.dollhouse_lights
+        target:
+          entity_id: light.dollhouse_lights
 
 ###############################################
 ## SCENES
