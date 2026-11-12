@@ -82,7 +82,10 @@ utility_meter:
   grid_consumed_month:
     name: Grid Consumed Month
     unique_id: grid_consumed_month
-    source: sensor.grid_consumed_today
+    # Count directly from the meter's lifetime total (never resets); chaining from the
+    # daily meter inflated the monthly value after HA restarts
+    source: sensor.electricity_meter_energy
+    periodically_resetting: false
     cycle: monthly
   hollandis_charge_energy_added_month:
     name: Hollandis Charge Energy Added Month
