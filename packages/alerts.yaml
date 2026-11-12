@@ -18,9 +18,68 @@ homeassistant:
       sys_notify_title_critical: &sys_notify_title_critical "🚨 Внимание!"
 
 ###############################################
+## GROUPS
+###############################################
+group:
+  # Sensors whose silent failure would hide a real emergency (AR-03); checked by
+  # binary_sensor.safety_sensors_offline. Add new leak/gas/door/window sensors here.
+  safety_sensors:
+    name: Safety Sensors
+    entities:
+      - binary_sensor.water_leakage_bathroom_moisture
+      - binary_sensor.water_leakage_kitchen_moisture
+      - binary_sensor.co_and_natural_gas_alarm_carbon_monoxide
+      - binary_sensor.co_and_natural_gas_alarm_gas
+      - binary_sensor.hall_door_contact
+      - binary_sensor.bedroom_door_contact
+      - binary_sensor.wc_door_contact
+      - binary_sensor.bedroom_window_contact
+      - binary_sensor.kitchen_window_contact
+      - binary_sensor.living_room_window_contact
+      - sensor.ups_status_data
+
+###############################################
+## TEMPLATE ENTITIES
+###############################################
+template:
+  - binary_sensor:
+      # On when any safety sensor has been unavailable/unknown for over 1 hour
+      # (the delay ignores restarts and short Zigbee/Wi-Fi dropouts).
+      # Note: catches only sensors that go unavailable; a Wi-Fi device that silently stops
+      # pushing (Tuya gas detector) keeps its last state and is not detected here.
+      - name: Safety Sensors Offline
+        unique_id: safety_sensors_offline
+        device_class: problem
+        delay_on: "01:00:00"
+        state: >-
+          {{ expand('group.safety_sensors')
+             | selectattr('state', 'in', ['unavailable', 'unknown']) | list | count > 0 }}
+        attributes:
+          # Friendly names of the offline sensors, for the alert message
+          offline: >-
+            {{ expand('group.safety_sensors')
+               | selectattr('state', 'in', ['unavailable', 'unknown'])
+               | map(attribute='name') | join(', ') }}
+
+###############################################
 ## Alerts
 ###############################################
 alert:
+  # Maintenance alert (push only, never spoken: see night-mode rule)
+  safety_sensors_offline:
+    name: "Safety Sensors Offline"
+    entity_id: binary_sensor.safety_sensors_offline
+    state: "on"
+    repeat: 720
+    notifiers:
+      - mobile_app_sen_s25
+      - persistent_notification
+    title: *sys_notify_title_warning
+    message: >-
+      Датчики безопасности не на связи больше часа:
+      {{ state_attr('binary_sensor.safety_sensors_offline', 'offline') }}
+    done_message: Все датчики безопасности снова на связи.
+
   water_leakage_bathroom:
     name: "Water Leakage in Bathroom"
     entity_id: binary_sensor.water_leakage_bathroom_moisture
