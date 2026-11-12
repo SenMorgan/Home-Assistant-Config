@@ -120,10 +120,25 @@ automation:
 
   - id: ups_low_battery_warning_notification
     alias: UPS Low Battery Warning Notification
-    description: Warns when the UPS battery charge drops below 21 %.
+    description: >-
+      Warns when the UPS battery charge is below 21 % while the UPS runs on battery
+      (ignores self-tests and recharging on grid power).
     mode: single
     triggers:
       - trigger: numeric_state
+        entity_id: sensor.ups_battery_charge
+        below: 21
+      # Charge was already low on grid power (e.g. still recharging) and then the grid fails
+      - trigger: state
+        entity_id: binary_sensor.ups_on_battery
+        from: "off"
+        to: "on"
+    conditions:
+      # Only on battery: a low charge on grid power is not an emergency
+      - condition: state
+        entity_id: binary_sensor.ups_on_battery
+        state: "on"
+      - condition: numeric_state
         entity_id: sensor.ups_battery_charge
         below: 21
     actions:
