@@ -76,13 +76,16 @@ automation:
   - id: ups_lost_grid_power_notification
     alias: UPS Lost Grid Power Notification
     description: >-
-      Notifies when the UPS switches to battery (status "OB DISCHRG") with the estimated runtime,
+      Notifies when the UPS switches to battery with the estimated runtime,
       and arms the power-restored notification.
     mode: single
     triggers:
+      # Any on-battery status (OB, OB DISCHRG, OB DISCHRG LB, ...), not just one exact string.
+      # from "off" skips HA restarts, when the sensor comes back from unknown/unavailable.
       - trigger: state
-        entity_id: sensor.ups_status_data
-        to: "OB DISCHRG"
+        entity_id: binary_sensor.ups_on_battery
+        from: "off"
+        to: "on"
     actions:
       # Notify via mobile app and create persistent notification
       - action: script.notify_and_create_persistent_notification
