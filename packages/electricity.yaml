@@ -126,13 +126,21 @@ sensor:
 automation:
   - id: notify_high_power
     alias: Notify High Power Consumption
-    description: Announces on Yandex Station Midi when total power stays above 6 kW for 1 minute.
+    description: >-
+      Announces on Yandex Station Midi when total power stays above 6 kW for 1 minute.
+      Spoken also in silent mode, but not in night mode (not critical enough to wake anyone);
+      the phone push is always sent by alert.high_power.
     triggers:
       - trigger: state
         entity_id: binary_sensor.high_power_consumption
         to: "on"
         for:
           minutes: 1
+    conditions:
+      # Night mode: Alice speaks only about critical events (leak, gas, fire, ...)
+      - condition: state
+        entity_id: input_boolean.home_night_mode
+        state: "off"
     actions:
       - action: media_player.play_media
         target:
