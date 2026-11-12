@@ -368,3 +368,57 @@ automation:
             {{ 'получил' if trigger.from_state.state | int < trigger.to_state.state | int else 'потерял' }}
             звезду!
             Звёзд сейчас: {{ trigger.to_state.state }} (было: {{ trigger.from_state.state }})
+
+  - id: "notification_christmas_devices_season"
+    alias: Notification Christmas Devices Season
+    description: >-
+      Twice a year reminds to enable (last Saturday of November) or disable
+      (first Saturday of February) all devices labelled "Christmas".
+      HA has no action to enable/disable devices, so this is a reminder that
+      opens the device list filtered by the label.
+    mode: single
+    triggers:
+      # Check once a day; the date logic lives in the condition below
+      - trigger: time
+        at: "09:30:00"
+    conditions:
+      # weekday() == 5 is Saturday.
+      # November has 30 days, so its last Saturday is always on day 24-30.
+      # The first Saturday of February is always on day 1-7.
+      - condition: template
+        value_template: >
+          {% set n = now() %}
+          {{ n.weekday() == 5 and ((n.month == 11 and n.day > 23) or (n.month == 2 and n.day <= 7)) }}
+    actions:
+      - variables:
+          # True in November (season starts), false in February (season ends)
+          season_start: "{{ now().month == 11 }}"
+          # Device list filtered by the label. In November the devices are disabled,
+          # and disabled devices are hidden by default, so status=disabled shows them too.
+          # In February they are enabled and shown without the extra filter.
+          devices_url: >-
+            /config/devices/dashboard?historyBack=1&label=christmas{{ '&status=disabled' if now().month == 11 else '' }}
+          # Display names of everything labelled "Christmas".
+          # Labels are read dynamically, so newly labelled devices are included automatically.
+          devices: >
+            {% set ns = namespace(names=[]) %}
+            {% for d in label_devices('christmas') %}
+              {% set ns.names = ns.names + [device_attr(d, 'name_by_user') or device_attr(d, 'name')] %}
+            {% endfor %}
+            {{ ns.names }}
+      - action: notify.mobile_app_sen_s25
+        data:
+          title: "{{ '🎄 Рождественский сезон' if season_start else '📦 Рождество закончилось' }}"
+          # Folded block: the blank line below becomes a line break in the message
+          message: >
+            {{ 'Пора включить' if season_start else 'Пора отключить' }} рождественские устройства:
+            {{ devices | join(', ') }}.
+
+            Нажмите, чтобы открыть список.
+          data:
+            # Same tag for both reminders: the February one replaces the November one
+            tag: CHRISTMAS_DEVICES
+            notification_icon: mdi:pine-tree
+            # Tapping the notification opens the filtered device list
+            clickAction: "{{ devices_url }}"
+            url: "{{ devices_url }}"
