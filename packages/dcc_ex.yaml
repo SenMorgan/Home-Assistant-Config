@@ -95,7 +95,8 @@ automation:
     description: >-
       Powers up the model railway layout in the evening: when the sun drops below 4° elevation
       while Sen is home, or when Sen comes home after that. Sets volume to 20% and turns on the
-      locomotive lights/accessories. Skipped in night mode and outside 05:00-22:00.
+      locomotive lights/accessories. Evening only (sun setting, not the pre-dawn dark);
+      skipped in night mode and after 22:00.
     # Two triggers, each checked against the other's condition below,
     # so it fires whichever happens last (sunset or arriving home)
     triggers:
@@ -117,6 +118,12 @@ automation:
         entity_id: sun.sun
         attribute: elevation
         below: 4.0
+      # Evening only: the sun is also below 4° before sunrise, so arriving home at
+      # 05:00-07:00 used to power up the layout. `rising` is false from solar noon to midnight.
+      - condition: state
+        entity_id: sun.sun
+        attribute: rising
+        state: false
       # Only if night mode is off
       - condition: state
         entity_id: input_boolean.home_night_mode
