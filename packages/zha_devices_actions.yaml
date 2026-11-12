@@ -189,9 +189,9 @@ automation:
           # Night hours (21:00-05:00): prefer dimmed Edison bulb instead of full brightness
           dim_lights: "{{ now().hour >= 21 or now().hour < 5 }}"
           no_hall_lights_on: "{{ not hall_edison_bulb_on and not hall_lights_on }}"
-          # We use 254 instead of 255 because of some weird behavior of Philips Hue bulbs
+          # Philips Hue bulbs report 254 after being set to 255, so treat 254 and above as full
           hall_edison_not_full: "{{ hall_edison_bulb_on and hall_edison_brightness < 254 }}"
-          hall_edison_full: "{{ hall_edison_bulb_on and hall_edison_brightness == 254 }}"
+          hall_edison_full: "{{ hall_edison_bulb_on and hall_edison_brightness >= 254 }}"
           hall_lights_only_on: "{{ hall_lights_on and not hall_edison_bulb_on }}"
           both_hall_lights_on: "{{ hall_lights_on and hall_edison_bulb_on }}"
       - choose:
