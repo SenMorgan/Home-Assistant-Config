@@ -169,7 +169,7 @@ automation:
   - id: hall_lights_control_with_tradfri_switch_handler
     alias: Hall Lights Control with Tradfri Switch Handler
     description: >-
-      IKEA Tradfri on/off switch in the hall. Short UP steps the light up (Edison bulb dimmed at night
+      Hall Remote (IKEA Tradfri on/off switch above the 3D printer). Short UP steps the light up (Edison bulb dimmed at night
       or full, then full, then main hall lights); short DOWN steps down in reverse (at night a full
       bulb is dimmed first). Hold UP / hold DOWN turns all hall-area lights on / off.
     mode: restart
@@ -178,7 +178,7 @@ automation:
       - trigger: event
         event_type: zha_event
         event_data:
-          # Tradfri Switch 1
+          # Hall Remote (IKEA Tradfri on/off switch above the 3D printer)
           device_id: "a64c98fa9b0c36e96ebe42160fcf78b5"
     actions:
       - variables:
