@@ -303,9 +303,14 @@ automation:
           # Members: battery devices with numeric state <= threshold (20%); empty list if none
           entities: >-
             {% set threshold = 20 %}
-            {% set devices = expand('group.battery_devices') | selectattr('state', 'is_number') | list %}
-            {% set low = devices | map(attribute='state') | map('int') | select('<=', threshold) | map('string') | list %}
-            {% set low_devices = devices | selectattr('state', 'in', low) | sort(attribute='entity_id') | map(attribute='entity_id') | list %}
+            {% set ns = namespace(low=[]) %}
+            {# Compare as numbers, so fractional states like "15.5" are handled too #}
+            {% for s in expand('group.battery_devices') | selectattr('state', 'is_number') %}
+              {% if s.state | float <= threshold %}
+                {% set ns.low = ns.low + [s.entity_id] %}
+              {% endif %}
+            {% endfor %}
+            {% set low_devices = ns.low | sort %}
             {% if low_devices | length > 0 %}
               {{ low_devices | join(', ') }}
             {% else %}
