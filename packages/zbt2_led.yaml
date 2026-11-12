@@ -1,0 +1,237 @@
+######################################################################
+# File: zbt2_led.yaml                                                #
+# Author: SenMorgan https://github.com/SenMorgan                     #
+# Date: 2026-11-11                                                   #
+#                                                                    #
+# Info: uses the LED of the Home Assistant Connect ZBT-2 (living     #
+# room) as a home status indicator, with a short blue flash on       #
+# every manual interaction with a device.                            #
+# Requires the experimental custom integration "zbt2_led".           #
+#                                                                    #
+# Copyright (c) 2026 Sen Morgan                                      #
+######################################################################
+
+###############################################
+## INPUT BOOLEANS
+###############################################
+input_boolean:
+  zbt2_led_enabled:
+    name: ZBT2 LED Enabled
+    icon: mdi:led-on
+  zbt2_led_flash:
+    name: ZBT2 LED Flash On Interaction
+    icon: mdi:flash
+
+###############################################
+## TEMPLATE ENTITIES
+###############################################
+template:
+  - sensor:
+      # The most important thing to show right now. First match wins.
+      # In night mode only the UPS states are shown.
+      - name: ZBT2 LED Status
+        unique_id: zbt2_led_status
+        icon: mdi:led-on
+        state: >
+          {% set ups = states('sensor.ups_status_data') %}
+          {% set night = is_state('input_boolean.home_night_mode', 'on') %}
+          {% set printer = states('sensor.3d_printer_bambu_lab_a1_print_status') %}
+          {% set printer_changed = states.sensor['3d_printer_bambu_lab_a1_print_status'].last_changed
+            if states.sensor['3d_printer_bambu_lab_a1_print_status'] is not none else none %}
+          {% set iaq = states('sensor.air_quality_station_iaq') | float(0) %}
+          {% set backup = states('sensor.backup_last_successful_automatic_backup') | as_datetime(default=none) %}
+          {% if 'OB' in ups and 'LB' in ups %}
+            ups_low
+          {% elif 'OB' in ups %}
+            ups_battery
+          {% elif night %}
+            idle
+          {% elif is_state('binary_sensor.windows', 'on') and
+            is_state_attr('climate.nest_thermostat', 'preset_mode', 'eco') %}
+            window_eco
+          {% elif printer == 'finish' and printer_changed is not none and
+            now() - printer_changed < timedelta(minutes=10) %}
+            print_finished
+          {% elif printer in ['prepare', 'running'] %}
+            printing
+          {% elif iaq > 200 %}
+            air_bad
+          {% elif iaq > 150 %}
+            air_poor
+          {% elif is_state('binary_sensor.any_battery_device_low', 'on') or
+            (backup is not none and now() - backup > timedelta(days=2)) %}
+            attention
+          {% elif is_state('input_boolean.guest_mode', 'on') %}
+            guest
+          {% else %}
+            idle
+          {% endif %}
+
+###############################################
+## SCRIPTS
+###############################################
+script:
+  # The only place that sets the steady LED colour. Blinks for UPS states.
+  zbt2_led_apply:
+    alias: ZBT2 LED Apply Status
+    icon: mdi:led-on
+    mode: restart
+    variables:
+      status: "{{ states('sensor.zbt2_led_status') }}"
+      enabled: "{{ is_state('input_boolean.zbt2_led_enabled', 'on') }}"
+      colors:
+        ups_low: "255,0,0" # red, blinking
+        ups_battery: "255,80,0" # orange, blinking
+        window_eco: "0,255,160" # turquoise
+        print_finished: "0,255,0" # green
+        printing: "140,0,255" # purple
+        air_bad: "255,40,0" # orange-red
+        air_poor: "255,160,0" # yellow
+        attention: "40,25,0" # dim yellow
+        guest: "25,25,25" # dim white
+      # Colours are "R,G,B" strings: zeros inside a YAML list get lost when variables are rendered
+      rgb: "{{ (colors.get(status, '0,0,0') if enabled else '0,0,0').split(',') | map('int') | list }}"
+      blink: "{{ enabled and status in ['ups_low', 'ups_battery'] }}"
+    sequence:
+      - if:
+          - "{{ blink }}"
+        then:
+          - repeat:
+              while:
+                - "{{ states('sensor.zbt2_led_status') == status }}"
+                - "{{ is_state('input_boolean.zbt2_led_enabled', 'on') }}"
+              sequence:
+                - action: zbt2_led.set_led
+                  continue_on_error: true
+                  data:
+                    red: "{{ rgb[0] | int }}"
+                    green: "{{ rgb[1] | int }}"
+                    blue: "{{ rgb[2] | int }}"
+                - delay: 00:00:01
+                - action: zbt2_led.set_led
+                  continue_on_error: true
+                  data:
+                    red: 0
+                    green: 0
+                    blue: 0
+                - delay: 00:00:01
+        else:
+          - action: zbt2_led.set_led
+            continue_on_error: true
+            data:
+              red: "{{ rgb[0] | int }}"
+              green: "{{ rgb[1] | int }}"
+              blue: "{{ rgb[2] | int }}"
+
+###############################################
+## AUTOMATIONS
+###############################################
+automation:
+  - alias: ZBT2 LED Status Update
+    id: "zbt2_led_status_update"
+    mode: queued
+    triggers:
+      - trigger: state
+        entity_id:
+          - sensor.zbt2_led_status
+          - input_boolean.zbt2_led_enabled
+      - trigger: homeassistant
+        event: start
+    actions:
+      # script.turn_on does not wait for the blink loop to finish
+      - action: script.turn_on
+        target:
+          entity_id: script.zbt2_led_apply
+
+  - alias: ZBT2 LED Flash On Manual Interaction
+    id: "zbt2_led_flash_on_manual_interaction"
+    mode: single
+    max_exceeded: silent
+    triggers:
+      # A light, socket or fan was switched on or off
+      - trigger: state
+        id: device
+        entity_id:
+          - light.hall_lights
+          - light.hall_edison_bulb
+          - light.living_room_ceiling_light
+          - light.kitchen_ceiling_light
+          - light.kitchen_spotlights
+          - light.kitchen_led_strip
+          - light.bedroom_ceiling_light
+          - light.bedroom_nightlight
+          - light.ikea_table_lamp
+          - light.mi_desk_lamp
+          - light.floor_lamp
+          - light.shelf_lighting
+          - light.tv_lights
+          - light.pc_backlight
+          - light.7_seg_clock
+          - light.gyver_lamp
+          - light.cocktail_bar_neon_sign
+          - light.string_lights
+          - light.christmas_tree
+          - light.banana_light
+          - light.dollhouse_lights
+          - light.backyard_bar_light_led_strip_6
+          - fan.wc_and_bathroom
+          - switch.3d_printer_socket
+          - switch.hall_heater
+          - switch.wireless_charger
+          - switch.monolith_speakers
+          - switch.moving_head_power
+          - switch.parking_light
+          - switch.bedroom_baby_monitor_plug
+          - switch.gostinaia_grillplats_plug_1
+          - switch.zigbee_usb_3_switch_module_2_switch_2
+          - switch.zigbee_usb_3_switch_module_2_switch_3
+          - switch.sonoff_socket
+        from:
+          - "on"
+          - "off"
+        to:
+          - "on"
+          - "off"
+      # A Zigbee button or remote was pressed
+      - trigger: event
+        id: button
+        event_type: zha_event
+    conditions:
+      - condition: state
+        entity_id:
+          - input_boolean.zbt2_led_enabled
+          - input_boolean.zbt2_led_flash
+        state: "on"
+      - condition: state
+        entity_id: input_boolean.home_night_mode
+        state: "off"
+      # Never interrupt the blinking UPS states
+      - condition: template
+        value_template: "{{ states('sensor.zbt2_led_status') not in ['ups_low', 'ups_battery'] }}"
+      # Buttons: real commands only (door contacts send "attribute_updated").
+      # Devices: manual changes only. A change made from the UI or by voice has a user,
+      # a change made by an automation or script has a parent context or shares its
+      # context with the automation or script that caused it.
+      - condition: template
+        value_template: >
+          {% if trigger.id == 'button' %}
+            {{ trigger.event.data.command not in [none, 'attribute_updated', 'checkin'] }}
+          {% else %}
+            {% set ctx = trigger.to_state.context %}
+            {{ ctx.user_id is not none or (ctx.parent_id is none and
+              states.automation | selectattr('context.id', 'eq', ctx.id) | list | count == 0 and
+              states.script | selectattr('context.id', 'eq', ctx.id) | list | count == 0) }}
+          {% endif %}
+    actions:
+      # Home Assistant blue
+      - action: zbt2_led.set_led
+        continue_on_error: true
+        data:
+          red: 24
+          green: 188
+          blue: 242
+      - delay:
+          milliseconds: 500
+      - action: script.turn_on
+        target:
+          entity_id: script.zbt2_led_apply
