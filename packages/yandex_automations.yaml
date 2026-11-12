@@ -189,8 +189,14 @@ script:
 
   yandex_joke_after_washing_clothes:
     alias: Yandex Joke After Washing Clothes
-    description: Yandex Station Midi announces with a random joke that the laundry is done.
+    description: >-
+      Yandex Station Midi announces with a random joke that the laundry is done.
+      Silent in night mode (not critical).
     sequence:
+      # Night mode: Alice speaks only about critical events
+      - condition: state
+        entity_id: input_boolean.home_night_mode
+        state: "off"
       - action: media_player.play_media
         target:
           entity_id: media_player.yandex_station_midi
