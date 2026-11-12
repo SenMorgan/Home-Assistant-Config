@@ -385,7 +385,8 @@ automation:
     description: >-
       Dashboard button to power off the whole server rack: shuts down the Synology NAS first,
       waits 10 s, then shuts down the Home Assistant host. If the NAS is already unavailable,
-      asks for confirmation on the phone (TTS + actionable notification) before shutting down HA.
+      asks for confirmation on the phone (TTS + actionable notification) before shutting down HA;
+      no answer within 10 minutes cancels the shutdown.
     # restart: pressing the button again aborts a pending confirmation and starts over
     mode: restart
     triggers:
@@ -424,7 +425,8 @@ automation:
                     title: "Отмена"
           # Waiting for «action_power_off» or «action_cancel» avoids accidentally continuing
           # for another script/automation's notification action
-          # Note: no timeout, so the run waits until one of the actions is pressed (or the automation restarts)
+          # No answer within 10 minutes counts as "Cancel" (wait.trigger stays none),
+          # so a forgotten notification cannot shut HA down hours later
           - wait_for_trigger:
               - trigger: event
                 event_type: mobile_app_notification_action
@@ -434,20 +436,22 @@ automation:
                 event_type: mobile_app_notification_action
                 event_data:
                   action: "{{ action_cancel }}"
+            timeout: "00:10:00"
+            continue_on_timeout: true
           # Perform the action
           - choose:
-              - conditions: "{{ wait.trigger.event.data.action == action_power_off }}"
+              - conditions: "{{ wait.trigger is not none and wait.trigger.event.data.action == action_power_off }}"
                 sequence:
                   # Turn OFF Home Assistant
                   - action: script.turn_on
                     target:
                       entity_id: script.home_assistant_shutdown
-              - conditions: "{{ wait.trigger.event.data.action == action_cancel }}"
-                sequence:
-                  - action: script.notify_and_create_persistent_notification
-                    data:
-                      title: *sys_notify_title_info
-                      message: Отмена выключения серверного шкафа
+            # "Cancel" pressed or no answer within 10 minutes
+            default:
+              - action: script.notify_and_create_persistent_notification
+                data:
+                  title: *sys_notify_title_info
+                  message: Отмена выключения серверного шкафа
         else:
           - action: script.notify_and_create_persistent_notification
             data:
