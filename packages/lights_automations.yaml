@@ -48,6 +48,7 @@ light:
       - light.hall_edison_bulb
       - light.hall_lights
       - light.kitchen_ceiling_light
+      - light.kitchen_christmas_lights
       - light.kitchen_led_strip
       - light.kitchen_spotlights
       - light.living_room_ceiling_light
