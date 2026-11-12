@@ -50,30 +50,27 @@ template:
         unit_of_measurement: "Kč"
         device_class: monetary
         state_class: total
-        # Cote: calculations made 09.2025
-        # Fixed part - 223.30 Kč per month, divided by 30.4 days = 7.35 Kč per day
-        # Variable part - 5.316 Kč per kWh
-        # Total = (7.35 + (5.316 * consumed kWh today)) + 21% VAT
+        # Tariff (updated 2026-11): fixed 231.43 Kč/month + 5.03 Kč/kWh, both without 21 % VAT
+        # Daily fixed part = monthly fixed part / number of days in the current month
         state: >
-          {% set fixed = 7.35 %}
-          {% set variable = 5.316 %}
+          {% set fixed_month = 231.43 %}
+          {% set variable = 5.03 %}
           {% set vat = 0.21 %}
+          {% set days = ((now().replace(day=28) + timedelta(days=4)).replace(day=1) - timedelta(days=1)).day %}
           {% set consumed = states('sensor.grid_consumed_today') | float(0.0) %}
-          {{ ((fixed + (variable * consumed)) * (1 + vat)) | round(2, default=0) }}
+          {{ ((fixed_month / days + variable * consumed) * (1 + vat)) | round(2, default=0) }}
       - name: Grid Consumed Month Cost
         unique_id: grid_consumed_month_cost
         unit_of_measurement: "Kč"
         device_class: monetary
         state_class: total
-        # Fixed part - 223.30 Kč per month
-        # Variable part - 5.316 Kč per kWh
-        # Total = (223.30 + (5.316 * consumed kWh today)) + 21% VAT
+        # Tariff (updated 2026-11): fixed 231.43 Kč/month + 5.03 Kč/kWh, both without 21 % VAT
         state: >
-          {% set fixed = 223.30 %}
-          {% set variable = 5.316 %}
+          {% set fixed_month = 231.43 %}
+          {% set variable = 5.03 %}
           {% set vat = 0.21 %}
           {% set consumed = states('sensor.grid_consumed_month') | float(0.0) %}
-          {{ ((fixed + (variable * consumed)) * (1 + vat)) | round(2, default=0) }}
+          {{ ((fixed_month + variable * consumed) * (1 + vat)) | round(2, default=0) }}
 
 ###############################################
 # UTILITY METER (monthly accumulation)
