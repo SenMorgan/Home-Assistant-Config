@@ -32,6 +32,7 @@ shell_command:
 media_player:
   - platform: universal
     name: "Model Railway"
+    unique_id: model_railway
     commands:
       turn_on:
         action: switch.turn_on

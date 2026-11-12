@@ -66,183 +66,134 @@ filter:
 entity_config:
   binary_sensor.bedroom_window_contact:
     name: Датчик окна
-    room: Спальня
   binary_sensor.kitchen_window_contact:
     name: Датчик окна
-    room: Кухня
   binary_sensor.living_room_window_contact:
     name: Датчик окна
-    room: Зал
   binary_sensor.backyard_motion_alarm:
     name: Датчик движения
-    room: Двор
   binary_sensor.kitchen_motion_alarm:
     name: Датчик движения
-    room: Кухня
   input_button.thermostat_10_minutes_heating:
     name: Подогрев
-    room: Дом
     type: switch
   climate.hollandis_climate:
     name: Тесла
-    room: Тесла
   input_boolean.3d_printer_power:
     name: 3D принтер
-    room: 3D принтер
     type: switch
   input_boolean.guest_mode:
     name: Гостевой режим
-    room: Дом
     type: switch
   input_boolean.heating_allowed:
     name: Отопление
-    room: Дом
     type: switch
   input_boolean.home_night_mode:
     name: Ночной режим
-    room: Дом
     type: switch
   input_boolean.silent_mode:
     name: Тихий режим
-    room: Дом
     type: switch
   light.hall_lights:
     name: Люстра
-    room: Коридор
     type: light.ceiling
   light.shelf_lighting:
     name: Подсветка полки
-    room: Кухня
     type: light.strip
   light.floor_lamp:
     name: Торшер
-    room: Кухня
   light.mi_desk_lamp:
     name: Светильник
-    room: Зал
     type: light.lamp
   light.hall_edison_bulb:
     name: Лампочка
-    room: Коридор
   light.gyver_lamp:
     name: Лампа Гайвера
-    room: Кухня
     slow: true
     type: light.lamp
   light.string_lights:
     name: Лампочки
-    room: Кухня
   switch.wireless_charger:
     name: Беспроводная зарядка
-    room: Кухня
     type: switch
     slow: true
   light.kitchen_spotlights:
     name: Подсветка
-    room: Кухня
   light.kitchen_led_strip:
     name: Светодиодная лента
-    room: Кухня
     type: light.strip
   light.bedroom_nightlight:
     name: Ночник
-    room: Спальня
   light.christmas_tree:
     name: Ёлка
-    room: Зал
   light.dollhouse_lights:
     name: Кукольный домик
-    room: Зал
     type: light.strip
   light.cocktail_bar_neon_sign:
     name: Неоновая вывеска
-    room: Кухня
   light.living_room_ceiling_light:
     name: Люстра
-    room: Зал
     type: light.ceiling
   light.banana_light:
     name: Банан
-    room: Кухня
     slow: true
   light.bedroom_ceiling_light:
     name: Люстра
-    room: Спальня
     type: light.ceiling
   light.kitchen_ceiling_light:
     name: Люстра
-    room: Кухня
     type: light.ceiling
   light.tv_lights:
     name: Подсветка телевизора
-    room: Зал
     type: light.strip
   light.kitchen_christmas_lights:
     name: Гирлянда
-    room: Кухня
   media_player.model_railway:
     name: Макет
-    room: Макет
   media_player.samsung_tv:
     name: Телевизор
-    room: Зал
   scene.evening:
     name: Вечернее Освещение
-    room: Дом
   scene.movies:
     name: Сцена Кино
-    room: Зал
   switch.hollandis_charge:
     name: Зарядка Теслы
-    room: Тесла
     type: socket
   switch.interactive_cz_map_enable:
     name: Карта
-    room: Кухня
     type: switch
   switch.monolith_speakers:
     name: Колонки
-    room: Зал
     type: socket
   switch.moving_head_power:
     name: Голова
-    room: Зал
     type: socket
   switch.asus_pc:
     name: Компьютер
-    room: Кухня
     type: socket
   switch.bedroom_baby_monitor_plug:
     name: Видео-няня
-    room: Спальня
     type: socket
   button.ex_commandstation_emergency_stop:
     name: Экстренная остановка
-    room: Макет
     type: switch
   button.ex_commandstation_reboot:
     name: Перезагрузка макета
-    room: Макет
     type: switch
   button.ex_commandstation_route_300:
     name: Маршрут 300
-    room: Макет
     type: switch
   switch.loco_vossloh_1701_engine_sound:
     name: Двигатель тепловоза
-    room: Макет
     type: switch
   switch.loco_vossloh_1701_horn_hi:
     name: Гудок локомотива
-    room: Макет
     type: switch
   switch.loco_sbb_cargo_re_482_power_sound:
     name: Токоприёмник
-    room: Макет
     type: openable
   sensor.nest_thermostat_temperature:
     name: Погода на кухне
-    room: Кухня
     properties:
       - type: temperature
         entity: sensor.nest_thermostat_temperature
@@ -258,7 +209,6 @@ entity_config:
         entity: sensor.air_quality_station_pm2_5
   sensor.ble_temperature_atc_bedroom:
     name: Погода в спальне
-    room: Спальня
     properties:
       - type: temperature
         entity: sensor.ble_temperature_atc_bedroom
@@ -266,7 +216,6 @@ entity_config:
         entity: sensor.ble_humidity_atc_bedroom
   sensor.ble_temperature_atc_living_room:
     name: Погода в зале
-    room: Зал
     properties:
       - type: temperature
         entity: sensor.ble_temperature_atc_living_room
@@ -274,7 +223,6 @@ entity_config:
         entity: sensor.ble_humidity_atc_living_room
   sensor.ble_temperature_atc_hall:
     name: Погода в коридоре
-    room: Коридор
     properties:
       - type: temperature
         entity: sensor.ble_temperature_atc_hall
@@ -282,7 +230,6 @@ entity_config:
         entity: sensor.ble_humidity_atc_hall
   sensor.ble_temperature_atc_bathroom:
     name: Погода в ванной
-    room: Ванная
     properties:
       - type: temperature
         entity: sensor.ble_temperature_atc_bathroom
@@ -290,7 +237,6 @@ entity_config:
         entity: sensor.ble_humidity_atc_bathroom
   sensor.ble_temperature_atc_toilet:
     name: Погода в туалете
-    room: Туалет
     properties:
       - type: temperature
         entity: sensor.ble_temperature_atc_toilet
@@ -298,7 +244,6 @@ entity_config:
         entity: sensor.ble_humidity_atc_toilet
   sensor.pool_monitor_air_temperature:
     name: Погода во дворе
-    room: Двор
     properties:
       - type: temperature
         entity: sensor.pool_monitor_air_temperature
@@ -308,13 +253,10 @@ entity_config:
         entity: sensor.pool_monitor_air_pressure
   sensor.pool_monitor_bottom_water_temperature:
     name: Температура воды снизу
-    room: Бассейн
   sensor.pool_monitor_upper_water_temperature:
     name: Температура воды сверху
-    room: Бассейн
   sensor.sm_s931b_battery_level:
     name: Телефон Крис
-    room: Телефоны
     properties:
       - type: battery_level
         entity: sensor.sm_s931b_battery_level
@@ -322,7 +264,6 @@ entity_config:
         entity: sensor.sm_s931b_battery_temperature
   sensor.electricity_meter_power:
     name: Электричество
-    room: Дом
     properties:
       - type: power
         entity: sensor.electricity_meter_power
@@ -332,11 +273,9 @@ entity_config:
         entity: sensor.electricity_meter_current
   sensor.electricity_meter_energy:
     name: Счётчик электричества
-    room: Дом
     type: smart_meter.electricity
   climate.nest_thermostat:
     name: Главный термостат
-    room: Кухня
     properties:
       - type: temperature
         entity: sensor.nest_thermostat_temperature
@@ -344,22 +283,15 @@ entity_config:
         entity: sensor.nest_thermostat_humidity
   climate.danfoss_etrv0100_bedroom_thermostat:
     name: Термостат
-    room: Спальня
   climate.danfoss_etrv0103_kitchen_thermostat:
     name: Термостат
-    room: Кухня
   climate.danfoss_etrv0103_living_room_thermostat:
     name: Термостат
-    room: Зал
   cover.bedroom:
     name: Штора
-    room: Спальня
   cover.living_cover:
     name: Штора
-    room: Зал
   fan.wc_and_bathroom:
     name: Вентиляция
-    room: Туалет
   vacuum.johnny:
     name: Джонни
-    room: Дом

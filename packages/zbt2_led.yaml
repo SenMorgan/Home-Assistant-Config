@@ -160,7 +160,6 @@ automation:
           - light.kitchen_led_strip
           - light.bedroom_ceiling_light
           - light.bedroom_nightlight
-          - light.ikea_table_lamp
           - light.mi_desk_lamp
           - light.floor_lamp
           - light.shelf_lighting

@@ -47,19 +47,13 @@ light:
       - light.gyver_lamp
       - light.hall_edison_bulb
       - light.hall_lights
-      - light.ikea_table_lamp
       - light.kitchen_ceiling_light
       - light.kitchen_led_strip
       - light.kitchen_spotlights
-      - light.led_strip_4
-      - light.led_strip_5
       - light.living_room_ceiling_light
       - light.mi_desk_lamp
-      - light.obk66763280
       - light.pc_backlight
       - light.shelf_lighting
-      - light.smart_light_bulb
-      - light.smart_light_bulb_2
       - light.string_lights
       - light.tv_lights
 
