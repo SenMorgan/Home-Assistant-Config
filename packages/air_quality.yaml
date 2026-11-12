@@ -131,34 +131,38 @@ automation:
   - id: notification_air_quality_restored
     alias: Notification Air Quality Restored
     description: >-
-      When IAQ stays below 50 for 2 minutes (not at night), announces it on Yandex Station Midi and the phone,
-      re-arms the bad air notification and disables itself and the window greeting.
+      When IAQ stays below 100 for 10 minutes, re-arms the bad air notification and disables itself
+      and the window greeting. The "back to normal" announcement and push are skipped at night,
+      but the re-arm always happens (previously a night-time or 50-100 recovery left the bad air
+      notification disabled for days).
     triggers:
+      # Hysteresis: bad above 200, good again below 100 (IAQ 51-100 is "good" on the BME680 scale)
       - trigger: numeric_state
         entity_id: sensor.air_quality_station_iaq
-        below: 50
-        for: 00:02:00
-    conditions:
-      - condition: state
-        entity_id: input_boolean.home_night_mode
-        state: "off"
+        below: 100
+        for: 00:10:00
     actions:
-      # Check if yandex station is not playing now
+      # Announce only outside night mode and when the station is not playing
       - if:
-          - condition: template
-            value_template: "{{ not is_state('media_player.yandex_station_midi', 'playing') }}"
+          - condition: state
+            entity_id: input_boolean.home_night_mode
+            state: "off"
         then:
-          - action: media_player.play_media
-            target:
-              entity_id: media_player.yandex_station_midi
+          - if:
+              - condition: template
+                value_template: "{{ not is_state('media_player.yandex_station_midi', 'playing') }}"
+            then:
+              - action: media_player.play_media
+                target:
+                  entity_id: media_player.yandex_station_midi
+                data:
+                  media_content_type: text
+                  media_content_id: Качество воздуха в доме вернулось в норму.
+          - action: notify.mobile_app_sen_s25
             data:
-              media_content_type: text
-              media_content_id: Качество воздуха в доме вернулось в норму.
-      - action: notify.mobile_app_sen_s25
-        data:
-          title: "🌬 Качество воздуха"
-          message: >
-            Качество воздуха в доме улучшилось и составляет {{ states('sensor.air_quality_station_iaq') }}.
+              title: "🌬 Качество воздуха"
+              message: >
+                Качество воздуха в доме улучшилось и составляет {{ states('sensor.air_quality_station_iaq') }}.
       - action: automation.turn_on
         target:
           entity_id: automation.notification_air_quality_bad
