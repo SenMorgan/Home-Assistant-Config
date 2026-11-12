@@ -172,11 +172,18 @@ automation:
             ⏱️ Осталось {{ remaining_hours }}ч {{ remaining_minutes }}мин
 
   ###############################################
-  ## Remind me when print is paused
+  ## Print paused / printer error
   ###############################################
   - id: 3d_printer_print_paused
-    alias: 3D Printer - Print Paused
-    description: Notifies the phone when a running print is paused or fails.
+    alias: 3D Printer - Print Paused or Error
+    description: >-
+      When a print pauses or fails, or the printer reports an HMS/print error, sends a phone
+      notification with the printer's error text (tap opens the Bambu wiki page) and, if there is
+      a real error, announces it on Yandex Station Midi (not in night mode). A pause by the user
+      gets a push only; a task cancelled by the user (code 0300_400C) is ignored.
+    # Pause and HMS error arrive within milliseconds: handle them as one event
+    mode: single
+    max_exceeded: silent
     triggers:
       - trigger: state
         entity_id: sensor.3d_printer_bambu_lab_a1_print_status
@@ -184,11 +191,69 @@ automation:
         to:
           - "pause"
           - "failed"
+      - trigger: state
+        entity_id:
+          - binary_sensor.3d_printer_bambu_lab_a1_hms_errors
+          - binary_sensor.3d_printer_bambu_lab_a1_print_error
+        from: "off"
+        to: "on"
     actions:
+      # Let status, HMS and print-error entities all update before reading them
+      - delay: "00:00:02"
+      - variables:
+          hms: binary_sensor.3d_printer_bambu_lab_a1_hms_errors
+          perr: binary_sensor.3d_printer_bambu_lab_a1_print_error
+          # HMS errors are attributes "1-Error", "1-Wiki", "2-Error", ... with "Count"
+          errors: >-
+            {% set ns = namespace(l=[]) %}
+            {% if is_state(hms, 'on') %}
+              {% for i in range(1, (state_attr(hms, 'Count') | int(0)) + 1) %}
+                {% set ns.l = ns.l + [state_attr(hms, i ~ '-Error')] %}
+              {% endfor %}
+            {% endif %}
+            {% if is_state(perr, 'on') and state_attr(perr, 'error') %}
+              {% set ns.l = ns.l + [state_attr(perr, 'error')] %}
+            {% endif %}
+            {{ ns.l | reject('none') | unique | list }}
+          wiki: "{{ state_attr(hms, '1-Wiki') if is_state(hms, 'on') else '' }}"
+          # 0300_400C = "The task was canceled" (cancelled by the user on the printer/app)
+          cancelled_by_user: "{{ is_state(perr, 'on') and state_attr(perr, 'code') == '0300_400C' }}"
+          status: "{{ states('sensor.3d_printer_bambu_lab_a1_print_status') }}"
+      - condition: template
+        value_template: "{{ not cancelled_by_user }}"
       - action: notify.mobile_app_sen_s25
         data:
           title: "⚠️ 3D Printer"
-          message: "Печать приостановлена!"
+          message: >-
+            {% if errors | count > 0 %}
+            {{ 'Печать остановлена' if status == 'failed' else 'Печать приостановлена' }} из-за ошибки:
+            {{ errors | join('; ') }}
+            {% elif status == 'failed' %}
+            Печать прервана
+            {% else %}
+            Печать приостановлена
+            {% endif %}
+          data:
+            priority: high
+            # Tap opens the Bambu wiki page for the HMS code (or the printer dashboard)
+            clickAction: "{{ wiki if wiki else '/lovelace/3d-printer' }}"
+      # Voice announcement only for real errors; night mode: Alice speaks only about critical events
+      - if:
+          - condition: template
+            value_template: "{{ errors | count > 0 or status == 'failed' }}"
+          - condition: state
+            entity_id: input_boolean.home_night_mode
+            state: "off"
+        then:
+          - action: media_player.play_media
+            target:
+              entity_id: media_player.yandex_station_midi
+            data:
+              media_content_type: text
+              media_content_id: >-
+                Внимание! Ошибка 3Д принтера, печать
+                {{ 'остановлена' if status == 'failed' else 'приостановлена' }}.
+                Подробности в уведомлении на телефоне.
 
   ###############################################
   ## Remind me when print is resumed
