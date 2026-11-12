@@ -128,7 +128,7 @@ template:
                           states('sensor.ble_temperature_atc_bedroom'),
                           states('sensor.ble_temperature_atc_living_room')]
                          | select('is_number') | map('float') | list %}
-          {{ (now().hour >= 21 or now().hour <= 6)
+          {{ (now().hour >= 21 or now().hour < 6)
              and (is_state('binary_sensor.people_home', 'on') or is_state('input_boolean.guest_mode', 'on'))
              and temps | count > 0 and temps | min < 20.0 }}
       - name: Heating Request Bedroom
@@ -246,8 +246,15 @@ script:
     alias: Thermostat Start Heating
     description: >-
       Force the Nest to start heating by setting its target 2 °C above the current
-      temperature, then log which rooms are requesting heat.
+      temperature, then log the reason: the caller's message if given, otherwise which rooms
+      are requesting heat.
     mode: restart
+    fields:
+      message:
+        description: Optional heating log text (e.g. for short heating, when no room requests heat)
+        example: Включен кратковременный подогрев квартиры
+        selector:
+          text:
     # Forces the thermostat to start heating by adding 2°C to the current temperature
     sequence:
       - action: input_number.set_value
@@ -259,13 +266,16 @@ script:
       - action: script.thermostat_set_temperature
         data:
           temperature: "{{ states('input_number.thermostat_new_target_temperature') | float(24) }}"
-      # Log what rooms are requesting heat
+      # Log the caller's message, or what rooms are requesting heat
       # Builds "... в спальне, кухне и гостиной" from raw ETRV heat_required sensors + bathroom request
       - action: input_text.set_value
         target:
           entity_id: input_text.heating_log
         data:
           value: >-
+            {% if message is defined and message %}
+            {{ message }}
+            {% else %}
             {% set room_names = {
               'binary_sensor.danfoss_etrv0100_bedroom_heat_required': 'спальне',
               'binary_sensor.danfoss_etrv0103_kitchen_heat_required': 'кухне',
@@ -278,10 +288,15 @@ script:
                 {% set rooms.list = rooms.list + [room_name] %}
               {% endif %}
             {% endfor %}
+            {% if rooms.list | length == 0 %}
+            Отопление включено без запроса от комнат
+            {% else %}
             ETRVs запрашивают отопление в
             {{ rooms.list[:-1] | join(', ') }}
             {% if rooms.list | length > 1 %}и{% endif %}
-            {{ rooms.list[-1] if rooms.list | length > 0 else '' }}
+            {{ rooms.list[-1] }}
+            {% endif %}
+            {% endif %}
 
   thermostat_stop_heating:
     alias: Thermostat Stop Heating
@@ -570,7 +585,8 @@ automation:
     description: >-
       Safety net: if it gets below 20 °C at night while someone is home, cancel all
       heating timers, notify, set the Nest to the default target and turn on the hall heater.
-      Re-checked hourly while the alert stays on.
+      Re-checked hourly while the alert stays on (rescue actions repeat silently; notifications
+      are sent only once per cold episode). Night = 21:00-05:59.
     mode: single
     max_exceeded: silent
     triggers:
@@ -602,22 +618,28 @@ automation:
             - timer.heating_quarantine
             - timer.short_heating
             - timer.pause_heating
-      # Create persistent notification
-      - action: script.notify_and_create_persistent_notification
-        data:
-          title: *sys_notify_title_warning
-          message: "Температура упала ниже порога"
-      # Log the event
-      - action: input_text.set_value
-        target:
-          entity_id: input_text.heating_log
-        data:
-          value: "Температура упала ниже порога"
-      # Notify about low temperature on mobile app
-      - action: notify.mobile_app_sen_s25
-        data:
-          title: *sys_notify_title_info
-          message: "Термостат был снова включен в {{ states('sensor.time') }}, чтобы вы не замёрзли"
+      # Notify only on the first trigger of a cold episode; the hourly re-checks repeat the
+      # rescue actions below silently instead of re-sending the same notifications every hour
+      - if:
+          - condition: template
+            value_template: "{{ trigger.platform == 'state' }}"
+        then:
+          # Create persistent notification
+          - action: script.notify_and_create_persistent_notification
+            data:
+              title: *sys_notify_title_warning
+              message: "Температура упала ниже порога"
+          # Log the event
+          - action: input_text.set_value
+            target:
+              entity_id: input_text.heating_log
+            data:
+              value: "Температура упала ниже порога"
+          # Notify about low temperature on mobile app
+          - action: notify.mobile_app_sen_s25
+            data:
+              title: *sys_notify_title_info
+              message: "Термостат был снова включен в {{ states('sensor.time') }}, чтобы вы не замёрзли"
       # Set default temperature on thermostat
       - action: script.thermostat_stop_heating
         data:
@@ -766,7 +788,8 @@ automation:
     alias: Short Heating End
     description: >-
       When the short heating timer finishes, announce it and reset the Nest to the
-      default target unless some room still requests heat.
+      default target unless some room still requests heat. Runs in and out of the heating
+      season, because the start button is not limited to the season either.
     mode: single
     max_exceeded: silent
     triggers:
@@ -775,10 +798,7 @@ automation:
         event_type: timer.finished
         event_data:
           entity_id: timer.short_heating
-    conditions:
-      - condition: state
-        entity_id: input_boolean.heating_season
-        state: "on"
+    # No heating_season condition: otherwise an off-season short heating left the Nest at +2 °C
     actions:
       - action: media_player.play_media
         target:
@@ -963,17 +983,29 @@ automation:
     alias: Start Heating in Bathroom
     description: >-
       Force the boiler on for the scheduled evening bathroom heating when the bathroom is
-      below its target, regardless of windows, unless heating is paused or a short heating runs.
+      below its target, regardless of windows (and the window quarantine), unless heating is
+      paused or a short heating runs. Re-checked every 2 minutes, so a request that was blocked
+      when it started (pause, short heating, nobody home) is picked up once the block ends.
     mode: single
     max_exceeded: silent
+    # Runs every 2 minutes; keep enough traces to see a real run
+    trace:
+      stored_traces: 20
     triggers:
       - trigger: state
         entity_id: binary_sensor.heating_request_bathroom
         from: "off"
         to: "on"
+      # Re-check while the request stays on (same pattern as "Start Heating by ETRV Request")
+      - trigger: time_pattern
+        minutes: "/2"
     conditions: # Ignore windows state, we need to heat the bathroom
       - condition: state
         entity_id: input_boolean.heating_season
+        state: "on"
+      # Bathroom still requests heat (needed for the time_pattern trigger)
+      - condition: state
+        entity_id: binary_sensor.heating_request_bathroom
         state: "on"
       # If heating is not manually paused
       - condition: state
