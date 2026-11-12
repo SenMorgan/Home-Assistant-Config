@@ -554,8 +554,8 @@ automation:
   - id: disable_decorative_lights_when_sen_leaves
     alias: Disable Decorative Lights When Sen Leaves
     description: >-
-      Turns off Sen's decorative lights, the CZ map and railway track power once
-      Sen has been away for 10 minutes.
+      Turns off Sen's decorative lights (the same ones re-enabled by the *_reenable automations),
+      the CZ map and railway track power once Sen has been away for 10 minutes.
     mode: single
     max_exceeded: silent
     triggers:
@@ -567,6 +567,7 @@ automation:
       - action: light.turn_off
         target:
           entity_id:
+            - light.banana_light
             - light.cocktail_bar_neon_sign
             - light.gyver_lamp
             - light.shelf_lighting
