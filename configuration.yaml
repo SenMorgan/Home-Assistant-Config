@@ -10,6 +10,9 @@ homeassistant:
   customize: !include customize.yaml
   packages: !include_dir_named packages
 
+# Automations created in the UI editor (YAML automations live in packages/)
+automation: !include automations.yaml
+
 recorder:
   db_url: !secret DATABASE_URL
   purge_keep_days: 180
