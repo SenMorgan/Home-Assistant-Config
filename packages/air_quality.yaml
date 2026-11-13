@@ -45,40 +45,32 @@ automation:
             target:
               entity_id: media_player.yandex_station_midi
             data:
-              # If some of windows are opened, notify to close exact opened window by telling it's name.
-              # Otherwise, notify to open window.
+              # Open windows -> the outside air is the problem: name the rooms (area names -> Russian);
+              # otherwise ask to open a window
               media_content_type: text
-              media_content_id: |
-                Замечено плохое качество воздуха в доме,
-                {% if states('binary_sensor.windows') == 'off' %}
-                  советую открыть окно.
+              media_content_id: >-
+                {% from 'ru.jinja' import room_in %}
+                {% if is_state('binary_sensor.windows', 'off') %}
+                  Воздух в квартире несвежий, откройте окно.
                 {% else %}
-                  советую закрыть окно
-                  {% if states('binary_sensor.bedroom_window_contact') == 'on' %}
-                    в спальне
-                  {% endif %}
-                  {% if states('binary_sensor.kitchen_window_contact') == 'on' %}
-                    {% if states('binary_sensor.bedroom_window_contact') == 'on' %}
-                      {% if states('binary_sensor.living_room_window_contact') == 'on' %}
-                        ,
-                      {% else %}
-                        и
-                      {% endif %}
-                    {% endif %}
-                    на кухне
-                  {% endif %}
-                  {% if states('binary_sensor.living_room_window_contact') == 'on' %}
-                    {% if states('binary_sensor.bedroom_window_contact') == 'on' or states('binary_sensor.kitchen_window_contact') == 'on' %}
-                      и
-                    {% endif %}
-                    в гостинной.
-                  {% endif %}
+                  {% set ns = namespace(r=[]) %}
+                  {% for e in expand('binary_sensor.windows') | selectattr('state', 'eq', 'on') %}
+                    {% set ns.r = ns.r + [room_in(area_name(e.entity_id))] %}
+                  {% endfor %}
+                  Качество воздуха ухудшается при открытых окнах. Закройте {{ 'окна' if ns.r | count > 1 else 'окно' }} {{ (ns.r[:-1] | join(', ') ~ ' и ' ~ ns.r[-1]) if ns.r | count > 1 else ns.r | join('') }}.
                 {% endif %}
-      - action: notify.mobile_app_sen_s25
+      - action: script.notify
         data:
-          title: "🌬 Качество воздуха"
-          message: >
-            Качество воздуха в доме ухудшилось и составляет {{ states('sensor.air_quality_station_iaq') }}.
+          level: info
+          title: "🌬️ Душно: IAQ {{ states('sensor.air_quality_station_iaq') | float(0) | round(0) | int }}"
+          message: >-
+            {% from 'ru.jinja' import room_ru %}
+            CO₂ {{ states('sensor.air_quality_station_co2') | float(0) | round(0) | int }} ppm ·
+            {% if is_state('binary_sensor.windows', 'off') %}откройте окно{% else %}
+            {%- set ns = namespace(r=[]) %}
+            {%- for e in expand('binary_sensor.windows') | selectattr('state', 'eq', 'on') %}
+              {%- set ns.r = ns.r + [room_ru(area_name(e.entity_id))] %}
+            {%- endfor %}закройте окно: {{ ns.r | join(', ') }}{% endif %}
       - action: automation.turn_on
         target:
           entity_id:
@@ -157,12 +149,16 @@ automation:
                   entity_id: media_player.yandex_station_midi
                 data:
                   media_content_type: text
-                  media_content_id: Качество воздуха в доме вернулось в норму.
-          - action: notify.mobile_app_sen_s25
+                  media_content_id: >-
+                    {{ 'Воздух свежий, окно можно закрыть.' if is_state('binary_sensor.windows', 'on')
+                       else 'Воздух в квартире снова свежий.' }}
+          - action: script.notify
             data:
-              title: "🌬 Качество воздуха"
-              message: >
-                Качество воздуха в доме улучшилось и составляет {{ states('sensor.air_quality_station_iaq') }}.
+              level: info
+              title: "🌿 Воздух в норме: IAQ {{ states('sensor.air_quality_station_iaq') | float(0) | round(0) | int }}"
+              message: >-
+                CO₂ {{ states('sensor.air_quality_station_co2') | float(0) | round(0) | int }} ppm
+                {%- if is_state('binary_sensor.windows', 'on') %} · можно закрыть окно{% endif %}
       - action: automation.turn_on
         target:
           entity_id: automation.notification_air_quality_bad
