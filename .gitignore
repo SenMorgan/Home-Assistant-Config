@@ -22,3 +22,5 @@
 secrets.yaml
 yandex-station.yaml
 private.yaml
+# Private notes for Claude (house details; repo is public)
+CLAUDE.md
