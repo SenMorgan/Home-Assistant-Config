@@ -7,17 +7,6 @@
 ######################################################################
 
 ###############################################
-## SETTINGS AND VARIABLES
-###############################################
-homeassistant:
-  customize:
-    package.node_anchors:
-      sys_notify_title_info: &sys_notify_title_info "💬 Системное уведомление"
-      sys_notify_title_resolved: &sys_notify_title_resolved "✅ Проблема устранена"
-      sys_notify_title_warning: &sys_notify_title_warning "⚠️ Предупреждение"
-      sys_notify_title_critical: &sys_notify_title_critical "🚨 Внимание!"
-
-###############################################
 ## GROUPS
 ###############################################
 group:
@@ -74,11 +63,18 @@ alert:
     notifiers:
       - mobile_app_sen_s25
       - persistent_notification
-    title: *sys_notify_title_warning
+    # Same title for the done message, so it is templated on the sensor state
+    title: >-
+      {{ '📴 Датчики безопасности не на связи' if is_state('binary_sensor.safety_sensors_offline', 'on')
+         else '📶 Датчики безопасности на связи' }}
     message: >-
-      Датчики безопасности не на связи больше часа:
-      {{ state_attr('binary_sensor.safety_sensors_offline', 'offline') }}
-    done_message: Все датчики безопасности снова на связи.
+      Больше часа: {{ state_attr('binary_sensor.safety_sensors_offline', 'offline') }}
+    done_message: Все датчики безопасности снова передают данные
+    data:
+      channel: Предупреждения
+      importance: high
+      priority: high
+      ttl: 0
 
   water_leakage_bathroom:
     name: "Water Leakage in Bathroom"
@@ -91,9 +87,13 @@ alert:
     notifiers:
       - mobile_app_sen_s25
       - mobile_app_sm_s931b
-    title: *sys_notify_title_critical
-    message: Water leakage detected in bathroom at {{ states('sensor.time') }}.
-    done_message: Bathroom water leakage resolved at {{ states('sensor.time') }}.
+    # Every alert and its recovery are separate pushes (no tag): the history must stay visible.
+    # Recovery is phrased as a sensor observation, not as "problem solved".
+    title: >-
+      {{ '💧 Протечка: ванная' if is_state('binary_sensor.water_leakage_bathroom_moisture', 'on')
+         else '💧 Ванная: датчик сухой' }}
+    message: Датчик в ванной зафиксировал воду на полу · проверьте немедленно
+    done_message: Датчик в ванной больше не фиксирует воду · проверьте визуально
     data:
       ttl: 0
       priority: high
@@ -108,9 +108,13 @@ alert:
     notifiers:
       - mobile_app_sen_s25
       - mobile_app_sm_s931b
-    title: *sys_notify_title_critical
-    message: Water leakage detected in kitchen at {{ states('sensor.time') }}.
-    done_message: Kitchen water leakage resolved at {{ states('sensor.time') }}.
+    # Every alert and its recovery are separate pushes (no tag): the history must stay visible.
+    # Recovery is phrased as a sensor observation, not as "problem solved".
+    title: >-
+      {{ '💧 Протечка: кухня' if is_state('binary_sensor.water_leakage_kitchen_moisture', 'on')
+         else '💧 Кухня: датчик сухой' }}
+    message: Датчик на кухне зафиксировал воду на полу · проверьте немедленно
+    done_message: Датчик на кухне больше не фиксирует воду · проверьте визуально
     data:
       ttl: 0
       priority: high
@@ -124,11 +128,13 @@ alert:
     notifiers:
       - mobile_app_sen_s25
       - mobile_app_sm_s931b
-    title: *sys_notify_title_critical
-    message: >
-      Обнаружена высокая концентрация угарного газа на кухне в {{ states('sensor.time') }}.
-      Концентрация газа: {{ states('sensor.co_and_natural_gas_alarm_carbon_monoxide') }} ppm
-    done_message: Концентрация угарного газа на кухне вернулась в норму в {{ states('sensor.time') }}.
+    title: >-
+      {{ '☠️ Угарный газ: кухня' if is_state('binary_sensor.co_and_natural_gas_alarm_carbon_monoxide', 'on')
+         else '☠️ Кухня: CO в норме' }}
+    message: >-
+      {{ states('sensor.co_and_natural_gas_alarm_carbon_monoxide') }} ppm · проветрите и выйдите из помещения
+    done_message: >-
+      {{ states('sensor.co_and_natural_gas_alarm_carbon_monoxide') }} ppm по данным датчика
     data:
       ttl: 0
       priority: high
@@ -142,11 +148,13 @@ alert:
     notifiers:
       - mobile_app_sen_s25
       - mobile_app_sm_s931b
-    title: *sys_notify_title_critical
-    message: >
-      Обнаружена утечка газа на кухне в {{ states('sensor.time') }}.
-      Концентрация газа: {{ states('sensor.co_and_natural_gas_alarm_gas') }} ppm
-    done_message: Утечка газа на кухне устранена в {{ states('sensor.time') }}.
+    title: >-
+      {{ '🔥 Утечка газа: кухня' if is_state('binary_sensor.co_and_natural_gas_alarm_gas', 'on')
+         else '🔥 Кухня: концентрация газа в норме' }}
+    message: >-
+      {{ states('sensor.co_and_natural_gas_alarm_gas') }} ppm · перекройте газ, не включайте электроприборы, проветрите
+    done_message: >-
+      {{ states('sensor.co_and_natural_gas_alarm_gas') }} ppm по данным датчика
     data:
       ttl: 0
       priority: high
@@ -161,21 +169,25 @@ automation:
     # Queued: simultaneous alerts must each be announced
     alias: Alert to TTS Handler
     description: >-
-      Speaks a TTS announcement on both phones (alarm stream, max volume) when a leak or gas alert
-      starts or is resolved.
+      Speaks a TTS announcement on Yandex Station Midi and on both phones (alarm stream, max volume)
+      when a leak or gas alert starts or is resolved. Critical, so it ignores night/silent mode.
     mode: queued
     max: 5
     variables:
       # alert entity -> [text when it fires, text when it is resolved]
       alerts_map:
-        alert.water_leakage_bathroom: ["Обнаружена утечка воды в ванной", "Утечка воды в ванной устранена"]
-        alert.water_leakage_kitchen: ["Обнаружена утечка воды на кухне", "Утечка воды на кухне устранена"]
+        alert.water_leakage_bathroom:
+          - "Внимание! Протечка воды в ванной!"
+          - "Датчик протечки в ванной больше не фиксирует воду."
+        alert.water_leakage_kitchen:
+          - "Внимание! Протечка воды на кухне!"
+          - "Датчик протечки на кухне больше не фиксирует воду."
         alert.carbon_monoxide_detected:
-          - "Обнаружена высокая концентрация угарного газа на кухне"
-          - "Концентрация угарного газа на кухне вернулась в норму"
+          - "Внимание! Угарный газ на кухне! Проветрите и выйдите из помещения."
+          - "Уровень угарного газа на кухне вернулся в норму."
         alert.natural_gas_detected:
-          - "Обнаружена утечка газа на кухне"
-          - "Утечка газа на кухне устранена"
+          - "Внимание! Утечка газа на кухне! Перекройте газ и проветрите."
+          - "Датчик газа на кухне больше не фиксирует утечку."
     triggers:
       - trigger: state
         entity_id:
@@ -189,29 +201,31 @@ automation:
           - condition: template
             value_template: "{{ trigger.to_state.state in ['on', 'idle'] }}"
         then:
+          - variables:
+              phrase: "{{ alerts_map[trigger.entity_id][0 if trigger.to_state.state == 'on' else 1] }}"
+          # Critical: the speaker talks even in night/silent mode
+          - action: media_player.play_media
+            continue_on_error: true
+            target:
+              entity_id: media_player.yandex_station_midi
+            data:
+              media_content_id: "{{ phrase }}"
+              media_content_type: text
           - action: notify.mobile_app_sen_s25
+            continue_on_error: true
             data:
               message: TTS
               data:
                 priority: high
                 channel: alarm_stream_max
                 media_stream: "alarm_stream_max"
-                tts_text: >
-                  {% if trigger.to_state.state == 'on' %}
-                    Внимание! {{ alerts_map[trigger.entity_id][0] }}!
-                  {% else %}
-                    {{ alerts_map[trigger.entity_id][1] }}.
-                  {% endif %}
+                tts_text: "{{ phrase }}"
           - action: notify.mobile_app_sm_s931b
+            continue_on_error: true
             data:
               message: TTS
               data:
                 priority: high
                 channel: alarm_stream_max
                 media_stream: "alarm_stream_max"
-                tts_text: >
-                  {% if trigger.to_state.state == 'on' %}
-                    Внимание! {{ alerts_map[trigger.entity_id][0] }}!
-                  {% else %}
-                    {{ alerts_map[trigger.entity_id][1] }}.
-                  {% endif %}
+                tts_text: "{{ phrase }}"

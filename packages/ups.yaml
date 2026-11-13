@@ -9,16 +9,6 @@
 ######################################################################
 
 ###############################################
-## SETTINGS AND VARIABLES
-###############################################
-homeassistant:
-  customize:
-    package.node_anchors:
-      sys_notify_title_info: &sys_notify_title_info "💬 Системное уведомление"
-      sys_notify_title_warning: &sys_notify_title_warning "⚠️ Предупреждение"
-      sys_notify_title_critical: &sys_notify_title_critical "🚨 Внимание!"
-
-###############################################
 ## TEMPLATES ENTITIES
 ###############################################
 template:
@@ -48,26 +38,28 @@ template:
 ## ALERTS
 ###############################################
 alert:
+  # Repeats while the UPS is on battery (E-1): the first push comes from the "UPS Lost Grid Power"
+  # automation (no tag, stays in history); these repeats share a tag, so each one replaces the
+  # previous repeat with fresh numbers. No done_message: the restore push is sent by the automation.
   ups_lost_power:
     name: UPS lost power
     entity_id: binary_sensor.ups_on_battery
     state: "on"
-    # Repeat every minute while on battery; cannot be silenced
     repeat: 1
+    skip_first: true
     can_acknowledge: false
     notifiers: mobile_app_sen_s25
-    title: *sys_notify_title_critical
-    message: |
-      UPS отключится через {{ states('sensor.ups_battery_runtime') | int(0) | timestamp_custom('%M:%S') }} минут
-      Заряд аккумулятора: {{ states('sensor.ups_battery_charge') }}%
-      Напряжение аккумулятора: {{ states('sensor.ups_battery_voltage') }} В
-      Статус: {{ states('sensor.ups_status') }}
-    done_message: |
-      UPS восстановил питание в {{ states('sensor.time') }}
-      Оставшийся заряд аккумулятора: {{ states('sensor.ups_battery_charge') }}%
+    title: 🔌 Нет электричества
+    # Runtime is in seconds; shown in whole minutes (E-2: the old %M:%S format dropped hours)
+    message: >-
+      UPS на батарее · {{ states('sensor.ups_battery_charge') | int(0) }} % ·
+      хватит ≈ {{ (states('sensor.ups_battery_runtime') | float(0) / 60) | round(0) | int }} мин
     data:
-      ttl: 0
+      tag: ups_power
+      channel: alarm_stream
+      importance: high
       priority: high
+      ttl: 0
 
 ###############################################
 ## AUTOMATIONS
@@ -76,8 +68,8 @@ automation:
   - id: ups_lost_grid_power_notification
     alias: UPS Lost Grid Power Notification
     description: >-
-      Notifies when the UPS switches to battery with the estimated runtime,
-      and arms the power-restored notification.
+      First notification when the UPS switches to battery (critical: both phones, speaker and phone
+      voice). Repeats with updated numbers come from alert.ups_lost_power.
     mode: single
     triggers:
       # Any on-battery status (OB, OB DISCHRG, OB DISCHRG LB, ...), not just one exact string.
@@ -87,36 +79,49 @@ automation:
         from: "off"
         to: "on"
     actions:
-      # Notify via mobile app and create persistent notification
-      - action: script.notify_and_create_persistent_notification
+      - action: script.notify
         data:
-          title: *sys_notify_title_critical
-          message: >
-            UPS потерял питание в {{ states('sensor.time') }}
-            Рассчётное время работы: {{ states('sensor.ups_battery_runtime') | int(0) | timestamp_custom('%M:%S') }} минут
-      - action: automation.turn_on
-        target:
-          entity_id: automation.ups_grid_power_restored_notification
+          level: critical
+          title: 🔌 Нет электричества
+          message: >-
+            UPS на батарее · {{ states('sensor.ups_battery_charge') | int(0) }} % ·
+            хватит ≈ {{ (states('sensor.ups_battery_runtime') | float(0) / 60) | round(0) | int }} мин
+          tts: Внимание! Пропало электричество. Сервер работает от батареи.
+          when: "{{ as_timestamp(trigger.to_state.last_changed) | int }}"
 
   - id: ups_grid_power_restored_notification
     alias: UPS Grid Power Restored Notification
     description: >-
-      Notifies once when the UPS is back on line (OL) after an outage, then disables itself
-      until the next outage re-enables it.
+      Notifies both phones when the UPS is back on grid power after an outage, with the outage
+      duration and the remaining battery charge.
     mode: single
     triggers:
-      # Fires when the status changes to contain OL (on line); this automation is enabled only after an outage
-      - trigger: template
-        value_template: "{{ 'OL' in states('sensor.ups_status_data') }}"
+      # on -> off only (not from unavailable), so HA restarts and NUT reconnects do not fire it
+      - trigger: state
+        entity_id: binary_sensor.ups_on_battery
+        from: "on"
+        to: "off"
     actions:
-      # Notify via mobile app and create persistent notification
-      - action: script.notify_and_create_persistent_notification
+      - variables:
+          # The outage started when the sensor last turned on
+          outage_min: >-
+            {{ ((as_timestamp(trigger.to_state.last_changed) - as_timestamp(trigger.from_state.last_changed)) / 60)
+               | round(0) | int }}
+      # Clear the repeating "no power" push; the first outage push stays in history
+      - action: notify.mobile_app_sen_s25
+        continue_on_error: true
         data:
-          title: *sys_notify_title_critical
-          message: Питание восстановлено в {{ states('sensor.time') }}
-      - action: automation.turn_off
-        target:
-          entity_id: automation.ups_grid_power_restored_notification
+          message: clear_notification
+          data:
+            tag: ups_power
+      - action: script.notify
+        data:
+          level: warning
+          recipients: [mobile_app_sen_s25, mobile_app_sm_s931b]
+          title: 🔌 Электричество есть
+          message: >-
+            {% from 'ru.jinja' import duration_short %}
+            Без питания {{ duration_short(outage_min) }} · батарея UPS {{ states('sensor.ups_battery_charge') | int(0) }} %
 
   - id: ups_low_battery_warning_notification
     alias: UPS Low Battery Warning Notification
@@ -142,11 +147,14 @@ automation:
         entity_id: sensor.ups_battery_charge
         below: 21
     actions:
-      - action: notify.mobile_app_sen_s25
+      - action: script.notify
         data:
-          title: *sys_notify_title_critical
-          message: >
-            Низкий заряд аккумулятора UPS: {{ states('sensor.ups_battery_charge') }}%
+          level: critical
+          recipients: [mobile_app_sen_s25]
+          title: "🪫 UPS: батарея {{ states('sensor.ups_battery_charge') | int(0) }} %"
+          message: >-
+            Осталось ≈ {{ (states('sensor.ups_battery_runtime') | float(0) / 60) | round(0) | int }} мин ·
+            при 10 % сервер выключится сам
 
   - id: ups_shutdown_home_assistant_server
     alias: UPS Shutdown Home Assistant Server
@@ -186,13 +194,14 @@ automation:
                 or states('sensor.ups_battery_runtime') | float(99999) < 300))
              or (trigger.id == 'nut_lost' and is_state('binary_sensor.ups_on_battery', 'on')) }}
     actions:
-      - action: notify.mobile_app_sen_s25
+      - action: script.notify
         data:
-          title: *sys_notify_title_critical
-          message: |
-            Критически низкий заряд батареи UPS.
-            Немедленное отключение сервера Home Assistant в {{ states('sensor.time') }}
+          level: critical
+          recipients: [mobile_app_sen_s25]
+          title: ⛔ Выключаю сервер
+          message: >-
+            UPS {{ states('sensor.ups_battery_charge') | int(0) }} % · HA выключится через 5 с ·
+            включение — вручную после появления питания
       # Give the notification a moment to be sent before the host goes down
       - delay: 00:00:05
       - action: hassio.host_shutdown
-
