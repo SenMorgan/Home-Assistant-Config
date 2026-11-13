@@ -174,12 +174,21 @@ automation:
       bulb is dimmed first). Hold UP / hold DOWN turns all hall-area lights on / off.
     mode: restart
     max_exceeded: silent
+    # Keep more runs for diagnosing missed/late presses (default is 5)
+    trace:
+      stored_traces: 30
     triggers:
       - trigger: event
         event_type: zha_event
         event_data:
           # Hall Remote (IKEA Tradfri on/off switch above the 3D printer)
           device_id: "a64c98fa9b0c36e96ebe42160fcf78b5"
+    conditions:
+      # The remote also emits an 'attribute_updated' event with each DOWN press, at the same moment.
+      # Without this filter that no-op event starts a run too, and mode: restart can cancel the real
+      # 'off' run if the events arrive in the other order. Conditions run before the restart.
+      - condition: template
+        value_template: "{{ trigger.event.data.command in ['on', 'off', 'move_with_on_off', 'move'] }}"
     actions:
       - variables:
           command: "{{ trigger.event.data.command }}"
