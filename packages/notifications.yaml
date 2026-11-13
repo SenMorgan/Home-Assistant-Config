@@ -254,20 +254,24 @@ automation:
         from: "off"
         to: "on"
     actions:
-      - action: notify.mobile_app_sen_s25
+      - action: script.notify
         data:
+          level: info
+          tag: SNOW_ALERT
           title: ❄️ Ожидается снег
           message: >-
-            С {{ state_attr('binary_sensor.snow_expected_soon', 'first_hour') }}
-            · {{ state_attr('binary_sensor.snow_expected_soon', 'precipitation_mm') }} мм осадков
-            · до {{ state_attr('binary_sensor.snow_expected_soon', 'min_temperature') }} °C
+            {% from 'ru.jinja' import num %}
+            Сегодня с {{ state_attr('binary_sensor.snow_expected_soon', 'first_hour') }} ·
+            {{ num(state_attr('binary_sensor.snow_expected_soon', 'precipitation_mm')) }} мм ·
+            до {{ num(state_attr('binary_sensor.snow_expected_soon', 'min_temperature')) }} °C
           data:
-            tag: SNOW_ALERT
             notification_icon: mdi:snowflake
 
   - id: notification_diesel_price_changed
     alias: Notification Diesel Price Changed
-    description: Notifies (push + persistent) when the ONO diesel price changes, saying whether it went up or down, with a link to the price chart.
+    description: >-
+      Notifies Sen when the ONO diesel price changes (arrow up/down, old price, difference) with a chart
+      button; tagged per fuel, so only the latest price stays in the notification shade.
     triggers:
       - trigger: state
         entity_id: sensor.diesel_price_ono
@@ -280,21 +284,29 @@ automation:
         value_template: >
           {{ is_number(trigger.from_state.state) and is_number(trigger.to_state.state) }}
     actions:
-      - action: script.notify_and_create_persistent_notification
+      - variables:
+          old: "{{ trigger.from_state.state | float(0) }}"
+          new: "{{ trigger.to_state.state | float(0) }}"
+      - action: script.notify
         data:
-          title: *sys_notify_title_info
-          message: >
-            Цена дизеля {{ 'упала' if trigger.from_state.state | float(0) > trigger.to_state.state | float(0) else 'возрасла' }}
-            с {{ trigger.from_state.state }} до {{ trigger.to_state.state }} Kč/L
-          data:
-            actions:
-              - action: "URI"
-                title: 📈 Open Chart
-                uri: "/lovelace/diesel-price"
+          level: info
+          tag: fuel_diesel
+          title: >-
+            {% from 'ru.jinja' import num %}
+            ⛽ Дизель {{ '↑' if new > old else '↓' }} {{ num(new, 2) }} Kč/л
+          message: >-
+            {% from 'ru.jinja' import num %}
+            Было {{ num(old, 2) }} · {{ '+' if new > old else '−' }}{{ num((new - old) | abs, 2) }}
+          actions:
+            - action: URI
+              title: 📈 График
+              uri: /lovelace/diesel-price
 
   - id: notification_gasoline_price_changed
     alias: Notification Gasoline Price Changed
-    description: Notifies Kris's phone when the ONO gasoline price changes, saying whether it went up or down, with a link to the price chart.
+    description: >-
+      Notifies Kris when the ONO gasoline price changes (arrow up/down, old price, difference) with a chart
+      button; tagged, so only the latest price stays in the notification shade.
     triggers:
       - trigger: state
         entity_id: sensor.gasoline_price_ono
@@ -307,17 +319,24 @@ automation:
         value_template: >
           {{ is_number(trigger.from_state.state) and is_number(trigger.to_state.state) }}
     actions:
-      - action: notify.mobile_app_sm_s931b
+      - variables:
+          old: "{{ trigger.from_state.state | float(0) }}"
+          new: "{{ trigger.to_state.state | float(0) }}"
+      - action: script.notify
         data:
-          title: *sys_notify_title_info
-          message: >
-            Цена бензина {{ 'упала' if trigger.from_state.state | float(0) > trigger.to_state.state | float(0) else 'возрасла' }}
-            с {{ trigger.from_state.state }} до {{ trigger.to_state.state }} Kč/L
-          data:
-            actions:
-              - action: "URI"
-                title: 📈 Open Chart
-                uri: "/lovelace/gasoline-price"
+          level: info
+          recipients: [mobile_app_sm_s931b]
+          tag: fuel_gasoline
+          title: >-
+            {% from 'ru.jinja' import num %}
+            ⛽ Бензин {{ '↑' if new > old else '↓' }} {{ num(new, 2) }} Kč/л
+          message: >-
+            {% from 'ru.jinja' import num %}
+            Было {{ num(old, 2) }} · {{ '+' if new > old else '−' }}{{ num((new - old) | abs, 2) }}
+          actions:
+            - action: URI
+              title: 📈 График
+              uri: /lovelace/gasoline-price
 
   - id: notification_solar_panel_power_above_threshold
     alias: Notification Solar Panel Power Above Threshold
@@ -328,10 +347,13 @@ automation:
         above: 40
         for: "00:05:00"
     actions:
-      - action: notify.mobile_app_sen_s25
+      - action: script.notify
         data:
-          title: "🌞 Солнечная панель"
-          message: "Мощность выше порога: {{ states('sensor.solar_panel_power') }} W"
+          level: info
+          title: "☀️ Солнце: {{ states('sensor.solar_panel_power') | float(0) | round(0) | int }} Вт"
+          message: >-
+            {% from 'ru.jinja' import num %}
+            Выработано {{ num(states('sensor.solar_panel_energy') | float(0) / 1000, 2) }} кВт·ч
 
   # Notify on washing finish
   - id: notification_washing_finish
@@ -365,12 +387,23 @@ automation:
         above: 0
     actions:
       - action: script.update_shopping_list
-      - action: notify.mobile_app_sen_s25
+      # First three open items for the preview
+      - action: todo.get_items
+        target:
+          entity_id: todo.shopping_list
         data:
-          message: "🛒 Открыть список покупок?"
-          data:
-            clickAction: /todo?entity_id=todo.shopping_list
-            url: /todo?entity_id=todo.shopping_list
+          status: needs_action
+        response_variable: shopping
+      - variables:
+          items: "{{ shopping['todo.shopping_list']['items'] | map(attribute='summary') | list }}"
+      - action: script.notify
+        data:
+          level: info
+          recipients: [mobile_app_sen_s25]
+          title: "🛒 Рядом {{ states('person.sen') }}"
+          message: >-
+            В списке {{ items | count }}: {{ items[:3] | join(', ') }}{{ '…' if items | count > 3 }}
+          url: /todo?entity_id=todo.shopping_list
 
   - id: notification_shopping_list_kris
     alias: Notification Shopping List for Kris
@@ -389,18 +422,29 @@ automation:
         above: 0
     actions:
       - action: script.update_shopping_list
-      - action: notify.mobile_app_sm_s931b
+      # First three open items for the preview
+      - action: todo.get_items
+        target:
+          entity_id: todo.shopping_list
         data:
-          message: "🛒 Открыть список покупок?"
-          data:
-            clickAction: /todo?entity_id=todo.shopping_list
-            url: /todo?entity_id=todo.shopping_list
+          status: needs_action
+        response_variable: shopping
+      - variables:
+          items: "{{ shopping['todo.shopping_list']['items'] | map(attribute='summary') | list }}"
+      - action: script.notify
+        data:
+          level: info
+          recipients: [mobile_app_sm_s931b]
+          title: "🛒 Рядом {{ states('person.kris') }}"
+          message: >-
+            В списке {{ items | count }}: {{ items[:3] | join(', ') }}{{ '…' if items | count > 3 }}
+          url: /todo?entity_id=todo.shopping_list
 
   - id: weather_forecast_alert_helper
     alias: Weather Forecast Alert Helper
     description: >-
       Every morning at 06:00 checks the hourly forecast for the next 12 hours and sends a sticky
-      push notification if cold, rain or snow (hot is disabled) is expected for more than 2 hours.
+      push notification (Russian) if cold, rain or snow (hot is disabled) is expected for more than 2 hours.
       Based on a community weather-alert blueprint; tune behaviour via the variables below.
     mode: single
     triggers:
@@ -463,56 +507,29 @@ automation:
       - alias: If any weather conditions warrant notification
         condition: template
         value_template: "{{ cold_alert or rain_alert or snow_alert or hot_alert}}"
-      # Build an English message with one paragraph per active alert
+      # Russian message, one line per active alert (catalog rule: one language)
       - variables:
-          notification_message: >
-            {% macro format_datetime(d) %}{{ d | as_timestamp |
-            timestamp_custom("%I:%M %p") }}{% endmacro %}
-
-
-            Over the next {{ num_hours_lookahead }} hours:
-
-            {% if cold_alert %}
-
-            Temperature: Temps will dip below {{ low_temp_threshold }}{{ temp_unit
-            }} for {{ cold_hours | count }} hours, initially reaching a minimum of
-            {{ min_temp }}{{ temp_unit }} at {{format_datetime(min_temp_hour)}}
-            (avg={{ avg_temp }}{{ temp_unit }}).{%endif%}
-
-            {%- if hot_alert %}
-
-            Temperature: Temps will rise_above {{ high_temp_threshold }}{{ temp_unit
-            }} for {{ hot_hours | count }} hours, initially reaching a maximum of {{
-            max_temp }}{{ temp_unit }} at {{format_datetime(max_temp_hour)}} (avg={{
-            avg_temp }}{{ temp_unit }}).{%endif%}
-
-            {%- if rain_alert %}
-
-            Rain: It will be rainy for {{ rainy_hours | count }} hours (max_prob={{
-            (precip_prob_rainy_hours or [0]) | max }}%,
-            avg_prob={{(precip_prob_rainy_hours or [0]) | average | round(1) }}%).
-            {% endif%}
-
-            {%- if snow_alert %}
-
-            Snow: It will be snowy for {{ snowy_hours | count }} hours (max_prob={{
-            (precip_prob_snowy_hours or [0]) | max }}%,
-            avg_prob={{(precip_prob_snowy_hours or [0]) | average | round(1) }}%).
-            {% endif%}
+          notification_message: >-
+            {% from 'ru.jinja' import num, plural %}
+            {%- set lines = [] %}
+            {%- if cold_alert %}{% set lines = lines + ['🥶 Мороз ' ~ plural(cold_hours | count, 'час', 'часа', 'часов') ~ ', до ' ~ num(min_temp) ~ ' °C в ' ~ min_temp_hour.strftime('%H:%M')] %}{% endif %}
+            {%- if hot_alert %}{% set lines = lines + ['🥵 Жара ' ~ plural(hot_hours | count, 'час', 'часа', 'часов') ~ ', до ' ~ num(max_temp) ~ ' °C в ' ~ max_temp_hour.strftime('%H:%M')] %}{% endif %}
+            {%- if rain_alert %}{% set lines = lines + ['🌧️ Дождь ' ~ plural(rainy_hours | count, 'час', 'часа', 'часов') ~ ', вероятность до ' ~ ((precip_prob_rainy_hours | reject('none') | list) or [0]) | max ~ ' %'] %}{% endif %}
+            {%- if snow_alert %}{% set lines = lines + ['❄️ Снег ' ~ plural(snowy_hours | count, 'час', 'часа', 'часов') ~ ', вероятность до ' ~ ((precip_prob_snowy_hours | reject('none') | list) or [0]) | max ~ ' %'] %}{% endif %}
+            {{ lines | join(' · ') }}
           notification_title: >-
-            Weather alert: {{ ["Temperature" if (cold_alert or hot_alert), "Rain" if
-            rain_alert, "Snow" if snow_alert] | select() | join(", ") }}
-      - action: notify.{{ notify_group }}
-        metadata: {}
+            🌦️ Прогноз на {{ num_hours_lookahead }} ч: {{ ['мороз' if cold_alert, 'жара' if hot_alert, 'дождь' if
+            rain_alert, 'снег' if snow_alert] | select() | join(', ') }}
+      - action: script.notify
         data:
-          message: "{{ notification_message }}"
+          level: info
+          recipients: ["{{ notify_group }}"]
+          tag: WEATHER_ALERT
           title: "{{ notification_title }}"
+          message: "{{ notification_message }}"
+          url: entityId:{{ weather_entity }}
           data:
-            ttl: 0
-            priority: high
-            tag: WEATHER_ALERT
             sticky: true
-            clickAction: entityId:{{ weather_entity }}
             notification_icon: mdi:weather-cloudy-alert
 
   - id: notification_github_repo_stars_changed
@@ -530,14 +547,17 @@ automation:
           {{ trigger.from_state.state | is_number and trigger.to_state.state | is_number
              and trigger.from_state.state != trigger.to_state.state }}
     actions:
-      - action: notify.mobile_app_sen_s25
+      # Real difference, not always "one star" (E-7)
+      - variables:
+          diff: "{{ trigger.to_state.state | int - trigger.from_state.state | int }}"
+      - action: script.notify
         data:
-          title: "⭐ GitHub Repository Stars"
-          message: >
-            Репозиторий {{ state_attr(trigger.entity_id, 'friendly_name') | replace(' Stars', '') }}
-            {{ 'получил' if trigger.from_state.state | int < trigger.to_state.state | int else 'потерял' }}
-            звезду!
-            Звёзд сейчас: {{ trigger.to_state.state }} (было: {{ trigger.from_state.state }})
+          level: info
+          title: >-
+            ⭐ {{ state_attr(trigger.entity_id, 'friendly_name') | replace(' Stars', '') }}: {{ trigger.to_state.state }}
+          message: >-
+            {% from 'ru.jinja' import plural_form %}
+            {{ '+' if diff > 0 else '−' }}{{ diff | abs }} {{ plural_form(diff | abs, 'звезда', 'звезды', 'звёзд') }}
 
   - id: notification_christmas_devices_season
     alias: Notification Christmas Devices Season
