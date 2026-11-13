@@ -15,7 +15,8 @@ automation: !include automations.yaml
 
 recorder:
   db_url: !secret DATABASE_URL
-  purge_keep_days: 180
+  # Detailed history for 2 months; long-term statistics (hourly mean/min/max) are kept forever
+  purge_keep_days: 60
   # Explicit includes win over the exclude globs below (entity filter: entity include > glob exclude)
   include:
     entities:
@@ -28,6 +29,10 @@ recorder:
       - meshtastic_api_packet
       - meshtastic_api_telemetry
       - meshtastic_api_position
+    entities:
+      # Noisy, history not needed: clock brightness updates and printer Wi-Fi RSSI
+      - light.7_seg_clock
+      - sensor.3d_printer_bambu_lab_a1_wi_fi_signal
     entity_globs:
       - sensor.adsb_*
       - sensor.flightradar_*

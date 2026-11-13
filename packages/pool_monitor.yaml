@@ -50,6 +50,8 @@ mqtt:
       icon: mdi:temperature-celsius
       state_topic: "/pool-thermometer/bme280/temp"
       device_class: temperature
+      # Long-term statistics: keeps hourly mean/min/max beyond recorder purge_keep_days
+      state_class: measurement
       value_template: "{{ value }}"
       unit_of_measurement: "°C"
       device:
