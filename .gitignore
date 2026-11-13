@@ -17,6 +17,8 @@
 !mqtt/**
 !custom_sentences/
 !custom_sentences/**
+!custom_templates/
+!custom_templates/**
 
 # Ignore specific files
 secrets.yaml

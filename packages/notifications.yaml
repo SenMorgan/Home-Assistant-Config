@@ -33,6 +33,150 @@ binary_sensor:
 ## SCRIPTS
 ###############################################
 script:
+  ###############################################
+  ## Central notification script (AR-02)
+  ###############################################
+  # One entry point for all notifications, see docs/notifications_catalog.md (section 0).
+  # Levels: critical -> both phones, alarm stream (bypasses DND), always spoken (speaker + phone voice);
+  #         warning  -> Sen, high priority, spoken only if someone is home and not night/silent mode;
+  #         info     -> Sen, default importance, spoken under the same conditions;
+  #         status   -> Sen, silent low-importance status that replaces itself by tag.
+  notify:
+    alias: Notify
+    description: >-
+      Central notification script. Sends a push with level-specific Android channel/priority, the event
+      time (data.when, so a late-delivered push still shows when it happened), optional tag, tap URL and
+      action buttons; optionally a persistent notification and a voice announcement on Yandex Station Midi
+      (critical: also spoken on both phones via the alarm stream).
+    mode: parallel
+    max: 25
+    fields:
+      level:
+        description: critical / warning / info / status
+        default: info
+        selector:
+          select:
+            options: [critical, warning, info, status]
+      title:
+        description: Title (category emoji + 2-4 words)
+        required: true
+        selector:
+          text:
+      message:
+        description: Body (facts separated by " · ")
+        selector:
+          text:
+            multiline: true
+      tag:
+        description: Replace the previous push with the same tag (statuses only, never safety events)
+        selector:
+          text:
+      url:
+        description: What a tap opens (dashboard path or URL)
+        selector:
+          text:
+      actions:
+        description: "Action buttons: list of {action, title[, uri]}"
+        selector:
+          object:
+      tts:
+        description: Spoken text (no emoji or abbreviations); omit for no voice
+        selector:
+          text:
+      persistent:
+        description: Also create a persistent notification (default on for critical/warning)
+        selector:
+          boolean:
+      notification_id:
+        description: Persistent notification ID (same ID replaces the previous one)
+        selector:
+          text:
+      when:
+        description: Event time as a UNIX timestamp (default now)
+        selector:
+          number:
+            min: 0
+            max: 9999999999
+            mode: box
+      data:
+        description: Extra push data merged last (e.g. image)
+        selector:
+          object:
+      recipients:
+        description: Override recipients (list of notify actions without "notify.")
+        selector:
+          object:
+    sequence:
+      - variables:
+          lvl: "{{ level | default('info') }}"
+          # Critical goes to both phones (Sen + Kris), everything else to Sen only
+          targets: >-
+            {% if recipients is defined and recipients %}{{ recipients }}
+            {% elif lvl == 'critical' %}{{ ['mobile_app_sen_s25', 'mobile_app_sm_s931b'] }}
+            {% else %}{{ ['mobile_app_sen_s25'] }}{% endif %}
+          # Android channels: the channel's sound/importance is fixed on first use, so names stay stable
+          level_data: >-
+            {% if lvl == 'critical' %}{{ {'channel': 'alarm_stream', 'importance': 'high', 'priority': 'high', 'ttl': 0} }}
+            {% elif lvl == 'warning' %}{{ {'channel': 'Предупреждения', 'importance': 'high', 'priority': 'high', 'ttl': 0} }}
+            {% elif lvl == 'status' %}{{ {'channel': 'Статус', 'importance': 'low', 'alert_once': true} }}
+            {% else %}{{ {'channel': 'Дом', 'importance': 'default'} }}{% endif %}
+          push_data: >-
+            {% set d = dict(level_data, when=(when | default(as_timestamp(now())) | int)) %}
+            {% if tag is defined and tag %}{% set d = dict(d, tag=tag) %}{% endif %}
+            {% if url is defined and url %}{% set d = dict(d, clickAction=url, url=url) %}{% endif %}
+            {% if actions is defined and actions %}{% set d = dict(d, actions=actions) %}{% endif %}
+            {% if data is defined and data %}{% set d = dict(d, **data) %}{% endif %}
+            {{ d }}
+          make_persistent: "{{ persistent if persistent is defined else lvl in ['critical', 'warning'] }}"
+          # Speaker: critical always; otherwise only if someone is home and neither night nor silent mode
+          speak: >-
+            {{ tts is defined and tts != '' and (lvl == 'critical' or (
+                 is_state('binary_sensor.people_home', 'on')
+                 and is_state('input_boolean.home_night_mode', 'off')
+                 and is_state('input_boolean.silent_mode', 'off'))) }}
+      - repeat:
+          for_each: "{{ targets }}"
+          sequence:
+            # One unreachable phone must not block the other one or the speaker
+            - action: notify.{{ repeat.item }}
+              continue_on_error: true
+              data:
+                title: "{{ title }}"
+                message: "{{ message | default('') }}"
+                data: "{{ push_data }}"
+      - if:
+          - "{{ make_persistent }}"
+        then:
+          - action: persistent_notification.create
+            data:
+              title: "{{ title }}"
+              message: "{{ message | default('') }}"
+              notification_id: "{{ notification_id | default(tag | default(none)) }}"
+      - if:
+          - "{{ speak }}"
+        then:
+          - action: media_player.play_media
+            continue_on_error: true
+            target:
+              entity_id: media_player.yandex_station_midi
+            data:
+              media_content_id: "{{ tts }}"
+              media_content_type: text
+      # Critical: also speak on the phones through the alarm stream (audible even in silent mode)
+      - if:
+          - "{{ lvl == 'critical' and tts is defined and tts != '' }}"
+        then:
+          - repeat:
+              for_each: "{{ targets }}"
+              sequence:
+                - action: notify.{{ repeat.item }}
+                  continue_on_error: true
+                  data:
+                    message: TTS
+                    data:
+                      tts_text: "{{ tts }}"
+                      media_stream: alarm_stream_max
+
   notify_and_create_persistent_notification:
     alias: Notify and Create Persistent Notification
     description: >-

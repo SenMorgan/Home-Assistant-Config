@@ -1,0 +1,37 @@
+{# Russian text helpers for notifications and TTS (used via: from 'ru.jinja' import ...) #}
+
+{# Pick the Russian plural form: plural(5, 'час', 'часа', 'часов') -> 'часов' #}
+{% macro plural_form(n, one, few, many) -%}
+{%- set n = n | int(0) | abs -%}
+{%- if n % 10 == 1 and n % 100 != 11 -%}{{ one }}
+{%- elif n % 10 in [2, 3, 4] and n % 100 not in [12, 13, 14] -%}{{ few }}
+{%- else -%}{{ many }}{%- endif -%}
+{%- endmacro %}
+
+{# Number with its word: plural(2, 'минута', 'минуты', 'минут') -> '2 минуты' #}
+{% macro plural(n, one, few, many) -%}
+{{ n | int(0) }} {{ plural_form(n, one, few, many) }}
+{%- endmacro %}
+
+{# Spoken duration from minutes: duration_tts(282) -> '4 часа 42 минуты' #}
+{% macro duration_tts(minutes) -%}
+{%- set m = minutes | int(0) -%}
+{%- set h = m // 60 -%}{%- set mm = m % 60 -%}
+{%- if h > 0 -%}{{ plural(h, 'час', 'часа', 'часов') }}{%- endif -%}
+{%- if h > 0 and mm > 0 %} {% endif -%}
+{%- if mm > 0 or h == 0 -%}{{ plural(mm, 'минута', 'минуты', 'минут') }}{%- endif -%}
+{%- endmacro %}
+
+{# Short written duration from minutes: duration_short(282) -> '4 ч 42 мин', duration_short(5) -> '5 мин' #}
+{% macro duration_short(minutes) -%}
+{%- set m = minutes | int(0) -%}
+{%- set h = m // 60 -%}{%- set mm = m % 60 -%}
+{%- if h > 0 -%}{{ h }} ч{%- if mm > 0 %} {{ mm }} мин{% endif -%}
+{%- else -%}{{ mm }} мин{%- endif -%}
+{%- endmacro %}
+
+{# Number with a decimal comma: num(23.456, 1) -> '23,5' #}
+{% macro num(value, digits=1) -%}
+{%- set v = value | float(0) | round(digits) -%}
+{{ (v | int if digits == 0 or v == v | int else v) | string | replace('.', ',') }}
+{%- endmacro %}
