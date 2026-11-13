@@ -10,16 +10,6 @@
 ######################################################################
 
 ###############################################
-## SETTINGS AND VARIABLES
-###############################################
-homeassistant:
-  customize:
-    package.node_anchors:
-      sys_notify_title_info: &sys_notify_title_info "💬 Системное уведомление"
-      sys_notify_title_warning: &sys_notify_title_warning "⚠️ Предупреждение"
-      sys_notify_title_critical: &sys_notify_title_critical "🚨 Внимание!"
-
-###############################################
 ## INPUT BUTTONS
 ###############################################
 input_button:
@@ -86,19 +76,8 @@ template:
 ## ALERTS
 ###############################################
 alert:
-  any_battery_device_low:
-    name: "Any Battery Device Low"
-    entity_id: binary_sensor.any_battery_device_low
-    state: "on"
-    repeat: 180
-    notifiers:
-      - mobile_app_sen_s25
-      - persistent_notification
-    title: *sys_notify_title_warning
-    message: >-
-      {% set devices = expand('group.low_battery_devices') | list %}
-      {% set dev_names = devices | sort(attribute='name') | map(attribute='name') | join(', ') %}
-      Устройств{{ iif(devices | length > 1, 'а', 'о') }} с низким зарядом батареи: {{ dev_names }}
+  # Low batteries (N-29) are no longer a repeating alert: see the "Low Battery Device" and
+  # "Low Battery Weekly Summary" automations below (one push per device + Sunday summary).
 
   backup_overdue:
     name: "Backup Overdue"
@@ -108,11 +87,17 @@ alert:
     notifiers:
       - mobile_app_sen_s25
       - persistent_notification
-    title: *sys_notify_title_warning
+    title: >-
+      {{ '💾 Бекап просрочен' if is_state('binary_sensor.backup_overdue', 'on') else '💾 Бекап снова успешен' }}
     message: >-
-      Нет успешного автоматического бэкапа больше 8 дней. Последний успешный:
+      Нет успешного автоматического бекапа больше 8 дней · последний
       {{ as_timestamp(states('sensor.backup_last_successful_automatic_backup'), 0) | timestamp_custom('%d.%m.%Y %H:%M') }}
-    done_message: Автоматический бэкап снова успешен.
+    done_message: Автоматический бекап снова прошёл успешно
+    data:
+      channel: Предупреждения
+      importance: high
+      priority: high
+      ttl: 0
 
   home_assistant_cpu_temp_high:
     name: "Home Assistant CPU Temperature High"
@@ -122,9 +107,13 @@ alert:
     notifiers:
       - mobile_app_sen_s25
       - persistent_notification
-    title: *sys_notify_title_critical
-    message: >-
-      Внимание! Температура CPU Home Assistant превышает пороговое значение: {{ states('sensor.processor_temperature') }}°C
+    title: "🌡️ Сервер перегрет: {{ states('sensor.processor_temperature') | round(0) | int }} °C"
+    message: Проверьте вентиляцию серверного шкафа
+    data:
+      channel: Предупреждения
+      importance: high
+      priority: high
+      ttl: 0
 
 ###############################################
 ## SCRIPTS
@@ -167,13 +156,14 @@ automation:
              and trigger.to_state.state != trigger.from_state.state
              and trigger.to_state.attributes.event_type == 'failed' }}
     actions:
-      - action: script.notify_and_create_persistent_notification
+      - action: script.notify
         data:
-          title: *sys_notify_title_warning
+          level: warning
+          title: 💾 Бекап не удался
           message: >-
-            Автоматический бэкап не удался
-            ({{ trigger.to_state.attributes.failed_reason | default('причина неизвестна', true) }}).
-            Подробности: Настройки → Система → Резервные копии.
+            {{ trigger.to_state.attributes.failed_reason | default('причина неизвестна', true) }} ·
+            подробности в настройках резервных копий
+          url: /config/backup
 
   # Keep only 30 days of raw history for high-frequency diagnostic sensors
   # (global retention stays 180 days; long-term statistics are not affected)
@@ -203,47 +193,89 @@ automation:
 
   - id: home_assistant_start_notification
     alias: Home Assistant Start Notification
-    description: Sends a push and persistent notification each time Home Assistant starts.
+    description: >-
+      Silent status push each time Home Assistant starts, with the version and how long the start took
+      (sensor.uptime holds the moment Core started). Replaces the shutdown push (same tag).
     triggers:
       - trigger: homeassistant
         event: start
     actions:
-      - action: script.notify_and_create_persistent_notification
+      - action: script.notify
         data:
-          title: *sys_notify_title_info
-          message: Home Assistant запущен в {{ states('sensor.time') }}
+          level: status
+          tag: ha_state
+          title: 🟢 HA запущен
+          message: >-
+            {% set up = states('sensor.uptime') | as_datetime %}
+            Версия {{ states('sensor.home_assistant_versions') }}
+            {%- if up %} · запуск занял {{ (now() - up).total_seconds() | round(0) | int }} с{% endif %}
 
   - id: home_assistant_shutdown_notification
     alias: Home Assistant Shutdown Notification
-    description: Sends a push and persistent notification when Home Assistant begins shutting down.
+    description: >-
+      Silent status push when Home Assistant begins shutting down (restart or power-off; the event
+      does not say which). Replaced by the start push (same tag).
     triggers:
       - trigger: homeassistant
         event: shutdown
     actions:
-      - action: script.notify_and_create_persistent_notification
+      - action: script.notify
         data:
-          title: *sys_notify_title_warning
-          message: Home Assistant начал процесс выключения в {{ states('sensor.time') }}
+          level: status
+          tag: ha_state
+          title: ⚠️ HA выключается
+          message: Перезапуск или выключение · время события на уведомлении
 
 
   - id: home_assistant_update_available_notification
     alias: Home Assistant Update Available Notification
-    description: Notifies the phone when a new Home Assistant Core version becomes available, with a button opening Settings.
+    description: >-
+      Notifies the phone when a new Home Assistant Core version becomes available, with buttons for the
+      release notes and Settings. Other updates come in the daily summary below.
     triggers:
       - trigger: state
         entity_id: update.home_assistant_core_update
         from: "off"
         to: "on"
     actions:
-      - action: notify.mobile_app_sen_s25
+      - action: script.notify
         data:
-          title: *sys_notify_title_info
-          message: Update!🎉 Доступна новая версия {{ states('sensor.home_assistant_versions') }}
-          data:
-            actions:
-              - action: "URI"
-                title: "Open Settings"
-                uri: "/config/dashboard"
+          level: info
+          title: ⬆️ Обновление HA {{ state_attr('update.home_assistant_core_update', 'latest_version') }}
+          message: Сейчас {{ state_attr('update.home_assistant_core_update', 'installed_version') }}
+          url: /config/updates
+          actions:
+            - action: URI
+              title: 📋 Что нового
+              uri: "{{ state_attr('update.home_assistant_core_update', 'release_url') }}"
+            - action: URI
+              title: ⚙️ Настройки
+              uri: /config/updates
+
+  # I-10: one silent daily summary instead of a push per update entity (~80 of them)
+  - id: home_assistant_updates_daily_summary
+    alias: Home Assistant Updates Daily Summary
+    description: >-
+      Every day at 19:00 sends one silent status push listing pending updates (add-ons, integrations,
+      firmware, OS), replacing yesterday's (same tag). Core updates also get their own push above.
+    mode: single
+    triggers:
+      - trigger: time
+        at: "19:00:00"
+    variables:
+      pending: >-
+        {{ states.update | selectattr('state', 'eq', 'on') | map(attribute='name')
+           | map('replace', ' Firmware', '') | map('replace', ' Update', '') | sort | list }}
+    conditions:
+      - "{{ pending | count > 0 }}"
+    actions:
+      - action: script.notify
+        data:
+          level: status
+          tag: updates
+          title: ⬆️ Обновления ({{ pending | count }})
+          message: "{{ pending | join(', ') }}"
+          url: /config/updates
 
   # Used blueprint from: https://community.home-assistant.io/t/blueprint-notify-when-zigbee-zwave-any-battery-device-has-gone-offline/537631
   - id: notification_battery_device_gone_offline
@@ -272,7 +304,7 @@ automation:
             {% set result.sensors = result.sensors + [state.name.replace(" Battery", "")] %}
           {% endif %}
         {% endfor %} {{result.sensors|join(', ')}}
-      message: "Обнаружены недоступные устройства: {{sensors}}"
+      message: "{{ sensors }}"
     triggers:
       - trigger: time
         at: "20:00:00"
@@ -280,17 +312,20 @@ automation:
       # Only notify if something is offline and today is the configured day
       - "{{ sensors != '' and (day | int(0) == 0 or day | int(0) == now().isoweekday()) }}"
     actions:
-      - action: script.notify_and_create_persistent_notification
+      - action: script.notify
         data:
-          title: *sys_notify_title_warning
+          level: info
+          persistent: true
+          notification_id: battery_devices_offline
+          title: "📴 Недоступные устройства ({{ sensors.split(', ') | count }})"
           message: "{{ message }}"
 
 
   - id: notification_internet_connection
     alias: Notification Internet Connection
     description: >-
-      Push and persistent notification when the internet connection is lost or restored,
-      with the time of the change.
+      Push and persistent notification when the internet connection is lost or restored. The loss
+      push is delivered only after the internet is back, so it keeps the time in the text.
     mode: queued
     triggers:
       - trigger: state
@@ -305,15 +340,22 @@ automation:
             entity_id: binary_sensor.internet_connection
             state: "off"
         then:
-          - action: script.notify_and_create_persistent_notification
+          - action: script.notify
             data:
-              title: *sys_notify_title_warning
-              message: Интернет соединение потеряно в {{ states('sensor.time') }}
+              level: warning
+              title: 🌐 Нет интернета
+              message: Интернет соединение потеряно в {{ trigger.to_state.last_changed | as_local | as_timestamp | timestamp_custom('%H:%M') }}
+              when: "{{ as_timestamp(trigger.to_state.last_changed) | int }}"
         else:
-          - action: script.notify_and_create_persistent_notification
+          - action: script.notify
             data:
-              title: *sys_notify_title_info
-              message: Интернет соединение восстановлено в {{ states('sensor.time') }}
+              level: info
+              persistent: true
+              title: 🌐 Интернет вернулся
+              message: >-
+                {% from 'ru.jinja' import duration_short %}
+                {% set mins = ((as_timestamp(trigger.to_state.last_changed) - as_timestamp(trigger.from_state.last_changed)) / 60) | round(0) | int %}
+                Не было {{ duration_short(mins) }} · с {{ trigger.from_state.last_changed | as_local | as_timestamp | timestamp_custom('%H:%M') }}
 
   ###############################################
   ## Low Battery Notifications
@@ -376,9 +418,13 @@ automation:
     max: 10
     max_exceeded: silent
     variables:
-      sensor_name: "{{ trigger.to_state.attributes.friendly_name }}"
+      # Room name from the entity's area, falling back to the sensor name
+      room: >-
+        {% from 'ru.jinja' import room_ru %}
+        {{ room_ru(area_name(trigger.entity_id)) if area_name(trigger.entity_id) else trigger.to_state.attributes.friendly_name }}
       sensor_state: "{{ trigger.to_state.state }}"
-      sensor_last_changed: "{{ as_timestamp(trigger.to_state.last_changed, 0) | timestamp_custom('%d.%m.%Y %H:%M:%S',1) }}"
+      # The time differs from the push time (3 h earlier), so it stays in the text
+      sensor_last_changed: "{{ as_timestamp(trigger.to_state.last_changed, 0) | timestamp_custom('%d.%m %H:%M') }}"
     triggers:
       - trigger: state
         entity_id: sensor.ble_temperature_atc_bathroom
@@ -396,12 +442,13 @@ automation:
         entity_id: sensor.ble_temperature_atc_toilet
         for: "03:00:00"
     actions:
-      - action: script.notify_and_create_persistent_notification
+      - action: script.notify
         data:
-          title: *sys_notify_title_warning
+          level: warning
+          title: "🌡️ Датчик давно не обновлялся: {{ room }}"
           message: >-
-            Датчик "{{ sensor_name }}" не обновлялся с {{ sensor_last_changed }}.
-            Текущее состояние: {{ sensor_state }}
+            {% from 'ru.jinja' import num %}
+            Последнее значение {{ num(sensor_state) }} °C в {{ sensor_last_changed }} · проверьте устройство
 
   ###############################################
   ## Other Automations
@@ -454,24 +501,20 @@ automation:
               # and not accidentally trigger for other notification actions
               action_power_off: "{{ 'action_power_off' ~ context.id }}"
               action_cancel: "{{ 'action_cancel' ~ context.id }}"
-          - action: notify.mobile_app_sen_s25
+          # Critical for Sen only: push with buttons + spoken on the phone (alarm stream) and speaker
+          - action: script.notify
             data:
-              message: TTS
-              data:
-                priority: high
-                channel: alarm_stream_max
-                media_stream: "alarm_stream_max"
-                tts_text: Synology DS220+ недоступен, продолжить выключение Home Assistant?
-          - action: notify.mobile_app_sen_s25
-            data:
-              title: *sys_notify_title_critical
-              message: Synology DS220+ недоступен, продолжить выключение Home Assistant?
-              data:
-                actions:
-                  - action: "{{ action_power_off }}"
-                    title: "Да"
-                  - action: "{{ action_cancel }}"
-                    title: "Отмена"
+              level: critical
+              recipients: [mobile_app_sen_s25]
+              persistent: false
+              title: 🗄️ Synology не отвечает
+              message: Всё равно выключить рек?
+              tts: Synology не отвечает. Подтвердите выключение на телефоне.
+              actions:
+                - action: "{{ action_power_off }}"
+                  title: ⏻ Выключить
+                - action: "{{ action_cancel }}"
+                  title: ✖ Отмена
           # Waiting for «action_power_off» or «action_cancel» avoids accidentally continuing
           # for another script/automation's notification action
           # No answer within 10 minutes counts as "Cancel" (wait.trigger stays none),
@@ -497,15 +540,19 @@ automation:
                       entity_id: script.home_assistant_shutdown
             # "Cancel" pressed or no answer within 10 minutes
             default:
-              - action: script.notify_and_create_persistent_notification
+              - action: script.notify
                 data:
-                  title: *sys_notify_title_info
-                  message: Отмена выключения серверного шкафа
+                  level: info
+                  persistent: true
+                  title: 🗄️ Выключение отменено
+                  message: >-
+                    {{ 'Нажата отмена' if wait.trigger is not none else 'Нет ответа 10 минут' }}
         else:
-          - action: script.notify_and_create_persistent_notification
+          - action: script.notify
             data:
-              title: *sys_notify_title_warning
-              message: Выключение серверного шкафа началось в {{ states('sensor.time') }}
+              level: warning
+              title: 🗄️ Серверный рек выключается
+              message: Synology → HA → питание
           # Turn OFF the Synology DS220+
           - action: button.press
             target:
@@ -515,3 +562,62 @@ automation:
           - action: script.turn_on
             target:
               entity_id: script.home_assistant_shutdown
+
+  ###############################################
+  ## Low Battery Notifications (N-29)
+  ###############################################
+  - id: home_assistant_low_battery_device
+    alias: Home Assistant Low Battery Device
+    description: >-
+      One push per device when it newly joins group.low_battery_devices (rebuilt every 10 minutes by
+      "Monitor Battery Devices"), instead of a repeating alert. Covers Danfoss radiator valves too (I-12).
+    mode: queued
+    max: 10
+    triggers:
+      - trigger: state
+        entity_id: group.low_battery_devices
+        attribute: entity_id
+    variables:
+      # Devices that are low now but were not low before
+      new_low: >-
+        {% set old = trigger.from_state.attributes.entity_id | default([]) if trigger.from_state else [] %}
+        {% set cur = trigger.to_state.attributes.entity_id | default([]) if trigger.to_state else [] %}
+        {{ cur | reject('in', old) | list }}
+    conditions:
+      # Skip the startup rebuild (group created from nothing), so a restart does not re-send everything
+      - "{{ trigger.from_state is not none and new_low | count > 0 }}"
+    actions:
+      - repeat:
+          for_each: "{{ new_low }}"
+          sequence:
+            - action: script.notify
+              data:
+                level: warning
+                persistent: true
+                notification_id: "low_battery_{{ repeat.item }}"
+                title: >-
+                  🪫 {{ device_attr(repeat.item, 'name_by_user') or device_attr(repeat.item, 'name')
+                       or state_attr(repeat.item, 'friendly_name') }}: {{ states(repeat.item) | float(0) | round(0) | int }} %
+                message: >-
+                  {% set model = device_attr(repeat.item, 'model') %}
+                  Пора заменить батарейку{% if model %} · {{ model }}{% endif %}
+
+  - id: home_assistant_low_battery_weekly_summary
+    alias: Home Assistant Low Battery Weekly Summary
+    description: Sunday 10:00 summary of all devices still at or below 20 % battery.
+    mode: single
+    triggers:
+      - trigger: time
+        at: "10:00:00"
+        weekday: sun
+    variables:
+      low: "{{ expand('group.low_battery_devices') | sort(attribute='state') | list }}"
+    conditions:
+      - "{{ low | count > 0 }}"
+    actions:
+      - action: script.notify
+        data:
+          level: info
+          title: "🪫 Батарейки: {{ low | count }}"
+          message: >-
+            {% for s in low %}{{ s.name | replace(' Battery', '') }} {{ s.state | float(0) | round(0) | int }} %{{ ', ' if not loop.last }}{% endfor %}

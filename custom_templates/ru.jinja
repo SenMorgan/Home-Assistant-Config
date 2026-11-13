@@ -35,3 +35,15 @@
 {%- set v = value | float(0) | round(digits) -%}
 {{ (v | int if digits == 0 or v == v | int else v) | string | replace('.', ',') }}
 {%- endmacro %}
+
+{# Russian room names for HA areas (area names are English): room_ru('Living Room') -> 'Гостиная' #}
+{% macro room_ru(area) -%}
+{{ {'Backyard': 'Двор', 'Bathroom': 'Ванная', 'Bedroom': 'Спальня', 'Hall': 'Коридор', 'Kitchen': 'Кухня',
+    'Living Room': 'Гостиная', 'Toilet': 'Туалет'}.get(area, area) }}
+{%- endmacro %}
+
+{# Location phrase: room_in('Kitchen') -> 'на кухне' #}
+{% macro room_in(area) -%}
+{{ {'Backyard': 'во дворе', 'Bathroom': 'в ванной', 'Bedroom': 'в спальне', 'Hall': 'в коридоре',
+    'Kitchen': 'на кухне', 'Living Room': 'в гостиной', 'Toilet': 'в туалете'}.get(area, area) }}
+{%- endmacro %}
