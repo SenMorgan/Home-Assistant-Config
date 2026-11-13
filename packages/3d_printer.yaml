@@ -140,8 +140,8 @@ automation:
   - id: 3d_printer_print_progress
     alias: 3D Printer - Print Progress
     description: >-
-      Silent status push with progress, remaining time and ETA at every 10 % step; it replaces itself
-      (tag printer_progress) and is cleared when the print is done.
+      For long prints only (3 h or more in total), a silent status push with progress, remaining time
+      and ETA at every 20 % step; it replaces itself (tag printer_progress) and is cleared when done.
     triggers:
       - trigger: state
         entity_id: sensor.3d_printer_bambu_lab_a1_print_progress
@@ -151,7 +151,13 @@ automation:
         value_template: >
           {{ (trigger.to_state.state | int(0)) > 0 and (trigger.to_state.state | int(0)) < 100 and
             ((trigger.to_state.state | int(0)) != (trigger.from_state.state | int(0))) and
-            (trigger.to_state.state | int(0)) % 10 == 0 }}
+            (trigger.to_state.state | int(0)) % 20 == 0 }}
+      # Only long prints: elapsed + remaining time of at least 3 hours
+      - condition: template
+        value_template: >
+          {% set start = as_timestamp(states('sensor.3d_printer_bambu_lab_a1_start_time'), as_timestamp(now())) %}
+          {{ (as_timestamp(now()) - start) / 3600
+             + states('sensor.3d_printer_bambu_lab_a1_remaining_time') | float(0) >= 3 }}
     actions:
       # Remaining time sensor is in hours (float); split it into whole hours and minutes
       - variables:
