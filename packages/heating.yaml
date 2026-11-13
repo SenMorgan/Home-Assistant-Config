@@ -15,10 +15,6 @@
 homeassistant:
   customize:
     package.node_anchors:
-      sys_notify_title_info: &sys_notify_title_info "💬 Системное уведомление"
-      sys_notify_title_warning: &sys_notify_title_warning "⚠️ Предупреждение"
-      sys_notify_title_critical: &sys_notify_title_critical "🚨 Внимание!"
-
       quarantine_duration_min: &quarantine_duration_min "50"
       short_heating_duration_min: &short_heating_duration_min "10"
       pause_heating_duration_min: &pause_heating_duration_min "60"
@@ -422,18 +418,19 @@ script:
       - condition: state
         entity_id: binary_sensor.windows
         state: "on"
-      - action: notify.mobile_app_sen_s25
+      - action: script.notify
         data:
-          title: *sys_notify_title_warning
-          # List the areas of the window contacts that are currently open
-          message: >-
-            {% set rooms = expand('binary_sensor.windows') | selectattr('state','eq','on') |
-              map(attribute='entity_id') | map('area_name') | list %}
-            {% if rooms | length == 1 %}
-              Открыто окно в комнате: {{ rooms[0] }}
-            {% else %}
-              Открыты окна в комнатах: {{ rooms | join(', ') }}
-            {% endif %}
+          level: warning
+          persistent: false
+          # Russian names of the areas of the window contacts that are currently open
+          title: >-
+            {% from 'ru.jinja' import room_ru %}
+            {% set ns = namespace(rooms=[]) %}
+            {% for e in expand('binary_sensor.windows') | selectattr('state', 'eq', 'on') %}
+              {% set ns.rooms = ns.rooms + [room_ru(area_name(e.entity_id))] %}
+            {% endfor %}
+            🪟 Открыто окно: {{ ns.rooms | join(', ') }}
+          message: Отопление на паузе, пока окно открыто
 
 ###############################################
 ## AUTOMATIONS
@@ -496,7 +493,7 @@ automation:
             target:
               entity_id: media_player.yandex_station_midi
             data:
-              media_content_id: Подогрев квартиры окончен из-за открытого окна
+              media_content_id: Окно открыто — подогрев квартиры отменён.
               media_content_type: text
       # Set "eco" mode on thermostat
       - action: script.thermostat_set_eco_mode
@@ -668,6 +665,17 @@ automation:
           {{ is_state('binary_sensor.people_home', 'on') or
             is_state('input_boolean.guest_mode', 'on')}}
     actions:
+      - variables:
+          # [room, temperature] of the coldest of the sensors used by binary_sensor.freeze_alert_at_night
+          coldest: >-
+            {% set pairs = [['Термостат', state_attr('climate.nestlocal_thermostat', 'current_temperature')],
+                            ['Спальня', states('sensor.ble_temperature_atc_bedroom')],
+                            ['Гостиная', states('sensor.ble_temperature_atc_living_room')]] %}
+            {% set ns = namespace(best=['', 99.0]) %}
+            {% for p in pairs if p[1] is number or p[1] | is_number %}
+              {% if p[1] | float < ns.best[1] %}{% set ns.best = [p[0], p[1] | float] %}{% endif %}
+            {% endfor %}
+            {{ ns.best }}
       # Reset all active timers that could affect heating
       - action: timer.cancel
         target:
@@ -681,22 +689,21 @@ automation:
           - condition: template
             value_template: "{{ trigger.platform == 'state' }}"
         then:
-          # Create persistent notification
-          - action: script.notify_and_create_persistent_notification
+          # One push + persistent notification for the whole episode (E-3: was two messages)
+          - action: script.notify
             data:
-              title: *sys_notify_title_warning
-              message: "Температура упала ниже порога"
+              level: warning
+              persistent: true
+              title: >-
+                {% from 'ru.jinja' import num %}
+                🥶 Холодно: {{ num(coldest[1]) }} °C
+              message: "{{ coldest[0] }} · температура ниже порога · включено отопление"
           # Log the event
           - action: input_text.set_value
             target:
               entity_id: input_text.heating_log
             data:
               value: "Температура упала ниже порога"
-          # Notify about low temperature on mobile app
-          - action: notify.mobile_app_sen_s25
-            data:
-              title: *sys_notify_title_info
-              message: "Термостат был снова включен в {{ states('sensor.time') }}, чтобы вы не замёрзли"
       # Set default temperature on thermostat
       - action: script.thermostat_stop_heating
         data:
@@ -737,11 +744,14 @@ automation:
           {{ states('climate.nestlocal_thermostat') == 'heat' and
               state_attr('climate.nestlocal_thermostat', 'temperature') | float(0) >= 25.0 }}
     actions:
-      - action: script.notify_and_create_persistent_notification
+      - action: script.notify
         data:
-          title: *sys_notify_title_warning
-          message: >
-            Термостат был переведён в автоматический режим по причине высокой температуры в квартире в {{ states('sensor.time') }}
+          level: warning
+          persistent: true
+          title: >-
+            {% from 'ru.jinja' import num %}
+            🥵 Жарко: {{ num(state_attr('climate.nestlocal_thermostat', 'current_temperature')) }} °C
+          message: Температура выше порога · термостат переведён в авто-режим
       # Stop heating by setting default temperature on thermostat
       - action: script.thermostat_stop_heating
         data:
@@ -773,10 +783,13 @@ automation:
             - timer.heating_quarantine
             - timer.short_heating
             - timer.pause_heating
-      - action: script.notify_and_create_persistent_notification
+      - action: script.notify
         data:
-          title: *sys_notify_title_warning
-          message: "Термостат работает более часа → отопление отключено на 1 час в {{ states('sensor.time') }}"
+          level: warning
+          persistent: true
+          title: ⏸️ Отопление на паузе 1 ч
+          message: >-
+            Котёл работал больше часа подряд · возобновлю в {{ (now() + timedelta(hours=1)).strftime('%H:%M') }}
       # Start "Pause Heating" timer
       - action: timer.start
         target:
@@ -815,7 +828,7 @@ automation:
             target:
               entity_id: media_player.yandex_station_midi
             data:
-              media_content_id: Квартира уже подогревается
+              media_content_id: Квартира уже подогревается.
               media_content_type: text
         else:
           # Reset all active timers that could affect heating
@@ -834,7 +847,12 @@ automation:
             target:
               entity_id: media_player.yandex_station_midi
             data:
-              media_content_id: Включен кратковременный подогрев квартиры
+              # Duration from the timer itself, with the right plural form (accusative: минуту/минуты/минут)
+              media_content_id: >-
+                {% from 'ru.jinja' import plural %}
+                Подогреваю квартиру
+                {{ plural((state_attr('timer.short_heating', 'duration') | as_timedelta).total_seconds() // 60,
+                          'минуту', 'минуты', 'минут') }}.
               media_content_type: text
           # Start heating
           - action: script.thermostat_start_heating
@@ -861,7 +879,10 @@ automation:
         target:
           entity_id: media_player.yandex_station_midi
         data:
-          media_content_id: Кратковременный подогрев квартиры окончен
+          media_content_id: >-
+            {% from 'ru.jinja' import plural %}
+            {% set t = state_attr('climate.nestlocal_thermostat', 'current_temperature') %}
+            Подогрев закончен{% if t is number %}, температура: {{ plural(t | round(0), 'градус', 'градуса', 'градусов') }}{% endif %}.
           media_content_type: text
       - if:
           # ETRVs should not be requesting heat
@@ -1172,7 +1193,7 @@ automation:
             target:
               entity_id: media_player.yandex_station_midi
             data:
-              media_content_id: Подогрев квартиры окончен раньше вручную
+              media_content_id: Подогрев остановлен.
               media_content_type: text
       # Reset all active timers that could affect heating
       - action: timer.cancel
@@ -1221,7 +1242,7 @@ automation:
         target:
           entity_id: media_player.yandex_station_midi
         data:
-          media_content_id: Блокировка отопления отменена вручную
+          media_content_id: Отопление снова работает.
           media_content_type: text
       # Log the message
       - action: input_text.set_value
