@@ -177,29 +177,6 @@ script:
                       tts_text: "{{ tts }}"
                       media_stream: alarm_stream_max
 
-  notify_and_create_persistent_notification:
-    alias: Notify and Create Persistent Notification
-    description: >-
-      Helper used by other automations: sends a push notification to Sen's phone (with optional
-      extra `data`, e.g. action buttons) and creates the same persistent notification in HA.
-      Fields: title, message, data (optional).
-    sequence:
-      - action: notify.mobile_app_sen_s25
-        data:
-          title: "{{ title }}"
-          message: "{{ message }}"
-          # If data is not empty, then add it to the notification
-          data: >
-            {% if data is defined %}
-              {{ data }}
-            {% else %}
-              {}
-            {% endif %}
-      - action: persistent_notification.create
-        data:
-          title: "{{ title }}"
-          message: "{{ message }}"
-
 ###############################################
 ## TEMPLATE ENTITIES
 ###############################################
@@ -358,7 +335,9 @@ automation:
   # Notify on washing finish
   - id: notification_washing_finish
     alias: Notification Washing Finish
-    description: When the SmartThings washing machine reports a finished job, runs the Yandex script that announces it (with a joke).
+    description: >-
+      When the SmartThings washing machine reports a finished job, sends a push and runs the Yandex
+      script that announces it with a joke.
     triggers:
       - trigger: state
         entity_id: sensor.washing_machine_washer_job_state
@@ -368,6 +347,12 @@ automation:
       - condition: template
         value_template: "{{ trigger.from_state.state not in ['unavailable', 'unknown', 'none', 'finish'] }}"
     actions:
+      # I-07: push too (the joke is voice only and silent at night)
+      - action: script.notify
+        data:
+          level: info
+          title: 🧺 Стирка закончена
+          message: Осталось развесить
       - action: script.yandex_joke_after_washing_clothes
 
   - id: notification_shopping_list_sen
