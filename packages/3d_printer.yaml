@@ -102,6 +102,8 @@ automation:
             state: "on"
         then:
           - action: light.turn_on
+            # An unresponsive bulb (e.g. Zigbee not ready after restart) must not block the notification
+            continue_on_error: true
             target:
               entity_id:
                 - light.hall_edison_bulb
