@@ -33,6 +33,8 @@ recorder:
       # Noisy, history not needed: clock brightness updates and printer Wi-Fi RSSI
       - light.7_seg_clock
       - sensor.3d_printer_bambu_lab_a1_wi_fi_signal
+      # Utility bills history lives in its attributes (read from Google Sheets), no need to record it
+      - sensor.utility_bills
     entity_globs:
       - sensor.adsb_*
       - sensor.flightradar_*
