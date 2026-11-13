@@ -7,16 +7,6 @@
 ######################################################################
 
 ###############################################
-## SETTINGS AND VARIABLES
-###############################################
-homeassistant:
-  customize:
-    package.node_anchors:
-      sys_notify_title_info: &sys_notify_title_info "💬 Системное уведомление"
-      sys_notify_title_warning: &sys_notify_title_warning "⚠️ Предупреждение"
-      sys_notify_title_critical: &sys_notify_title_critical "🚨 Внимание!"
-
-###############################################
 ## INPUT BUTTONS
 ###############################################
 input_button:
@@ -611,15 +601,18 @@ automation:
       # Unavailable relay can't be switched: just warn and stop
       - if: "{{ trigger.id == 'unavailable' }}"
         then:
-          - action: notify.mobile_app_sen_s25
+          - action: script.notify
             data:
-              title: *sys_notify_title_warning
-              message: Реле освещения парковки недоступно более часа
+              level: warning
+              persistent: false
+              title: "🅿️ Парковка: реле не на связи"
+              message: Больше часа
           - stop: Relay unavailable
-      - action: notify.mobile_app_sen_s25
+      - action: script.notify
         data:
-          title: *sys_notify_title_info
-          message: Реле освещения парковки было отключено более часа. Автоматическое включение в {{ states('sensor.time') }}
+          level: info
+          title: "🅿️ Парковка: свет включён снова"
+          message: Был выключен больше часа
       # Give up after 5 attempts instead of retrying forever
       - repeat:
           until:
@@ -642,10 +635,12 @@ automation:
                 entity_id: switch.parking_light
                 state: "on"
         then:
-          - action: notify.mobile_app_sen_s25
+          - action: script.notify
             data:
-              title: *sys_notify_title_warning
-              message: Реле освещения парковки не включилось после 5 попыток
+              level: warning
+              persistent: false
+              title: "🅿️ Парковка: реле не отвечает"
+              message: Не включилось после 5 попыток
 
   - id: kitchen_led_strip_sync_with_spotlights
     alias: Kitchen LED Strip Sync with Spotlights

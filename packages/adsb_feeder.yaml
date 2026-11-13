@@ -10,16 +10,6 @@
 ######################################################################
 
 ###############################################
-## SETTINGS AND VARIABLES
-###############################################
-homeassistant:
-  customize:
-    package.node_anchors:
-      sys_notify_title_info: &sys_notify_title_info "💬 Системное уведомление"
-      sys_notify_title_warning: &sys_notify_title_warning "⚠️ Предупреждение"
-      sys_notify_title_critical: &sys_notify_title_critical "🚨 Внимание!"
-
-###############################################
 ## SENSORS
 ###############################################
 sensor:
@@ -79,13 +69,14 @@ automation:
         to: "off"
         for: "00:05:00"
     actions:
-      # Time of the actual disconnect (not of this notification), in local time
-      - variables:
-          timestamp: "{{ trigger.to_state.last_changed.astimezone(now().tzinfo).strftime('%H:%M:%S') }}"
-      - action: script.notify_and_create_persistent_notification
+      # Silent status (tag adsb, replaced by the "restored" push); time of the actual disconnect
+      - action: script.notify
         data:
-          title: *sys_notify_title_warning
-          message: Связь с ADS-B приёмником была потеряна в {{ timestamp }}
+          level: status
+          tag: adsb
+          title: "📡 ADS-B: нет связи"
+          message: С {{ trigger.to_state.last_changed | as_local | as_timestamp | timestamp_custom('%H:%M') }}
+          when: "{{ as_timestamp(trigger.to_state.last_changed) | int }}"
       - action: automation.turn_on
         target:
           entity_id: automation.notification_ads_b_receiver_connection_restored
@@ -100,12 +91,14 @@ automation:
         to: "on"
         for: "00:01:00"
     actions:
-      - variables:
-          timestamp: "{{ trigger.to_state.last_changed.astimezone(now().tzinfo).strftime('%H:%M:%S') }}"
-      - action: script.notify_and_create_persistent_notification
+      - action: script.notify
         data:
-          title: *sys_notify_title_info
-          message: Связь с ADS-B приёмником была восстановлена в {{ timestamp }}
+          level: status
+          tag: adsb
+          title: 📡 ADS-B снова на связи
+          message: >-
+            {% from 'ru.jinja' import duration_short %}
+            Перерыв {{ duration_short(((as_timestamp(trigger.to_state.last_changed) - as_timestamp(trigger.from_state.last_changed)) / 60) | round(0) | int) }}
       - action: automation.turn_off
         target:
           entity_id: automation.notification_ads_b_receiver_connection_restored

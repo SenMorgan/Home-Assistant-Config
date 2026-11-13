@@ -32,15 +32,13 @@ automation:
         target:
           entity_id: input_boolean.show_cameras_in_lovelace
       # Message reflects the state after the toggle above
-      - action: notify.mobile_app_sen_s25
+      - action: script.notify
         data:
-          title: "👁️ Режим камер"
-          message: >-
-            {% if is_state('input_boolean.show_cameras_in_lovelace', 'on') %}
-              Камеры включены
-            {% else %}
-              Камеры выключены
-            {% endif %}
+          level: status
+          tag: cameras
+          title: >-
+            📷 Камеры на дашборде: {{ 'показаны' if is_state('input_boolean.show_cameras_in_lovelace', 'on') else 'скрыты' }}
+          message: NFC-метка у компьютера
 
   - id: reenable_cameras_if_hided
     alias: Reenable Cameras if Hided
@@ -57,8 +55,10 @@ automation:
       - action: input_boolean.turn_on
         target:
           entity_id: input_boolean.show_cameras_in_lovelace
-      - action: notify.mobile_app_sen_s25
+      - action: script.notify
         data:
-          title: "👁️ Режим камер"
-          message: "Камеры включены автоматически в {{ states('sensor.time') }}"
+          level: status
+          tag: cameras
+          title: "📷 Камеры на дашборде: показаны"
+          message: Автоматически, через час после скрытия
 

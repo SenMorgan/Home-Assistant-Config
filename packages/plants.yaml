@@ -82,8 +82,37 @@ automation:
         entity_id: schedule.plant_watering_notification
         state: "on"
     actions:
-      # Notify via mobile app and create persistent notification
-      - action: script.notify_and_create_persistent_notification
+      # Push + persistent notification (same id, so a new list replaces the old one) with a "Watered" button
+      - action: script.notify
         data:
-          title: "🪴 Домашние цветы"
-          message: "Нужно полить следующие растения: {{ states('input_text.plants_to_water') }}"
+          level: info
+          persistent: true
+          notification_id: plants_to_water
+          tag: plants_to_water
+          title: "🪴 Нужно полить цветы: {{ states('input_text.plants_to_water').split(',') | count }}"
+          message: "{{ states('input_text.plants_to_water') }}"
+          actions:
+            - action: PLANTS_WATERED
+              title: ✅ Полито
+
+  - id: plants_watered_button
+    alias: Plants Watered Button
+    description: >-
+      Handles the "Watered" button of the watering reminder: removes the push and the persistent
+      notification. The list itself is rebuilt from the moisture sensors within 10 minutes.
+    mode: single
+    triggers:
+      - trigger: event
+        event_type: mobile_app_notification_action
+        event_data:
+          action: PLANTS_WATERED
+    actions:
+      - action: persistent_notification.dismiss
+        data:
+          notification_id: plants_to_water
+      - action: notify.mobile_app_sen_s25
+        continue_on_error: true
+        data:
+          message: clear_notification
+          data:
+            tag: plants_to_water

@@ -67,7 +67,7 @@ script:
     description: >-
       Leaves silent mode: powers off the baby monitor, restores Yandex and model
       railway volume, sets the clock back to Orange Candle, releases the bedroom
-      safety switch and reminds by voice if the living room window is open.
+      safety switch and confirms by voice (good morning in the morning; mentions an open living room window).
     sequence:
       # Power off Baby Monitor Plug
       - action: switch.turn_off
@@ -101,19 +101,21 @@ script:
             - input_boolean.silent_mode
           # Allow control of bedroom lights and cover
             - input_boolean.bedroom_lights_and_cover_safety_switch
-      # Remind via yandex station to check if the window in living room is closed properly
+      # Voice confirmation (not in night mode); "good morning" only in the morning, since silent mode
+      # is also used during the day; the window is mentioned only when it is really open
       - if:
-          # Only if window is currently open
           - condition: state
-            entity_id: binary_sensor.living_room_window_contact
-            state: "on"
+            entity_id: input_boolean.home_night_mode
+            state: "off"
         then:
           - action: media_player.play_media
             target:
               entity_id: media_player.yandex_station_midi
             data:
               media_content_type: text
-              media_content_id: "Тихий режим выключен. Проверьте, закрыто ли окно в гостиной."
+              media_content_id: >-
+                {{ 'Доброе утро! ' if 5 <= now().hour < 12 }}Тихий режим выключен.
+                {{- ' Окно в гостиной открыто.' if is_state('binary_sensor.living_room_window_contact', 'on') }}
 
   home_night_mode:
     alias: Home Night Mode
