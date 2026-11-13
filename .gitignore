@@ -26,3 +26,6 @@ yandex-station.yaml
 private.yaml
 # Private notes for Claude (house details; repo is public)
 CLAUDE.md
+# Packages with personal details (kept local only)
+packages/nest_local.yaml
+packages/utility_bills.yaml
