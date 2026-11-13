@@ -10,16 +10,6 @@
 ######################################################################
 
 ###############################################
-## SETTINGS AND VARIABLES
-###############################################
-homeassistant:
-  customize:
-    package.node_anchors:
-      sys_notify_title_info: &sys_notify_title_info "💬 Системное уведомление"
-      sys_notify_title_warning: &sys_notify_title_warning "⚠️ Предупреждение"
-      sys_notify_title_critical: &sys_notify_title_critical "🚨 Внимание!"
-
-###############################################
 ## INPUT BOOLEANS
 ###############################################
 input_boolean:
@@ -88,7 +78,7 @@ automation:
     description: >-
       When a print finishes, lights the hall and chamber if someone is home, sends a phone
       notification with job name, duration, weight and filament length, and announces it on
-      the Yandex Station unless silent mode is on.
+      the Yandex Station when someone is home outside night/silent mode; clears the progress status.
     triggers:
       - trigger: state
         entity_id: sensor.3d_printer_bambu_lab_a1_print_status
@@ -120,36 +110,38 @@ automation:
           task_name: "{{ states('sensor.3d_printer_bambu_lab_a1_task_name') }}"
           print_weight: "{{ states('sensor.3d_printer_bambu_lab_a1_print_weight') }}"
           print_length: "{{ states('sensor.3d_printer_bambu_lab_a1_print_length') }}"
+      # Drop the silent progress status, the print is over
       - action: notify.mobile_app_sen_s25
+        continue_on_error: true
         data:
-          title: "3D Printer"
-          message: |
+          message: clear_notification
+          data:
+            tag: printer_progress
+      # Text chosen by Sen (catalog N-20); voice with correct plural forms (ru.jinja)
+      - action: script.notify
+        data:
+          level: info
+          title: 3D Printer
+          message: >-
+            {% from 'ru.jinja' import num %}
             🎉 Печать завершена ({{ task_name }})
             ⏱️ Время печати: {{ spent_hours }}ч {{ spent_minutes }}мин
-            ⚖️ Вес: {{ print_weight }}
-            📏 Длина прутка: {{ print_length }}
-      - if:
-          - condition: state
-            entity_id: input_boolean.silent_mode
-            state: "off"
-        then:
-          - action: media_player.play_media
-            target:
-              entity_id: media_player.yandex_station_midi
-            data:
-              media_content_type: text
-              media_content_id: >
-                3Д печать детали {{ task_name }} завершена! Время печати:
-                {% if spent_hours > 0 %} {{ spent_hours }} {% if spent_hours == 1 %} час {% else %} часов {% endif %} {% endif %}
-                {% if spent_minutes > 0 %} {{ spent_minutes }} {% if spent_minutes == 1 %} минута {% else %} минут {% endif %} {% endif %}
-                Использовано {{ print_weight }} грамм пластика.
+            ⚖️ Вес: {{ num(print_weight, 1) }} г
+            📏 Длина прутка: {{ num(print_length, 1) }} м
+          url: /lovelace/3d-printer
+          tts: >-
+            {% from 'ru.jinja' import duration_tts %}
+            3Д печать детали {{ task_name }} завершена! Время печати: {{ duration_tts(spent_time // 60) }}.
+            Использовано {{ print_weight | float(0) | round(0) | int }} грамм пластика.
 
   ###############################################
   ## Remind me about print progress
   ###############################################
   - id: 3d_printer_print_progress
     alias: 3D Printer - Print Progress
-    description: Sends a phone notification with progress and remaining time at every 20% step (20, 40, 60, 80).
+    description: >-
+      Silent status push with progress, remaining time and ETA at every 10 % step; it replaces itself
+      (tag printer_progress) and is cleared when the print is done.
     triggers:
       - trigger: state
         entity_id: sensor.3d_printer_bambu_lab_a1_print_progress
@@ -159,19 +151,23 @@ automation:
         value_template: >
           {{ (trigger.to_state.state | int(0)) > 0 and (trigger.to_state.state | int(0)) < 100 and
             ((trigger.to_state.state | int(0)) != (trigger.from_state.state | int(0))) and
-            (trigger.to_state.state | int(0)) % 20 == 0 }}
+            (trigger.to_state.state | int(0)) % 10 == 0 }}
     actions:
       # Remaining time sensor is in hours (float); split it into whole hours and minutes
       - variables:
           remaining_time: "{{ states('sensor.3d_printer_bambu_lab_a1_remaining_time') | float(0) }}"
           remaining_hours: "{{ (remaining_time | int) }}"
           remaining_minutes: "{{ ((remaining_time % 1) * 60) | int }}"
-      - action: notify.mobile_app_sen_s25
+      - action: script.notify
         data:
-          title: "3D Printer"
-          message: >
-            📈 Деталь готова на {{ trigger.to_state.state | int(0) }}%
-            ⏱️ Осталось {{ remaining_hours }}ч {{ remaining_minutes }}мин
+          level: status
+          tag: printer_progress
+          title: "🖨️ 3D-печать: {{ trigger.to_state.state | int(0) }} %"
+          message: >-
+            {% from 'ru.jinja' import duration_short %}
+            Осталось {{ duration_short(remaining_hours * 60 + remaining_minutes) }} ·
+            готово в ≈ {{ (now() + timedelta(hours=remaining_time)).strftime('%H:%M') }}
+          url: /lovelace/3d-printer
 
   ###############################################
   ## Print paused / printer error
@@ -223,39 +219,24 @@ automation:
           status: "{{ states('sensor.3d_printer_bambu_lab_a1_print_status') }}"
       - condition: template
         value_template: "{{ not cancelled_by_user }}"
-      - action: notify.mobile_app_sen_s25
+      # Failed print (I-06) or pause; voice only for real errors (script.notify skips it at night,
+      # in silent mode and when nobody is home)
+      - action: script.notify
         data:
-          title: "⚠️ 3D Printer"
+          level: warning
+          persistent: false
+          title: "{{ '🖨️ Печать прервана' if status == 'failed' else '⏸️ Печать на паузе' }}"
           message: >-
-            {% if errors | count > 0 %}
-            {{ 'Печать остановлена' if status == 'failed' else 'Печать приостановлена' }} из-за ошибки:
-            {{ errors | join('; ') }}
-            {% elif status == 'failed' %}
-            Печать прервана
-            {% else %}
-            Печать приостановлена
+            {{ states('sensor.3d_printer_bambu_lab_a1_task_name') }} ·
+            {{ states('sensor.3d_printer_bambu_lab_a1_print_progress') | int(0) }} %
+            {%- if errors | count > 0 %} · {{ errors | join('; ') }}{% endif %}
+          # Tap opens the Bambu wiki page for the HMS code (or the printer dashboard)
+          url: "{{ wiki if wiki else '/lovelace/3d-printer' }}"
+          tts: >-
+            {% if errors | count > 0 or status == 'failed' %}
+              Ошибка 3Д принтера, печать {{ 'остановлена' if status == 'failed' else 'приостановлена' }}.
+              Подробности в уведомлении на телефоне.
             {% endif %}
-          data:
-            priority: high
-            # Tap opens the Bambu wiki page for the HMS code (or the printer dashboard)
-            clickAction: "{{ wiki if wiki else '/lovelace/3d-printer' }}"
-      # Voice announcement only for real errors; night mode: Alice speaks only about critical events
-      - if:
-          - condition: template
-            value_template: "{{ errors | count > 0 or status == 'failed' }}"
-          - condition: state
-            entity_id: input_boolean.home_night_mode
-            state: "off"
-        then:
-          - action: media_player.play_media
-            target:
-              entity_id: media_player.yandex_station_midi
-            data:
-              media_content_type: text
-              media_content_id: >-
-                Внимание! Ошибка 3Д принтера, печать
-                {{ 'остановлена' if status == 'failed' else 'приостановлена' }}.
-                Подробности в уведомлении на телефоне.
 
   ###############################################
   ## Remind me when print is resumed
@@ -271,10 +252,11 @@ automation:
           - "failed"
         to: "running"
     actions:
-      - action: notify.mobile_app_sen_s25
+      - action: script.notify
         data:
-          title: "⚠️ 3D Printer"
-          message: "Печать возобновлена"
+          level: info
+          title: ▶️ Печать продолжена
+          message: "{{ states('sensor.3d_printer_bambu_lab_a1_task_name') }}"
 
   ###############################################
   ## Power control
@@ -337,7 +319,7 @@ automation:
     description: >-
       Safe power-off when the virtual power switch is turned off: cuts the socket only if the
       printer is finished/idle and the nozzle is at most 60°C. Otherwise switches the virtual
-      switch back on and warns via phone and (unless silent mode) the Yandex Station.
+      switch back on and warns via phone and the Yandex Station (rules of script.notify).
     mode: restart
     triggers:
       - trigger: state
@@ -367,24 +349,16 @@ automation:
               - action: input_boolean.turn_on
                 target:
                   entity_id: input_boolean.3d_printer_power
-              - action: notify.mobile_app_sen_s25
+              - action: script.notify
                 data:
-                  title: "⚠️ 3D Printer"
-                  message: |
-                    Нельзя выключить принтер, так как температура сопла {{ states('sensor.3d_printer_bambu_lab_a1_nozzle_temperature') }}°C.
-                    Питания НЕ отключено!
-              - if:
-                  - condition: state
-                    entity_id: input_boolean.silent_mode
-                    state: "off"
-                then:
-                  - action: media_player.play_media
-                    target:
-                      entity_id: media_player.yandex_station_midi
-                    data:
-                      media_content_type: text
-                      media_content_id: >
-                        ⚠️ Внимание! Питание 3D принтера НЕ отключено, так как температура сопла {{ states('sensor.3d_printer_bambu_lab_a1_nozzle_temperature') }}°C.
+                  level: warning
+                  persistent: false
+                  title: 🔌 Принтер не выключен
+                  message: >-
+                    Сопло {{ states('sensor.3d_printer_bambu_lab_a1_nozzle_temperature') | float(0) | round(0) | int }} °C —
+                    жду остывания до 60 °C
+                  # No emoji in voice texts (E-4)
+                  tts: Нельзя выключить принтер, сопло ещё горячее.
             else:
               # If printer is in a state that allows powering off, turn off power socket
               - action: switch.turn_off
@@ -397,24 +371,17 @@ automation:
           - action: input_boolean.turn_on
             target:
               entity_id: input_boolean.3d_printer_power
-          - action: notify.mobile_app_sen_s25
+          - action: script.notify
             data:
-              title: "⚠️ 3D Printer"
-              message: |
-                Нельзя выключить принтер, так как он находится в состоянии «{{ printer_status }}».
-                Питания НЕ отключено!
-          - if:
-              - condition: state
-                entity_id: input_boolean.silent_mode
-                state: "off"
-            then:
-              - action: media_player.play_media
-                target:
-                  entity_id: media_player.yandex_station_midi
-                data:
-                  media_content_type: text
-                  media_content_id: >
-                    ⚠️ Внимание! Питание 3D принтера НЕ отключено, так как он находится в состоянии «{{ printer_status }}».
+              level: warning
+              persistent: false
+              title: 🔌 Принтер не выключен
+              message: "Принтер сейчас: {{ {'running': 'печатает', 'pause': 'на паузе', 'prepare': 'готовится к печати', 'slicing': 'нарезка модели', 'failed': 'ошибка печати', 'init': 'запускается', 'offline': 'не в сети'}.get(printer_status, printer_status) }}"
+              tts: >-
+                {{ 'Нельзя выключить принтер, идёт печать.' if printer_status == 'running'
+                   else 'Нельзя выключить принтер, он сейчас ' ~ ({'pause': 'на паузе', 'prepare': 'готовится к печати',
+                   'slicing': 'нарезает модель', 'failed': 'в ошибке', 'init': 'запускается',
+                   'offline': 'не в сети'}.get(printer_status, 'занят')) ~ '.' }}
 
   ###############################################
   ## Automatic power off for 3D printer after print completion and cooldown, during night hours
@@ -441,7 +408,6 @@ automation:
           minutes: 30
         continue_on_timeout: true
       - variables:
-          timestamp: "{{ now().strftime('%H:%M:%S') }}"
           printer_status: "{{ states('sensor.3d_printer_bambu_lab_a1_print_status') }}"
           nozzle_temp: "{{ states('sensor.3d_printer_bambu_lab_a1_nozzle_temperature') }}"
       # Break if printer if socket is already off
@@ -466,18 +432,20 @@ automation:
           - action: light.turn_off
             target:
               entity_id: light.hall_edison_bulb
-          - action: script.notify_and_create_persistent_notification
+          - action: script.notify
             data:
-              title: *sys_notify_title_info
-              message: Питание 3D принтера было отключено автоматически в {{ timestamp }}
+              level: status
+              tag: printer_power
+              title: 🔌 Принтер выключен
+              message: Автоматически, после остывания
         else:
-          - action: script.notify_and_create_persistent_notification
+          - action: script.notify
             data:
-              title: *sys_notify_title_warning
+              level: warning
+              title: 🔌 Принтер не выключен
               message: >-
-                Питание 3D принтера НЕ отключено в {{ timestamp }}.
                 {% if printer_status not in ['finish', 'idle'] -%}
-                  Причина: принтер находится в состоянии «{{ printer_status }}».
-                {% else %}
-                  Причина: сопло не остыло ниже 50°C (сейчас {{ nozzle_temp }}°C).
-                {% endif %}
+                  Причина: принтер сейчас {{ {'running': 'печатает', 'pause': 'на паузе', 'prepare': 'готовится к печати', 'slicing': 'нарезка модели', 'failed': 'ошибка печати', 'init': 'запускается', 'offline': 'не в сети'}.get(printer_status, printer_status) }}
+                {%- else -%}
+                  Причина: сопло не остыло ниже 50 °C (сейчас {{ nozzle_temp | float(0) | round(0) | int }} °C)
+                {%- endif %}
