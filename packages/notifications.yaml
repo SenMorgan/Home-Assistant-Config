@@ -597,3 +597,50 @@ automation:
             # Tapping the notification opens the filtered device list
             clickAction: "{{ devices_url }}"
             url: "{{ devices_url }}"
+
+  # I-08: robot vacuum needs help (stuck, brush jammed, bin missing, ...)
+  - id: notification_vacuum_error
+    alias: Notification Vacuum Error
+    description: >-
+      Warns when Johnny (Roborock) reports an error for 1 minute, with the error text and the room it
+      is in; a tap opens the vacuum entity.
+    mode: single
+    triggers:
+      - trigger: state
+        entity_id: vacuum.johnny
+        to: error
+        for: "00:01:00"
+    actions:
+      - action: script.notify
+        data:
+          level: warning
+          persistent: false
+          title: 🤖 Johnny застрял
+          message: >-
+            {% from 'ru.jinja' import room_ru %}
+            {{ states('sensor.johnny_vacuum_error') | replace('_', ' ') }}
+            {%- if states('sensor.johnny_current_room') not in ['unknown', 'unavailable', ''] %}
+             · {{ room_ru(states('sensor.johnny_current_room')) }}{% endif %}
+          url: entityId:vacuum.johnny
+
+  # I-09: HA data disk filling up (a full disk stops the recorder and backups)
+  - id: notification_ha_disk_space_low
+    alias: Notification HA Disk Space Low
+    description: >-
+      Warns when the Home Assistant data disk is more than 80 % full for 10 minutes (re-armed when it
+      drops below 80 % again).
+    mode: single
+    triggers:
+      - trigger: numeric_state
+        entity_id: sensor.disk_use_percent
+        above: 80
+        for: "00:10:00"
+    actions:
+      - action: script.notify
+        data:
+          level: warning
+          title: "💽 Мало места на HA: {{ states('sensor.disk_use_percent') | float(0) | round(0) | int }} %"
+          message: >-
+            {% from 'ru.jinja' import num %}
+            Занято {{ num(states('sensor.disk_use')) }} ГБ · база данных и бекапы могут перестать сохраняться
+          url: /config/storage

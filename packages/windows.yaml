@@ -1,0 +1,241 @@
+######################################################################
+# File: windows.yaml                                                 #
+# Author: SenMorgan https://github.com/SenMorgan                     #
+# Date: 2026-11-13                                                   #
+#                                                                    #
+# Info: advice notifications about windows (catalog I-04, I-05,      #
+# I-14 in docs/notifications_catalog.md).                            #
+#                                                                    #
+# Copyright (c) 2026 Sen Morgan                                      #
+######################################################################
+
+###############################################
+## TEMPLATE ENTITIES
+###############################################
+template:
+  # Rain, thunderstorm, hail or strong wind expected in the next hour (Met.no hourly forecast),
+  # refreshed every 15 minutes. Turns on once per bad-weather episode.
+  - triggers:
+      - trigger: time_pattern
+        minutes: "/15"
+      - trigger: homeassistant
+        event: start
+    actions:
+      - action: weather.get_forecasts
+        continue_on_error: true
+        target:
+          entity_id: weather.home_assistant_blue
+        data:
+          type: hourly
+        response_variable: fc
+    binary_sensor:
+      - name: Bad Weather Soon
+        unique_id: bad_weather_soon
+        icon: mdi:weather-lightning-rainy
+        # Current and next hourly slot; wind_speed is in km/h (40 km/h ≈ 11 m/s)
+        state: >-
+          {% set f = fc['weather.home_assistant_blue'].forecast[:2] if fc is defined and fc else [] %}
+          {% set wet = ['rainy', 'pouring', 'lightning', 'lightning-rainy', 'hail', 'snowy-rainy'] %}
+          {{ f | selectattr('condition', 'in', wet) | list | count > 0
+             or f | selectattr('wind_speed', 'ge', 40) | list | count > 0 }}
+        attributes:
+          # What is coming: storm beats rain beats wind
+          kind: >-
+            {% set f = fc['weather.home_assistant_blue'].forecast[:2] if fc is defined and fc else [] %}
+            {% set c = f | map(attribute='condition') | list %}
+            {% if 'lightning' in c or 'lightning-rainy' in c or 'hail' in c %}storm
+            {% elif 'pouring' in c or 'rainy' in c or 'snowy-rainy' in c %}rain
+            {% elif f | selectattr('wind_speed', 'ge', 40) | list | count > 0 %}wind
+            {% else %}none{% endif %}
+          # Minutes until the first bad slot (0 if it is the current hour)
+          minutes: >-
+            {% set f = fc['weather.home_assistant_blue'].forecast[:2] if fc is defined and fc else [] %}
+            {% set wet = ['rainy', 'pouring', 'lightning', 'lightning-rainy', 'hail', 'snowy-rainy'] %}
+            {% set ns = namespace(m=none) %}
+            {% for s in f if ns.m is none and (s.condition in wet or s.wind_speed | float(0) >= 40) %}
+              {% set ns.m = [((s.datetime | as_datetime - now()).total_seconds() / 60) | round(0) | int, 0] | max %}
+            {% endfor %}
+            {{ ns.m }}
+
+  - sensor:
+      # Outdoor temperature for window advice: the lower of the pool air sensor (stands in the sun,
+      # reads too high by day) and Met.no; if one is unavailable the other is used
+      - name: Outdoor Temperature Min
+        unique_id: outdoor_temperature_min
+        device_class: temperature
+        unit_of_measurement: "°C"
+        state_class: measurement
+        state: >-
+          {% set t = [states('sensor.pool_monitor_air_temperature'),
+                      state_attr('weather.home_assistant_blue', 'temperature')]
+                     | select('is_number') | map('float') | list %}
+          {{ t | min | round(1) if t else none }}
+        availability: >-
+          {{ [states('sensor.pool_monitor_air_temperature'), state_attr('weather.home_assistant_blue', 'temperature')]
+             | select('is_number') | list | count > 0 }}
+      # Average of the bedroom, living room and kitchen ATC sensors (unavailable ones are skipped)
+      - name: Indoor Temperature Average
+        unique_id: indoor_temperature_average
+        device_class: temperature
+        unit_of_measurement: "°C"
+        state_class: measurement
+        state: >-
+          {% set t = [states('sensor.ble_temperature_atc_bedroom'), states('sensor.ble_temperature_atc_living_room'),
+                      states('sensor.ble_temperature_atc_kitchen')] | select('is_number') | map('float') | list %}
+          {{ (t | sum / t | count) | round(1) if t else none }}
+        availability: >-
+          {{ [states('sensor.ble_temperature_atc_bedroom'), states('sensor.ble_temperature_atc_living_room'),
+              states('sensor.ble_temperature_atc_kitchen')] | select('is_number') | list | count > 0 }}
+
+  - binary_sensor:
+      # Hysteresis 1.5 °C and 15 minutes of stability before advising (I-14)
+      - name: Outside Hotter Than Inside
+        unique_id: outside_hotter_than_inside
+        delay_on: "00:15:00"
+        state: >-
+          {{ states('sensor.outdoor_temperature_min') | float(-99) > states('sensor.indoor_temperature_average') | float(99) + 1.5 }}
+      - name: Outside Cooler Than Inside
+        unique_id: outside_cooler_than_inside
+        delay_on: "00:15:00"
+        state: >-
+          {{ states('sensor.outdoor_temperature_min') | float(99) < states('sensor.indoor_temperature_average') | float(-99) - 1.5 }}
+
+###############################################
+## AUTOMATIONS
+###############################################
+automation:
+  # I-04: everyone left while a window is open during the heating season
+  - id: notification_window_open_nobody_home
+    alias: Notification Window Open Nobody Home
+    description: >-
+      When the house has been empty for 5 minutes during the heating season and a window is still open,
+      warns Sen which rooms have an open window.
+    mode: single
+    triggers:
+      - trigger: state
+        entity_id: binary_sensor.people_home
+        from: "on"
+        to: "off"
+        for: "00:05:00"
+    conditions:
+      - condition: state
+        entity_id: input_boolean.heating_season
+        state: "on"
+      - condition: state
+        entity_id: binary_sensor.windows
+        state: "on"
+    actions:
+      - action: script.notify
+        data:
+          level: warning
+          persistent: false
+          title: >-
+            {{ '🪟 Окна остались открыты' if expand('binary_sensor.windows') | selectattr('state', 'eq', 'on') | list | count > 1
+               else '🪟 Окно осталось открыто' }}
+          message: >-
+            {% from 'ru.jinja' import room_ru %}
+            {% set ns = namespace(r=[]) %}
+            {% for e in expand('binary_sensor.windows') | selectattr('state', 'eq', 'on') %}
+              {% set ns.r = ns.r + [room_ru(area_name(e.entity_id))] %}
+            {% endfor %}
+            {{ ns.r | join(', ') }} · дома никого
+
+  # I-05: rain/storm/strong wind is coming while a window is open (always, also when nobody is home)
+  - id: notification_bad_weather_window_open
+    alias: Notification Bad Weather Window Open
+    description: >-
+      Warns when Met.no expects rain, a thunderstorm, hail or strong wind within the hour while a window
+      is open: when bad weather becomes expected, or when a window is opened while it is expected.
+      Warning level if nobody is home (nobody can close it soon), info otherwise.
+    mode: single
+    triggers:
+      - trigger: state
+        entity_id: binary_sensor.bad_weather_soon
+        from: "off"
+        to: "on"
+      - trigger: state
+        entity_id: binary_sensor.windows
+        from: "off"
+        to: "on"
+        for: "00:02:00"
+    conditions:
+      - condition: state
+        entity_id: binary_sensor.bad_weather_soon
+        state: "on"
+      - condition: state
+        entity_id: binary_sensor.windows
+        state: "on"
+      # At most once per hour (window opened and closed several times during one shower)
+      - "{{ this.attributes.last_triggered is none or now() - this.attributes.last_triggered > timedelta(hours=1) }}"
+    actions:
+      - variables:
+          kind: "{{ state_attr('binary_sensor.bad_weather_soon', 'kind') | trim }}"
+          minutes: "{{ state_attr('binary_sensor.bad_weather_soon', 'minutes') }}"
+      - action: script.notify
+        data:
+          level: "{{ 'warning' if is_state('binary_sensor.people_home', 'off') else 'info' }}"
+          persistent: false
+          title: >-
+            {{ {'storm': '⛈️ Скоро гроза', 'rain': '🌧️ Скоро дождь', 'wind': '💨 Сильный ветер'}.get(kind, '🌧️ Непогода') }},
+            окно открыто
+          message: >-
+            {% from 'ru.jinja' import room_ru %}
+            {% set ns = namespace(r=[]) %}
+            {% for e in expand('binary_sensor.windows') | selectattr('state', 'eq', 'on') %}
+              {% set ns.r = ns.r + [room_ru(area_name(e.entity_id))] %}
+            {% endfor %}
+            {{ ns.r | join(', ') }} ·
+            {{ 'уже начинается' if minutes is none or minutes | int(0) < 5 else 'через ≈ ' ~ minutes ~ ' мин' }}
+
+  # I-14: summer ventilation advice (outside hotter -> close, outside cooler -> open)
+  - id: notification_summer_ventilation
+    alias: Notification Summer Ventilation
+    description: >-
+      Outside the heating season, when it is warm at home (23 °C or more): advises closing windows when
+      outside has been hotter than inside for 15 minutes (only if a window is open), and opening them when
+      outside has been cooler (only if all are closed). Hysteresis 1.5 °C, at most once per 2 hours,
+      spoken when someone is home (not at night, per script.notify).
+    mode: single
+    triggers:
+      - trigger: state
+        entity_id: binary_sensor.outside_hotter_than_inside
+        from: "off"
+        to: "on"
+        id: close
+      - trigger: state
+        entity_id: binary_sensor.outside_cooler_than_inside
+        from: "off"
+        to: "on"
+        id: open
+    conditions:
+      - condition: state
+        entity_id: input_boolean.heating_season
+        state: "off"
+      # Not in a cool spring flat: only when it is warm inside
+      - condition: numeric_state
+        entity_id: sensor.indoor_temperature_average
+        above: 22.9
+      - "{{ (trigger.id == 'close' and is_state('binary_sensor.windows', 'on'))
+            or (trigger.id == 'open' and is_state('binary_sensor.windows', 'off')) }}"
+      - "{{ this.attributes.last_triggered is none or now() - this.attributes.last_triggered > timedelta(hours=2) }}"
+    actions:
+      - variables:
+          t_out: "{{ states('sensor.outdoor_temperature_min') }}"
+          t_in: "{{ states('sensor.indoor_temperature_average') }}"
+      - action: script.notify
+        data:
+          level: info
+          title: >-
+            {{ '🌡️ На улице жарче: закройте окна' if trigger.id == 'close' else '🌬️ На улице прохладнее: откройте окна' }}
+          message: >-
+            {% from 'ru.jinja' import num, room_ru %}
+            Улица {{ num(t_out) }} °C · дома {{ num(t_in) }} °C
+            {%- if trigger.id == 'close' %}
+              {%- set ns = namespace(r=[]) %}
+              {%- for e in expand('binary_sensor.windows') | selectattr('state', 'eq', 'on') %}
+                {%- set ns.r = ns.r + [room_ru(area_name(e.entity_id))] %}
+              {%- endfor %} · открыты: {{ ns.r | join(', ') }}
+            {%- endif %}
+          tts: >-
+            {{ 'На улице жарче, чем дома. Закройте окна.' if trigger.id == 'close'
+               else 'На улице прохладнее, чем дома. Можно открыть окна.' }}
