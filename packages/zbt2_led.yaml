@@ -47,7 +47,7 @@ template:
           {% elif night %}
             idle
           {% elif is_state('binary_sensor.windows', 'on') and
-            is_state_attr('climate.nest_thermostat', 'preset_mode', 'eco') %}
+            is_state_attr('climate.nestlocal_thermostat', 'preset_mode', 'eco') %}
             window_eco
           {% elif printer == 'finish' and printer_changed is not none and
             now() - printer_changed < timedelta(minutes=10) %}

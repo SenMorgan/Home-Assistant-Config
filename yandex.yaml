@@ -274,7 +274,7 @@ entity_config:
   sensor.electricity_meter_energy:
     name: Счётчик электричества
     type: smart_meter.electricity
-  climate.nest_thermostat:
+  climate.nestlocal_thermostat:
     name: Главный термостат
     properties:
       - type: temperature

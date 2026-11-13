@@ -111,20 +111,20 @@ template:
       - name: Thermostat heating
         unique_id: thermostat_heating
         device_class: heat
-        state: "{{ is_state_attr('climate.nest_thermostat', 'hvac_action', 'heating') }}"
+        state: "{{ is_state_attr('climate.nestlocal_thermostat', 'hvac_action', 'heating') }}"
       - name: Thermostat Active
         unique_id: thermostat_active
         device_class: running
         state: >
-          {{ not is_state_attr('climate.nest_thermostat', 'hvac_action', 'off') and
-          not is_state_attr('climate.nest_thermostat', 'preset_mode', 'eco') }}
+          {{ not is_state_attr('climate.nestlocal_thermostat', 'hvac_action', 'off') and
+          not is_state_attr('climate.nestlocal_thermostat', 'preset_mode', 'eco') }}
       - name: Freeze Alert at Night
         unique_id: freeze_alert_at_night
         device_class: cold
         # Detects if temperature drops below 20°C during night hours (21:00-06:00) when people are home or guest mode is enabled
         # Unavailable/unknown sensors are ignored (they must not count as 0 °C)
         state: >
-          {% set temps = [state_attr('climate.nest_thermostat', 'current_temperature'),
+          {% set temps = [state_attr('climate.nestlocal_thermostat', 'current_temperature'),
                           states('sensor.ble_temperature_atc_bedroom'),
                           states('sensor.ble_temperature_atc_living_room')]
                          | select('is_number') | map('float') | list %}
@@ -261,7 +261,7 @@ script:
         target:
           entity_id: input_number.thermostat_new_target_temperature
         data:
-          value: "{{ (state_attr('climate.nest_thermostat', 'current_temperature') | float(24)) + 2 }}"
+          value: "{{ (state_attr('climate.nestlocal_thermostat', 'current_temperature') | float(24)) + 2 }}"
       # Set thermostat new target temperature
       - action: script.thermostat_set_temperature
         data:
@@ -329,48 +329,48 @@ script:
       # Check if thermostat is in "heat" mode and set it if not
       - if:
           - condition: template
-            value_template: "{{ not is_state('climate.nest_thermostat', 'heat') }}"
+            value_template: "{{ not is_state('climate.nestlocal_thermostat', 'heat') }}"
         then:
           # Repeat the command to ensure that the thermostat is enabled
           - repeat:
               sequence:
                 - action: climate.set_hvac_mode
                   target:
-                    entity_id: climate.nest_thermostat
+                    entity_id: climate.nestlocal_thermostat
                   continue_on_error: true
                   data:
                     hvac_mode: "heat"
                 # Back off 5, 10, 15... s between attempts; give up after 6 tries
                 - delay: "{{ 5 * repeat.index }}"
-              until: "{{ is_state('climate.nest_thermostat', 'heat') or repeat.index > 5 }}"
+              until: "{{ is_state('climate.nestlocal_thermostat', 'heat') or repeat.index > 5 }}"
       # Disable "eco" mode if it is active
       - if:
           - condition: template
-            value_template: "{{ is_state_attr('climate.nest_thermostat', 'preset_mode', 'eco') }}"
+            value_template: "{{ is_state_attr('climate.nestlocal_thermostat', 'preset_mode', 'eco') }}"
         then:
           # Repeat the command to ensure that the thermostat is set to the default temperature
           - repeat:
               sequence:
                 - action: climate.set_preset_mode
                   target:
-                    entity_id: climate.nest_thermostat
+                    entity_id: climate.nestlocal_thermostat
                   continue_on_error: true
                   data:
                     preset_mode: "none"
                 - delay: "{{ 5 * repeat.index }}"
-              until: "{{ is_state_attr('climate.nest_thermostat', 'preset_mode', 'none') or repeat.index > 5 }}"
+              until: "{{ is_state_attr('climate.nestlocal_thermostat', 'preset_mode', 'none') or repeat.index > 5 }}"
       # Repeat the command to ensure that the thermostat is set to the default temperature
       - repeat:
           sequence:
             - action: climate.set_temperature
               target:
-                entity_id: climate.nest_thermostat
+                entity_id: climate.nestlocal_thermostat
               continue_on_error: true
               data:
                 temperature: "{{ temperature }}"
             - delay: "{{ 5 * repeat.index }}"
           # Done when the Nest reports a target within 0.3 °C of the requested one (allows for rounding)
-          until: "{{ (state_attr('climate.nest_thermostat', 'temperature') | float(0) - temperature | float(0)) | abs < 0.3 or repeat.index > 5 }}"
+          until: "{{ (state_attr('climate.nestlocal_thermostat', 'temperature') | float(0) - temperature | float(0)) | abs < 0.3 or repeat.index > 5 }}"
 
   thermostat_set_eco_mode:
     alias: Thermostat Set Eco Mode
@@ -382,7 +382,7 @@ script:
       # Check if thermostat is not already in "eco" mode and set it if not
       - if:
           - condition: template
-            value_template: "{{ not is_state_attr('climate.nest_thermostat', 'preset_mode', 'eco') }}"
+            value_template: "{{ not is_state_attr('climate.nestlocal_thermostat', 'preset_mode', 'eco') }}"
         then:
           # Reset the thermostat target temperature
           - action: script.thermostat_stop_heating
@@ -404,12 +404,12 @@ script:
                 - action: climate.set_preset_mode
                   continue_on_error: true
                   target:
-                    entity_id: climate.nest_thermostat
+                    entity_id: climate.nestlocal_thermostat
                   data:
                     preset_mode: "eco"
-                - wait_template: "{{ is_state_attr('climate.nest_thermostat', 'preset_mode', 'eco') }}"
+                - wait_template: "{{ is_state_attr('climate.nestlocal_thermostat', 'preset_mode', 'eco') }}"
                   timeout: "00:00:30"
-              until: "{{ is_state_attr('climate.nest_thermostat', 'preset_mode', 'eco') or repeat.index >= 3 }}"
+              until: "{{ is_state_attr('climate.nestlocal_thermostat', 'preset_mode', 'eco') or repeat.index >= 3 }}"
 
   notify_if_some_window_is_opened_during_heating_season:
     alias: Notify If Some Window Opened During Heating Season
@@ -603,7 +603,7 @@ automation:
                 entity_id: binary_sensor.windows
                 state: "on"
               - condition: template
-                value_template: "{{ not is_state_attr('climate.nest_thermostat', 'preset_mode', 'eco') }}"
+                value_template: "{{ not is_state_attr('climate.nestlocal_thermostat', 'preset_mode', 'eco') }}"
             sequence:
               - action: automation.trigger
                 target:
@@ -617,7 +617,7 @@ automation:
                 entity_id: binary_sensor.windows
                 state: "off"
               - condition: template
-                value_template: "{{ is_state_attr('climate.nest_thermostat', 'preset_mode', 'eco') }}"
+                value_template: "{{ is_state_attr('climate.nestlocal_thermostat', 'preset_mode', 'eco') }}"
               - condition: state
                 entity_id: timer.heating_quarantine
                 state: "idle"
@@ -715,7 +715,7 @@ automation:
     max_exceeded: silent
     triggers:
       - trigger: numeric_state
-        entity_id: climate.nest_thermostat
+        entity_id: climate.nestlocal_thermostat
         attribute: current_temperature
         above: 25.0
         for: "00:05:00"
@@ -727,15 +727,15 @@ automation:
         entity_id: input_boolean.heating_season
         state: "on"
       - condition: numeric_state
-        entity_id: climate.nest_thermostat
+        entity_id: climate.nestlocal_thermostat
         attribute: current_temperature
         above: 25.0
       # If thermostat is in «heat» mode and temperature is above the threshold
       # (a target >= 25 °C means forced heating is still applied)
       - condition: template
         value_template: >
-          {{ states('climate.nest_thermostat') == 'heat' and
-              state_attr('climate.nest_thermostat', 'temperature') | float(0) >= 25.0 }}
+          {{ states('climate.nestlocal_thermostat') == 'heat' and
+              state_attr('climate.nestlocal_thermostat', 'temperature') | float(0) >= 25.0 }}
     actions:
       - action: script.notify_and_create_persistent_notification
         data:
@@ -970,7 +970,7 @@ automation:
   ## Heat request handlers
   ###############################################
 
-  # If one of ETRV is in "heat" state and climate.nest_thermostat is not in "heat" state,
+  # If one of ETRV is in "heat" state and climate.nestlocal_thermostat is not in "heat" state,
   # and all windows are closed - set new thermostat target temperature by adding 2°C to
   # the current temperature to force enable heating.
   - id: start_heating_by_etrv_request
@@ -1084,7 +1084,7 @@ automation:
     actions:
       - action: script.thermostat_start_heating
 
-  # If all ETRVs are not in "heat" state - restore climate.nest_thermostat target temperature.
+  # If all ETRVs are not in "heat" state - restore climate.nestlocal_thermostat target temperature.
   - id: stop_heating_by_etrv_request
     alias: Stop Heating by ETRV Request
     description: >-
