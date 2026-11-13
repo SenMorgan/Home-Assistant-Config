@@ -324,8 +324,9 @@ automation:
   - id: notification_internet_connection
     alias: Notification Internet Connection
     description: >-
-      Push and persistent notification when the internet connection is lost or restored. The loss
-      push is delivered only after the internet is back, so it keeps the time in the text.
+      Push and persistent notification when the internet connection is lost or restored, plus a
+      Meshtastic channel message (works offline). The loss push is delivered only after the internet
+      is back, so it keeps the time in the text.
     mode: queued
     triggers:
       - trigger: state
@@ -346,6 +347,12 @@ automation:
               title: 🌐 Нет интернета
               message: Интернет соединение потеряно в {{ trigger.to_state.last_changed | as_local | as_timestamp | timestamp_custom('%H:%M') }}
               when: "{{ as_timestamp(trigger.to_state.last_changed) | int }}"
+          # Meshtastic works without internet, so this one arrives right away
+          - action: meshtastic.broadcast_channel_message
+            continue_on_error: true
+            data:
+              channel: meshtastic.gateway_lrnr_channel_morgans
+              message: "HA: нет интернета с {{ trigger.to_state.last_changed | as_local | as_timestamp | timestamp_custom('%H:%M') }}"
         else:
           - action: script.notify
             data:
@@ -356,6 +363,13 @@ automation:
                 {% from 'ru.jinja' import duration_short %}
                 {% set mins = ((as_timestamp(trigger.to_state.last_changed) - as_timestamp(trigger.from_state.last_changed)) / 60) | round(0) | int %}
                 Не было {{ duration_short(mins) }} · с {{ trigger.from_state.last_changed | as_local | as_timestamp | timestamp_custom('%H:%M') }}
+          - action: meshtastic.broadcast_channel_message
+            continue_on_error: true
+            data:
+              channel: meshtastic.gateway_lrnr_channel_morgans
+              message: >-
+                {% from 'ru.jinja' import duration_short %}
+                HA: интернет есть, перерыв {{ duration_short(((as_timestamp(trigger.to_state.last_changed) - as_timestamp(trigger.from_state.last_changed)) / 60) | round(0) | int) }}
 
   ###############################################
   ## Low Battery Notifications
