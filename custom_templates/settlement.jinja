@@ -1,0 +1,72 @@
+{# Yearly deposit settlement helpers (used by packages/utility_bills.yaml).
+   md: 'MM-DD', the last day of the settlement period (same every year).
+   h: monthly history rows (keys m = 'YYYY-MM', consumption key, balance key), oldest first.
+   As soon as a settlement date has passed the old period counts as paid (debt/overpayment = 0);
+   the month containing the settlement day is split by days between the two periods.
+   Reload with homeassistant.reload_custom_templates. #}
+
+{# Most recent settlement date strictly before today: 'YYYY-MM-DD' #}
+{%- macro last_settlement(md) -%}
+{%- set t = now().strftime('%Y-%m-%d') -%}
+{%- set y = now().year -%}
+{{- (y ~ '-' ~ md) if (y ~ '-' ~ md) < t else ((y - 1) ~ '-' ~ md) -}}
+{%- endmacro -%}
+
+{# Share of month ym (YYYY-MM) after day d: (days in month - d) / days in month #}
+{%- macro share_after(ym, d) -%}
+{%- set y, m = ym[0:4] | int, ym[5:7] | int -%}
+{%- set nx = '%04d-%02d-01' | format(y + m // 12, m % 12 + 1) | as_datetime -%}
+{%- set dim = (nx - (ym ~ '-01') | as_datetime).days -%}
+{{- (dim - d) / dim -}}
+{%- endmacro -%}
+
+{# Current balance: the last row's balance, or 0 once a settlement has passed and the month
+   containing it is not recorded yet (the old period is paid, the new one has no data yet) #}
+{%- macro balance(h, bal_key, md) -%}
+{%- set l = h[-1] if h else none -%}
+{%- if l is none -%}0
+{%- elif l.m < last_settlement(md)[0:7] -%}0
+{%- else -%}{{ l[bal_key] if l[bal_key] is number else 0 }}
+{%- endif -%}
+{%- endmacro -%}
+
+{# End of the running settlement period: 'YYYY-MM-DD' #}
+{%- macro period_end(h, md) -%}
+{%- set l = h[-1] -%}
+{%- set y, mo = l.m[0:4] | int, l.m[5:7] | int -%}
+{%- set nm = '%04d-%02d' | format(y + mo // 12, mo % 12 + 1) -%}
+{%- set s = last_settlement(md) -%}
+{%- set end = (nm[0:4] ~ '-' ~ md) if (nm[0:4] ~ '-' ~ md) >= (nm ~ '-01') else ((nm[0:4] | int + 1) ~ '-' ~ md) -%}
+{{- ((s[0:4] | int + 1) ~ '-' ~ md) if end <= s else end -}}
+{%- endmacro -%}
+
+{# Projected balance at the end of the running period: current balance + for every month not recorded yet
+   (deposit - expected cost), the months containing settlement days split by days.
+   Expected consumption = the same calendar month a year ago (else the 12-month average);
+   cost = consumption * a + b (a, b already include VAT). #}
+{%- macro forecast(h, key, bal_key, md, deposit, a, b) -%}
+{%- set l = h[-1] -%}
+{%- set y, mo = l.m[0:4] | int, l.m[5:7] | int -%}
+{%- set s = last_settlement(md) -%}
+{%- set reset = l.m < s[0:7] -%}
+{%- set end = period_end(h, md) -%}
+{%- set d = md[3:5] | int -%}
+{%- set allv = h[-12:] | map(attribute=key) | select('number') | list -%}
+{%- set ns = namespace(p=0 if reset else (l[bal_key] if l[bal_key] is number else 0),
+                       y=y + mo // 12, m=mo % 12 + 1) -%}
+{%- for i in range(25) -%}
+  {%- set ym = '%04d-%02d' | format(ns.y, ns.m) -%}
+  {%- if ym <= end[0:7] -%}
+    {%- set sa = share_after(ym, d) | float -%}
+    {%- if reset and ym < s[0:7] -%}{%- set f = 0 -%}
+    {%- elif reset and ym == s[0:7] -%}{%- set f = sa -%}
+    {%- elif ym == end[0:7] -%}{%- set f = 1 - sa -%}
+    {%- else -%}{%- set f = 1 -%}{%- endif -%}
+    {%- set same = (h | selectattr('m', 'search', '-' ~ ym[5:7] ~ '$') | map(attribute=key) | select('number') | list)[-1:] -%}
+    {%- set c = same[0] if same else ((allv | sum / allv | count) if allv else 0) -%}
+    {%- set ns.p = ns.p + f * (deposit - (c * a + b)) -%}
+  {%- endif -%}
+  {%- set ny = ns.y + ns.m // 12 -%}{%- set ns.m = ns.m % 12 + 1 -%}{%- set ns.y = ny -%}
+{%- endfor -%}
+{{- ns.p | round(0) -}}
+{%- endmacro -%}
