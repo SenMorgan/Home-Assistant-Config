@@ -61,6 +61,8 @@ template:
           {% elif is_state('binary_sensor.any_battery_device_low', 'on') or
             (backup is not none and now() - backup > timedelta(days=2)) %}
             attention
+          {% elif is_state('binary_sensor.thermostat_heating', 'on') %}
+            heating
           {% elif is_state('input_boolean.guest_mode', 'on') %}
             guest
           {% else %}
@@ -91,6 +93,7 @@ script:
         air_bad: "255,40,0" # orange-red
         air_poor: "255,160,0" # yellow
         attention: "40,25,0" # dim yellow
+        heating: "90,30,0" # dim orange: the boiler is heating (steady, unlike the blinking UPS orange)
         guest: "25,25,25" # dim white
       # Colours are "R,G,B" strings: zeros inside a YAML list get lost when variables are rendered
       rgb: "{{ (colors.get(status, '0,0,0') if enabled else '0,0,0').split(',') | map('int') | list }}"
@@ -148,6 +151,63 @@ automation:
       - action: script.turn_on
         target:
           entity_id: script.zbt2_led_apply
+
+  # The LED follows presence like the clock and the decorative lights: on during the day while someone is
+  # home, off when everyone has left. At night it stays enabled: the status shows only UPS states then.
+  - id: zbt2_led_auto_enable
+    alias: ZBT2 LED Auto Enable
+    description: >-
+      Enables the ZBT-2 LED when someone comes home, the day mode starts or silent mode ends, if someone is
+      home, outside night mode, 05:00-22:00.
+    mode: single
+    triggers:
+      - trigger: state
+        entity_id: binary_sensor.people_home
+        to: "on"
+        for: "00:02:00"
+      - trigger: state
+        entity_id: input_boolean.home_night_mode
+        to: "off"
+      - trigger: state
+        entity_id: input_boolean.silent_mode
+        to: "off"
+      - trigger: time
+        at: "05:00:00"
+    conditions:
+      - condition: state
+        entity_id: input_boolean.zbt2_led_enabled
+        state: "off"
+      - condition: state
+        entity_id: binary_sensor.people_home
+        state: "on"
+      - condition: state
+        entity_id: input_boolean.home_night_mode
+        state: "off"
+      - condition: time
+        after: "05:00:00"
+        before: "22:00:00"
+    actions:
+      - action: input_boolean.turn_on
+        target:
+          entity_id: input_boolean.zbt2_led_enabled
+
+  - id: zbt2_led_auto_disable
+    alias: ZBT2 LED Auto Disable
+    description: Disables the ZBT-2 LED 1 minute after everyone has left (nobody to see it), unless guest mode is on.
+    mode: single
+    triggers:
+      - trigger: state
+        entity_id: binary_sensor.people_home
+        to: "off"
+        for: "00:01:00"
+    conditions:
+      - condition: state
+        entity_id: input_boolean.guest_mode
+        state: "off"
+    actions:
+      - action: input_boolean.turn_off
+        target:
+          entity_id: input_boolean.zbt2_led_enabled
 
   - id: zbt2_led_flash_on_manual_interaction
     alias: ZBT2 LED Flash On Manual Interaction
