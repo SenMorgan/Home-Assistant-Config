@@ -4,7 +4,7 @@
 # Date: 2026-11-11                                                   #
 #                                                                    #
 # Info: uses the LED of the Home Assistant Connect ZBT-2 (living     #
-# room) as a home status indicator, with a short blue flash on       #
+# room) as a home status indicator, with a short white flash on      #
 # every manual interaction with a device.                            #
 # Requires the experimental custom integration "zbt2_led".           #
 #                                                                    #
@@ -158,7 +158,7 @@ automation:
     alias: ZBT2 LED Auto Enable
     description: >-
       Enables the ZBT-2 LED when someone comes home, the day mode starts or silent mode ends, if someone is
-      home, outside night mode, 05:00-22:00.
+      home, outside night mode, 06:00-22:00.
     mode: single
     triggers:
       - trigger: state
@@ -172,7 +172,7 @@ automation:
         entity_id: input_boolean.silent_mode
         to: "off"
       - trigger: time
-        at: "05:00:00"
+        at: "06:00:00"
     conditions:
       - condition: state
         entity_id: input_boolean.zbt2_led_enabled
@@ -184,7 +184,7 @@ automation:
         entity_id: input_boolean.home_night_mode
         state: "off"
       - condition: time
-        after: "05:00:00"
+        after: "06:00:00"
         before: "22:00:00"
     actions:
       - action: input_boolean.turn_on
@@ -212,7 +212,7 @@ automation:
   - id: zbt2_led_flash_on_manual_interaction
     alias: ZBT2 LED Flash On Manual Interaction
     description: >-
-      Flashes the LED Home Assistant blue for 0.5 s when a listed device is switched manually
+      Flashes the LED bright white for 0.5 s when a listed device is switched manually
       or a Zigbee button is pressed, then restores the status colour. Skipped at night and during UPS states.
     mode: single
     max_exceeded: silent
@@ -291,13 +291,13 @@ automation:
               states.script | selectattr('context.id', 'eq', ctx.id) | list | count == 0) }}
           {% endif %}
     actions:
-      # Home Assistant blue
+      # Bright white: stands out against every status colour (HA blue was hard to see on turquoise)
       - action: zbt2_led.set_led
         continue_on_error: true
         data:
-          red: 24
-          green: 188
-          blue: 242
+          red: 255
+          green: 255
+          blue: 255
       - delay:
           milliseconds: 500
       - action: script.turn_on
