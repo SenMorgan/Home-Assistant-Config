@@ -15,8 +15,8 @@ automation: !include automations.yaml
 
 recorder:
   db_url: !secret DATABASE_URL
-  # Detailed history for 2 months; long-term statistics (hourly mean/min/max) are kept forever
-  purge_keep_days: 60
+  # Detailed history for 3 months (backup must stay under the 5 GB Nabu Casa cloud limit); long-term statistics (hourly mean/min/max) are kept forever
+  purge_keep_days: 90
   # Explicit includes win over the exclude globs below (entity filter: entity include > glob exclude)
   include:
     entities:
