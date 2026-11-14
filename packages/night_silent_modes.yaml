@@ -27,14 +27,20 @@ script:
   set_silent_mode:
     alias: Set Silent Mode
     description: >-
-      Applies silent mode: powers the baby monitor, lowers Yandex station and
-      model railway volume, turns the 7-segment clock red (off in night mode) and enables the
+      Applies silent mode: lowers Yandex station and
+      model railway volume, turns the 7-segment clock red (off in night mode), powers the baby monitor
+      (not in night mode) and enables the
       bedroom lights/cover safety switch.
     sequence:
-      # Power on Baby Monitor Plug
-      - action: switch.turn_on
-        target:
-          entity_id: switch.bedroom_baby_monitor_plug
+      # Power on Baby Monitor Plug (evening silent mode only: in night mode it stays off, see Home Night Mode)
+      - if:
+          - condition: state
+            entity_id: input_boolean.home_night_mode
+            state: "off"
+        then:
+          - action: switch.turn_on
+            target:
+              entity_id: switch.bedroom_baby_monitor_plug
       # Lower Yandex stations volume
       - action: script.set_volume_level_repeatedly
         data:
@@ -131,7 +137,8 @@ script:
     alias: Home Night Mode
     description: >-
       Turns on the night mode and silent mode flags (their side effects run from the handler automations)
-      and turns off the 7-segment clock like all other lights; Home Day Mode / Kitchen Clock Reenable bring it back.
+      and turns off the 7-segment clock, the baby monitor plug, the wireless charger and the Interactive CZ Map;
+      Home Day Mode and the *_reenable automations bring the clock, charger and map back.
     sequence:
       # Ensure night and silent modes are enabled
       - action: input_boolean.turn_on
@@ -143,6 +150,15 @@ script:
       - action: light.turn_off
         target:
           entity_id: light.7_seg_clock
+      # Devices that are not needed at night; the *_reenable automations bring the charger and
+      # the map back in the morning (outside night mode, from 06:00)
+      - action: switch.turn_off
+        continue_on_error: true
+        target:
+          entity_id:
+            - switch.bedroom_baby_monitor_plug
+            - switch.wireless_charger
+            - switch.interactive_cz_map_enable
 
   home_day_mode:
     alias: Home Day Mode
@@ -415,7 +431,7 @@ automation:
   # Autoenable Baby Monitor Plug at 20:00 if anyone is home and Baby Monitor Plug is off
   - id: autoenable_bedroom_baby_monitor_plug_at_20_00
     alias: Autoenable Bedroom Baby Monitor Plug at 20:00
-    description: Turns on the bedroom baby monitor plug at 20:00 if anyone is home and it is off.
+    description: Turns on the bedroom baby monitor plug at 20:00 if anyone is home, it is off and night mode is not on yet.
     mode: single
     triggers:
       - trigger: time
@@ -426,6 +442,10 @@ automation:
         state: "on"
       - condition: state
         entity_id: switch.bedroom_baby_monitor_plug
+        state: "off"
+      # Night mode switches it off; don't power it again if night mode started before 20:00
+      - condition: state
+        entity_id: input_boolean.home_night_mode
         state: "off"
     actions:
       - action: switch.turn_on
