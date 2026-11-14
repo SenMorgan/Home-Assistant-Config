@@ -28,7 +28,7 @@ script:
     alias: Set Silent Mode
     description: >-
       Applies silent mode: powers the baby monitor, lowers Yandex station and
-      model railway volume, turns the 7-segment clock red and enables the
+      model railway volume, turns the 7-segment clock red (off in night mode) and enables the
       bedroom lights/cover safety switch.
     sequence:
       # Power on Baby Monitor Plug
@@ -44,10 +44,20 @@ script:
         data:
           media_player: media_player.yandex_station
           volume_level: 0.4
-      # Notify via 7-Segment Clock that we are in silent mode
-      - action: scene.turn_on
-        target:
-          entity_id: scene.7_seg_clock_red
+      # Notify via 7-Segment Clock that we are in silent mode (red); in night mode the clock is off
+      # like all other lights (night mode switches silent mode on in the same call, so check it here)
+      - if:
+          - condition: state
+            entity_id: input_boolean.home_night_mode
+            state: "on"
+        then:
+          - action: light.turn_off
+            target:
+              entity_id: light.7_seg_clock
+        else:
+          - action: scene.turn_on
+            target:
+              entity_id: scene.7_seg_clock_red
       # Make DCC-EX volume lower
       - action: media_player.volume_set
         target:
@@ -119,7 +129,9 @@ script:
 
   home_night_mode:
     alias: Home Night Mode
-    description: Turns on the night mode and silent mode flags; their side effects run from the handler automations.
+    description: >-
+      Turns on the night mode and silent mode flags (their side effects run from the handler automations)
+      and turns off the 7-segment clock like all other lights; Home Day Mode / Kitchen Clock Reenable bring it back.
     sequence:
       # Ensure night and silent modes are enabled
       - action: input_boolean.turn_on
@@ -127,6 +139,10 @@ script:
           entity_id:
             - input_boolean.home_night_mode
             - input_boolean.silent_mode
+      # Also when silent mode was already on (then Set Silent Mode does not run again)
+      - action: light.turn_off
+        target:
+          entity_id: light.7_seg_clock
 
   home_day_mode:
     alias: Home Day Mode
