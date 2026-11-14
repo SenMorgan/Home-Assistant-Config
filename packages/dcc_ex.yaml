@@ -130,7 +130,7 @@ automation:
         state: "off"
       # Only in daytime hours
       - condition: time
-        after: "05:00:00"
+        after: "06:00:00"
         before: "22:00:00"
     actions:
       # Enable track power
