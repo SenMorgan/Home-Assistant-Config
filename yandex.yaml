@@ -1,6 +1,6 @@
 # Yandex Smart Home (Alice) entity filter and names.
 # Privacy: no security devices (door/window contacts, motion, cameras, alarms, guest mode), no thermostats or eTRVs,
-# no electricity meter and no phones are exposed: Yandex would receive every state change.
+# no electricity meter, no phones and no presence hints (PC, baby monitor) are exposed: Yandex would receive every state change.
 # Climate sensors are "Климат" devices assigned to rooms; values are rounded in value_template, so Yandex
 # gets a report only when the rounded value changes (raw BLE values change every minute and hit HTTP 429).
 filter:
@@ -50,8 +50,6 @@ filter:
     - scene.movies
     - sensor.pool_monitor_bottom_water_temperature
     - sensor.pool_monitor_upper_water_temperature
-    - switch.asus_pc
-    - switch.bedroom_baby_monitor_plug
     - switch.hollandis_charge
     - switch.interactive_cz_map_enable
     - switch.loco_sbb_cargo_re_482_power_sound
@@ -153,12 +151,6 @@ entity_config:
     type: socket
   switch.moving_head_power:
     name: Голова
-    type: socket
-  switch.asus_pc:
-    name: Компьютер
-    type: socket
-  switch.bedroom_baby_monitor_plug:
-    name: Видео-няня
     type: socket
   button.ex_commandstation_emergency_stop:
     name: Экстренная остановка
