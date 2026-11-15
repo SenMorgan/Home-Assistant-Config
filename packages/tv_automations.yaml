@@ -40,6 +40,43 @@ script:
 ## AUTOMATIONS
 ###############################################
 automation:
+  # The core Samsung TV integration can only switch the TV off by itself; turning it on is handled here
+  # when HA (UI, Alice, scripts) asks the TV to turn on
+  - id: samsung_tv_turn_on_wake_on_lan
+    alias: Samsung TV Turn On via Wake-on-LAN
+    description: >-
+      Turns the Samsung TV on when media_player.samsung_tv is asked to turn on: a Wake-on-LAN packet
+      (for a TV that is fully off), then, if it is still off after 5 s, the power key over the network
+      (retried once after 15 s).
+      In network standby this QE55QE1D ignores Wake-on-LAN but accepts KEY_POWER (tested 2026-11-15).
+    mode: single
+    triggers:
+      - trigger: samsungtv.turn_on
+        entity_id: media_player.samsung_tv
+    actions:
+      - action: wake_on_lan.send_magic_packet
+        data:
+          mac: !secret SAMSUNG_TV_MAC
+          broadcast_address: 192.168.1.255
+      - wait_template: "{{ is_state('media_player.samsung_tv', 'on') }}"
+        timeout: "00:00:05"
+      # KEY_POWER toggles, so only while the TV is still off. Right after switching off the TV ignores it
+      # for a short while, so one retry after 15 s (HA sees the TV on within ~8 s, so no double toggle)
+      - repeat:
+          count: 2
+          sequence:
+            - condition: state
+              entity_id: media_player.samsung_tv
+              state: "off"
+            - action: remote.send_command
+              continue_on_error: true
+              target:
+                entity_id: remote.living_room_tv
+              data:
+                command: KEY_POWER
+            - wait_template: "{{ is_state('media_player.samsung_tv', 'on') }}"
+              timeout: "00:00:15"
+
   - id: living_room_tv_lights_by_sunset_or_tv_on
     alias: Living Room TV Lights by Sunset or TV ON
     description: "Turn on TV lights automatically by sunset or when TV is turned on"
