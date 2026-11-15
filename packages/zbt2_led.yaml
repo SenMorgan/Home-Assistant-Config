@@ -87,13 +87,13 @@ script:
       colors:
         ups_low: "255,0,0" # red, blinking
         ups_battery: "255,80,0" # orange, blinking
-        window_eco: "0,255,160" # turquoise
+        window_eco: "0,128,80" # turquoise, half brightness
         print_finished: "0,255,0" # green
         printing: "140,0,255" # purple
         air_bad: "255,40,0" # orange-red
         air_poor: "255,160,0" # yellow
         attention: "40,25,0" # dim yellow
-        heating: "90,30,0" # dim orange: the boiler is heating (steady, unlike the blinking UPS orange)
+        heating: "255,90,0" # bright orange: the boiler is heating (steady, unlike the blinking UPS orange)
         guest: "25,25,25" # dim white
       # Colours are "R,G,B" strings: zeros inside a YAML list get lost when variables are rendered
       rgb: "{{ (colors.get(status, '0,0,0') if enabled else '0,0,0').split(',') | map('int') | list }}"
