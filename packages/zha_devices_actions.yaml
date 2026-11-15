@@ -297,32 +297,61 @@ automation:
   - id: rodret_dimmer_1_handler
     alias: Rodret Dimmer 1 Handler
     description: >-
-      IKEA RODRET dimmer (via blueprint): ON turns on the Monolith speakers, desk lamp, TV lights and
-      Christmas tree; OFF turns off the speakers and all living room lights; holding ON/OFF dims the
-      desk lamp up/down in 4% steps.
+      IKEA RODRET dimmer (via blueprint), step by step: ON turns on the desk lamp, a second ON (lamp already
+      on) turns on the Monolith speakers. OFF turns off the desk lamp while it is on, then (lamp off) the
+      speakers, then (both off) the rest of the living room lights. Holding ON/OFF dims the desk lamp
+      up/down in 4% steps.
     use_blueprint:
       path: damru/ikea-rodret_E2201_ZHA-Z2M_control-anything.yaml
       input:
         remote_device: 51724530dc1fcac3561d2fcb39f40048
         on_press_action:
-          - action: switch.turn_on
-            continue_on_error: true
-            target:
-              entity_id: switch.monolith_speakers
-          # The Christmas tree is plugged in only in season: include it only when it is available (Y-24)
-          - action: light.turn_on
-            target:
-              entity_id: >-
-                {{ ['light.mi_desk_lamp', 'light.tv_lights']
-                   + (['light.christmas_tree'] if has_value('light.christmas_tree') else []) }}
+          - choose:
+              # 1st press: the lamp
+              - conditions:
+                  - condition: state
+                    entity_id: light.mi_desk_lamp
+                    state: "off"
+                sequence:
+                  - action: light.turn_on
+                    target:
+                      entity_id: light.mi_desk_lamp
+              # Lamp already on: add the speakers
+              - conditions:
+                  - condition: state
+                    entity_id: switch.monolith_speakers
+                    state: "off"
+                sequence:
+                  - action: switch.turn_on
+                    continue_on_error: true
+                    target:
+                      entity_id: switch.monolith_speakers
         off_press_action:
-          - action: switch.turn_off
-            continue_on_error: true
-            target:
-              entity_id: switch.monolith_speakers
-          - action: light.turn_off
-            target:
-              area_id: living_room
+          - choose:
+              # Lamp on (with or without the speakers): the lamp first
+              - conditions:
+                  - condition: state
+                    entity_id: light.mi_desk_lamp
+                    state: "on"
+                sequence:
+                  - action: light.turn_off
+                    target:
+                      entity_id: light.mi_desk_lamp
+              # Lamp already off: the speakers
+              - conditions:
+                  - condition: state
+                    entity_id: switch.monolith_speakers
+                    state: "on"
+                sequence:
+                  - action: switch.turn_off
+                    continue_on_error: true
+                    target:
+                      entity_id: switch.monolith_speakers
+            # Both already off: whatever else is still lit in the living room (the old OFF behaviour)
+            default:
+              - action: light.turn_off
+                target:
+                  area_id: living_room
         on_hold_action:
           - action: light.turn_on
             target:
