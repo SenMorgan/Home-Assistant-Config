@@ -107,7 +107,11 @@ template:
       - name: Thermostat heating
         unique_id: thermostat_heating
         device_class: heat
-        state: "{{ is_state_attr('climate.nestlocal_thermostat', 'hvac_action', 'heating') }}"
+        # The local firmware reports the boiler relay directly; hvac_action is the fallback if it is unavailable
+        state: >-
+          {{ is_state('binary_sensor.nestlocal_heating', 'on')
+             if has_value('binary_sensor.nestlocal_heating')
+             else is_state_attr('climate.nestlocal_thermostat', 'hvac_action', 'heating') }}
       - name: Thermostat Active
         unique_id: thermostat_active
         device_class: running
@@ -318,33 +322,16 @@ script:
   thermostat_set_temperature:
     alias: Thermostat Set Temperature
     description: >-
-      Make sure the Nest is in heat mode without the eco preset, then set the target
-      `temperature`, retrying each step with growing delays because Nest commands may not apply on the first try.
+      Make sure the Nest is in heat mode without the eco preset and set the target `temperature`.
+      The thermostat runs local firmware over MQTT and confirms within about a second, so each step waits
+      for the confirmation (up to 5 s) instead of fixed delays, and retries at most 3 times.
     mode: restart
     sequence:
-      # Check if thermostat is in "heat" mode and set it if not
-      - if:
-          - condition: template
-            value_template: "{{ not is_state('climate.nestlocal_thermostat', 'heat') }}"
-        then:
-          # Repeat the command to ensure that the thermostat is enabled
-          - repeat:
-              sequence:
-                - action: climate.set_hvac_mode
-                  target:
-                    entity_id: climate.nestlocal_thermostat
-                  continue_on_error: true
-                  data:
-                    hvac_mode: "heat"
-                # Back off 5, 10, 15... s between attempts; give up after 6 tries
-                - delay: "{{ 5 * repeat.index }}"
-              until: "{{ is_state('climate.nestlocal_thermostat', 'heat') or repeat.index > 5 }}"
-      # Disable "eco" mode if it is active
+      # Eco preset first: while it is active the Nest ignores the target
       - if:
           - condition: template
             value_template: "{{ is_state_attr('climate.nestlocal_thermostat', 'preset_mode', 'eco') }}"
         then:
-          # Repeat the command to ensure that the thermostat is set to the default temperature
           - repeat:
               sequence:
                 - action: climate.set_preset_mode
@@ -353,9 +340,10 @@ script:
                   continue_on_error: true
                   data:
                     preset_mode: "none"
-                - delay: "{{ 5 * repeat.index }}"
-              until: "{{ is_state_attr('climate.nestlocal_thermostat', 'preset_mode', 'none') or repeat.index > 5 }}"
-      # Repeat the command to ensure that the thermostat is set to the default temperature
+                - wait_template: "{{ not is_state_attr('climate.nestlocal_thermostat', 'preset_mode', 'eco') }}"
+                  timeout: "00:00:05"
+              until: "{{ wait.completed or repeat.index >= 3 }}"
+      # Heat mode and target in one command (set_temperature accepts hvac_mode)
       - repeat:
           sequence:
             - action: climate.set_temperature
@@ -363,10 +351,15 @@ script:
                 entity_id: climate.nestlocal_thermostat
               continue_on_error: true
               data:
+                hvac_mode: heat
                 temperature: "{{ temperature }}"
-            - delay: "{{ 5 * repeat.index }}"
-          # Done when the Nest reports a target within 0.3 °C of the requested one (allows for rounding)
-          until: "{{ (state_attr('climate.nestlocal_thermostat', 'temperature') | float(0) - temperature | float(0)) | abs < 0.3 or repeat.index > 5 }}"
+            # Done when the Nest reports heat mode and a target within 0.3 °C (allows for rounding)
+            - wait_template: >-
+                {{ is_state('climate.nestlocal_thermostat', 'heat')
+                   and (state_attr('climate.nestlocal_thermostat', 'temperature') | float(0) - temperature | float(0)) | abs < 0.3 }}
+              timeout: "00:00:05"
+          until: >-
+            {{ wait.completed or repeat.index >= 3 }}
 
   thermostat_set_eco_mode:
     alias: Thermostat Set Eco Mode
@@ -403,8 +396,9 @@ script:
                     entity_id: climate.nestlocal_thermostat
                   data:
                     preset_mode: "eco"
+                # Local MQTT confirms within ~1 s (the 30 s wait dated from the cloud Nest)
                 - wait_template: "{{ is_state_attr('climate.nestlocal_thermostat', 'preset_mode', 'eco') }}"
-                  timeout: "00:00:30"
+                  timeout: "00:00:05"
               until: "{{ is_state_attr('climate.nestlocal_thermostat', 'preset_mode', 'eco') or repeat.index >= 3 }}"
 
   notify_if_some_window_is_opened_during_heating_season:
