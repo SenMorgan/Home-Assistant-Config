@@ -250,7 +250,6 @@ automation:
           - switch.moving_head_power
           - switch.parking_light
           - switch.bedroom_baby_monitor_plug
-          - switch.gostinaia_grillplats_plug_1
           - switch.zigbee_usb_3_switch_module_2_switch_2
           - switch.zigbee_usb_3_switch_module_2_switch_3
           - switch.sonoff_socket
