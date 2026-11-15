@@ -14,9 +14,10 @@
 template:
   - binary_sensor:
       - name: Monolith Speakers Above Power Threshold
-        # On = speakers actively playing (power above 12 W)
-        # Backlight + speakers active = ~32W, backlight + speakers standby = ~8W
-        state: "{{ states('sensor.monolith_speakers_active_power') | float(0) > 12 }}"
+        # On = speakers actively playing music (power above 55 W). Since 11/2026 the speakers have no
+        # standby mode and a new RGB backlight (red by default): speakers + backlight idle = ~40-50 W
+        # (~30 W with the backlight off), playing = 60-220 W peaks
+        state: "{{ states('sensor.monolith_speakers_active_power') | float(0) > 55 }}"
 
   # The TV's own local API reports its real power state instantly ("on" / "standby"); the core
   # integration learns it with a delay, which made its power-key toggles turn the TV on instead of off.
@@ -320,8 +321,9 @@ automation:
   - id: living_room_speakers_auto_power_down
     alias: Living Room Speakers Auto Power Down
     description: >-
-      Turns the Monolith speakers off if, within 5 minutes after they are switched on, the TV turns off
-      or their power drops, the power stays below the threshold and the TV is off.
+      Turns the Monolith speakers off when the TV is off and no music has played for 5 minutes (power never
+      above the 55 W "playing" threshold): checked after they are switched on, when the TV turns off and
+      when the music stops. The speakers have no standby of their own any more, so the plug is the only off.
     mode: restart
     triggers:
       # When speakers are turned on
