@@ -212,8 +212,8 @@ automation:
   - id: zbt2_led_flash_on_manual_interaction
     alias: ZBT2 LED Flash On Manual Interaction
     description: >-
-      Flashes the LED bright white for 0.5 s when a listed device is switched manually
-      or a Zigbee button is pressed, then restores the status colour. Skipped at night and during UPS states.
+      Flashes the LED bright white for 0.5 s when a listed device is switched manually,
+      a busy-wall switch on the air quality station is flipped or a Zigbee button is pressed, then restores the status colour. Skipped at night and during UPS states.
     mode: single
     max_exceeded: silent
     triggers:
@@ -253,6 +253,19 @@ automation:
           - switch.zigbee_usb_3_switch_module_2_switch_2
           - switch.zigbee_usb_3_switch_module_2_switch_3
           - switch.sonoff_socket
+        from:
+          - "on"
+          - "off"
+        to:
+          - "on"
+          - "off"
+      # Busy-wall switches on the air quality station (they toggle the floor lamp / dollhouse lights through
+      # automations, which the device trigger above ignores as automated changes)
+      - trigger: state
+        id: device
+        entity_id:
+          - binary_sensor.air_quality_station_digital_input_1
+          - binary_sensor.air_quality_station_digital_input_2
         from:
           - "on"
           - "off"
