@@ -60,8 +60,7 @@ automation:
   - id: notification_ads_b_receiver_disconnected
     alias: Notification ADS-B Receiver Disconnected
     description: >-
-      Notifies when the FR24 feeder has lost its ADS-B receiver for 5 minutes and arms the
-      connection-restored notification.
+      Notifies when the FR24 feeder has lost its ADS-B receiver for 5 minutes.
     triggers:
       - trigger: state
         entity_id: binary_sensor.fr24_feeder_receiver_connected
@@ -77,19 +76,23 @@ automation:
           title: "📡 ADS-B: нет связи"
           message: С {{ trigger.to_state.last_changed | as_local | as_timestamp | timestamp_custom('%H:%M') }}
           when: "{{ as_timestamp(trigger.to_state.last_changed) | int }}"
-      - action: automation.turn_on
-        target:
-          entity_id: automation.notification_ads_b_receiver_connection_restored
 
   - id: notification_ads_b_receiver_connection_restored
     alias: Notification ADS-B Receiver Connection Restored
-    description: Notifies once the receiver has been back for 1 minute after a disconnect, then disables itself.
+    description: >-
+      Notifies once the receiver has been back for 1 minute after a disconnect that lasted at least
+      5 minutes (the disconnect notification was sent). Stateless: no self-enabling (audit AR-01).
     triggers:
       - trigger: state
         entity_id: binary_sensor.fr24_feeder_receiver_connected
         from: "off"
         to: "on"
         for: "00:01:00"
+    conditions:
+      # Same threshold as the disconnect notification: shorter dropouts were never reported
+      - condition: template
+        value_template: >-
+          {{ as_timestamp(trigger.to_state.last_changed) - as_timestamp(trigger.from_state.last_changed) >= 300 }}
     actions:
       - action: script.notify
         data:
@@ -99,9 +102,6 @@ automation:
           message: >-
             {% from 'ru.jinja' import duration_short %}
             Перерыв {{ duration_short(((as_timestamp(trigger.to_state.last_changed) - as_timestamp(trigger.from_state.last_changed)) / 60) | round(0) | int) }}
-      - action: automation.turn_off
-        target:
-          entity_id: automation.notification_ads_b_receiver_connection_restored
 
   # This automation in define in my private.yaml, so here is only a snippet
   # - id: "notification_aircraft_detected"

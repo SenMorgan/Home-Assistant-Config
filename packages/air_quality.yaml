@@ -17,20 +17,58 @@ input_datetime:
     has_time: true
 
 ###############################################
+## TEMPLATE ENTITIES
+###############################################
+template:
+  # Bad air episode with hysteresis: on above IAQ 200 for 2 min, off below 100 for 10 min
+  # (IAQ 51-100 is "good" on the BME680 scale). Trigger-based, so it survives restarts; replaces the
+  # automations that used to disable and re-enable each other (audit AR-01).
+  - triggers:
+      - trigger: numeric_state
+        entity_id: sensor.air_quality_station_iaq
+        above: 200
+        for: "00:02:00"
+        id: bad
+      - trigger: numeric_state
+        entity_id: sensor.air_quality_station_iaq
+        below: 100
+        for: "00:10:00"
+        id: good
+      # Initial state (new sensor or unknown after a restart): decide from the current IAQ
+      - trigger: homeassistant
+        event: start
+        id: init
+      - trigger: event
+        event_type: event_template_reloaded
+        id: init
+    binary_sensor:
+      - name: Air Quality Bad
+        unique_id: air_quality_bad
+        device_class: problem
+        icon: mdi:air-filter
+        state: >-
+          {% if trigger.id == 'bad' %}true
+          {% elif trigger.id == 'good' %}false
+          {% elif this.state in ['on', 'off'] %}{{ this.state == 'on' }}
+          {% else %}{{ states('sensor.air_quality_station_iaq') | float(0) > 200 }}
+          {% endif %}
+
+###############################################
 ## AUTOMATIONS
 ###############################################
 automation:
   - id: notification_air_quality_bad
     alias: Notification Air Quality Bad
     description: >-
-      When IAQ stays above 200 for 2 minutes (not at night), Yandex Station Midi suggests opening
-      (or closing the named open) windows and a phone notification is sent. Then this automation
-      disables itself and arms the "restored" and "open window greeting" automations.
+      When a bad air episode starts (Air Quality Bad turns on, not at night), Yandex Station Midi
+      suggests opening (or closing the named open) windows, a phone notification is sent and the
+      2-minute window for the "open window greeting" starts.
+    mode: single
     triggers:
-      - trigger: numeric_state
-        entity_id: sensor.air_quality_station_iaq
-        above: 200
-        for: 00:02:00
+      - trigger: state
+        entity_id: binary_sensor.air_quality_bad
+        from: "off"
+        to: "on"
     conditions:
       - condition: state
         entity_id: input_boolean.home_night_mode
@@ -71,27 +109,19 @@ automation:
             {%- for e in expand('binary_sensor.windows') | selectattr('state', 'eq', 'on') %}
               {%- set ns.r = ns.r + [room_ru(area_name(e.entity_id))] %}
             {%- endfor %}закройте окно: {{ ns.r | join(', ') }}{% endif %}
-      - action: automation.turn_on
-        target:
-          entity_id:
-            - automation.notification_air_quality_restored
-            - automation.notification_air_quality_open_window_greeting
-      # Set timeout for open window greeting notification
+      # Opening a window within 2 minutes is praised (see the greeting automation)
       - action: input_datetime.set_datetime
         target:
           entity_id: input_datetime.air_quality_open_window_greeting_timeout
         data:
           datetime: "{{ now() + timedelta(minutes=2) }}"
-      # Disable bad air quality notification till it will be restored
-      - action: automation.turn_off
-        target:
-          entity_id: automation.notification_air_quality_bad
 
   - id: notification_air_quality_open_window_greeting
     alias: Notification Air Quality Open Window Greeting
     description: >-
       Praises the user via Yandex Station Midi if a window is opened within 2 minutes after the
-      bad air announcement. Disables itself after the first window opening either way.
+      bad air announcement. Only the first opening counts: the deadline is cleared afterwards.
+    mode: single
     triggers:
       - trigger: state
         entity_id: binary_sensor.windows
@@ -101,11 +131,17 @@ automation:
       - condition: state
         entity_id: input_boolean.home_night_mode
         state: "off"
+      # Only within 2 minutes after the bad air announcement
+      - condition: template
+        value_template: "{{ as_timestamp(now()) < as_timestamp(states('input_datetime.air_quality_open_window_greeting_timeout'), 0) }}"
     actions:
+      # Clear the deadline: later window openings are not praised again
+      - action: input_datetime.set_datetime
+        target:
+          entity_id: input_datetime.air_quality_open_window_greeting_timeout
+        data:
+          datetime: "{{ now() }}"
       - if:
-          # Check if timeout for open window greeting notification has not expired
-          - condition: template
-            value_template: "{{ as_timestamp(now()) < as_timestamp(states('input_datetime.air_quality_open_window_greeting_timeout'), 0) }}"
           # Check if yandex station is not playing now
           - condition: template
             value_template: "{{ not is_state('media_player.yandex_station_midi', 'playing') }}"
@@ -116,23 +152,19 @@ automation:
             data:
               media_content_type: text
               media_content_id: Молодец! Рада, что вы заботитесь о своём здоровье.
-      - action: automation.turn_off
-        target:
-          entity_id: automation.notification_air_quality_open_window_greeting
 
   - id: notification_air_quality_restored
     alias: Notification Air Quality Restored
     description: >-
-      When IAQ stays below 100 for 10 minutes, re-arms the bad air notification and disables itself
-      and the window greeting. The "back to normal" announcement and push are skipped at night,
-      but the re-arm always happens (previously a night-time or 50-100 recovery left the bad air
-      notification disabled for days).
+      When the bad air episode ends (Air Quality Bad turns off: IAQ below 100 for 10 minutes),
+      announces that the air is fresh again and sends a push; skipped at night. The next episode
+      is detected by the binary sensor itself, nothing has to be re-armed.
+    mode: single
     triggers:
-      # Hysteresis: bad above 200, good again below 100 (IAQ 51-100 is "good" on the BME680 scale)
-      - trigger: numeric_state
-        entity_id: sensor.air_quality_station_iaq
-        below: 100
-        for: 00:10:00
+      - trigger: state
+        entity_id: binary_sensor.air_quality_bad
+        from: "on"
+        to: "off"
     actions:
       # Announce only outside night mode and when the station is not playing
       - if:
@@ -159,11 +191,3 @@ automation:
               message: >-
                 CO₂ {{ states('sensor.air_quality_station_co2') | float(0) | round(0) | int }} ppm
                 {%- if is_state('binary_sensor.windows', 'on') %} · можно закрыть окно{% endif %}
-      - action: automation.turn_on
-        target:
-          entity_id: automation.notification_air_quality_bad
-      - action: automation.turn_off
-        target:
-          entity_id:
-            - automation.notification_air_quality_restored
-            - automation.notification_air_quality_open_window_greeting

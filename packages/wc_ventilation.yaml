@@ -29,7 +29,7 @@ input_select:
       - HUMIDITY_OFF
       - TIMEOUT
       - EMERGENCY
-    initial: NONE
+    # No "initial": the state is restored after a restart (the humidity stop depends on HUMIDITY_ON)
     icon: mdi:fan
 
 ###############################################
@@ -157,7 +157,7 @@ automation:
     alias: WC Ventilation Start Timer Manually
     description: >-
       When the fan is switched on by hand, starts the ventilation timer for the "manual" duration,
-      sets state MANUAL_ON and disables the humidity-based stop so it does not cut the manual run short.
+      sets state MANUAL_ON (the humidity-based stop only acts in HUMIDITY_ON, so it does not cut the manual run short).
     triggers:
       - trigger: state
         entity_id: fan.wc_and_bathroom
@@ -183,15 +183,12 @@ automation:
           entity_id: input_select.wc_ventilation_state
         data:
           option: MANUAL_ON
-      - action: automation.turn_off
-        target:
-          entity_id: automation.wc_ventilation_stop_humidity_below_threshold
 
   - id: wc_ventilation_stop_timer_manually
     alias: WC Ventilation Stop Timer Manually
     description: >-
       When the fan is turned off while the ventilation timer is running, cancels both timers,
-      sets state MANUAL_OFF and disables the humidity-based stop.
+      sets state MANUAL_OFF.
     triggers:
       - trigger: state
         entity_id: fan.wc_and_bathroom
@@ -213,15 +210,12 @@ automation:
           entity_id: input_select.wc_ventilation_state
         data:
           option: MANUAL_OFF
-      - action: automation.turn_off
-        target:
-          entity_id: automation.wc_ventilation_stop_humidity_below_threshold
 
   - id: wc_ventilation_timeout
     alias: WC Ventilation Timeout
     description: >-
       When the ventilation timer expires, turns the fan off, cancels the "wait for door open" timer,
-      sets state TIMEOUT and disables the humidity-based stop.
+      sets state TIMEOUT.
     triggers:
       - trigger: event
         event_type: timer.finished
@@ -239,9 +233,6 @@ automation:
           entity_id: input_select.wc_ventilation_state
         data:
           option: TIMEOUT
-      - action: automation.turn_off
-        target:
-          entity_id: automation.wc_ventilation_stop_humidity_below_threshold
 
   - id: wc_ventilation_start_timeout_for_door_open_state
     alias: WC Ventilation Start Timeout For Door Open State
@@ -304,7 +295,7 @@ automation:
     alias: WC Ventilation Start Humidity Exceeds Threshold
     description: >-
       When bathroom humidity stays above the start threshold for 2 minutes, turns the fan on with the
-      maximum duration as a safety limit, sets state HUMIDITY_ON and enables the humidity-based stop.
+      maximum duration as a safety limit and sets state HUMIDITY_ON, which arms the humidity-based stop.
     triggers:
       - trigger: numeric_state
         entity_id: sensor.ble_humidity_atc_bathroom
@@ -315,9 +306,6 @@ automation:
       - action: timer.cancel
         target:
           entity_id: timer.wc_wait_for_open_to_ventilate
-      - action: automation.turn_on
-        target:
-          entity_id: automation.wc_ventilation_stop_humidity_below_threshold
       - action: timer.start
         target:
           entity_id: timer.wc_ventilation
@@ -336,13 +324,18 @@ automation:
   - id: wc_ventilation_stop_humidity_below_threshold
     alias: WC Ventilation Stop Humidity Below Threshold
     description: >-
-      Enabled only by the humidity start automation. When humidity stays below the stop threshold for
-      2 minutes, turns the fan off, cancels the timer, sets state HUMIDITY_OFF and disables itself again.
+      Only while the fan runs because of humidity (state HUMIDITY_ON): when humidity stays below the
+      stop threshold for 2 minutes, turns the fan off, cancels the timer and sets state HUMIDITY_OFF.
+      The state helper replaces the old self-enabling (audit AR-01) and survives restarts.
     triggers:
       - trigger: numeric_state
         entity_id: sensor.ble_humidity_atc_bathroom
         below: input_number.wc_ventilation_stop_humidity_threshold
         for: 00:02:00
+    conditions:
+      - condition: state
+        entity_id: input_select.wc_ventilation_state
+        state: HUMIDITY_ON
     actions:
       - action: timer.cancel
         target:
@@ -355,10 +348,6 @@ automation:
           entity_id: input_select.wc_ventilation_state
         data:
           option: HUMIDITY_OFF
-      # One-shot: disable itself until the next humidity start re-enables it
-      - action: automation.turn_off
-        target:
-          entity_id: automation.wc_ventilation_stop_humidity_below_threshold
 
   # Emergency start WC ventilation timer to prevent infinite ventilation
   - id: wc_ventilation_start_timer_emergency
