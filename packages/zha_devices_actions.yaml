@@ -306,26 +306,33 @@ automation:
         remote_device: 51724530dc1fcac3561d2fcb39f40048
         on_press_action:
           - action: switch.turn_on
-            entity_id: switch.monolith_speakers
+            continue_on_error: true
+            target:
+              entity_id: switch.monolith_speakers
+          # The Christmas tree is plugged in only in season: include it only when it is available (Y-24)
           - action: light.turn_on
-            entity_id:
-              - light.mi_desk_lamp
-              - light.tv_lights
-              - light.christmas_tree
+            target:
+              entity_id: >-
+                {{ ['light.mi_desk_lamp', 'light.tv_lights']
+                   + (['light.christmas_tree'] if has_value('light.christmas_tree') else []) }}
         off_press_action:
           - action: switch.turn_off
-            entity_id: switch.monolith_speakers
+            continue_on_error: true
+            target:
+              entity_id: switch.monolith_speakers
           - action: light.turn_off
             target:
               area_id: living_room
         on_hold_action:
           - action: light.turn_on
-            entity_id: light.mi_desk_lamp
+            target:
+              entity_id: light.mi_desk_lamp
             data:
               brightness_step_pct: 4
         off_hold_action:
           - action: light.turn_on
-            entity_id: light.mi_desk_lamp
+            target:
+              entity_id: light.mi_desk_lamp
             data:
               brightness_step_pct: -4
         helper_hold_delay: 200

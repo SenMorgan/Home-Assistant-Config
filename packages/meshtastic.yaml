@@ -25,7 +25,10 @@ automation:
     conditions:
       # Case-insensitive match on the received message text
       - condition: template
-        value_template: '{{ "test" in (trigger.event.data.message | lower) or "ping" in (trigger.event.data.message | lower) }}'
+        # "status" requests are answered by the sensors automation below, not echoed as well (Y-22)
+        value_template: >-
+          {% set m = trigger.event.data.message | lower %}
+          {{ ('test' in m or 'ping' in m) and 'status' not in m }}
     actions:
       # Short pause so the reply doesn't collide with the incoming transmission
       - delay:
@@ -69,7 +72,9 @@ automation:
               {% set state_value = states(line) | float(0) | round(2) if (states(line) | is_number) else 'N/A' %}
               {% set state_name = state_attr(line, 'friendly_name') | default(line) %}
               {% set state_time = states[line].last_updated | default('N/A') %}
-              {% set row = '🌡' ~(state_value) ~ '°C — ' ~ state_name ~ ' (' ~ (state_time | relative_time) ~ ' ago)' %}
+              {# Real unit per sensor: Vindstyrka sensors are not all temperatures (Y-22) #}
+              {% set unit = state_attr(line, 'unit_of_measurement') or '' %}
+              {% set row = ('🌡' if unit == '°C' else '•') ~ state_value ~ unit ~ ' — ' ~ state_name ~ ' (' ~ (state_time | relative_time) ~ ' ago)' %}
               {% set candidate = ns.current ~ '\n' ~ row %}
               {% if candidate | length > max_message_length and ns.current != message_header %}
                 {% set ns.chunks = ns.chunks + [ns.current] %}

@@ -286,7 +286,7 @@ automation:
         entity_id: input_boolean.3d_printer_power
         from: "off"
         to: "on"
-    # Check if new state was not set by «3d_printer_sync_power_state» to avoid infinite loop
+    # Check if new state was not set by «3d_printer_power_sync» to avoid infinite loop
     conditions:
       - condition: state
         entity_id: switch.3d_printer_socket
@@ -340,7 +340,7 @@ automation:
         entity_id: input_boolean.3d_printer_power
         from: "on"
         to: "off"
-    # Check if new state was not set by «3d_printer_sync_power_state» to avoid infinite loop
+    # Check if new state was not set by «3d_printer_power_sync» to avoid infinite loop
     conditions:
       - condition: state
         entity_id: switch.3d_printer_socket
@@ -398,15 +398,15 @@ automation:
                    'offline': 'не в сети'}.get(printer_status, 'занят')) ~ '.' }}
 
   ###############################################
-  ## Automatic power off for 3D printer after print completion and cooldown, during night hours
+  ## Automatic power off for 3D printer after print completion and cooldown
   ###############################################
   - id: 3d_printer_automatic_power_off
     alias: 3D Printer - Automatic Power Off
     description: >-
       20 minutes after a print finishes, waits up to 30 minutes for the nozzle to cool below
       50°C, then powers the printer off via the virtual switch (which goes through the safe
-      Power Off automation) and turns off the hall bulb. Reports the result or the reason it
-      did not power off.
+      Power Off automation) and turns off the hall bulb if it is still the one lit by Print Done.
+      Reports the result or the reason it did not power off.
     mode: restart
     triggers:
       - trigger: state
@@ -442,10 +442,17 @@ automation:
           - action: input_boolean.turn_off
             target:
               entity_id: input_boolean.3d_printer_power
-            # Disable light also
-          - action: light.turn_off
-            target:
-              entity_id: light.hall_edison_bulb
+          # The hall bulb only if nobody switched it since Print Done lit it at the finish (Y-21)
+          - if:
+              - condition: template
+                value_template: >-
+                  {{ is_state('light.hall_edison_bulb', 'on')
+                     and states.light.hall_edison_bulb.last_changed <= trigger.to_state.last_changed + timedelta(minutes=1) }}
+            then:
+              - action: light.turn_off
+                continue_on_error: true
+                target:
+                  entity_id: light.hall_edison_bulb
           - action: script.notify
             data:
               level: status

@@ -716,7 +716,7 @@ automation:
       # Set default temperature on thermostat
       - action: script.thermostat_stop_heating
         data:
-          message: "Температура упала ниже порога ночью → термостат переведён на 22°C"
+          message: "Температура упала ниже порога ночью → термостат переведён на {{ states('input_number.thermostat_default_target_temperature') | float(22) | round(1) }}°C"
       # Enable hall heater too
       - action: switch.turn_on
         target:
@@ -764,7 +764,7 @@ automation:
       # Stop heating by setting default temperature on thermostat
       - action: script.thermostat_stop_heating
         data:
-          message: "Температура поднялась выше порога → термостат переведён на 22°C"
+          message: "Температура поднялась выше порога → термостат переведён на {{ states('input_number.thermostat_default_target_temperature') | float(22) | round(1) }}°C"
 
   # If Thermostat is heating for more then 1 hour - notify about it and disable heating for 1 hour
   - id: thermostat_heating_duration_alert
@@ -1165,7 +1165,7 @@ automation:
       # Stop heating by setting default temperature on thermostat
       - action: script.thermostat_stop_heating
         data:
-          message: "ETRVs не запрашивают отопление → температура возвращена на 22°C"
+          message: "ETRVs не запрашивают отопление → температура возвращена на {{ states('input_number.thermostat_default_target_temperature') | float(22) | round(1) }}°C"
 
   ###############################################
   ## Extra Heating Control
@@ -1218,7 +1218,7 @@ automation:
       # Stop heating by setting default temperature on thermostat
       - action: script.thermostat_stop_heating
         data:
-          message: "Отопление заблокировано вручную → температура возвращена на 22°C"
+          message: "Отопление заблокировано вручную → температура возвращена на {{ states('input_number.thermostat_default_target_temperature') | float(22) | round(1) }}°C"
 
   # Cancel "Pause Heating" timer if "Heating Allowed" flag was set
   - id: cancel_pause_heating_manually
@@ -1290,10 +1290,12 @@ automation:
           - timer.short_heating
           - timer.pause_heating
     actions:
-      # Log changes only if from_state and to_state are defined (skips entity add/remove)
+      # Log changes only if from_state and to_state are defined (skips entity add/remove), and only
+      # real state changes: attribute-only updates (e.g. timer remaining time) filled the log with noise (Y-20)
       - condition: template
         value_template: >-
-          {{ trigger.from_state is not none and trigger.to_state is not none }}
+          {{ trigger.from_state is not none and trigger.to_state is not none
+             and trigger.from_state.state != trigger.to_state.state }}
       - action: input_text.set_value
         target:
           entity_id: input_text.heating_log

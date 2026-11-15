@@ -2,7 +2,7 @@
 # File: wc_ventilation.yaml                                          #
 # Author: SenMorgan https://github.com/SenMorgan                     #
 # Date: 2023-05-11                                                   #
-#                                                                    #                                                                    #
+#                                                                    #
 # Copyright (c) 2023 Sen Morgan                                      #
 ######################################################################
 
@@ -109,8 +109,8 @@ input_number:
 ## AUTOMATIONS
 ###############################################
 automation:
-  - id: wc_accupancy_set
-    alias: WC Accupancy Set
+  - id: wc_occupancy_set
+    alias: WC Occupancy Set
     description: >-
       Marks the WC as occupied once the door has been closed for the configured number of
       seconds (input_number.wc_consider_occupied_after_seconds).
@@ -131,8 +131,8 @@ automation:
         target:
           entity_id: input_boolean.wc_occupied
 
-  - id: wc_accupancy_reset
-    alias: WC Accupancy Reset
+  - id: wc_occupancy_reset
+    alias: WC Occupancy Reset
     description: >-
       Marks the WC as free once the door has been open for the configured number of
       seconds (input_number.wc_consider_unoccupied_after_seconds).
