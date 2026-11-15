@@ -1,14 +1,18 @@
+# Yandex Smart Home (Alice) entity filter and names.
+# Privacy: no security devices (door/window contacts, motion, cameras, alarms, guest mode), no thermostats or eTRVs,
+# no electricity meter and no phones are exposed: Yandex would receive every state change.
+# Climate sensors are "Климат" devices assigned to rooms; values are rounded in value_template, so Yandex
+# gets a report only when the rounded value changes (raw BLE values change every minute and hit HTTP 429).
 filter:
-  include_domains:
-    - climate
-  include_entity_globs:
-    - sensor.ble_temperature_atc_*
   include_entities:
-    - binary_sensor.backyard_motion_alarm
-    - binary_sensor.bedroom_window_contact
-    - binary_sensor.kitchen_motion_alarm
-    - binary_sensor.kitchen_window_contact
-    - binary_sensor.living_room_window_contact
+    # Climate sensors (temperature/humidity per room, see entity_config)
+    - sensor.ble_temperature_atc_bedroom
+    - sensor.ble_temperature_atc_living_room
+    - sensor.ble_temperature_atc_kitchen
+    - sensor.ble_temperature_atc_hall
+    - sensor.ble_temperature_atc_bathroom
+    - sensor.ble_temperature_atc_toilet
+    - sensor.pool_monitor_air_temperature
     - button.ex_commandstation_emergency_stop
     - button.ex_commandstation_reboot
     - button.ex_commandstation_route_300
@@ -17,7 +21,6 @@ filter:
     - climate.hollandis_climate
     - fan.wc_and_bathroom
     - input_boolean.3d_printer_power
-    - input_boolean.guest_mode
     - input_boolean.heating_allowed
     - input_boolean.home_night_mode
     - input_boolean.silent_mode
@@ -45,12 +48,8 @@ filter:
     - media_player.samsung_tv
     - scene.evening
     - scene.movies
-    - sensor.electricity_meter_energy
-    - sensor.electricity_meter_power
-    - sensor.pool_monitor_air_temperature
     - sensor.pool_monitor_bottom_water_temperature
     - sensor.pool_monitor_upper_water_temperature
-    - sensor.sm_s931b_battery_level
     - switch.asus_pc
     - switch.bedroom_baby_monitor_plug
     - switch.hollandis_charge
@@ -64,16 +63,6 @@ filter:
     - vacuum.johnny
 
 entity_config:
-  binary_sensor.bedroom_window_contact:
-    name: Датчик окна
-  binary_sensor.kitchen_window_contact:
-    name: Датчик окна
-  binary_sensor.living_room_window_contact:
-    name: Датчик окна
-  binary_sensor.backyard_motion_alarm:
-    name: Датчик движения
-  binary_sensor.kitchen_motion_alarm:
-    name: Датчик движения
   input_button.thermostat_10_minutes_heating:
     name: Подогрев
     type: switch
@@ -81,9 +70,6 @@ entity_config:
     name: Тесла
   input_boolean.3d_printer_power:
     name: 3D принтер
-    type: switch
-  input_boolean.guest_mode:
-    name: Гостевой режим
     type: switch
   input_boolean.heating_allowed:
     name: Отопление
@@ -192,101 +178,10 @@ entity_config:
   switch.loco_sbb_cargo_re_482_power_sound:
     name: Токоприёмник
     type: openable
-  sensor.nest_thermostat_temperature:
-    name: Погода на кухне
-    properties:
-      - type: temperature
-        entity: sensor.nest_thermostat_temperature
-      - type: humidity
-        entity: sensor.nest_thermostat_humidity
-      - type: pressure
-        entity: sensor.air_quality_station_pressure
-      - type: co2_level
-        entity: sensor.air_quality_station_co2
-      - type: tvoc
-        entity: sensor.air_quality_station_voc
-      - type: pm2.5_density
-        entity: sensor.air_quality_station_pm2_5
-  sensor.ble_temperature_atc_bedroom:
-    name: Погода в спальне
-    properties:
-      - type: temperature
-        entity: sensor.ble_temperature_atc_bedroom
-      - type: humidity
-        entity: sensor.ble_humidity_atc_bedroom
-  sensor.ble_temperature_atc_living_room:
-    name: Погода в зале
-    properties:
-      - type: temperature
-        entity: sensor.ble_temperature_atc_living_room
-      - type: humidity
-        entity: sensor.ble_humidity_atc_living_room
-  sensor.ble_temperature_atc_hall:
-    name: Погода в коридоре
-    properties:
-      - type: temperature
-        entity: sensor.ble_temperature_atc_hall
-      - type: humidity
-        entity: sensor.ble_humidity_atc_hall
-  sensor.ble_temperature_atc_bathroom:
-    name: Погода в ванной
-    properties:
-      - type: temperature
-        entity: sensor.ble_temperature_atc_bathroom
-      - type: humidity
-        entity: sensor.ble_humidity_atc_bathroom
-  sensor.ble_temperature_atc_toilet:
-    name: Погода в туалете
-    properties:
-      - type: temperature
-        entity: sensor.ble_temperature_atc_toilet
-      - type: humidity
-        entity: sensor.ble_humidity_atc_toilet
-  sensor.pool_monitor_air_temperature:
-    name: Погода во дворе
-    properties:
-      - type: temperature
-        entity: sensor.pool_monitor_air_temperature
-      - type: humidity
-        entity: sensor.pool_monitor_air_humidity
-      - type: pressure
-        entity: sensor.pool_monitor_air_pressure
   sensor.pool_monitor_bottom_water_temperature:
     name: Температура воды снизу
   sensor.pool_monitor_upper_water_temperature:
     name: Температура воды сверху
-  sensor.sm_s931b_battery_level:
-    name: Телефон Крис
-    properties:
-      - type: battery_level
-        entity: sensor.sm_s931b_battery_level
-      - type: temperature
-        entity: sensor.sm_s931b_battery_temperature
-  sensor.electricity_meter_power:
-    name: Электричество
-    properties:
-      - type: power
-        entity: sensor.electricity_meter_power
-      - type: voltage
-        entity: sensor.electricity_meter_voltage
-      - type: amperage
-        entity: sensor.electricity_meter_current
-  sensor.electricity_meter_energy:
-    name: Счётчик электричества
-    type: smart_meter.electricity
-  climate.nestlocal_thermostat:
-    name: Главный термостат
-    properties:
-      - type: temperature
-        entity: sensor.nest_thermostat_temperature
-      - type: humidity
-        entity: sensor.nest_thermostat_humidity
-  climate.danfoss_etrv0100_bedroom_thermostat:
-    name: Термостат
-  climate.danfoss_etrv0103_kitchen_thermostat:
-    name: Термостат
-  climate.danfoss_etrv0103_living_room_thermostat:
-    name: Термостат
   cover.bedroom:
     name: Штора
   cover.living_cover:
@@ -295,3 +190,96 @@ entity_config:
     name: Вентиляция
   vacuum.johnny:
     name: Джонни
+  # Climate sensors: one "Климат" device per room (Alice: "какая влажность в спальне?")
+  sensor.ble_temperature_atc_bedroom:
+    name: Климат
+    room: Спальня
+    type: sensor.climate
+    properties:
+      - type: temperature
+        value_template: "{{ states('sensor.ble_temperature_atc_bedroom') | float(none) | round(1) if states('sensor.ble_temperature_atc_bedroom') | is_number else none }}"
+        unit_of_measurement: "°C"
+      - type: humidity
+        value_template: "{{ states('sensor.ble_humidity_atc_bedroom') | float(none) | round(0) | int if states('sensor.ble_humidity_atc_bedroom') | is_number else none }}"
+        unit_of_measurement: "%"
+  sensor.ble_temperature_atc_living_room:
+    name: Климат
+    room: Гостиная
+    type: sensor.climate
+    properties:
+      - type: temperature
+        value_template: "{{ states('sensor.ble_temperature_atc_living_room') | float(none) | round(1) if states('sensor.ble_temperature_atc_living_room') | is_number else none }}"
+        unit_of_measurement: "°C"
+      - type: humidity
+        value_template: "{{ states('sensor.ble_humidity_atc_living_room') | float(none) | round(0) | int if states('sensor.ble_humidity_atc_living_room') | is_number else none }}"
+        unit_of_measurement: "%"
+  sensor.ble_temperature_atc_kitchen:
+    name: Климат
+    room: Кухня
+    type: sensor.climate
+    properties:
+      - type: temperature
+        value_template: "{{ states('sensor.ble_temperature_atc_kitchen') | float(none) | round(1) if states('sensor.ble_temperature_atc_kitchen') | is_number else none }}"
+        unit_of_measurement: "°C"
+      - type: humidity
+        value_template: "{{ states('sensor.ble_humidity_atc_kitchen') | float(none) | round(0) | int if states('sensor.ble_humidity_atc_kitchen') | is_number else none }}"
+        unit_of_measurement: "%"
+      - type: pressure
+        value_template: "{{ states('sensor.air_quality_station_pressure') | float(none) | round(0) | int if states('sensor.air_quality_station_pressure') | is_number else none }}"
+        unit_of_measurement: "hPa"
+      - type: co2_level
+        value_template: "{{ states('sensor.air_quality_station_co2') | float(none) | round(0) | int if states('sensor.air_quality_station_co2') | is_number else none }}"
+        unit_of_measurement: "ppm"
+      - type: tvoc
+        value_template: "{{ states('sensor.air_quality_station_voc') | float(none) | round(0) | int if states('sensor.air_quality_station_voc') | is_number else none }}"
+        unit_of_measurement: "μg/m³"
+      - type: pm2.5_density
+        value_template: "{{ states('sensor.air_quality_station_pm2_5') | float(none) | round(0) | int if states('sensor.air_quality_station_pm2_5') | is_number else none }}"
+        unit_of_measurement: "μg/m³"
+  sensor.ble_temperature_atc_hall:
+    name: Климат
+    room: Коридор
+    type: sensor.climate
+    properties:
+      - type: temperature
+        value_template: "{{ states('sensor.ble_temperature_atc_hall') | float(none) | round(1) if states('sensor.ble_temperature_atc_hall') | is_number else none }}"
+        unit_of_measurement: "°C"
+      - type: humidity
+        value_template: "{{ states('sensor.ble_humidity_atc_hall') | float(none) | round(0) | int if states('sensor.ble_humidity_atc_hall') | is_number else none }}"
+        unit_of_measurement: "%"
+  sensor.ble_temperature_atc_bathroom:
+    name: Климат
+    room: Ванная
+    type: sensor.climate
+    properties:
+      - type: temperature
+        value_template: "{{ states('sensor.ble_temperature_atc_bathroom') | float(none) | round(1) if states('sensor.ble_temperature_atc_bathroom') | is_number else none }}"
+        unit_of_measurement: "°C"
+      - type: humidity
+        value_template: "{{ states('sensor.ble_humidity_atc_bathroom') | float(none) | round(0) | int if states('sensor.ble_humidity_atc_bathroom') | is_number else none }}"
+        unit_of_measurement: "%"
+  sensor.ble_temperature_atc_toilet:
+    name: Климат
+    room: Туалет
+    type: sensor.climate
+    properties:
+      - type: temperature
+        value_template: "{{ states('sensor.ble_temperature_atc_toilet') | float(none) | round(1) if states('sensor.ble_temperature_atc_toilet') | is_number else none }}"
+        unit_of_measurement: "°C"
+      - type: humidity
+        value_template: "{{ states('sensor.ble_humidity_atc_toilet') | float(none) | round(0) | int if states('sensor.ble_humidity_atc_toilet') | is_number else none }}"
+        unit_of_measurement: "%"
+  sensor.pool_monitor_air_temperature:
+    name: Климат
+    room: Двор
+    type: sensor.climate
+    properties:
+      - type: temperature
+        value_template: "{{ states('sensor.pool_monitor_air_temperature') | float(none) | round(1) if states('sensor.pool_monitor_air_temperature') | is_number else none }}"
+        unit_of_measurement: "°C"
+      - type: humidity
+        value_template: "{{ states('sensor.pool_monitor_air_humidity') | float(none) | round(0) | int if states('sensor.pool_monitor_air_humidity') | is_number else none }}"
+        unit_of_measurement: "%"
+      - type: pressure
+        value_template: "{{ states('sensor.pool_monitor_air_pressure') | float(none) | round(0) | int if states('sensor.pool_monitor_air_pressure') | is_number else none }}"
+        unit_of_measurement: "hPa"
