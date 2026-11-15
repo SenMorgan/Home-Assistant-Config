@@ -13,6 +13,13 @@ homeassistant:
 # Automations created in the UI editor (YAML automations live in packages/)
 automation: !include automations.yaml
 
+logger:
+  default: info
+  logs:
+    # The model railway command station is often powered off: the integration then logs a reconnect
+    # warning every minute (~400 a day). Real errors are still logged.
+    custom_components.ex_habridge: error
+
 recorder:
   db_url: !secret DATABASE_URL
   # Detailed history for 3 months (backup must stay under the 5 GB Nabu Casa cloud limit); long-term statistics (hourly mean/min/max) are kept forever
