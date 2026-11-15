@@ -52,31 +52,6 @@ light:
 ## SCRIPTS
 ###############################################
 script:
-  turn_off_area_lights:
-    alias: Turn Off Area Lights
-    description: >-
-      Turns off the room lighting of an area: every light in the area except entities labelled
-      "Not lighting" (e.g. the 7-segment clock, which is a WLED light entity but a clock). Used by the
-      dashboard "lights off" badges and buttons instead of a plain area-wide light.turn_off.
-    mode: parallel
-    fields:
-      area:
-        description: Area id, e.g. kitchen
-        required: true
-        example: kitchen
-        selector:
-          area:
-    sequence:
-      - variables:
-          targets: >-
-            {{ area_entities(area) | select('match', 'light\\.') | reject('in', label_entities('not_lighting'))
-               | select('is_state', 'on') | list }}
-      - condition: "{{ targets | count > 0 }}"
-      - action: light.turn_off
-        continue_on_error: true
-        target:
-          entity_id: "{{ targets }}"
-
   turn_off_all_lights:
     alias: Turn Off All Lights
     description: >-
