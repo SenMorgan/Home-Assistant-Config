@@ -678,6 +678,50 @@ automation:
           entity_id: script.activate_night_mode
 
   ###############################################
+  ## FLOOR LAMP MORNING RAMP
+  ###############################################
+  - id: floor_lamp_morning_brightness_ramp
+    alias: Floor Lamp Morning Brightness Ramp
+    description: >-
+      In the morning (06:00-11:00, not in night mode), when the floor lamp is switched on below full
+      brightness (it restores its last level), raises it gradually to 100 % over 10 minutes. The lamp
+      reports no transition support, so the ramp is 20 steps of 30 seconds. Stops when the lamp is
+      turned off or its brightness is changed by hand.
+    mode: restart
+    triggers:
+      - trigger: state
+        entity_id: light.floor_lamp
+        from: "off"
+        to: "on"
+    conditions:
+      - condition: time
+        after: "06:00:00"
+        before: "11:00:00"
+      - condition: state
+        entity_id: input_boolean.home_night_mode
+        state: "off"
+      - "{{ state_attr('light.floor_lamp', 'brightness') | int(255) < 255 }}"
+    actions:
+      - variables:
+          start: "{{ state_attr('light.floor_lamp', 'brightness') | int(1) }}"
+      - repeat:
+          count: 20
+          sequence:
+            - delay: "00:00:30"
+            # Stop if the lamp was turned off or someone set another brightness meanwhile
+            - variables:
+                expected: "{{ (start + (255 - start) * (repeat.index - 1) / 20) | round(0) | int }}"
+            - condition: template
+              value_template: >-
+                {{ is_state('light.floor_lamp', 'on')
+                   and (state_attr('light.floor_lamp', 'brightness') | int(0) - expected) | abs <= 3 }}
+            - action: light.turn_on
+              target:
+                entity_id: light.floor_lamp
+              data:
+                brightness: "{{ (start + (255 - start) * repeat.index / 20) | round(0) | int }}"
+
+  ###############################################
   ## BUSY WALL SWITCHES
   ###############################################
   - id: busy_wall_switch_left
