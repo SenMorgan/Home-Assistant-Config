@@ -18,55 +18,87 @@ template:
         # Backlight + speakers active = ~32W, backlight + speakers standby = ~8W
         state: "{{ states('sensor.monolith_speakers_active_power') | float(0) > 12 }}"
 
+  # The TV's own local API reports its real power state instantly ("on" / "standby"); the core
+  # integration learns it with a delay, which made its power-key toggles turn the TV on instead of off.
+  # Unavailable = TV fully off / unplugged.
+
+input_select:
+  # Expected TV state while a power command is in progress: the UI shows it at once (the TV reports
+  # standby only ~4 s after the screen goes dark); "none" = show the real state
+  samsung_tv_pending:
+    name: Samsung TV Pending Power State
+    options: ["none", "on", "off"]
+    icon: mdi:television-shimmer
+
+rest:
+  - resource: !secret SAMSUNG_TV_API_URL
+    scan_interval: 5
+    timeout: 3
+    binary_sensor:
+      - name: Samsung TV Power
+        unique_id: samsung_tv_power
+        device_class: power
+        value_template: "{{ value_json.device.PowerState == 'on' }}"
+
+###############################################
+## MEDIA PLAYERS
+###############################################
+media_player:
+  # media_player.samsung_tv: everything (volume, source, remote, media info) comes from the core
+  # Samsung TV entity (renamed to media_player.samsung_tv_raw); state and on/off come from the TV's
+  # power state and the guarded scripts below, so an "off" command can never switch the TV on.
+  - platform: universal
+    name: TV
+    unique_id: samsung_tv_universal
+    children:
+      - media_player.samsung_tv_raw
+    state_template: >-
+      {% set pending = states('input_select.samsung_tv_pending') %}
+      {{ pending if pending in ['on', 'off'] else ('on' if is_state('binary_sensor.samsung_tv_power', 'on') else 'off') }}
+    commands:
+      turn_on:
+        action: script.samsung_tv_power_on
+      turn_off:
+        action: script.samsung_tv_power_off
+      toggle:
+        action: "{{ 'script.samsung_tv_power_off' if is_state('binary_sensor.samsung_tv_power', 'on') else 'script.samsung_tv_power_on' }}"
+    browse_media_entity: media_player.samsung_tv_raw
+
 ###############################################
 ## SCRIPTS
 ###############################################
 script:
-  # Script that fixes the Samsung TV toggling instead of turning off when the TV is already off
-  turn_off_samsung_tv:
-    alias: Turn Off Samsung TV
-    description: Turns the Samsung TV off only if it is on, because turn_off toggles it when it is already off.
+  # The TV's power key toggles, so it is sent only from the opposite state and repeated only while
+  # the TV is verifiably still in that state (right after switching off it ignores the key for a while)
+  samsung_tv_power_on:
+    alias: Samsung TV Power On
+    description: >-
+      Turns the TV on: nothing if it is already on; Wake-on-LAN if it is unreachable (fully off);
+      the power key while it is in network standby, up to 3 times until the TV reports "on".
+    mode: single
+    max_exceeded: silent
     sequence:
+      - condition: state
+        entity_id: binary_sensor.samsung_tv_power
+        state: ["off", "unavailable", "unknown"]
       - if:
           - condition: state
-            entity_id: media_player.samsung_tv
-            state: "on"
+            entity_id: binary_sensor.samsung_tv_power
+            state: ["unavailable", "unknown"]
         then:
-          - action: media_player.turn_off
-            target:
-              entity_id: media_player.samsung_tv
-
-###############################################
-## AUTOMATIONS
-###############################################
-automation:
-  # The core Samsung TV integration can only switch the TV off by itself; turning it on is handled here
-  # when HA (UI, Alice, scripts) asks the TV to turn on
-  - id: samsung_tv_turn_on_wake_on_lan
-    alias: Samsung TV Turn On via Wake-on-LAN
-    description: >-
-      Turns the Samsung TV on when media_player.samsung_tv is asked to turn on: a Wake-on-LAN packet
-      (for a TV that is fully off), then, if it is still off after 5 s, the power key over the network
-      (retried once after 15 s).
-      In network standby this QE55QE1D ignores Wake-on-LAN but accepts KEY_POWER (tested 2026-11-15).
-    mode: single
-    triggers:
-      - trigger: samsungtv.turn_on
-        entity_id: media_player.samsung_tv
-    actions:
-      - action: wake_on_lan.send_magic_packet
+          - action: wake_on_lan.send_magic_packet
+            data:
+              mac: !secret SAMSUNG_TV_MAC
+      - action: input_select.select_option
+        target:
+          entity_id: input_select.samsung_tv_pending
         data:
-          mac: !secret SAMSUNG_TV_MAC
-          broadcast_address: 192.168.1.255
-      - wait_template: "{{ is_state('media_player.samsung_tv', 'on') }}"
-        timeout: "00:00:05"
-      # KEY_POWER toggles, so only while the TV is still off. Right after switching off the TV ignores it
-      # for a short while, so one retry after 15 s (HA sees the TV on within ~8 s, so no double toggle)
+          option: "on"
       - repeat:
-          count: 2
+          count: 3
           sequence:
             - condition: state
-              entity_id: media_player.samsung_tv
+              entity_id: binary_sensor.samsung_tv_power
               state: "off"
             - action: remote.send_command
               continue_on_error: true
@@ -74,8 +106,99 @@ automation:
                 entity_id: remote.living_room_tv
               data:
                 command: KEY_POWER
-            - wait_template: "{{ is_state('media_player.samsung_tv', 'on') }}"
-              timeout: "00:00:15"
+            # In the background (script.turn_on does not wait), so the wait below ends as soon as the TV reports
+            - action: script.turn_on
+              target:
+                entity_id: script.samsung_tv_refresh_power
+            - wait_template: "{{ is_state('binary_sensor.samsung_tv_power', 'on') }}"
+              timeout: "00:00:06"
+
+  samsung_tv_power_off:
+    alias: Samsung TV Power Off
+    description: >-
+      Turns the TV off with the power key, only while the TV reports "on" (never toggles a TV that is
+      already in standby back on), retried up to 3 times until it reports standby.
+    mode: single
+    max_exceeded: silent
+    sequence:
+      - condition: state
+        entity_id: binary_sensor.samsung_tv_power
+        state: "on"
+      - action: input_select.select_option
+        target:
+          entity_id: input_select.samsung_tv_pending
+        data:
+          option: "off"
+      - repeat:
+          count: 3
+          sequence:
+            - condition: state
+              entity_id: binary_sensor.samsung_tv_power
+              state: "on"
+            - action: remote.send_command
+              continue_on_error: true
+              target:
+                entity_id: remote.living_room_tv
+              data:
+                command: KEY_POWER
+            # In the background (script.turn_on does not wait), so the wait below ends as soon as the TV reports
+            - action: script.turn_on
+              target:
+                entity_id: script.samsung_tv_refresh_power
+            - wait_template: "{{ not is_state('binary_sensor.samsung_tv_power', 'on') }}"
+              timeout: "00:00:06"
+
+  samsung_tv_refresh_power:
+    alias: Samsung TV Refresh Power
+    description: Polls the TV power state every 0.5 s for 6 seconds after a power key, for a fast UI update.
+    mode: restart
+    sequence:
+      - repeat:
+          count: 12
+          sequence:
+            - delay:
+                milliseconds: 500
+            - action: homeassistant.update_entity
+              continue_on_error: true
+              target:
+                entity_id: binary_sensor.samsung_tv_power
+
+  # Kept for its callers (leave home / night routine); the guard now lives in samsung_tv_power_off
+  turn_off_samsung_tv:
+    alias: Turn Off Samsung TV
+    description: Turns the Samsung TV off (no-op when it is already off, see Samsung TV Power Off).
+    sequence:
+      - action: script.samsung_tv_power_off
+
+###############################################
+## AUTOMATIONS
+###############################################
+automation:
+  - id: samsung_tv_pending_state_clear
+    alias: Samsung TV Pending State Clear
+    description: >-
+      Clears the optimistic TV state once the TV reports the expected power state, or after 25 s if it
+      never does (then the UI shows the real state again).
+    mode: queued
+    triggers:
+      - trigger: state
+        entity_id: binary_sensor.samsung_tv_power
+      - trigger: state
+        entity_id: input_select.samsung_tv_pending
+        to: ["on", "off"]
+        for: "00:00:25"
+    conditions:
+      - "{{ not is_state('input_select.samsung_tv_pending', 'none') }}"
+      - >-
+        {{ trigger.platform != 'state' or trigger.entity_id == 'input_select.samsung_tv_pending'
+           or (is_state('input_select.samsung_tv_pending', 'on') and trigger.to_state.state == 'on')
+           or (is_state('input_select.samsung_tv_pending', 'off') and trigger.to_state.state != 'on') }}
+    actions:
+      - action: input_select.select_option
+        target:
+          entity_id: input_select.samsung_tv_pending
+        data:
+          option: "none"
 
   - id: living_room_tv_lights_by_sunset_or_tv_on
     alias: Living Room TV Lights by Sunset or TV ON
