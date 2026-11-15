@@ -55,13 +55,21 @@ media_player:
     state_template: >-
       {% set pending = states('input_select.samsung_tv_pending') %}
       {{ pending if pending in ['on', 'off'] else ('on' if is_state('binary_sensor.samsung_tv_power', 'on') else 'off') }}
+    # The scripts run in the background (script.turn_on returns at once): callers such as Alice get an
+    # immediate answer and see the optimistic state, the power checks and retries continue afterwards
     commands:
       turn_on:
-        action: script.samsung_tv_power_on
+        action: script.turn_on
+        target:
+          entity_id: script.samsung_tv_power_on
       turn_off:
-        action: script.samsung_tv_power_off
+        action: script.turn_on
+        target:
+          entity_id: script.samsung_tv_power_off
       toggle:
-        action: "{{ 'script.samsung_tv_power_off' if is_state('binary_sensor.samsung_tv_power', 'on') else 'script.samsung_tv_power_on' }}"
+        action: script.turn_on
+        target:
+          entity_id: "{{ 'script.samsung_tv_power_off' if is_state('binary_sensor.samsung_tv_power', 'on') else 'script.samsung_tv_power_on' }}"
     browse_media_entity: media_player.samsung_tv_raw
 
 ###############################################
