@@ -59,12 +59,16 @@ script:
       devices (charger, baby monitor, speakers, CZ map, railway track power) and
       the Samsung TV. Used when leaving home and for night mode.
     sequence:
-      # Explicit group instead of "all": keeps DMX channels, printer chamber light, camera flash and indicator LEDs untouched
+      # Explicit group instead of "all": keeps DMX channels, printer chamber light, camera flash and indicator LEDs untouched.
+      # continue_on_error: one Zigbee light that does not respond must not abort the rest (on 14.11 it skipped
+      # the sockets, the TV and the open-window warning of the night routine)
       - action: light.turn_off
+        continue_on_error: true
         target:
           entity_id: light.all_home_lights
       # Power off other devices that are not lights but should be turned off when no one is home
       - action: switch.turn_off
+        continue_on_error: true
         target:
           entity_id:
             - switch.wireless_charger
@@ -374,6 +378,8 @@ automation:
     description: >-
       Turns the shelf lighting back on after any activity (see anchored triggers)
       when Sen is home, outside night mode, 06:00-22:00.
+    # Restart like the other *_reenable automations (single logged "Already running" on bursts of triggers)
+    mode: restart
     # Shared "any activity" triggers (anchor), reused by the other *_reenable automations; includes dusk (sun elevation < 4)
     triggers: &any_activity_trigger
       - trigger: state
