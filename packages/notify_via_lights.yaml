@@ -20,6 +20,7 @@ input_boolean:
 ###############################################
 script:
   notify_via_kitchen_spotlights:
+    alias: Notify via Kitchen Spotlights
     description: >-
       Blinks the kitchen spotlights 3 times as a visual notification and then
       restores their previous on/off state (saved in an input_boolean).

@@ -270,8 +270,8 @@ automation:
       # Only react to an increase, not to any volume change
       - condition: template
         value_template: >
-          {% set from = trigger.from_state.attributes.volume_level | float(0) %}
-          {% set to = trigger.to_state.attributes.volume_level | float(0) %}
+          {% set from = trigger.from_state.attributes.get('volume_level', 0) | float(0) %}
+          {% set to = trigger.to_state.attributes.get('volume_level', 0) | float(0) %}
           {{ to > from }}
     actions:
       - action: script.home_day_mode
@@ -414,8 +414,8 @@ automation:
       # Only an increase that ends above 0.4 counts as accidental
       - condition: template
         value_template: >
-          {% set from = trigger.from_state.attributes.volume_level | float(0) %}
-          {% set to = trigger.to_state.attributes.volume_level | float(0) %}
+          {% set from = trigger.from_state.attributes.get('volume_level', 0) | float(0) %}
+          {% set to = trigger.to_state.attributes.get('volume_level', 0) | float(0) %}
           {{ to > from and to > 0.4 }}
     actions:
       # Lower Yandex stations volume
@@ -471,8 +471,8 @@ automation:
       # Only an increase that ends above 0.8 is clamped; setting 0.8 itself won't retrigger
       - condition: template
         value_template: >
-          {% set from = trigger.from_state.attributes.volume_level | float(0) %}
-          {% set to = trigger.to_state.attributes.volume_level | float(0) %}
+          {% set from = trigger.from_state.attributes.get('volume_level', 0) | float(0) %}
+          {% set to = trigger.to_state.attributes.get('volume_level', 0) | float(0) %}
           {{ to > from and to > 0.8 }}
     actions:
       # Lower Yandex volume

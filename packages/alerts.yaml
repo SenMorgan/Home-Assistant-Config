@@ -40,15 +40,18 @@ template:
         unique_id: safety_sensors_offline
         device_class: problem
         delay_on: "01:00:00"
+        # Iterates over the configured ids, not expand(): expand() silently skips ids that no longer exist,
+        # so a deleted or renamed sensor (the C-01 failure) would stay unnoticed. has_value is false for
+        # missing, unknown and unavailable entities alike (audit F2-01).
         state: >-
-          {{ expand('group.safety_sensors')
-             | selectattr('state', 'in', ['unavailable', 'unknown']) | list | count > 0 }}
+          {{ state_attr('group.safety_sensors', 'entity_id') | default([], true)
+             | reject('has_value') | list | count > 0 }}
         attributes:
-          # Friendly names of the offline sensors, for the alert message
+          # Friendly names of the offline sensors (entity id if the entity is gone), for the alert message
           offline: >-
-            {{ expand('group.safety_sensors')
-               | selectattr('state', 'in', ['unavailable', 'unknown'])
-               | map(attribute='name') | join(', ') }}
+            {% for e in state_attr('group.safety_sensors', 'entity_id') | default([], true) | reject('has_value') -%}
+              {{ state_attr(e, 'friendly_name') or e }}{{ ', ' if not loop.last }}
+            {%- endfor %}
 
 ###############################################
 ## Alerts

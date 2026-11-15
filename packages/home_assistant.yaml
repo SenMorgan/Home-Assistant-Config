@@ -91,7 +91,8 @@ alert:
       {{ '💾 Бекап просрочен' if is_state('binary_sensor.backup_overdue', 'on') else '💾 Бекап снова успешен' }}
     message: >-
       Нет успешного автоматического бекапа больше 8 дней · последний
-      {{ as_timestamp(states('sensor.backup_last_successful_automatic_backup'), 0) | timestamp_custom('%d.%m.%Y %H:%M') }}
+      {%- set t = as_timestamp(states('sensor.backup_last_successful_automatic_backup'), none) %}
+      {{ t | timestamp_custom('%d.%m.%Y %H:%M') if t else 'неизвестно' }}
     done_message: Автоматический бекап снова прошёл успешно
     data:
       channel: Предупреждения
@@ -142,28 +143,43 @@ automation:
     description: >-
       Push + persistent notification when an automatic backup fails, including partial failures
       (one storage location, e.g. Google Drive full). Ignores the event entity being restored
-      after a restart, which re-reports the last (possibly old) failure.
+      after a restart, which re-reports the last (possibly old) failure. Also reports backup repair
+      issues: a location that is unavailable during the backup (e.g. expired Google Drive auth) does not
+      fail the backup and does not delay "last successful", only a repair issue is raised (audit F2-02).
     mode: queued
     triggers:
       - trigger: state
         entity_id: event.backup_automatic_backup
+        id: event
+      - trigger: event
+        event_type: repairs_issue_registry_updated
+        event_data:
+          action: create
+          domain: backup
+        id: repair
     conditions:
-      # A real new event: the previous state was valid and the timestamp changed
+      # A real new failure event: the previous state was valid and the timestamp changed; repairs always count
       - condition: template
         value_template: >-
-          {{ trigger.from_state is not none and trigger.to_state is not none
-             and trigger.from_state.state not in ['unavailable', 'unknown']
-             and trigger.to_state.state != trigger.from_state.state
-             and trigger.to_state.attributes.event_type == 'failed' }}
+          {{ trigger.id == 'repair' or (
+               trigger.from_state is not none and trigger.to_state is not none
+               and trigger.from_state.state not in ['unavailable', 'unknown']
+               and trigger.to_state.state != trigger.from_state.state
+               and trigger.to_state.attributes.event_type == 'failed') }}
     actions:
       - action: script.notify
         data:
           level: warning
-          title: 💾 Бекап не удался
+          title: "{{ '💾 Бекап не удался' if trigger.id == 'event' else '💾 Проблема с бекапом' }}"
           message: >-
-            {{ trigger.to_state.attributes.failed_reason | default('причина неизвестна', true) }} ·
-            подробности в настройках резервных копий
-          url: /config/backup
+            {% if trigger.id == 'event' %}
+              {{ trigger.to_state.attributes.failed_reason | default('причина неизвестна', true) }} ·
+              подробности в настройках резервных копий
+            {%- else %}
+              Home Assistant создал предупреждение {{ trigger.event.data.issue_id }} ·
+              подробности в разделе «Исправления»
+            {%- endif %}
+          url: "{{ '/config/backup' if trigger.id == 'event' else '/config/repairs' }}"
 
   # Keep only 30 days of raw history for high-frequency diagnostic sensors
   # (global retention stays 180 days; long-term statistics are not affected)
@@ -448,6 +464,9 @@ automation:
         for: "03:00:00"
       - trigger: state
         entity_id: sensor.ble_temperature_atc_hall
+        for: "03:00:00"
+      - trigger: state
+        entity_id: sensor.ble_temperature_atc_kitchen
         for: "03:00:00"
       - trigger: state
         entity_id: sensor.ble_temperature_atc_living_room

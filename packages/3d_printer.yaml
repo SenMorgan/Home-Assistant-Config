@@ -85,7 +85,8 @@ automation:
         from: "running"
         to: "finish"
     actions:
-      # Light up if somebody is home
+      # Light up if somebody is home: the chamber light always, the hall bulb not in night mode
+      # (a print finishing at 03:00 must not light the hall; audit F2-03)
       - if:
           - condition: state
             entity_id: binary_sensor.people_home
@@ -95,9 +96,9 @@ automation:
             # An unresponsive bulb (e.g. Zigbee not ready after restart) must not block the notification
             continue_on_error: true
             target:
-              entity_id:
-                - light.hall_edison_bulb
-                - light.3d_printer_bambu_lab_a1_chamber_light
+              entity_id: >-
+                {{ ['light.3d_printer_bambu_lab_a1_chamber_light']
+                   + ([] if is_state('input_boolean.home_night_mode', 'on') else ['light.hall_edison_bulb']) }}
       # Set variables for print details
       - variables:
           # Fall back to the moment the printer entered "running" when start_time is unknown/unavailable
@@ -231,16 +232,20 @@ automation:
         data:
           level: warning
           persistent: false
-          title: "{{ '🖨️ Печать прервана' if status == 'failed' else '⏸️ Печать на паузе' }}"
+          # An HMS error can also come while the printer is idle or preparing: then it is not a pause (F2-08d)
+          title: >-
+            {{ '🖨️ Печать прервана' if status == 'failed' else ('⏸️ Печать на паузе' if status == 'pause' else '⚠️ Ошибка принтера') }}
           message: >-
-            {{ states('sensor.3d_printer_bambu_lab_a1_task_name') }} ·
-            {{ states('sensor.3d_printer_bambu_lab_a1_print_progress') | int(0) }} %
-            {%- if errors | count > 0 %} · {{ errors | join('; ') }}{% endif %}
+            {% if status in ['pause', 'failed'] %}
+              {{ states('sensor.3d_printer_bambu_lab_a1_task_name') }} ·
+              {{ states('sensor.3d_printer_bambu_lab_a1_print_progress') | int(0) }} %
+              {%- if errors | count > 0 %} · {{ errors | join('; ') }}{% endif %}
+            {%- else %}{{ errors | join('; ') if errors | count > 0 else 'неизвестная ошибка' }}{% endif %}
           # Tap opens the Bambu wiki page for the HMS code (or the printer dashboard)
           url: "{{ wiki if wiki else '/lovelace/3d-printer' }}"
           tts: >-
             {% if errors | count > 0 or status == 'failed' %}
-              Ошибка 3Д принтера, печать {{ 'остановлена' if status == 'failed' else 'приостановлена' }}.
+              Ошибка 3Д принтера{{ ', печать остановлена' if status == 'failed' else (', печать приостановлена' if status == 'pause' else '') }}.
               Подробности в уведомлении на телефоне.
             {% endif %}
 

@@ -593,6 +593,10 @@ automation:
     actions:
       # Give Zigbee window contacts and the Nest time to come back after the restart
       - delay: "00:02:00"
+      # An unavailable Nest would look "not in eco" and the eco script would give up against it (audit F2-08c)
+      - wait_template: "{{ states('climate.nestlocal_thermostat') not in ['unavailable', 'unknown'] }}"
+        timeout: "00:10:00"
+        continue_on_timeout: false
       - choose:
           # A window is open, but heating was not stopped
           - conditions:
@@ -640,7 +644,7 @@ automation:
       Safety net: if it gets below 20 °C at night while someone is home, cancel all
       heating timers, notify, set the Nest to the default target and turn on the hall heater.
       Re-checked hourly while the alert stays on (rescue actions repeat silently; notifications
-      are sent only once per cold episode). Night = 21:00-05:59.
+      are sent only once per cold episode, also when it started during a restart). Night = 21:00-05:59.
     mode: single
     max_exceeded: silent
     triggers:
@@ -685,9 +689,14 @@ automation:
             - timer.pause_heating
       # Notify only on the first trigger of a cold episode; the hourly re-checks repeat the
       # rescue actions below silently instead of re-sending the same notifications every hour
+      # Also the first hourly run of an episode that started without the off->on edge (HA restart or
+      # template reload while already cold): no run in the last 2 hours = first run (audit F2-08b)
       - if:
           - condition: template
-            value_template: "{{ trigger.platform == 'state' }}"
+            value_template: >-
+              {{ trigger.platform == 'state'
+                 or this.attributes.last_triggered is none
+                 or now() - this.attributes.last_triggered > timedelta(hours=2) }}
         then:
           # One push + persistent notification for the whole episode (E-3: was two messages)
           - action: script.notify
