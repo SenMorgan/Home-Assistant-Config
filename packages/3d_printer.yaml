@@ -85,20 +85,23 @@ automation:
         from: "running"
         to: "finish"
     actions:
-      # Light up if somebody is home: the chamber light always, the hall bulb not in night mode
-      # (a print finishing at 03:00 must not light the hall; audit F2-03)
+      # Light up if somebody is home, but not in night mode: a print finishing at 03:00 must not
+      # switch on any light, not even the chamber light (audit F2-03)
       - if:
           - condition: state
             entity_id: binary_sensor.people_home
             state: "on"
+          - condition: state
+            entity_id: input_boolean.home_night_mode
+            state: "off"
         then:
           - action: light.turn_on
             # An unresponsive bulb (e.g. Zigbee not ready after restart) must not block the notification
             continue_on_error: true
             target:
-              entity_id: >-
-                {{ ['light.3d_printer_bambu_lab_a1_chamber_light']
-                   + ([] if is_state('input_boolean.home_night_mode', 'on') else ['light.hall_edison_bulb']) }}
+              entity_id:
+                - light.hall_edison_bulb
+                - light.3d_printer_bambu_lab_a1_chamber_light
       # Set variables for print details
       - variables:
           # Fall back to the moment the printer entered "running" when start_time is unknown/unavailable
