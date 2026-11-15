@@ -86,14 +86,14 @@ script:
       enabled: "{{ is_state('input_boolean.zbt2_led_enabled', 'on') }}"
       colors:
         ups_low: "255,0,0" # red, blinking
-        ups_battery: "255,80,0" # orange, blinking
+        ups_battery: "255,0,0" # red, blinking (all alarms are pure red)
         window_eco: "0,128,80" # turquoise, half brightness
         print_finished: "0,255,0" # green
         printing: "140,0,255" # purple
-        air_bad: "255,40,0" # orange-red
-        air_poor: "255,160,0" # yellow
+        air_bad: "255,0,0" # red (alarm)
+        air_poor: "255,220,0" # yellow (kept clearly apart from the heating orange)
         attention: "40,25,0" # dim yellow
-        heating: "255,90,0" # bright orange: the boiler is heating (steady, unlike the blinking UPS orange)
+        heating: "255,120,0" # bright orange: the boiler is heating
         guest: "25,25,25" # dim white
       # Colours are "R,G,B" strings: zeros inside a YAML list get lost when variables are rendered
       rgb: "{{ (colors.get(status, '0,0,0') if enabled else '0,0,0').split(',') | map('int') | list }}"
