@@ -315,23 +315,6 @@ automation:
               title: 📈 График
               uri: /lovelace/gasoline-price
 
-  - id: notification_solar_panel_power_above_threshold
-    alias: Notification Solar Panel Power Above Threshold
-    description: Notifies when the solar panel produces more than 40 W for 5 minutes.
-    triggers:
-      - trigger: numeric_state
-        entity_id: sensor.solar_panel_power
-        above: 40
-        for: "00:05:00"
-    actions:
-      - action: script.notify
-        data:
-          level: info
-          title: "☀️ Солнце: {{ states('sensor.solar_panel_power') | float(0) | round(0) | int }} Вт"
-          message: >-
-            {% from 'ru.jinja' import num %}
-            Выработано {{ num(states('sensor.solar_panel_energy') | float(0) / 1000, 2) }} кВт·ч
-
   # Notify on washing finish
   - id: notification_washing_finish
     alias: Notification Washing Finish
