@@ -297,17 +297,17 @@ automation:
   - id: rodret_dimmer_1_handler
     alias: Rodret Dimmer 1 Handler
     description: >-
-      IKEA RODRET dimmer (via blueprint), step by step: ON turns on the desk lamp, a second ON (lamp already
-      on) turns on the Monolith speakers. OFF turns off the desk lamp while it is on, then (lamp off) the
-      speakers, then (both off) the rest of the living room lights. Holding ON/OFF dims the desk lamp
-      up/down in 4% steps.
+      IKEA RODRET dimmer (via blueprint), step by step: ON turns on the desk lamp with the TV lights and the
+      Christmas tree, a second ON adds the Monolith speakers, a third ON the ceiling light. OFF goes back:
+      the ceiling light, then the desk lamp, then the speakers, then (all off) the rest of the living room
+      lights. Holding ON/OFF dims the desk lamp up/down in 4% steps.
     use_blueprint:
       path: damru/ikea-rodret_E2201_ZHA-Z2M_control-anything.yaml
       input:
         remote_device: 51724530dc1fcac3561d2fcb39f40048
         on_press_action:
           - choose:
-              # 1st press: the lamp
+              # 1st press: the lamp with the TV lights and the Christmas tree (plugged in only in season)
               - conditions:
                   - condition: state
                     entity_id: light.mi_desk_lamp
@@ -315,7 +315,9 @@ automation:
                 sequence:
                   - action: light.turn_on
                     target:
-                      entity_id: light.mi_desk_lamp
+                      entity_id: >-
+                        {{ ['light.mi_desk_lamp', 'light.tv_lights']
+                           + (['light.christmas_tree'] if has_value('light.christmas_tree') else []) }}
               # Lamp already on: add the speakers
               - conditions:
                   - condition: state
@@ -326,9 +328,27 @@ automation:
                     continue_on_error: true
                     target:
                       entity_id: switch.monolith_speakers
+              # Lamp and speakers on: add the ceiling light
+              - conditions:
+                  - condition: state
+                    entity_id: light.living_room_ceiling_light
+                    state: "off"
+                sequence:
+                  - action: light.turn_on
+                    target:
+                      entity_id: light.living_room_ceiling_light
         off_press_action:
           - choose:
-              # Lamp on (with or without the speakers): the lamp first
+              # The ceiling light first
+              - conditions:
+                  - condition: state
+                    entity_id: light.living_room_ceiling_light
+                    state: "on"
+                sequence:
+                  - action: light.turn_off
+                    target:
+                      entity_id: light.living_room_ceiling_light
+              # Then the lamp (with or without the speakers)
               - conditions:
                   - condition: state
                     entity_id: light.mi_desk_lamp
