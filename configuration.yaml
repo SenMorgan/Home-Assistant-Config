@@ -127,6 +127,23 @@ mqtt:
   sensor: !include mqtt/mqtt-sensors.yaml
   switch: !include mqtt/mqtt-switches.yaml
 
+  # Presence on the home Wi-Fi, published (retained) by the presence automation from the phones' Wi-Fi
+  # sensors. source_type router: in the person entity a router tracker at home wins over GPS, so an
+  # inaccurate GPS fix at home does not mark the person away (template trackers are always GPS-type).
+  device_tracker:
+    - name: "Sen Home Wi-Fi"
+      unique_id: "sen_home_wifi"
+      state_topic: "/presence/sen/wifi"
+      payload_home: "home"
+      payload_not_home: "not_home"
+      source_type: router
+    - name: "Kris Home Wi-Fi"
+      unique_id: "kris_home_wifi"
+      state_topic: "/presence/kris/wifi"
+      payload_home: "home"
+      payload_not_home: "not_home"
+      source_type: router
+
   cover:
     - name: "Bedroom"
       unique_id: "bedroom_cover"
