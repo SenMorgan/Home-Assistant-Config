@@ -28,7 +28,7 @@ input_boolean:
 template:
   - sensor:
       # The most important thing to show right now. First match wins.
-      # In night mode only the UPS states are shown.
+      # In night mode only the UPS state is shown.
       - name: ZBT2 LED Status
         unique_id: zbt2_led_status
         icon: mdi:led-on
@@ -38,11 +38,8 @@ template:
           {% set printer = states('sensor.3d_printer_bambu_lab_a1_print_status') %}
           {% set printer_changed = states.sensor['3d_printer_bambu_lab_a1_print_status'].last_changed
             if states.sensor['3d_printer_bambu_lab_a1_print_status'] is not none else none %}
-          {% set iaq = states('sensor.air_quality_station_iaq') | float(0) %}
           {% set backup = states('sensor.backup_last_successful_automatic_backup') | as_datetime(default=none) %}
-          {% if 'OB' in ups and 'LB' in ups %}
-            ups_low
-          {% elif 'OB' in ups %}
+          {% if 'OB' in ups %}
             ups_battery
           {% elif night %}
             idle
@@ -54,10 +51,6 @@ template:
             print_finished
           {% elif printer in ['prepare', 'running'] %}
             printing
-          {% elif iaq > 200 %}
-            air_bad
-          {% elif iaq > 150 %}
-            air_poor
           {% elif is_state('binary_sensor.any_battery_device_low', 'on') or
             (backup is not none and now() - backup > timedelta(days=2)) %}
             attention
@@ -73,31 +66,28 @@ template:
 ## SCRIPTS
 ###############################################
 script:
-  # The only place that sets the steady LED colour. Blinks for UPS states.
+  # The only place that sets the steady LED colour. Blinks red while on the UPS.
   zbt2_led_apply:
     alias: ZBT2 LED Apply Status
     description: >-
       Sets the ZBT-2 LED colour for the current ZBT2 LED Status (off when disabled or idle).
-      UPS states blink red/orange once per second until the status changes or the LED is disabled.
+      Running on the UPS blinks red once per second until the status changes or the LED is disabled.
     icon: mdi:led-on
     mode: restart
     variables:
       status: "{{ states('sensor.zbt2_led_status') }}"
       enabled: "{{ is_state('input_boolean.zbt2_led_enabled', 'on') }}"
       colors:
-        ups_low: "255,0,0" # red, blinking
-        ups_battery: "255,0,0" # red, blinking (all alarms are pure red)
-        window_eco: "0,128,80" # turquoise, half brightness
+        ups_battery: "255,0,0" # red, blinking: running on the UPS (low battery included)
+        window_eco: "0,64,40" # turquoise, dimmed
         print_finished: "0,255,0" # green
         printing: "140,0,255" # purple
-        air_bad: "255,0,0" # red (alarm)
-        air_poor: "255,220,0" # yellow (kept clearly apart from the heating orange)
         attention: "40,25,0" # dim yellow
-        heating: "255,120,0" # bright orange: the boiler is heating
+        heating: "255,47,0" # bright orange: the boiler is heating
         guest: "25,25,25" # dim white
       # Colours are "R,G,B" strings: zeros inside a YAML list get lost when variables are rendered
       rgb: "{{ (colors.get(status, '0,0,0') if enabled else '0,0,0').split(',') | map('int') | list }}"
-      blink: "{{ enabled and status in ['ups_low', 'ups_battery'] }}"
+      blink: "{{ enabled and status == 'ups_battery' }}"
     sequence:
       - if:
           - "{{ blink }}"
@@ -153,7 +143,7 @@ automation:
           entity_id: script.zbt2_led_apply
 
   # The LED follows presence like the clock and the decorative lights: on during the day while someone is
-  # home, off when everyone has left. At night it stays enabled: the status shows only UPS states then.
+  # home, off when everyone has left. At night it stays enabled: the status shows only the UPS state then.
   - id: zbt2_led_auto_enable
     alias: ZBT2 LED Auto Enable
     description: >-
@@ -213,7 +203,7 @@ automation:
     alias: ZBT2 LED Flash On Manual Interaction
     description: >-
       Flashes the LED bright white for 0.5 s when a listed device is switched manually,
-      a busy-wall switch on the air quality station is flipped or a Zigbee button is pressed, then restores the status colour. Skipped at night and during UPS states.
+      a busy-wall switch on the air quality station is flipped or a Zigbee button is pressed, then restores the status colour. Skipped at night and while on the UPS.
     mode: single
     max_exceeded: silent
     triggers:
@@ -285,9 +275,9 @@ automation:
       - condition: state
         entity_id: input_boolean.home_night_mode
         state: "off"
-      # Never interrupt the blinking UPS states
+      # Never interrupt the blinking UPS state
       - condition: template
-        value_template: "{{ states('sensor.zbt2_led_status') not in ['ups_low', 'ups_battery'] }}"
+        value_template: "{{ states('sensor.zbt2_led_status') != 'ups_battery' }}"
       # Buttons: real commands only (door contacts send "attribute_updated").
       # Devices: manual changes only. A change made from the UI or by voice has a user,
       # a change made by an automation or script has a parent context or shares its
