@@ -1,8 +1,9 @@
 # Yandex Smart Home (Alice) entity filter and names.
 # Privacy: no security devices (door/window contacts, motion, cameras, alarms, guest mode), no thermostats or eTRVs,
 # no electricity meter, no phones and no presence hints (PC, baby monitor) are exposed: Yandex would receive every state change.
-# Climate sensors are "Климат" devices assigned to rooms; values are rounded in value_template, so Yandex
-# gets a report only when the rounded value changes (raw BLE values change every minute and hit HTTP 429).
+# Climate sensors are "Климат" devices assigned to rooms; values are rounded coarsely in value_template
+# (temperature 0.5 °C, humidity 5 %, CO2 100, PM2.5 10; TVOC not exposed, it changes all the time) so Yandex gets a report only on a real change:
+# BTHome sensors update every ~18 s and 0.1 °C rounding flapped at the boundary (HTTP 429, 16.11.2026).
 filter:
   include_entities:
     # Climate sensors (temperature/humidity per room, see entity_config)
@@ -172,8 +173,16 @@ entity_config:
     type: openable
   sensor.pool_monitor_bottom_water_temperature:
     name: Температура воды снизу
+    properties:
+      - type: temperature
+        value_template: "{{ (states('sensor.pool_monitor_bottom_water_temperature') | float * 2) | round(0) / 2 if states('sensor.pool_monitor_bottom_water_temperature') | is_number else none }}"
+        unit_of_measurement: "°C"
   sensor.pool_monitor_upper_water_temperature:
     name: Температура воды сверху
+    properties:
+      - type: temperature
+        value_template: "{{ (states('sensor.pool_monitor_upper_water_temperature') | float * 2) | round(0) / 2 if states('sensor.pool_monitor_upper_water_temperature') | is_number else none }}"
+        unit_of_measurement: "°C"
   cover.bedroom:
     name: Штора
   cover.living_cover:
@@ -189,10 +198,10 @@ entity_config:
     type: sensor.climate
     properties:
       - type: temperature
-        value_template: "{{ states('sensor.ble_temperature_atc_bedroom') | float(none) | round(1) if states('sensor.ble_temperature_atc_bedroom') | is_number else none }}"
+        value_template: "{{ (states('sensor.ble_temperature_atc_bedroom') | float * 2) | round(0) / 2 if states('sensor.ble_temperature_atc_bedroom') | is_number else none }}"
         unit_of_measurement: "°C"
       - type: humidity
-        value_template: "{{ states('sensor.ble_humidity_atc_bedroom') | float(none) | round(0) | int if states('sensor.ble_humidity_atc_bedroom') | is_number else none }}"
+        value_template: "{{ ((states('sensor.ble_humidity_atc_bedroom') | float / 5) | round(0) * 5) | int if states('sensor.ble_humidity_atc_bedroom') | is_number else none }}"
         unit_of_measurement: "%"
   sensor.ble_temperature_atc_living_room:
     name: Климат
@@ -200,10 +209,10 @@ entity_config:
     type: sensor.climate
     properties:
       - type: temperature
-        value_template: "{{ states('sensor.ble_temperature_atc_living_room') | float(none) | round(1) if states('sensor.ble_temperature_atc_living_room') | is_number else none }}"
+        value_template: "{{ (states('sensor.ble_temperature_atc_living_room') | float * 2) | round(0) / 2 if states('sensor.ble_temperature_atc_living_room') | is_number else none }}"
         unit_of_measurement: "°C"
       - type: humidity
-        value_template: "{{ states('sensor.ble_humidity_atc_living_room') | float(none) | round(0) | int if states('sensor.ble_humidity_atc_living_room') | is_number else none }}"
+        value_template: "{{ ((states('sensor.ble_humidity_atc_living_room') | float / 5) | round(0) * 5) | int if states('sensor.ble_humidity_atc_living_room') | is_number else none }}"
         unit_of_measurement: "%"
   sensor.ble_temperature_atc_kitchen:
     name: Климат
@@ -211,22 +220,19 @@ entity_config:
     type: sensor.climate
     properties:
       - type: temperature
-        value_template: "{{ states('sensor.ble_temperature_atc_kitchen') | float(none) | round(1) if states('sensor.ble_temperature_atc_kitchen') | is_number else none }}"
+        value_template: "{{ (states('sensor.ble_temperature_atc_kitchen') | float * 2) | round(0) / 2 if states('sensor.ble_temperature_atc_kitchen') | is_number else none }}"
         unit_of_measurement: "°C"
       - type: humidity
-        value_template: "{{ states('sensor.ble_humidity_atc_kitchen') | float(none) | round(0) | int if states('sensor.ble_humidity_atc_kitchen') | is_number else none }}"
+        value_template: "{{ ((states('sensor.ble_humidity_atc_kitchen') | float / 5) | round(0) * 5) | int if states('sensor.ble_humidity_atc_kitchen') | is_number else none }}"
         unit_of_measurement: "%"
       - type: pressure
-        value_template: "{{ states('sensor.air_quality_station_pressure') | float(none) | round(0) | int if states('sensor.air_quality_station_pressure') | is_number else none }}"
+        value_template: "{{ states('sensor.air_quality_station_pressure') | float | round(0) | int if states('sensor.air_quality_station_pressure') | is_number else none }}"
         unit_of_measurement: "hPa"
       - type: co2_level
-        value_template: "{{ states('sensor.air_quality_station_co2') | float(none) | round(0) | int if states('sensor.air_quality_station_co2') | is_number else none }}"
+        value_template: "{{ ((states('sensor.air_quality_station_co2') | float / 100) | round(0) * 100) | int if states('sensor.air_quality_station_co2') | is_number else none }}"
         unit_of_measurement: "ppm"
-      - type: tvoc
-        value_template: "{{ states('sensor.air_quality_station_voc') | float(none) | round(0) | int if states('sensor.air_quality_station_voc') | is_number else none }}"
-        unit_of_measurement: "μg/m³"
       - type: pm2.5_density
-        value_template: "{{ states('sensor.air_quality_station_pm2_5') | float(none) | round(0) | int if states('sensor.air_quality_station_pm2_5') | is_number else none }}"
+        value_template: "{{ ((states('sensor.air_quality_station_pm2_5') | float / 10) | round(0) * 10) | int if states('sensor.air_quality_station_pm2_5') | is_number else none }}"
         unit_of_measurement: "μg/m³"
   sensor.ble_temperature_atc_hall:
     name: Климат
@@ -234,10 +240,10 @@ entity_config:
     type: sensor.climate
     properties:
       - type: temperature
-        value_template: "{{ states('sensor.ble_temperature_atc_hall') | float(none) | round(1) if states('sensor.ble_temperature_atc_hall') | is_number else none }}"
+        value_template: "{{ (states('sensor.ble_temperature_atc_hall') | float * 2) | round(0) / 2 if states('sensor.ble_temperature_atc_hall') | is_number else none }}"
         unit_of_measurement: "°C"
       - type: humidity
-        value_template: "{{ states('sensor.ble_humidity_atc_hall') | float(none) | round(0) | int if states('sensor.ble_humidity_atc_hall') | is_number else none }}"
+        value_template: "{{ ((states('sensor.ble_humidity_atc_hall') | float / 5) | round(0) * 5) | int if states('sensor.ble_humidity_atc_hall') | is_number else none }}"
         unit_of_measurement: "%"
   sensor.ble_temperature_atc_bathroom:
     name: Климат
@@ -245,10 +251,10 @@ entity_config:
     type: sensor.climate
     properties:
       - type: temperature
-        value_template: "{{ states('sensor.ble_temperature_atc_bathroom') | float(none) | round(1) if states('sensor.ble_temperature_atc_bathroom') | is_number else none }}"
+        value_template: "{{ (states('sensor.ble_temperature_atc_bathroom') | float * 2) | round(0) / 2 if states('sensor.ble_temperature_atc_bathroom') | is_number else none }}"
         unit_of_measurement: "°C"
       - type: humidity
-        value_template: "{{ states('sensor.ble_humidity_atc_bathroom') | float(none) | round(0) | int if states('sensor.ble_humidity_atc_bathroom') | is_number else none }}"
+        value_template: "{{ ((states('sensor.ble_humidity_atc_bathroom') | float / 5) | round(0) * 5) | int if states('sensor.ble_humidity_atc_bathroom') | is_number else none }}"
         unit_of_measurement: "%"
   sensor.ble_temperature_atc_toilet:
     name: Климат
@@ -256,10 +262,10 @@ entity_config:
     type: sensor.climate
     properties:
       - type: temperature
-        value_template: "{{ states('sensor.ble_temperature_atc_toilet') | float(none) | round(1) if states('sensor.ble_temperature_atc_toilet') | is_number else none }}"
+        value_template: "{{ (states('sensor.ble_temperature_atc_toilet') | float * 2) | round(0) / 2 if states('sensor.ble_temperature_atc_toilet') | is_number else none }}"
         unit_of_measurement: "°C"
       - type: humidity
-        value_template: "{{ states('sensor.ble_humidity_atc_toilet') | float(none) | round(0) | int if states('sensor.ble_humidity_atc_toilet') | is_number else none }}"
+        value_template: "{{ ((states('sensor.ble_humidity_atc_toilet') | float / 5) | round(0) * 5) | int if states('sensor.ble_humidity_atc_toilet') | is_number else none }}"
         unit_of_measurement: "%"
   sensor.pool_monitor_air_temperature:
     name: Климат
@@ -267,11 +273,11 @@ entity_config:
     type: sensor.climate
     properties:
       - type: temperature
-        value_template: "{{ states('sensor.pool_monitor_air_temperature') | float(none) | round(1) if states('sensor.pool_monitor_air_temperature') | is_number else none }}"
+        value_template: "{{ (states('sensor.pool_monitor_air_temperature') | float * 2) | round(0) / 2 if states('sensor.pool_monitor_air_temperature') | is_number else none }}"
         unit_of_measurement: "°C"
       - type: humidity
-        value_template: "{{ states('sensor.pool_monitor_air_humidity') | float(none) | round(0) | int if states('sensor.pool_monitor_air_humidity') | is_number else none }}"
+        value_template: "{{ ((states('sensor.pool_monitor_air_humidity') | float / 5) | round(0) * 5) | int if states('sensor.pool_monitor_air_humidity') | is_number else none }}"
         unit_of_measurement: "%"
       - type: pressure
-        value_template: "{{ states('sensor.pool_monitor_air_pressure') | float(none) | round(0) | int if states('sensor.pool_monitor_air_pressure') | is_number else none }}"
+        value_template: "{{ states('sensor.pool_monitor_air_pressure') | float | round(0) | int if states('sensor.pool_monitor_air_pressure') | is_number else none }}"
         unit_of_measurement: "hPa"
