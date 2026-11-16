@@ -45,7 +45,8 @@ script:
     alias: Update Shopping List
     description: >-
       Silently makes the Yandex Station refresh its shopping list: saves the volume, mutes to 0.01,
-      sends the "update shopping list" command, stops playback and restores the saved volume.
+      sends the "update shopping list" command, stops playback and always restores the saved volume
+      (retried until the station reports it unmuted at that level).
     sequence:
       # Save actual volume
       - action: input_number.set_value
@@ -82,24 +83,24 @@ script:
           media_content_id: stop
           media_content_type: command
       - delay: 1
-      # Repeat the command to ensure that the volume is muted
-      # (i.e. restore the saved volume, retrying up to 3 times until it is applied)
+      # Restore the saved volume. Always at least once: at 0.01 the station reports is_volume_muted
+      # while volume_level keeps the old value, so a "volume already matches" check skipped the restore
+      # and left the Mini silent (16.11.2026). Retry until it is unmuted at the saved level (one 0.1 step of
+      # tolerance: volume_set rounds to tenths, e.g. 0.35 -> 0.3).
       - repeat:
-          while:
-            - condition: template
-              # Compare as numbers (the attribute is a float, the helper state is a string)
-              value_template: >-
-                {{ (state_attr('media_player.yandex_station', 'volume_level') | float(0)
-                    - states('input_number.volume_yandex_station') | float(0)) | abs > 0.005 }}
-            - condition: template
-              value_template: "{{ repeat.index <= 3 }}"
           sequence:
             - action: media_player.volume_set
+              continue_on_error: true
               target:
                 entity_id: media_player.yandex_station
               data:
                 volume_level: "{{ states('input_number.volume_yandex_station') | float(0.5) }}"
             - delay: 1
+          until: >-
+            {{ (not is_state_attr('media_player.yandex_station', 'is_volume_muted', true)
+                and (state_attr('media_player.yandex_station', 'volume_level') | float(0)
+                     - states('input_number.volume_yandex_station') | float(0)) | abs <= 0.051)
+               or repeat.index >= 3 }}
 
   set_volume_level_repeatedly:
     alias: Set Volume Level Repeatedly
