@@ -424,7 +424,7 @@ script:
               {% set ns.rooms = ns.rooms + [room_ru(area_name(e.entity_id))] %}
             {% endfor %}
             🪟 Открыто окно: {{ ns.rooms | join(', ') }}
-          message: Отопление на паузе, пока окно открыто
+          message: Отопление приостановлено, пока открыто окно
 
 ###############################################
 ## AUTOMATIONS
@@ -700,7 +700,7 @@ automation:
               title: >-
                 {% from 'ru.jinja' import num %}
                 🥶 Холодно: {{ num(coldest[1]) }} °C
-              message: "{{ coldest[0] }} · температура ниже порога · включено отопление"
+              message: "{{ coldest[0] }} · температура опустилась ниже порога · отопление включено"
           # Log the event
           - action: input_text.set_value
             target:
@@ -754,7 +754,7 @@ automation:
           title: >-
             {% from 'ru.jinja' import num %}
             🥵 Жарко: {{ num(state_attr('climate.nestlocal_thermostat', 'current_temperature')) }} °C
-          message: Температура выше порога · термостат переведён в авто-режим
+          message: Температура поднялась выше порога · термостат переведён в автоматический режим
       # Stop heating by setting default temperature on thermostat
       - action: script.thermostat_stop_heating
         data:
@@ -792,7 +792,7 @@ automation:
           persistent: true
           title: ⏸️ Отопление на паузе 1 ч
           message: >-
-            Котёл работал больше часа подряд · возобновлю в {{ (now() + timedelta(hours=1)).strftime('%H:%M') }}
+            Котёл работал больше часа подряд · пауза закончится в {{ (now() + timedelta(hours=1)).strftime('%H:%M') }}
       # Start "Pause Heating" timer
       - action: timer.start
         target:

@@ -47,7 +47,7 @@ script:
       Central notification script. Sends a push with level-specific Android channel/priority, the event
       time (data.when, so a late-delivered push still shows when it happened), optional tag, tap URL and
       action buttons; optionally a persistent notification and a voice announcement on Yandex Station Midi
-      (critical: also spoken on both phones via the alarm stream).
+      (critical: also spoken on both phones via the alarm stream). Short notifications can use only message.
     mode: parallel
     max: 25
     fields:
@@ -58,12 +58,11 @@ script:
           select:
             options: [critical, warning, info, status]
       title:
-        description: Title (category emoji + 2-4 words)
-        required: true
+        description: Optional title (category emoji + 2-4 words)
         selector:
           text:
       message:
-        description: Body (facts separated by " · ")
+        description: Body, or the whole notification when there is no title
         selector:
           text:
             multiline: true
@@ -140,18 +139,19 @@ script:
             # One unreachable phone must not block the other one or the speaker
             - action: notify.{{ repeat.item }}
               continue_on_error: true
-              data:
-                title: "{{ title }}"
-                message: "{{ message | default('') }}"
-                data: "{{ push_data }}"
+              # Omit the title for short, message-only notifications.
+              data: >-
+                {% set d = dict(message=message | default(''), data=push_data) %}
+                {% if title is defined and title %}{% set d = dict(d, title=title) %}{% endif %}
+                {{ d }}
       - if:
           - "{{ make_persistent }}"
         then:
           - action: persistent_notification.create
-            data:
-              title: "{{ title }}"
-              message: "{{ message | default('') }}"
-              notification_id: "{{ notification_id | default(tag | default(none)) }}"
+            data: >-
+              {% set d = dict(message=message | default(''), notification_id=notification_id | default(tag | default(none))) %}
+              {% if title is defined and title %}{% set d = dict(d, title=title) %}{% endif %}
+              {{ d }}
       - if:
           - "{{ speak }}"
         then:
@@ -238,7 +238,7 @@ automation:
           title: ❄️ Ожидается снег
           message: >-
             {% from 'ru.jinja' import num %}
-            Сегодня с {{ state_attr('binary_sensor.snow_expected_soon', 'first_hour') }} ·
+            Начало около {{ state_attr('binary_sensor.snow_expected_soon', 'first_hour') }} ·
             {{ num(state_attr('binary_sensor.snow_expected_soon', 'precipitation_mm')) }} мм ·
             до {{ num(state_attr('binary_sensor.snow_expected_soon', 'min_temperature')) }} °C
           data:
@@ -273,7 +273,7 @@ automation:
             ⛽ Дизель {{ '↑' if new > old else '↓' }} {{ num(new, 2) }} Kč/л
           message: >-
             {% from 'ru.jinja' import num %}
-            Было {{ num(old, 2) }} · {{ '+' if new > old else '−' }}{{ num((new - old) | abs, 2) }}
+            Было {{ num(old, 2) }} Kč/л · изменение {{ '+' if new > old else '−' }}{{ num((new - old) | abs, 2) }} Kč/л
           actions:
             - action: URI
               title: 📈 График
@@ -309,7 +309,7 @@ automation:
             ⛽ Бензин {{ '↑' if new > old else '↓' }} {{ num(new, 2) }} Kč/л
           message: >-
             {% from 'ru.jinja' import num %}
-            Было {{ num(old, 2) }} · {{ '+' if new > old else '−' }}{{ num((new - old) | abs, 2) }}
+            Было {{ num(old, 2) }} Kč/л · изменение {{ '+' if new > old else '−' }}{{ num((new - old) | abs, 2) }} Kč/л
           actions:
             - action: URI
               title: 📈 График
@@ -335,7 +335,7 @@ automation:
         data:
           level: info
           title: 🧺 Стирка закончена
-          message: Осталось развесить
+          message: Можно развешивать бельё
       - action: script.yandex_joke_after_washing_clothes
 
   - id: notification_shopping_list_sen
@@ -368,9 +368,11 @@ automation:
         data:
           level: info
           recipients: [mobile_app_sen_s25]
-          title: "🛒 Рядом {{ states('person.sen') }}"
-          message: >-
-            В списке {{ items | count }}: {{ items[:3] | join(', ') }}{{ '…' if items | count > 3 }}
+          # states('person.sen') is the shop zone Sen is in (e.g. "JIP")
+          title: >-
+            {%- from 'ru.jinja' import plural -%}
+            🛒 Рядом {{ states('person.sen') }}: в списке покупок {{ plural(items | count, 'товар', 'товара', 'товаров') }}
+          message: "{{ items[:3] | join(', ') }}{{ '…' if items | count > 3 }}"
           url: /todo?entity_id=todo.shopping_list
 
   - id: notification_shopping_list_kris
@@ -403,9 +405,11 @@ automation:
         data:
           level: info
           recipients: [mobile_app_sm_s931b]
-          title: "🛒 Рядом {{ states('person.kris') }}"
-          message: >-
-            В списке {{ items | count }}: {{ items[:3] | join(', ') }}{{ '…' if items | count > 3 }}
+          # states('person.kris') is the shop zone Kris is in (e.g. "JIP")
+          title: >-
+            {%- from 'ru.jinja' import plural -%}
+            🛒 Рядом {{ states('person.kris') }}: в списке покупок {{ plural(items | count, 'товар', 'товара', 'товаров') }}
+          message: "{{ items[:3] | join(', ') }}{{ '…' if items | count > 3 }}"
           url: /todo?entity_id=todo.shopping_list
 
   - id: weather_forecast_alert_helper
@@ -622,8 +626,10 @@ automation:
       - action: script.notify
         data:
           level: warning
-          title: "💽 Мало места на HA: {{ states('sensor.disk_use_percent') | float(0) | round(0) | int }} %"
+          title: "💽 На Home Assistant заканчивается место"
           message: >-
             {% from 'ru.jinja' import num %}
-            Занято {{ num(states('sensor.disk_use')) }} ГБ · база данных и бекапы могут перестать сохраняться
+            Занято {{ num(states('sensor.disk_use')) }} ГБ
+            ({{ states('sensor.disk_use_percent') | float(0) | round(0) | int }} %) ·
+            риск остановки работы базы данных и резервных копий
           url: /config/storage

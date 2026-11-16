@@ -239,8 +239,7 @@ automation:
         data:
           level: status
           tag: ha_state
-          title: ⚠️ HA выключается
-          message: Перезапуск или выключение · время события на уведомлении
+          message: ⚠️ Home Assistant выключается
 
 
   - id: home_assistant_update_available_notification
@@ -360,8 +359,8 @@ automation:
           - action: script.notify
             data:
               level: warning
-              title: 🌐 Нет интернета
-              message: Интернет соединение потеряно в {{ trigger.to_state.last_changed | as_local | as_timestamp | timestamp_custom('%H:%M') }}
+              title: 🌐 Интернет-соединение потеряно
+              message: Связь пропала в {{ trigger.to_state.last_changed | as_local | as_timestamp | timestamp_custom('%H:%M') }}
               when: "{{ as_timestamp(trigger.to_state.last_changed) | int }}"
           # Meshtastic works without internet, so this one arrives right away
           - action: meshtastic.broadcast_channel_message
@@ -374,11 +373,11 @@ automation:
             data:
               level: info
               persistent: true
-              title: 🌐 Интернет вернулся
+              title: 🌐 Интернет-соединение восстановлено
               message: >-
                 {% from 'ru.jinja' import duration_short %}
                 {% set mins = ((as_timestamp(trigger.to_state.last_changed) - as_timestamp(trigger.from_state.last_changed)) / 60) | round(0) | int %}
-                Не было {{ duration_short(mins) }} · с {{ trigger.from_state.last_changed | as_local | as_timestamp | timestamp_custom('%H:%M') }}
+                Связи не было {{ duration_short(mins) }} · с {{ trigger.from_state.last_changed | as_local | as_timestamp | timestamp_custom('%H:%M') }}
           - action: meshtastic.broadcast_channel_message
             continue_on_error: true
             data:
@@ -541,7 +540,7 @@ automation:
               recipients: [mobile_app_sen_s25]
               persistent: false
               title: 🗄️ Synology не отвечает
-              message: Всё равно выключить рек?
+              message: Выключить серверный шкаф, несмотря на отсутствие связи с Synology?
               tts: Synology не отвечает. Подтвердите выключение на телефоне.
               actions:
                 - action: "{{ action_power_off }}"
@@ -579,7 +578,7 @@ automation:
                   persistent: true
                   title: 🗄️ Выключение отменено
                   message: >-
-                    {{ 'Нажата отмена' if wait.trigger is not none else 'Нет ответа 10 минут' }}
+                    {{ 'Вы отменили выключение' if wait.trigger is not none else 'Таймаут: выключение не подтверждено' }}
         else:
           - action: script.notify
             data:

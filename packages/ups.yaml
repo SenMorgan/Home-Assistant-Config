@@ -121,7 +121,7 @@ automation:
           title: 🔌 Электричество есть
           message: >-
             {% from 'ru.jinja' import duration_short %}
-            Без питания {{ duration_short(outage_min) }} · батарея UPS {{ states('sensor.ups_battery_charge') | int(0) }} %
+            Электричества не было {{ duration_short(outage_min) }} · заряд UPS {{ states('sensor.ups_battery_charge') | int(0) }} %
 
   - id: ups_low_battery_warning_notification
     alias: UPS Low Battery Warning Notification

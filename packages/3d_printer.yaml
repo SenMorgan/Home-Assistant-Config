@@ -121,16 +121,15 @@ automation:
           message: clear_notification
           data:
             tag: printer_progress
-      # Text chosen by Sen (catalog N-20); voice with correct plural forms (ru.jinja)
+      # Voice uses the Russian duration helper for correct plural forms
       - action: script.notify
         data:
           level: info
-          title: 3D Printer
+          title: 🖨️ Печать завершена
           message: >-
             {% from 'ru.jinja' import num %}
-            🎉 Печать завершена ({{ task_name }})
-            ⏱️ Время печати: {{ spent_hours }}ч {{ spent_minutes }}мин
-            ⚖️ Вес: {{ num(print_weight, 1) }} г
+            {{ task_name }} · ⏱️ {{ spent_hours }} ч {{ spent_minutes }} мин ·
+            ⚖️ Вес: {{ num(print_weight, 1) }} г ·
             📏 Длина прутка: {{ num(print_length, 1) }} м
           url: /lovelace/3d-printer
           tts: >-
@@ -369,8 +368,8 @@ automation:
                   persistent: false
                   title: 🔌 Принтер не выключен
                   message: >-
-                    Сопло {{ states('sensor.3d_printer_bambu_lab_a1_nozzle_temperature') | float(0) | round(0) | int }} °C —
-                    жду остывания до 60 °C
+                    Сопло ещё горячее: {{ states('sensor.3d_printer_bambu_lab_a1_nozzle_temperature') | float(0) | round(0) | int }} °C ·
+                    дождитесь остывания до 60 °C
                   # No emoji in voice texts (E-4)
                   tts: Нельзя выключить принтер, сопло ещё горячее.
             else:
@@ -390,7 +389,7 @@ automation:
               level: warning
               persistent: false
               title: 🔌 Принтер не выключен
-              message: "Принтер сейчас: {{ {'running': 'печатает', 'pause': 'на паузе', 'prepare': 'готовится к печати', 'slicing': 'нарезка модели', 'failed': 'ошибка печати', 'init': 'запускается', 'offline': 'не в сети'}.get(printer_status, printer_status) }}"
+              message: "Сейчас принтер {{ {'running': 'печатает', 'pause': 'на паузе', 'prepare': 'готовится к печати', 'slicing': 'нарезает модель', 'failed': 'сообщает об ошибке', 'init': 'запускается', 'offline': 'не в сети'}.get(printer_status, printer_status) }}"
               tts: >-
                 {{ 'Нельзя выключить принтер, идёт печать.' if printer_status == 'running'
                    else 'Нельзя выключить принтер, он сейчас ' ~ ({'pause': 'на паузе', 'prepare': 'готовится к печати',
@@ -457,8 +456,7 @@ automation:
             data:
               level: status
               tag: printer_power
-              title: 🔌 Принтер выключен
-              message: Автоматически, после остывания
+              message: 🔌 Принтер автоматически выключен после остывания
         else:
           - action: script.notify
             data:
@@ -466,7 +464,7 @@ automation:
               title: 🔌 Принтер не выключен
               message: >-
                 {% if printer_status not in ['finish', 'idle'] -%}
-                  Причина: принтер сейчас {{ {'running': 'печатает', 'pause': 'на паузе', 'prepare': 'готовится к печати', 'slicing': 'нарезка модели', 'failed': 'ошибка печати', 'init': 'запускается', 'offline': 'не в сети'}.get(printer_status, printer_status) }}
+                  Сейчас принтер {{ {'running': 'печатает', 'pause': 'на паузе', 'prepare': 'готовится к печати', 'slicing': 'нарезает модель', 'failed': 'сообщает об ошибке', 'init': 'запускается', 'offline': 'не в сети'}.get(printer_status, printer_status) }}
                 {%- else -%}
-                  Причина: сопло не остыло ниже 50 °C (сейчас {{ nozzle_temp | float(0) | round(0) | int }} °C)
+                  Сопло ещё не остыло ниже 50 °C · сейчас {{ nozzle_temp | float(0) | round(0) | int }} °C
                 {%- endif %}

@@ -98,7 +98,7 @@ automation:
           persistent: true
           notification_id: plants_to_water
           tag: plants_to_water
-          title: "🪴 Нужно полить цветы: {{ states('input_text.plants_to_water').split(',') | count }}"
+          title: "🪴 Пора полить растения: {{ states('input_text.plants_to_water').split(',') | count }}"
           message: "{{ states('input_text.plants_to_water') }}"
           actions:
             - action: PLANTS_WATERED

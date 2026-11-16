@@ -611,14 +611,12 @@ automation:
             data:
               level: warning
               persistent: false
-              title: "🅿️ Парковка: реле не на связи"
-              message: Больше часа
+              message: 🅿️ Реле парковочного света не на связи больше часа
           - stop: Relay unavailable
       - action: script.notify
         data:
           level: info
-          title: "🅿️ Парковка: свет включён снова"
-          message: Был выключен больше часа
+          message: "🅿️ Парковочный свет снова включён: был выключен больше часа"
       # Give up after 5 attempts instead of retrying forever
       - repeat:
           until:
@@ -645,8 +643,7 @@ automation:
             data:
               level: warning
               persistent: false
-              title: "🅿️ Парковка: реле не отвечает"
-              message: Не включилось после 5 попыток
+              message: 🅿️ Реле парковочного света не включилось после 5 попыток
 
   - id: kitchen_led_strip_sync_with_spotlights
     alias: Kitchen LED Strip Sync with Spotlights

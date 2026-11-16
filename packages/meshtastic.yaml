@@ -127,11 +127,11 @@ automation:
             data:
               ack: true
               channel: meshtastic.gateway_lrnr_channel_morgans
-              message: "⚠️ Home Assistant: Интернет соединение потеряно в {{ states('sensor.time') }}"
+              message: "⚠️ Home Assistant: соединение с интернетом потеряно в {{ states('sensor.time') }}"
         else:
           - action: meshtastic.broadcast_channel_message
             metadata: {}
             data:
               ack: true
               channel: meshtastic.gateway_lrnr_channel_morgans
-              message: "✅ Home Assistant: Интернет соединение восстановлено в {{ states('sensor.time') }}"
+              message: "✅ Home Assistant: соединение с интернетом восстановлено в {{ states('sensor.time') }}"

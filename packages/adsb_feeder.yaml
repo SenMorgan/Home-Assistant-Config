@@ -101,4 +101,4 @@ automation:
           title: 📡 ADS-B снова на связи
           message: >-
             {% from 'ru.jinja' import duration_short %}
-            Перерыв {{ duration_short(((as_timestamp(trigger.to_state.last_changed) - as_timestamp(trigger.from_state.last_changed)) / 60) | round(0) | int) }}
+            Связи не было {{ duration_short(((as_timestamp(trigger.to_state.last_changed) - as_timestamp(trigger.from_state.last_changed)) / 60) | round(0) | int) }}
