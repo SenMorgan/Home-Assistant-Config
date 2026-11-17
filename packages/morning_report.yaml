@@ -5,7 +5,9 @@
 #                                                                    #
 # Info: morning report spoken by Alice when the night mode ends:     #
 # today's weather and what went wrong in the house overnight         #
-# (devices that went offline, alerts, batteries, backup). Plain      #
+# (alerts, failed integrations, offline devices, backup, restarts,   #
+# night door, disk, batteries). Wording in                           #
+# custom_templates/morning_report.jinja. Plain                       #
 # templates, no AI: predictable text, no cloud, nothing invented.    #
 # Devices labelled "Offline OK" (PC-powered, fully switched off)     #
 # are ignored.                                                       #
@@ -49,99 +51,30 @@ script:
     icon: mdi:weather-sunset-up
     mode: parallel
     sequence:
+      # Daily forecast for the temperature, hourly for when it rains. The report must still work if Met.no
+      # is down: then the weather part says so
       - action: weather.get_forecasts
-        # The report must still work if Met.no is unavailable; then the weather part is skipped
         continue_on_error: true
         target:
           entity_id: weather.home_assistant_blue
         data:
           type: daily
-        response_variable: forecast_response
+        response_variable: daily_response
+      - action: weather.get_forecasts
+        continue_on_error: true
+        target:
+          entity_id: weather.home_assistant_blue
+        data:
+          type: hourly
+        response_variable: hourly_response
+      # collect() reads the facts, render() words them (custom_templates/morning_report.jinja; render() is
+      # tested with made-up facts, see the header there)
       - variables:
           report: >-
-            {% from 'ru.jinja' import num, plural, plural_form %}
-            {# ---------- weather ---------- #}
-            {% set conditions = {
-              'clear-night': 'ясно', 'sunny': 'солнечно', 'partlycloudy': 'переменная облачность',
-              'cloudy': 'облачно', 'rainy': 'дождь', 'pouring': 'ливень', 'snowy': 'снег',
-              'snowy-rainy': 'мокрый снег', 'fog': 'туман', 'hail': 'град', 'lightning': 'гроза',
-              'lightning-rainy': 'гроза с дождём', 'windy': 'ветрено', 'windy-variant': 'ветрено',
-              'exceptional': 'непогода' } %}
-            {% set forecast = (forecast_response | default({})).get('weather.home_assistant_blue', {}).get('forecast', []) %}
-            {% set today = forecast | selectattr('datetime', 'search', now().date() | string) | list %}
-            {% set today = today[0] if today else (forecast[0] if forecast else none) %}
-            {% set now_t = state_attr('weather.home_assistant_blue', 'temperature') %}
-            {% set ns = namespace(say=[], text=[]) %}
-            {% if now_t is number %}
-              {% set t = now_t | round(0) | int %}
-              {% set w_say = 'На улице ' ~ ('минус ' if t < 0 else '') ~ plural(t | abs, 'градус', 'градуса', 'градусов') %}
-              {% set w_text = num(now_t, 0) ~ ' °C' %}
-              {% if today is not none %}
-                {% set hi = today.temperature | round(0) | int %}
-                {% set cond = conditions.get(today.condition, '') %}
-                {% set rain = today.precipitation | default(0) | float(0) %}
-                {% set wind = (today.wind_speed | default(0) | float(0) / 3.6) | round(0) | int %}
-                {% if hi > t %}
-                  {% set w_say = w_say ~ ', днём до ' ~ ('минус ' if hi < 0 else '') ~ (hi | abs) %}
-                  {% set w_text = w_text ~ ', днём до ' ~ num(today.temperature, 0) ~ ' °C' %}
-                {% endif %}
-                {% set w_say = w_say ~ (', ' ~ cond if cond else '') %}
-                {% set w_text = w_text ~ (' · ' ~ cond if cond else '') %}
-                {% if rain >= 0.5 %}
-                  {% set w_text = w_text ~ ' · осадки ' ~ num(rain) ~ ' мм' %}
-                {% endif %}
-                {% if wind >= 10 %}
-                  {% set w_say = w_say ~ ', сильный ветер' %}
-                  {% set w_text = w_text ~ ' · ветер до ' ~ wind ~ ' м/с' %}
-                {% endif %}
-              {% endif %}
-              {% set ns.say = ns.say + [w_say ~ '.'] %}
-              {% set icons = {'rainy': '🌧️', 'pouring': '🌧️', 'snowy': '❄️', 'snowy-rainy': '🌨️', 'sunny': '☀️',
-                'clear-night': '🌙', 'cloudy': '☁️', 'fog': '🌫️', 'lightning': '⛈️', 'lightning-rainy': '⛈️'} %}
-              {% set ns.text = ns.text + [icons.get(today.condition if today is not none else '', '🌤️') ~ ' ' ~ w_text] %}
-            {% endif %}
-            {# ---------- devices offline now, and which of them were not offline last evening ---------- #}
-            {% from 'devices.jinja' import offline_devices %}
-            {% set offline = offline_devices() | from_json %}
-            {% set started = states('sensor.night_mode_started') | as_datetime(default=none) %}
-            {# no snapshot from a recent night (first run, night mode skipped): nothing is reported as new #}
-            {% set before = state_attr('sensor.night_mode_started', 'offline_devices')
-              if started is not none and now() - started < timedelta(hours=16) else offline %}
-            {% set before = before if before is list else offline %}
-            {% set dev = namespace(new=[], old=[]) %}
-            {% for d in offline %}
-              {% set name = device_attr(d, 'name_by_user') or device_attr(d, 'name') %}
-              {% if d in before %}{% set dev.old = dev.old + [name] %}{% else %}{% set dev.new = dev.new + [name] %}{% endif %}
-            {% endfor %}
-            {% set issues = namespace(say=[], text=[]) %}
-            {% if dev.new %}
-              {% set issues.say = issues.say + ['за ночь отвалилось ' ~ plural(dev.new | count, 'устройство', 'устройства', 'устройств')] %}
-              {% set issues.text = issues.text + ['📴 За ночь отвалились: ' ~ dev.new | sort | join(', ')] %}
-            {% endif %}
-            {# ---------- alerts, batteries, backup ---------- #}
-            {% set alerts = states.alert | selectattr('state', 'eq', 'on') | map(attribute='name') | list %}
-            {% if alerts %}
-              {% set issues.say = issues.say + ['активн' ~ ('а' if alerts | count == 1 else 'о') ~ ' ' ~ plural(alerts | count, 'тревога', 'тревоги', 'тревог')] %}
-              {% set issues.text = issues.text + ['🚨 Тревоги: ' ~ alerts | join(', ')] %}
-            {% endif %}
-            {% set low = expand('group.low_battery_devices') | map(attribute='name') | list %}
-            {% if low %}
-              {% set issues.say = issues.say + ['пора сменить батарейки: ' ~ plural(low | count, 'устройство', 'устройства', 'устройств')] %}
-              {% set issues.text = issues.text + ['🔋 Батарейки: ' ~ low | join(', ')] %}
-            {% endif %}
-            {% if is_state('binary_sensor.backup_overdue', 'on') %}
-              {% set issues.say = issues.say + ['резервная копия не делалась больше недели'] %}
-              {% set issues.text = issues.text + ['💾 Бэкап просрочен'] %}
-            {% endif %}
-            {% if issues.say %}
-              {% set ns.say = ns.say + [(issues.say | join(', ') | capitalize) ~ '. Подробности в телефоне.'] %}
-            {% else %}
-              {% set ns.say = ns.say + ['За ночь в доме всё спокойно.'] %}
-              {% set issues.text = ['✅ За ночь всё спокойно'] %}
-            {% endif %}
-            {% if dev.old %}
-              {% set issues.text = issues.text + ['Недоступны и раньше: ' ~ dev.old | sort | join(', ')] %}
-            {% endif %}
-            {{ {'speech': ns.say | join(' '), 'message': (ns.text + issues.text) | join('\n')} }}
+            {% from 'morning_report.jinja' import collect, render %}
+            {% set key = 'weather.home_assistant_blue' %}
+            {% set daily = (daily_response | default({})).get(key, {}).get('forecast', []) %}
+            {% set hourly = (hourly_response | default({})).get(key, {}).get('forecast', []) %}
+            {{ render(collect(daily, hourly) | from_json) | from_json }}
       - stop: Report ready
         response_variable: report

@@ -1,0 +1,255 @@
+{# Morning report (packages/morning_report.yaml). Two steps so the wording can be tested with made-up facts:
+   collect(daily, hourly) -> JSON facts from the live system, render(facts) -> JSON {speech, message}.
+   Usage: render(collect(daily, hourly) | from_json) | from_json #}
+
+{% from 'ru.jinja' import num, plural, plural_form, room_in %}
+{% from 'devices.jinja' import offline_devices %}
+
+{# Short Russian phrases for the alert entities (their names are English) #}
+{% set ALERTS = {
+  'alert.water_leakage_bathroom': 'протечка в ванной',
+  'alert.water_leakage_kitchen': 'протечка на кухне',
+  'alert.carbon_monoxide_detected': 'угарный газ',
+  'alert.natural_gas_detected': 'утечка газа',
+  'alert.ups_lost_power': 'нет электричества, сервер на батарее',
+  'alert.safety_sensors_offline': 'датчики безопасности не на связи',
+  'alert.home_assistant_cpu_temp_high': 'перегрев сервера',
+  'alert.high_power': 'большое потребление электричества' } %}
+
+{% set CONDITIONS = {
+  'clear-night': 'ясно', 'sunny': 'солнечно', 'partlycloudy': 'переменная облачность', 'cloudy': 'облачно',
+  'rainy': 'дождь', 'pouring': 'ливень', 'snowy': 'снег', 'snowy-rainy': 'мокрый снег', 'fog': 'туман',
+  'hail': 'град', 'lightning': 'гроза', 'lightning-rainy': 'гроза с дождём', 'windy': 'ветрено',
+  'windy-variant': 'ветрено', 'exceptional': 'непогода' } %}
+
+{% set ICONS = {'rainy': '🌧️', 'pouring': '🌧️', 'snowy': '❄️', 'snowy-rainy': '🌨️', 'sunny': '☀️',
+  'clear-night': '🌙', 'cloudy': '☁️', 'partlycloudy': '⛅', 'fog': '🌫️', 'lightning': '⛈️',
+  'lightning-rainy': '⛈️', 'hail': '🌨️'} %}
+
+{# Spoken names of integrations whose domain does not read well; others: "tesla_fleet" -> "Tesla Fleet" #}
+{% set INTEGRATIONS = {
+  'zha': 'Zigbee', 'mqtt': 'MQTT', 'matter': 'Matter', 'thread': 'Thread', 'otbr': 'Thread', 'bthome': 'BTHome',
+  'esphome': 'ESPHome', 'wled': 'WLED', 'met': 'Met.no', 'cloud': 'Nabu Casa', 'hassio': 'Supervisor',
+  'nut': 'UPS', 'synology_dsm': 'Synology', 'yandex_station': 'Яндекс Станция', 'yandex_smart_home': 'Алиса',
+  'google_sheets': 'Google Sheets', 'tesla_fleet': 'Tesla', 'smartthings': 'SmartThings', 'bambu_lab': 'Bambu Lab',
+  'samsungtv': 'Samsung TV', 'onvif': 'ONVIF', 'homekit_controller': 'HomeKit', 'ble_monitor': 'BLE Monitor' } %}
+
+{# Conditions with precipitation, for the "rain from .. to .." window #}
+{% set WET = ['rainy', 'pouring', 'snowy', 'snowy-rainy', 'lightning-rainy', 'hail'] %}
+
+{# ---------------------------------------------------------------------------------------------------- #}
+{% macro collect(daily, hourly) -%}
+{%- set started = states('sensor.night_mode_started') | as_datetime(default=none) -%}
+{%- set recent = started is not none and now() - started < timedelta(hours=16) -%}
+{%- set since = started if recent else now() - timedelta(hours=10) -%}
+{%- set night = states.input_boolean.home_night_mode -%}
+{%- set until = night.last_changed if night.state == 'off' and night.last_changed > since else now() -%}
+
+{#- weather: today's daily forecast + the precipitation window from the hourly one (until 22:00) -#}
+{%- set ns = namespace(weather=none, wet=[], mm=0) -%}
+{%- set now_t = state_attr('weather.home_assistant_blue', 'temperature') -%}
+{%- set today = (daily or []) | selectattr('datetime', 'search', now().date() | string) | list -%}
+{%- set today = today[0] if today else ((daily or [none])[0]) -%}
+{%- if now_t is number -%}
+  {%- for h in hourly or [] -%}
+    {%- set t = h.datetime | as_datetime | as_local -%}
+    {%- if t.date() == now().date() and t.hour < 22 and h.condition in WET and h.precipitation | default(0) | float(0) >= 0.1 -%}
+      {%- set ns.wet = ns.wet + [t.hour] -%}
+      {%- set ns.mm = ns.mm + h.precipitation | float(0) -%}
+    {%- endif -%}
+  {%- endfor -%}
+  {%- set ns.weather = {
+    'now': now_t | round(0) | int,
+    'hi': today.temperature | round(0) | int if today else none,
+    'cond': today.condition if today else states('weather.home_assistant_blue'),
+    'mm': ns.mm | round(1) if ns.wet else ((today.precipitation | default(0) | float(0)) | round(1) if today else 0),
+    'wind': ((today.wind_speed | default(0) | float(0)) / 3.6) | round(0) | int if today else 0,
+    'wet_from': ns.wet | min if ns.wet else none,
+    'wet_to': (ns.wet | max) + 1 if ns.wet else none } -%}
+{%- endif -%}
+
+{#- devices: fully offline now, split by the snapshot taken when the night mode started -#}
+{%- set offline = offline_devices() | from_json -%}
+{%- set before = state_attr('sensor.night_mode_started', 'offline_devices') if recent else offline -%}
+{%- set before = before if before is list else offline -%}
+{%- set dev = namespace(new=[], old=[], back=0) -%}
+{%- for d in offline -%}
+  {%- set item = {'name': device_attr(d, 'name_by_user') or device_attr(d, 'name'), 'area': area_name(d)} -%}
+  {%- if d in before -%}{%- set dev.old = dev.old + [item.name] -%}{%- else -%}{%- set dev.new = dev.new + [item] -%}{%- endif -%}
+{%- endfor -%}
+{%- set dev.back = before | reject('in', offline) | list | count -%}
+
+{#- integrations that failed to set up (expired token, cloud service down, ...) -#}
+{%- set failed = namespace(items=[]) -%}
+{%- for e in states | map(attribute='entity_id') | map('config_entry_id') | reject('none') | unique -%}
+  {%- set st = config_entry_attr(e, 'state') | string | lower | replace('configentrystate.', '') -%}
+  {%- if st in ['setup_error', 'setup_retry', 'migration_error', 'failed_unload'] and config_entry_attr(e, 'disabled_by') is none -%}
+    {%- set domain = config_entry_attr(e, 'domain') -%}
+    {%- set failed.items = failed.items + [{'name': INTEGRATIONS.get(domain, domain | replace('_', ' ') | title),
+                                           'title': config_entry_attr(e, 'title'), 'state': st}] -%}
+  {%- endif -%}
+{%- endfor -%}
+
+{#- backup: overdue, or the last automatic backup failed during the night -#}
+{%- set bk = states.event.backup_automatic_backup -%}
+{%- set bk_failed = bk is not none and bk.attributes.event_type == 'failed' and (bk.state | as_datetime(default=since)) > since -%}
+
+{#- Core restarted during the night; the front door was opened during the night -#}
+{%- set boot = states('sensor.uptime') | as_datetime(default=none) -%}
+{%- set door = states.binary_sensor.hall_door_contact -%}
+
+{{- {
+  'hour': now().hour,
+  'weather': ns.weather,
+  'alerts': states.alert | selectattr('state', 'eq', 'on') | map(attribute='entity_id')
+              | reject('eq', 'alert.backup_overdue') | list,
+  'new_offline': dev.new,
+  'old_offline': dev.old | sort,
+  'back_online': dev.back,
+  'failed': failed.items,
+  'batteries': expand('group.low_battery_devices') | map(attribute='name') | list,
+  'backup_overdue': is_state('binary_sensor.backup_overdue', 'on'),
+  'backup_failed': bk_failed,
+  'restart': (boot | as_local).strftime('%H:%M') if boot is not none and since < boot < until else none,
+  'door': (door.last_changed | as_local).strftime('%H:%M')
+            if door is not none and since < door.last_changed < until else none,
+  'updates': states.update | selectattr('state', 'eq', 'on') | list | count,
+  'disk': states('sensor.disk_use_percent') | float(0) | round(0) | int
+            if states('sensor.disk_use_percent') | float(0) >= 85 else none
+} | to_json -}}
+{%- endmacro %}
+
+{# ---------------------------------------------------------------------------------------------------- #}
+{% macro render(f) -%}
+{%- set say = namespace(first=[], weather='', issues=[]) -%}
+{%- set text = namespace(lines=[]) -%}
+{%- set hm = '%-H:%M' -%}
+
+{#- 1. Safety first: active alerts open the report -#}
+{%- set alert_words = namespace(items=[]) -%}
+{%- for a in f.alerts -%}{%- set alert_words.items = alert_words.items + [ALERTS.get(a, a.split('.')[1] | replace('_', ' '))] -%}{%- endfor -%}
+{%- if alert_words.items -%}
+  {%- set say.first = ['Внимание: ' ~ alert_words.items | join(', ') ~ '!'] -%}
+  {%- set text.lines = text.lines + ['🚨 ' ~ (alert_words.items | join(', ') | capitalize)] -%}
+{%- endif -%}
+
+{#- 2. Weather -#}
+{%- set w = f.weather -%}
+{%- if w -%}
+  {%- set cond = CONDITIONS.get(w.cond, '') -%}
+  {%- set s = 'На улице ' ~ ('минус ' if w.now < 0 else '') ~ plural(w.now | abs, 'градус', 'градуса', 'градусов') -%}
+  {%- set t = num(w.now, 0) ~ ' °C' -%}
+  {%- if w.hi is not none and w.hi > w.now -%}
+    {%- set s = s ~ ', днём до ' ~ ('минус ' if w.hi < 0 else '') ~ (w.hi | abs) -%}
+    {%- set t = t ~ ', днём до ' ~ num(w.hi, 0) ~ ' °C' -%}
+  {%- endif -%}
+  {%- set windy = w.wind >= 10 -%}
+  {%- if w.wet_from is not none -%}
+    {#- precipitation today: when it falls and an umbrella hint, millimetres only on the phone -#}
+    {%- set what = 'снег' if w.cond == 'snowy' else ('мокрый снег' if w.cond == 'snowy-rainy' else 'дождь') -%}
+    {%- if w.wet_from <= f.hour + 1 and w.wet_to >= 21 -%}{%- set when = ' весь день' -%}
+    {%- elif w.wet_from <= f.hour + 1 -%}{%- set when = ' до ' ~ w.wet_to ~ ' часов' -%}
+    {%- else -%}{%- set when = ' с ' ~ w.wet_from ~ ' до ' ~ w.wet_to ~ ' часов' -%}{%- endif -%}
+    {#- rain or sleet around zero freezes on the roads -#}
+    {%- set ice = what != 'снег' and w.now <= 1 -%}
+    {%- set s = s ~ '. ' ~ (what | capitalize) ~ when ~ (' и сильный ветер' if windy else '')
+                ~ (', возьмите зонт' if what != 'снег' else '') ~ ('. Возможен гололёд' if ice else '') -%}
+    {%- set t = t ~ ' · ' ~ what ~ ' ' ~ w.wet_from ~ ':00–' ~ w.wet_to ~ ':00, ' ~ num(w.mm) ~ ' мм' -%}
+  {%- else -%}
+    {%- set s = s ~ ((', ' ~ cond) if cond else '') ~ (', сильный ветер' if windy else '') -%}
+    {%- set t = t ~ ((' · ' ~ cond) if cond else '') -%}
+  {%- endif -%}
+  {%- set t = t ~ (' · ветер до ' ~ w.wind ~ ' м/с' if windy else '') -%}
+  {%- set say.weather = s ~ '.' -%}
+  {%- set text.lines = text.lines + [ICONS.get(w.cond, '🌤️') ~ ' ' ~ t] -%}
+{%- else -%}
+  {%- set say.weather = 'Прогноз погоды получить не удалось.' -%}
+  {%- set text.lines = text.lines + ['🌤️ Прогноз погоды недоступен'] -%}
+{%- endif -%}
+
+{#- 3. What went wrong overnight, most important first -#}
+{%- if f.failed -%}
+  {%- set retry = f.failed | selectattr('state', 'eq', 'setup_retry') | map(attribute='name') | list -%}
+  {%- set broken = f.failed | rejectattr('state', 'eq', 'setup_retry') | map(attribute='name') | list -%}
+  {%- set names = f.failed | map(attribute='name') | unique | list -%}
+  {%- set say.issues = say.issues + [('не работает ' if names | count == 1 else 'не работают ') ~ names | join(' и ')] -%}
+  {%- for i in f.failed -%}
+    {%- set text.lines = text.lines + ['🔌 ' ~ i.name ~ ((' (' ~ i.title ~ ')') if i.title and i.title != i.name else '') ~ ': '
+        ~ ('сервис не отвечает, HA повторяет попытки' if i.state == 'setup_retry' else 'ошибка настройки, возможно истёк вход') ] -%}
+  {%- endfor -%}
+{%- endif -%}
+{%- if f.restart -%}
+  {%- set say.issues = say.issues + ['сервер перезапускался в ' ~ f.restart | regex_replace('^0', '')] -%}
+  {%- set text.lines = text.lines + ['🔄 Home Assistant перезапускался в ' ~ f.restart] -%}
+{%- endif -%}
+{%- if f.new_offline -%}
+  {%- set items = f.new_offline -%}
+  {%- if items | count <= 2 -%}
+    {%- set spoken = namespace(parts=[]) -%}
+    {%- for i in items -%}{%- set spoken.parts = spoken.parts + [i.name ~ ((' ' ~ room_in(i.area)) if i.area else '')] -%}{%- endfor -%}
+    {%- set say.issues = say.issues + [('пропало из сети устройство ' if items | count == 1 else 'пропали из сети ') ~ spoken.parts | join(' и ')] -%}
+  {%- else -%}
+    {#- many devices: the count, plus the room if most of them are in one -#}
+    {%- set areas = items | map(attribute='area') | reject('none') | list -%}
+    {%- set top = namespace(area=none, n=0) -%}
+    {%- for a in areas | unique -%}{%- if areas | select('eq', a) | list | count > top.n -%}{%- set top.area, top.n = a, areas | select('eq', a) | list | count -%}{%- endif -%}{%- endfor -%}
+    {%- set say.issues = say.issues + ['пропало из сети ' ~ plural(items | count, 'устройство', 'устройства', 'устройств')
+        ~ ((', в основном ' ~ room_in(top.area)) if top.area and top.n * 2 > items | count else '')] -%}
+  {%- endif -%}
+  {%- set lines = namespace(parts=[]) -%}
+  {%- for i in items | sort(attribute='name') -%}{%- set lines.parts = lines.parts + [i.name ~ ((' (' ~ room_in(i.area) ~ ')') if i.area else '')] -%}{%- endfor -%}
+  {%- set shown = lines.parts[:10] -%}
+  {%- set text.lines = text.lines + ['📴 Пропали из сети' ~ ((' (' ~ items | count ~ ')') if items | count > 1 else '') ~ ': ' ~ shown | join(', ')
+      ~ ((' и ещё ' ~ (items | count - 10)) if items | count > 10 else '')] -%}
+{%- endif -%}
+{%- if f.backup_failed or f.backup_overdue -%}
+  {%- set say.issues = say.issues + ['бэкап не удался' if f.backup_failed else 'бэкап не делался больше недели'] -%}
+  {%- set text.lines = text.lines + ['💾 ' ~ ('Ночной бэкап не удался' if f.backup_failed else 'Бэкап просрочен (больше 8 дней)')] -%}
+{%- endif -%}
+{%- if f.door -%}
+  {%- set say.issues = say.issues + ['входная дверь открывалась в ' ~ f.door | regex_replace('^0', '')] -%}
+  {%- set text.lines = text.lines + ['🚪 Входная дверь открывалась ночью в ' ~ f.door] -%}
+{%- endif -%}
+{%- if f.disk -%}
+  {%- set say.issues = say.issues + ['диск сервера заполнен на ' ~ plural(f.disk, 'процент', 'процента', 'процентов')] -%}
+  {%- set text.lines = text.lines + ['💽 Диск сервера заполнен на ' ~ f.disk ~ ' %'] -%}
+{%- endif -%}
+{%- if f.batteries -%}
+  {#- not urgent: a short phrase, names only on the phone -#}
+  {%- set say.issues = say.issues + ['пора сменить батарейку в одном устройстве' if f.batteries | count == 1
+      else 'пора сменить батарейки в ' ~ plural(f.batteries | count, 'устройстве', 'устройствах', 'устройствах')] -%}
+  {%- set text.lines = text.lines + ['🔋 Сменить батарейки: ' ~ f.batteries | join(', ')] -%}
+{%- endif -%}
+
+{#- spoken summary: one issue as a sentence, 2-3 as a list, more: the first three and "подробности" -#}
+{%- set n = say.issues | count -%}
+{%- if n == 1 -%}
+  {%- set tail = (say.issues[0][:1] | upper) ~ say.issues[0][1:] ~ '.' -%}
+{%- elif n > 1 -%}
+  {%- set top3 = say.issues[:3] -%}
+  {#- items with their own commas ("6 устройств, в основном на кухне") are separated by semicolons -#}
+  {%- set sep = '; ' if top3 | select('search', ',') | list else ', ' -%}
+  {%- set listed = (top3[:-1] | join(sep)) ~ (';' if sep == '; ' else '') ~ ' и ' ~ top3[-1] -%}
+  {%- set tail = 'За ночь ' ~ plural(n, 'замечание', 'замечания', 'замечаний') ~ (', главное: ' if n > 3 else ': ') ~ listed ~ '.' -%}
+{%- elif not f.alerts -%}
+  {%- set tail = 'Ночью всё было спокойно.' -%}
+  {%- set text.lines = text.lines + ['✅ Ночью всё было спокойно'] -%}
+{%- else -%}
+  {%- set tail = '' -%}
+{%- endif -%}
+{%- set tail = tail ~ (' Подробности в телефоне.' if n or f.alerts else '') -%}
+
+{#- phone only: background information -#}
+{%- if f.back_online -%}
+  {%- set text.lines = text.lines + ['🔁 Вернулись в сеть: ' ~ plural(f.back_online, 'устройство', 'устройства', 'устройств')] -%}
+{%- endif -%}
+{%- if f.old_offline -%}
+  {%- set text.lines = text.lines + ['Недоступны ещё с вечера: ' ~ f.old_offline | join(', ')] -%}
+{%- endif -%}
+{%- if f.updates -%}
+  {%- set text.lines = text.lines + ['⬆️ Доступно обновлений: ' ~ f.updates] -%}
+{%- endif -%}
+
+{{- {'speech': (say.first + [say.weather, tail | trim]) | reject('eq', '') | join(' '),
+     'message': text.lines | join('\n')} | to_json -}}
+{%- endmacro %}
