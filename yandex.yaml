@@ -148,7 +148,6 @@ entity_config:
     name: Макет
   media_player.samsung_tv:
     name: Телевизор
-    room: Зал
   scene.evening:
     name: Вечернее освещение
     room: Зал

@@ -51,6 +51,7 @@ media_player:
   - platform: universal
     name: TV
     unique_id: samsung_tv_universal
+    device_class: tv
     children:
       - media_player.samsung_tv_raw
     state_template: >-
