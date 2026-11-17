@@ -137,7 +137,8 @@ script:
     alias: Home Night Mode
     description: >-
       Turns on the night mode and silent mode flags (their side effects run from the handler automations)
-      and turns off the 7-segment clock, the baby monitor plug, the wireless charger and the Interactive CZ Map;
+      and turns off the 7-segment clock, the baby monitor plug, the wireless charger and the Interactive CZ Map,
+      and dims the Nest thermostat screen to 1 % (manual brightness);
       Home Day Mode and the *_reenable automations bring the clock, charger and map back.
     sequence:
       # Ensure night and silent modes are enabled
@@ -159,12 +160,24 @@ script:
             - switch.bedroom_baby_monitor_plug
             - switch.wireless_charger
             - switch.interactive_cz_map_enable
+      # Nest screen as dark as possible at night: auto brightness off first, otherwise it overrides the manual value.
+      # continue_on_error: the thermostat may be offline (MQTT), the rest of the night mode must not depend on it
+      - action: switch.turn_off
+        continue_on_error: true
+        target:
+          entity_id: switch.nestlocal_screen_brightness_auto
+      - action: number.set_value
+        continue_on_error: true
+        target:
+          entity_id: number.nestlocal_screen_brightness
+        data:
+          value: 1
 
   home_day_mode:
     alias: Home Day Mode
     description: >-
-      Turns off night and silent mode, then re-enables the wireless charger if
-      anyone is home and the Interactive CZ Map if Sen is home during 06:00-21:00.
+      Turns off night and silent mode, returns the Nest thermostat screen to auto brightness, then re-enables
+      the wireless charger if anyone is home and the Interactive CZ Map if Sen is home during 06:00-21:00.
     sequence:
       # Ensure night and silent mode are disabled
       - action: input_boolean.turn_off
@@ -172,6 +185,11 @@ script:
           entity_id:
             - input_boolean.home_night_mode
             - input_boolean.silent_mode
+      # Nest screen back to automatic brightness (night mode set it to 1 % manually)
+      - action: switch.turn_on
+        continue_on_error: true
+        target:
+          entity_id: switch.nestlocal_screen_brightness_auto
       # Enable wireless charger if anyone is home
       - if:
           - condition: state
