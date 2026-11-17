@@ -4,6 +4,8 @@
 # Climate sensors are "Климат" devices assigned to rooms; values are rounded coarsely in value_template
 # (temperature 0.5 °C, humidity 5 %, CO2 100, PM2.5 10; TVOC not exposed, it changes all the time) so Yandex gets a report only on a real change:
 # BTHome sensors update every ~18 s and 0.1 °C rounding flapped at the boundary (HTTP 429, 16.11.2026).
+# Naming rules for device and room names (otherwise Alice marks the device as needing setup):
+# Cyrillic letters and digits only, at most 25 characters, a space between words and numbers ("3 д принтер", not "3д").
 filter:
   include_entities:
     # Climate sensors (temperature/humidity per room, see entity_config)
@@ -51,7 +53,6 @@ filter:
     - scene.movies
     - sensor.pool_monitor_bottom_water_temperature
     - sensor.pool_monitor_upper_water_temperature
-    - switch.hollandis_charge
     - switch.interactive_cz_map_enable
     - switch.loco_sbb_cargo_re_482_power_sound
     - switch.loco_vossloh_1701_engine_sound
@@ -62,22 +63,32 @@ filter:
     - vacuum.johnny
 
 entity_config:
+  # Entities without an HA area get a room here, otherwise Alice asks to finish their setup.
+  # Room names follow the "Алиса: ..." area aliases (Зал, Кухня, Спальня, Коридор, Ванная, Туалет, Двор).
   input_button.thermostat_10_minutes_heating:
     name: Подогрев
+    room: Коридор
     type: switch
+  # "Алиса, включи Теслу" = climate on (preconditioning); own room so "выключи всё во дворе" never touches it
   climate.hollandis_climate:
     name: Тесла
+    room: Машина
+  # "Алиса, включи 3д принтер" ("3D" is not allowed, see the naming rules at the top)
   input_boolean.3d_printer_power:
-    name: 3D принтер
+    name: 3 д принтер
+    room: Коридор
     type: switch
   input_boolean.heating_allowed:
     name: Отопление
+    room: Коридор
     type: switch
   input_boolean.home_night_mode:
     name: Ночной режим
+    room: Спальня
     type: switch
   input_boolean.silent_mode:
     name: Тихий режим
+    room: Спальня
     type: switch
   light.hall_lights:
     name: Люстра
@@ -137,13 +148,12 @@ entity_config:
     name: Макет
   media_player.samsung_tv:
     name: Телевизор
+    room: Зал
   scene.evening:
-    name: Вечернее Освещение
+    name: Вечернее освещение
+    room: Зал
   scene.movies:
     name: Сцена Кино
-  switch.hollandis_charge:
-    name: Зарядка Теслы
-    type: socket
   switch.interactive_cz_map_enable:
     name: Карта
     type: switch
@@ -205,7 +215,7 @@ entity_config:
         unit_of_measurement: "%"
   sensor.ble_temperature_atc_living_room:
     name: Климат
-    room: Гостиная
+    room: Зал
     type: sensor.climate
     properties:
       - type: temperature
