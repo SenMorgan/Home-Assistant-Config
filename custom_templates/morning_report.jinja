@@ -249,7 +249,7 @@
   {#- items with their own commas ("6 устройств, в основном на кухне") are separated by semicolons -#}
   {%- set sep = '; ' if top3 | select('search', ',| и ') | list else ', ' -%}
   {%- set listed = (top3[:-1] | join(sep)) ~ (';' if sep == '; ' else '') ~ ' и ' ~ top3[-1] -%}
-  {%- set tail = 'За ночь ' ~ plural(n, 'замечание', 'замечания', 'замечаний') ~ (', главное: ' if n > 3 else ': ') ~ listed ~ '.' -%}
+  {%- set tail = 'За ночь ' ~ plural(n, 'событие', 'события', 'событий') ~ (', главное: ' if n > 3 else ': ') ~ listed ~ '.' -%}
 {%- elif not f.alerts -%}
   {%- set tail = 'Ночью всё было спокойно.' -%}
   {%- set text.lines = text.lines + ['✅ Ночью всё было спокойно'] -%}
