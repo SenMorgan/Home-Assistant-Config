@@ -67,29 +67,25 @@ entity_config:
   # Room names follow the "Алиса: ..." area aliases (Зал, Кухня, Спальня, Коридор, Ванная, Туалет, Двор).
   input_button.thermostat_10_minutes_heating:
     name: Подогрев
-    room: Кухня
-    type: switch
+    type: sensor.button
   # "Алиса, включи Теслу" = climate on (preconditioning); own room so "выключи всё во дворе" never touches it
   climate.hollandis_climate:
     name: Тесла
     room: Машина
+    slow: true
   # "Алиса, включи 3д принтер" ("3D" is not allowed, see the naming rules at the top)
   input_boolean.3d_printer_power:
     name: 3 д принтер
-    room: Коридор
-    type: switch
+    type: socket
   input_boolean.heating_allowed:
     name: Отопление
-    room: Кухня
-    type: switch
+    type: other
   input_boolean.home_night_mode:
     name: Ночной режим
-    room: Спальня
-    type: switch
+    type: other
   input_boolean.silent_mode:
     name: Тихий режим
-    room: Спальня
-    type: switch
+    type: other
   light.hall_lights:
     name: Люстра
     type: light.ceiling
@@ -98,6 +94,7 @@ entity_config:
     type: light.strip
   light.floor_lamp:
     name: Торшер
+    type: light.torchere
   light.mi_desk_lamp:
     name: Светильник
     type: light.lamp
@@ -111,8 +108,7 @@ entity_config:
     name: Лампочки
   switch.wireless_charger:
     name: Беспроводная зарядка
-    type: switch
-    slow: true
+    type: switch.relay
   light.kitchen_spotlights:
     name: Подсветка
   light.kitchen_led_strip:
@@ -122,17 +118,17 @@ entity_config:
     name: Ночник
   light.christmas_tree:
     name: Ёлка
+    type: light.garland
   light.dollhouse_lights:
     name: Кукольный домик
-    type: light.strip
   light.cocktail_bar_neon_sign:
     name: Неоновая вывеска
+    type: light.strip
   light.living_room_ceiling_light:
     name: Люстра
     type: light.ceiling
   light.banana_light:
     name: Банан
-    slow: true
   light.bedroom_ceiling_light:
     name: Люстра
     type: light.ceiling
@@ -144,6 +140,7 @@ entity_config:
     type: light.strip
   light.kitchen_christmas_lights:
     name: Гирлянда
+    type: light.garland
   media_player.model_railway:
     name: Макет
   media_player.samsung_tv:
@@ -164,13 +161,13 @@ entity_config:
     type: socket
   button.ex_commandstation_emergency_stop:
     name: Экстренная остановка
-    type: switch
+    type: sensor.button
   button.ex_commandstation_reboot:
     name: Перезагрузка макета
-    type: switch
+    type: sensor.button
   button.ex_commandstation_route_300:
     name: Маршрут 300
-    type: switch
+    type: sensor.button
   switch.loco_vossloh_1701_engine_sound:
     name: Двигатель тепловоза
     type: switch
@@ -198,12 +195,12 @@ entity_config:
     name: Штора
   fan.wc_and_bathroom:
     name: Вентиляция
+    type: ventilation
   vacuum.johnny:
     name: Джонни
   # Climate sensors: one "Климат" device per room (Alice: "какая влажность в спальне?")
   sensor.ble_temperature_atc_bedroom:
     name: Климат
-    room: Спальня
     type: sensor.climate
     properties:
       - type: temperature
@@ -214,7 +211,6 @@ entity_config:
         unit_of_measurement: "%"
   sensor.ble_temperature_atc_living_room:
     name: Климат
-    room: Зал
     type: sensor.climate
     properties:
       - type: temperature
@@ -225,7 +221,6 @@ entity_config:
         unit_of_measurement: "%"
   sensor.ble_temperature_atc_kitchen:
     name: Климат
-    room: Кухня
     type: sensor.climate
     properties:
       - type: temperature
@@ -245,7 +240,6 @@ entity_config:
         unit_of_measurement: "μg/m³"
   sensor.ble_temperature_atc_hall:
     name: Климат
-    room: Коридор
     type: sensor.climate
     properties:
       - type: temperature
@@ -256,7 +250,6 @@ entity_config:
         unit_of_measurement: "%"
   sensor.ble_temperature_atc_bathroom:
     name: Климат
-    room: Ванная
     type: sensor.climate
     properties:
       - type: temperature
@@ -267,7 +260,6 @@ entity_config:
         unit_of_measurement: "%"
   sensor.ble_temperature_atc_toilet:
     name: Климат
-    room: Туалет
     type: sensor.climate
     properties:
       - type: temperature
@@ -278,7 +270,6 @@ entity_config:
         unit_of_measurement: "%"
   sensor.pool_monitor_air_temperature:
     name: Климат
-    room: Двор
     type: sensor.climate
     properties:
       - type: temperature
