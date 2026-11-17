@@ -468,8 +468,12 @@ automation:
             {{ forecast | selectattr('condition', 'search', '(?i)snow|flurr(y|ies)')
             | list }}
           rainy_hours: "{{ forecast | selectattr('condition', 'search', '(?i)rain') | list }}"
-          precip_prob_snowy_hours: "{{ snowy_hours | map(attribute='precipitation_probability') | list }}"
-          precip_prob_rainy_hours: "{{ rainy_hours | map(attribute='precipitation_probability') | list }}"
+          # Met.no gives no precipitation_probability (an undefined value printed as "U %"), so the message shows
+          # when the precipitation starts and how much falls in total (mm)
+          rain_mm: "{{ rainy_hours | map(attribute='precipitation', default=0) | map('float', 0) | sum | round(1) }}"
+          snow_mm: "{{ snowy_hours | map(attribute='precipitation', default=0) | map('float', 0) | sum | round(1) }}"
+          rain_start: "{{ (rainy_hours[0].datetime | as_datetime | as_local).strftime('%H:%M') if rainy_hours else '' }}"
+          snow_start: "{{ (snowy_hours[0].datetime | as_datetime | as_local).strftime('%H:%M') if snowy_hours else '' }}"
           # An alert fires only if the condition lasts longer than num_hours_threshold hours
           cold_alert: "{{ enable_cold and cold_hours | count > num_hours_threshold }}"
           hot_alert: "{{ enable_hot and hot_hours | count > num_hours_threshold }}"
@@ -486,8 +490,8 @@ automation:
             {%- set lines = [] %}
             {%- if cold_alert %}{% set lines = lines + ['🥶 Мороз ' ~ plural(cold_hours | count, 'час', 'часа', 'часов') ~ ', до ' ~ num(min_temp) ~ ' °C в ' ~ min_temp_hour.strftime('%H:%M')] %}{% endif %}
             {%- if hot_alert %}{% set lines = lines + ['🥵 Жара ' ~ plural(hot_hours | count, 'час', 'часа', 'часов') ~ ', до ' ~ num(max_temp) ~ ' °C в ' ~ max_temp_hour.strftime('%H:%M')] %}{% endif %}
-            {%- if rain_alert %}{% set lines = lines + ['🌧️ Дождь ' ~ plural(rainy_hours | count, 'час', 'часа', 'часов') ~ ', вероятность до ' ~ ((precip_prob_rainy_hours | reject('none') | list) or [0]) | max ~ ' %'] %}{% endif %}
-            {%- if snow_alert %}{% set lines = lines + ['❄️ Снег ' ~ plural(snowy_hours | count, 'час', 'часа', 'часов') ~ ', вероятность до ' ~ ((precip_prob_snowy_hours | reject('none') | list) or [0]) | max ~ ' %'] %}{% endif %}
+            {%- if rain_alert %}{% set lines = lines + ['🌧️ Дождь ' ~ plural(rainy_hours | count, 'час', 'часа', 'часов') ~ ' с ' ~ rain_start ~ ', всего ' ~ num(rain_mm) ~ ' мм'] %}{% endif %}
+            {%- if snow_alert %}{% set lines = lines + ['❄️ Снег ' ~ plural(snowy_hours | count, 'час', 'часа', 'часов') ~ ' с ' ~ snow_start ~ ', всего ' ~ num(snow_mm) ~ ' мм'] %}{% endif %}
             {{ lines | join(' · ') }}
           notification_title: >-
             🌦️ Прогноз на {{ num_hours_lookahead }} ч: {{ ['мороз' if cold_alert, 'жара' if hot_alert, 'дождь' if
