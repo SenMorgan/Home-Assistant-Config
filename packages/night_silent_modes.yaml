@@ -154,6 +154,8 @@ script:
                           title: 🌅 Доброе утро
                           message: "{{ report.message }}"
                           tag: MORNING_REPORT
+                          # Also in HA notifications (same tag = id, so each morning replaces the previous one)
+                          persistent: true
             # Silent mode also ends during the day: just confirm ("good morning" only before noon)
             default:
               - action: media_player.play_media

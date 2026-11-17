@@ -90,6 +90,12 @@
   {%- endif -%}
 {%- endfor -%}
 
+{#- Repairs raised during the night (recorded by sensor.repairs_recent_issues) -#}
+{%- set rp = namespace(domains=[]) -%}
+{%- for i in state_attr('sensor.repairs_recent_issues', 'issues') or [] -%}
+  {%- if (i.time | as_datetime(default=since)) > since -%}{%- set rp.domains = rp.domains + [i.domain] -%}{%- endif -%}
+{%- endfor -%}
+
 {#- backup: overdue, or the last automatic backup failed during the night -#}
 {%- set bk = states.event.backup_automatic_backup -%}
 {%- set bk_failed = bk is not none and bk.attributes.event_type == 'failed' and (bk.state | as_datetime(default=since)) > since -%}
@@ -107,6 +113,7 @@
   'old_offline': dev.old | sort,
   'back_online': dev.back,
   'failed': failed.items,
+  'repairs': rp.domains,
   'batteries': expand('group.low_battery_devices') | map(attribute='name') | list,
   'backup_overdue': is_state('binary_sensor.backup_overdue', 'on'),
   'backup_failed': bk_failed,
@@ -177,6 +184,13 @@
     {%- set text.lines = text.lines + ['🔌 ' ~ i.name ~ ((' (' ~ i.title ~ ')') if i.title and i.title != i.name else '') ~ ': '
         ~ ('сервис не отвечает, HA повторяет попытки' if i.state == 'setup_retry' else 'ошибка настройки, возможно истёк вход') ] -%}
   {%- endfor -%}
+{%- endif -%}
+{%- if f.repairs -%}
+  {#- new items in Settings -> Repairs (expired logins, deprecated settings, ...), by integration -#}
+  {%- set rn = namespace(names=[]) -%}
+  {%- for d in f.repairs -%}{%- set rn.names = rn.names + [INTEGRATIONS.get(d, d | replace('_', ' ') | title)] -%}{%- endfor -%}
+  {%- set say.issues = say.issues + ['в разделе Ремонт ' ~ plural(f.repairs | count, 'новый пункт', 'новых пункта', 'новых пунктов')] -%}
+  {%- set text.lines = text.lines + ['🛠️ Новое в «Ремонте»: ' ~ rn.names | unique | join(', ')] -%}
 {%- endif -%}
 {%- if f.restart -%}
   {%- set say.issues = say.issues + ['сервер перезапускался в ' ~ f.restart | regex_replace('^0', '')] -%}

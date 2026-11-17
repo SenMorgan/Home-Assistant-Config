@@ -37,6 +37,35 @@ template:
             {% from 'devices.jinja' import offline_devices %}
             {{ offline_devices() | from_json }}
 
+  # Repairs (Settings -> Repairs) raised in the last 24 h: templates cannot read the issue registry, so the
+  # registry events are recorded here. Issues created at startup from storage fire no event and are not listed.
+  - triggers:
+      - trigger: event
+        event_type: repairs_issue_registry_updated
+    sensor:
+      - name: Repairs Recent Issues
+        unique_id: repairs_recent_issues
+        icon: mdi:wrench-clock
+        # State: time of the last repairs event; the list is in the "issues" attribute
+        device_class: timestamp
+        state: "{{ now().isoformat() }}"
+        attributes:
+          issues: >-
+            {% set old = (this.attributes.get('issues', []) if this is defined else []) | list %}
+            {% set key = trigger.event.data.domain ~ '.' ~ trigger.event.data.issue_id %}
+            {% set ns = namespace(keep=[]) %}
+            {% for i in old if i.key != key and (i.time | as_datetime(default=now())) > now() - timedelta(hours=24) %}
+              {% set ns.keep = ns.keep + [i] %}
+            {% endfor %}
+            {% set keep = ns.keep %}
+            {% if trigger.event.data.action == 'create' %}
+              {{ keep + [{'key': key, 'domain': trigger.event.data.domain, 'issue_id': trigger.event.data.issue_id,
+                          'time': now().isoformat()}] }}
+            {% else %}
+              {# "update" keeps the original time, "remove" (fixed or dismissed) drops the issue #}
+              {{ keep + (old | selectattr('key', 'eq', key) | list if trigger.event.data.action == 'update' else []) }}
+            {% endif %}
+
 ###############################################
 ## SCRIPTS
 ###############################################
