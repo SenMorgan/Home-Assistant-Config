@@ -38,12 +38,14 @@
 {% set WET = ['rainy', 'pouring', 'snowy', 'snowy-rainy', 'lightning-rainy', 'hail'] %}
 
 {# ---------------------------------------------------------------------------------------------------- #}
-{% macro collect(daily, hourly) -%}
-{%- set started = states('sensor.night_mode_started') | as_datetime(default=none) -%}
+{# since/snapshot override the night start and its offline-device snapshot (tests only) #}
+{% macro collect(daily, hourly, since=none, snapshot=none) -%}
+{%- set started = (since | as_datetime(default=none) if since else none) or (states('sensor.night_mode_started') | as_datetime(default=none)) -%}
 {%- set recent = started is not none and now() - started < timedelta(hours=16) -%}
 {%- set since = started if recent else now() - timedelta(hours=10) -%}
-{%- set night = states.input_boolean.home_night_mode -%}
-{%- set until = night.last_changed if night.state == 'off' and night.last_changed > since else now() -%}
+{#- the report runs right when the night mode ends, so the night lasts until now (the boolean's last_changed
+    is not usable: a Core restart resets it) -#}
+{%- set until = now() -%}
 
 {#- weather: today's daily forecast + the precipitation window from the hourly one (until 22:00) -#}
 {%- set ns = namespace(weather=none, wet=[], mm=0) -%}
@@ -70,7 +72,7 @@
 
 {#- devices: fully offline now, split by the snapshot taken when the night mode started -#}
 {%- set offline = offline_devices() | from_json -%}
-{%- set before = state_attr('sensor.night_mode_started', 'offline_devices') if recent else offline -%}
+{%- set before = snapshot if snapshot is not none else (state_attr('sensor.night_mode_started', 'offline_devices') if recent else offline) -%}
 {%- set before = before if before is list else offline -%}
 {%- set dev = namespace(new=[], old=[], back=0) -%}
 {%- for d in offline -%}
@@ -103,6 +105,10 @@
 {#- Core restarted during the night; the front door was opened during the night -#}
 {%- set boot = states('sensor.uptime') | as_datetime(default=none) -%}
 {%- set door = states.binary_sensor.hall_door_contact -%}
+{#- a Core restart resets last_changed of every entity: a door "change" right after the boot is not an opening -#}
+{%- set door_at = (door.last_changed | as_local).strftime('%H:%M')
+      if door is not none and since < door.last_changed < until
+         and (boot is none or (door.last_changed - boot) | abs > timedelta(minutes=3)) else none -%}
 
 {{- {
   'hour': now().hour,
@@ -118,8 +124,7 @@
   'backup_overdue': is_state('binary_sensor.backup_overdue', 'on'),
   'backup_failed': bk_failed,
   'restart': (boot | as_local).strftime('%H:%M') if boot is not none and since < boot < until else none,
-  'door': (door.last_changed | as_local).strftime('%H:%M')
-            if door is not none and since < door.last_changed < until else none,
+  'door': door_at,
   'updates': states.update | selectattr('state', 'eq', 'on') | list | count,
   'disk': states('sensor.disk_use_percent') | float(0) | round(0) | int
             if states('sensor.disk_use_percent') | float(0) >= 85 else none
@@ -242,7 +247,7 @@
 {%- elif n > 1 -%}
   {%- set top3 = say.issues[:3] -%}
   {#- items with their own commas ("6 устройств, в основном на кухне") are separated by semicolons -#}
-  {%- set sep = '; ' if top3 | select('search', ',') | list else ', ' -%}
+  {%- set sep = '; ' if top3 | select('search', ',| и ') | list else ', ' -%}
   {%- set listed = (top3[:-1] | join(sep)) ~ (';' if sep == '; ' else '') ~ ' и ' ~ top3[-1] -%}
   {%- set tail = 'За ночь ' ~ plural(n, 'замечание', 'замечания', 'замечаний') ~ (', главное: ' if n > 3 else ': ') ~ listed ~ '.' -%}
 {%- elif not f.alerts -%}
