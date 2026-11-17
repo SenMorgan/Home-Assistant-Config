@@ -83,7 +83,8 @@ script:
     description: >-
       Leaves silent mode: powers off the baby monitor, restores Yandex and model
       railway volume, sets the clock back to Orange Candle, releases the bedroom
-      safety switch and confirms by voice (good morning in the morning; mentions an open living room window).
+      safety switch and confirms by voice (mentions an open living room window). In the morning right after
+      the night mode it says good morning with the Morning Report (weather, overnight problems; full text to the phone).
     sequence:
       # Power off Baby Monitor Plug
       - action: switch.turn_off
@@ -117,21 +118,51 @@ script:
             - input_boolean.silent_mode
           # Allow control of bedroom lights and cover
             - input_boolean.bedroom_lights_and_cover_safety_switch
-      # Voice confirmation (not in night mode); "good morning" only in the morning, since silent mode
-      # is also used during the day; the window is mentioned only when it is really open
+      # Voice confirmation (not in night mode); the window is mentioned only when it is really open
       - if:
           - condition: state
             entity_id: input_boolean.home_night_mode
             state: "off"
         then:
-          - action: media_player.play_media
-            target:
-              entity_id: media_player.yandex_station_midi
-            data:
-              media_content_type: text
-              media_content_id: >-
-                {{ 'Доброе утро! ' if 5 <= now().hour < 12 }}Тихий режим выключен.
-                {{- ' Окно в гостиной открыто.' if is_state('binary_sensor.living_room_window_contact', 'on') }}
+          - variables:
+              window_note: "{{ ' Окно в гостиной открыто.' if is_state('binary_sensor.living_room_window_contact', 'on') else '' }}"
+          - choose:
+              # Morning after the night mode (it ended in the last 15 min): good morning + morning report
+              # (weather, overnight problems); the full report also goes to the phone as a silent push
+              - conditions:
+                  - "{{ 5 <= now().hour < 12 }}"
+                  - "{{ now() - states.input_boolean.home_night_mode.last_changed < timedelta(minutes=15) }}"
+                sequence:
+                  - action: script.morning_report
+                    # A broken report must not cost the good morning
+                    continue_on_error: true
+                    response_variable: report
+                  - action: media_player.play_media
+                    target:
+                      entity_id: media_player.yandex_station_midi
+                    data:
+                      media_content_type: text
+                      media_content_id: >-
+                        Доброе утро! Тихий режим выключен.{{ window_note }}
+                        {{- ' ' ~ report.speech if report is defined and report.speech is defined else '' }}
+                  - if:
+                      - "{{ report is defined and report.message is defined }}"
+                    then:
+                      - action: script.notify
+                        data:
+                          level: status
+                          title: 🌅 Доброе утро
+                          message: "{{ report.message }}"
+                          tag: MORNING_REPORT
+            # Silent mode also ends during the day: just confirm ("good morning" only before noon)
+            default:
+              - action: media_player.play_media
+                target:
+                  entity_id: media_player.yandex_station_midi
+                data:
+                  media_content_type: text
+                  media_content_id: >-
+                    {{ 'Доброе утро! ' if 5 <= now().hour < 12 }}Тихий режим выключен.{{ window_note }}
 
   home_night_mode:
     alias: Home Night Mode

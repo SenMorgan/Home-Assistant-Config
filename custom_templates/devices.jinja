@@ -1,0 +1,17 @@
+{# Device helpers (used via: from 'devices.jinja' import ...) #}
+
+{# Devices that are fully offline: every entity is unavailable/unknown (one unavailable entity of a car or a
+   NAS is not an offline device). Devices labelled "Offline OK" are skipped. Returns a JSON list of device IDs:
+   offline_devices() | from_json #}
+{% macro offline_devices() -%}
+{%- set ignored = label_devices('offline_ok') -%}
+{%- set ns = namespace(ids=[]) -%}
+{%- for d in states | selectattr('state', 'eq', 'unavailable') | map(attribute='entity_id')
+     | map('device_id') | reject('none') | unique | reject('in', ignored) -%}
+  {%- set ents = device_entities(d) | map('states') | list -%}
+  {%- if ents and ents | reject('in', ['unavailable', 'unknown']) | list | count == 0 -%}
+    {%- set ns.ids = ns.ids + [d] -%}
+  {%- endif -%}
+{%- endfor -%}
+{{ ns.ids | to_json }}
+{%- endmacro %}
