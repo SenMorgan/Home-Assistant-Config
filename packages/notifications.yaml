@@ -149,7 +149,8 @@ script:
         then:
           - action: persistent_notification.create
             data: >-
-              {% set d = dict(message=message | default(''), notification_id=notification_id | default(tag | default(none))) %}
+              {# Markdown: a single newline only breaks the line with two trailing spaces #}
+              {% set d = dict(message=(message | default('')) | replace('\n', '  \n'), notification_id=notification_id | default(tag | default(none))) %}
               {% if title is defined and title %}{% set d = dict(d, title=title) %}{% endif %}
               {{ d }}
       - if:
@@ -492,7 +493,7 @@ automation:
             {%- if hot_alert %}{% set lines = lines + ['🥵 Жара ' ~ plural(hot_hours | count, 'час', 'часа', 'часов') ~ ', до ' ~ num(max_temp) ~ ' °C в ' ~ max_temp_hour.strftime('%H:%M')] %}{% endif %}
             {%- if rain_alert %}{% set lines = lines + ['🌧️ Дождь ' ~ plural(rainy_hours | count, 'час', 'часа', 'часов') ~ ' с ' ~ rain_start ~ ', всего ' ~ num(rain_mm) ~ ' мм'] %}{% endif %}
             {%- if snow_alert %}{% set lines = lines + ['❄️ Снег ' ~ plural(snowy_hours | count, 'час', 'часа', 'часов') ~ ' с ' ~ snow_start ~ ', всего ' ~ num(snow_mm) ~ ' мм'] %}{% endif %}
-            {{ lines | join(' · ') }}
+            {{ lines | join('\n') }}
           notification_title: >-
             🌦️ Прогноз на {{ num_hours_lookahead }} ч: {{ ['мороз' if cold_alert, 'жара' if hot_alert, 'дождь' if
             rain_alert, 'снег' if snow_alert] | select() | join(', ') }}

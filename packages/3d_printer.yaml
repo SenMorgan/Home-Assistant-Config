@@ -126,10 +126,12 @@ automation:
         data:
           level: info
           title: 🖨️ Печать завершена
-          message: >-
-            {% from 'ru.jinja' import num %}
-            {{ task_name }} · ⏱️ {{ spent_hours }} ч {{ spent_minutes }} мин ·
-            ⚖️ Вес: {{ num(print_weight, 1) }} г ·
+          # One fact per line: name, time, weight, filament
+          message: |-
+            {%- from 'ru.jinja' import num %}
+            {{ task_name }}
+            ⏱️ {{ spent_hours }} ч {{ spent_minutes }} мин
+            ⚖️ Вес: {{ num(print_weight, 1) }} г
             📏 Длина прутка: {{ num(print_length, 1) }} м
           url: /lovelace/3d-printer
           tts: >-
@@ -241,8 +243,8 @@ automation:
             {% if status in ['pause', 'failed'] %}
               {{ states('sensor.3d_printer_bambu_lab_a1_task_name') }} ·
               {{ states('sensor.3d_printer_bambu_lab_a1_print_progress') | int(0) }} %
-              {%- if errors | count > 0 %} · {{ errors | join('; ') }}{% endif %}
-            {%- else %}{{ errors | join('; ') if errors | count > 0 else 'неизвестная ошибка' }}{% endif %}
+              {%- if errors | count > 0 %}{{ '\n' ~ errors | join('\n') }}{% endif %}
+            {%- else %}{{ errors | join('\n') if errors | count > 0 else 'неизвестная ошибка' }}{% endif %}
           # Tap opens the Bambu wiki page for the HMS code (or the printer dashboard)
           url: "{{ wiki if wiki else '/lovelace/3d-printer' }}"
           tts: >-
