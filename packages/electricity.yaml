@@ -25,7 +25,8 @@ alert:
     # Limit must match binary_sensor.high_power_consumption below
     message: Лимит 6000 Вт · срочно уменьшите потребление электроэнергии
     data:
-      channel: alarm_stream
+      # No alarm melody; Alert to TTS Handler speaks the overload instead (user's choice 2026-11-18)
+      channel: Тревоги
       importance: high
       priority: high
       ttl: 0

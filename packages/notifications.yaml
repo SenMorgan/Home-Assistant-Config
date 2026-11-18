@@ -115,7 +115,9 @@ script:
             {% else %}{{ ['mobile_app_sen_s25'] }}{% endif %}
           # Android channels: the channel's sound/importance is fixed on first use, so names stay stable
           level_data: >-
-            {% if lvl == 'critical' %}{{ {'channel': 'alarm_stream', 'importance': 'high', 'priority': 'high', 'ttl': 0} }}
+            {# Critical: the "Тревоги" channel, no alarm melody (user's choice 2026-11-18); the spoken text is what
+               breaks through silent mode (alarm stream, max volume), so critical calls should pass a tts #}
+            {% if lvl == 'critical' %}{{ {'channel': 'Тревоги', 'importance': 'high', 'priority': 'high', 'ttl': 0} }}
             {% elif lvl == 'warning' %}{{ {'channel': 'Предупреждения', 'importance': 'high', 'priority': 'high', 'ttl': 0} }}
             {% elif lvl == 'status' %}{{ {'channel': 'Статус', 'importance': 'low', 'alert_once': true} }}
             {% else %}{{ {'channel': 'Дом', 'importance': 'default'} }}{% endif %}

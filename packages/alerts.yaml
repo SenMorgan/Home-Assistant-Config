@@ -100,7 +100,10 @@ alert:
     data:
       ttl: 0
       priority: high
-      channel: alarm_stream
+      # Voice only (user's choice 2026-11-18): "alarm_stream" played the phone's alarm melody on every
+      # reminder; the spoken warning (Alert to TTS Handler) still breaks through silent mode on the alarm stream
+      channel: Тревоги
+      importance: high
 
   water_leakage_kitchen:
     name: "Water Leakage in Kitchen"
@@ -121,7 +124,10 @@ alert:
     data:
       ttl: 0
       priority: high
-      channel: alarm_stream
+      # Voice only (user's choice 2026-11-18): "alarm_stream" played the phone's alarm melody on every
+      # reminder; the spoken warning (Alert to TTS Handler) still breaks through silent mode on the alarm stream
+      channel: Тревоги
+      importance: high
 
   carbon_monoxide_detected:
     name: "Carbon Monoxide Detected"
@@ -141,7 +147,10 @@ alert:
     data:
       ttl: 0
       priority: high
-      channel: alarm_stream
+      # Voice only (user's choice 2026-11-18): "alarm_stream" played the phone's alarm melody on every
+      # reminder; the spoken warning (Alert to TTS Handler) still breaks through silent mode on the alarm stream
+      channel: Тревоги
+      importance: high
 
   natural_gas_detected:
     name: "Natural Gas Detected"
@@ -161,7 +170,10 @@ alert:
     data:
       ttl: 0
       priority: high
-      channel: alarm_stream
+      # Voice only (user's choice 2026-11-18): "alarm_stream" played the phone's alarm melody on every
+      # reminder; the spoken warning (Alert to TTS Handler) still breaks through silent mode on the alarm stream
+      channel: Тревоги
+      importance: high
 
 
 ###############################################
@@ -173,7 +185,7 @@ automation:
     alias: Alert to TTS Handler
     description: >-
       Speaks a TTS announcement on Yandex Station Midi and on both phones (alarm stream, max volume)
-      when a leak or gas alert starts or is resolved. Critical, so it ignores night/silent mode.
+      when a leak, gas or power overload alert starts or is resolved. Critical, so it ignores night/silent mode.
     mode: queued
     max: 5
     variables:
@@ -191,6 +203,9 @@ automation:
         alert.natural_gas_detected:
           - "Внимание! Утечка газа на кухне! Перекройте газ и проветрите."
           - "Датчик газа на кухне больше не фиксирует утечку."
+        alert.high_power:
+          - "Внимание! Перегрузка электросети. Выключите мощные приборы."
+          - "Потребление электричества вернулось в норму."
     triggers:
       - trigger: state
         entity_id:
@@ -198,6 +213,7 @@ automation:
           - alert.water_leakage_kitchen
           - alert.carbon_monoxide_detected
           - alert.natural_gas_detected
+          - alert.high_power
     actions:
       - if:
             # Notify only if the alert is true or false, ignoring "acknowledge" state

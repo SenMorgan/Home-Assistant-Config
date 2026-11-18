@@ -56,7 +56,8 @@ alert:
       хватит ≈ {{ (states('sensor.ups_battery_runtime') | float(0) / 60) | round(0) | int }} мин
     data:
       tag: ups_power
-      channel: alarm_stream
+      # Repeats with fresh numbers: no alarm melody, the first notification already spoke (user's choice 2026-11-18)
+      channel: Тревоги
       importance: high
       priority: high
       ttl: 0
@@ -155,6 +156,7 @@ automation:
           message: >-
             Осталось ≈ {{ (states('sensor.ups_battery_runtime') | float(0) / 60) | round(0) | int }} мин ·
             при 10 % сервер выключится сам
+          tts: Внимание! Батарея ИБП почти разряжена. При десяти процентах сервер выключится.
 
   - id: ups_shutdown_home_assistant_server
     alias: UPS Shutdown Home Assistant Server
@@ -202,6 +204,7 @@ automation:
           message: >-
             UPS {{ states('sensor.ups_battery_charge') | int(0) }} % · HA выключится через 5 с ·
             включение — вручную после появления питания
+          tts: Батарея ИБП разряжена. Выключаю сервер.
       # Give the notification a moment to be sent before the host goes down
       - delay: 00:00:05
       - action: hassio.host_shutdown
