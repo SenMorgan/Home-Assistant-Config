@@ -306,6 +306,40 @@ automation:
           brightness: 150
           rgb_color: [255, 39, 25]
 
+  # Leaving home turns every light off, but the PC often keeps running: on return its lights stayed off,
+  # since the ON automation above only reacts to the PC being switched on
+  - id: kitchen_asus_pc_background_lights_on_return
+    alias: Kitchen Asus PC Background Lights ON on Return
+    description: >-
+      When Sen comes home while the Asus PC is still running, turns the PC backlight back on and the Gyver lamp
+      with the fire effect (outside night mode).
+    triggers:
+      - trigger: state
+        entity_id: person.sen
+        to: "home"
+    conditions:
+      - condition: state
+        entity_id: switch.asus_pc
+        state: "on"
+      - condition: state
+        entity_id: input_boolean.home_night_mode
+        state: "off"
+    actions:
+      # Last used colour/effect of the PC backlight (WLED keeps its state)
+      - action: light.turn_on
+        continue_on_error: true
+        target:
+          entity_id: light.pc_backlight
+      # Same as Kitchen Asus PC Background Lights ON
+      - action: light.turn_on
+        continue_on_error: true
+        target:
+          entity_id: light.gyver_lamp
+        data:
+          effect: "Oгoнь"
+          brightness: 150
+          rgb_color: [255, 39, 25]
+
   - id: kitchen_asus_pc_background_lights_off
     alias: Kitchen Asus PC Background Lights OFF
     description: Turns off the Gyver lamp when the Asus PC is switched off.
