@@ -38,7 +38,6 @@ template:
           {% set printer = states('sensor.3d_printer_bambu_lab_a1_print_status') %}
           {% set printer_changed = states.sensor['3d_printer_bambu_lab_a1_print_status'].last_changed
             if states.sensor['3d_printer_bambu_lab_a1_print_status'] is not none else none %}
-          {% set backup = states('sensor.backup_last_successful_automatic_backup') | as_datetime(default=none) %}
           {% if 'OB' in ups %}
             ups_battery
           {% elif night %}
@@ -51,8 +50,9 @@ template:
             print_finished
           {% elif printer in ['prepare', 'running'] %}
             printing
+          {# Backups are weekly: "overdue" means no successful one for 8 days (a 2-day limit lit the LED every week) #}
           {% elif is_state('binary_sensor.any_battery_device_low', 'on') or
-            (backup is not none and now() - backup > timedelta(days=2)) %}
+            is_state('binary_sensor.backup_overdue', 'on') %}
             attention
           {% elif is_state('binary_sensor.thermostat_heating', 'on') %}
             heating
