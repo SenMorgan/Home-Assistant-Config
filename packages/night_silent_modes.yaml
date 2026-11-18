@@ -25,7 +25,8 @@ input_boolean:
 ###############################################
 template:
   - binary_sensor:
-      # Everyone seems to be in bed: no room light in the apartment, no motion, TV off. Night Mode Auto On
+      # Everyone seems to be in bed: no room light in the apartment, no motion, TV off, nobody in the toilet
+      # (no motion sensor there: wc_occupied comes from the door). Night Mode Auto On
       # waits for 10 minutes of this. Not counted: lights labelled "Not lighting" (clock, Atom Echo, printer
       # chamber), the Nest proximity sensor and the bedroom camera (they react to sleeping people).
       - name: Apartment Quiet
@@ -34,16 +35,20 @@ template:
         state: >-
           {% set lights = floor_areas('apartment') | map('area_entities') | sum(start=[])
              | select('match', 'light\\.') | reject('in', label_entities('not_lighting')) | list %}
-          {% set motion = ['binary_sensor.aqara_hall_motion_sensor_motion',
-                           'binary_sensor.aqara_hall_motion_sensor_occupancy',
-                           'binary_sensor.presence_sensor_fp2_detection_zone_presence',
+          {% set motion = ['binary_sensor.presence_sensor_fp2_detection_zone_presence',
                            'binary_sensor.presence_sensor_fp2_kitchen',
                            'binary_sensor.presence_sensor_fp2_hall',
                            'binary_sensor.presence_sensor_fp2_pc',
                            'binary_sensor.kitchen_motion_alarm'] %}
+          {# The 3D printer stands in the hall: while it is powered its moving head triggers the hall motion sensor #}
+          {% if not is_state('switch.3d_printer_socket', 'on') %}
+            {% set motion = motion + ['binary_sensor.aqara_hall_motion_sensor_motion',
+                                      'binary_sensor.aqara_hall_motion_sensor_occupancy'] %}
+          {% endif %}
           {{ lights | select('is_state', 'on') | list | count == 0
              and motion | select('is_state', 'on') | list | count == 0
-             and not is_state('media_player.samsung_tv', 'on') }}
+             and not is_state('media_player.samsung_tv', 'on')
+             and not is_state('input_boolean.wc_occupied', 'on') }}
 
 ###############################################
 ## SCRIPTS
