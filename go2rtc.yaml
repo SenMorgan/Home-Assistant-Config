@@ -1,0 +1,8 @@
+# go2rtc of the WebRTC Camera custom integration (separate from HA's built-in go2rtc).
+# Core runs on the host network: keep the API and the RTSP restream local-only.
+# The WebRTC Camera integration talks to it via http://localhost:1984/.
+api:
+  listen: "127.0.0.1:1984"
+rtsp:
+  listen: "127.0.0.1:8554"
+# webrtc (port 8555) stays as is: browsers need it for the video itself
