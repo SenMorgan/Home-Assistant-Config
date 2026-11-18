@@ -21,6 +21,31 @@ input_boolean:
     icon: mdi:lightbulb-multiple-off-outline
 
 ###############################################
+## TEMPLATE ENTITIES
+###############################################
+template:
+  - binary_sensor:
+      # Everyone seems to be in bed: no room light in the apartment, no motion, TV off. Night Mode Auto On
+      # waits for 10 minutes of this. Not counted: lights labelled "Not lighting" (clock, Atom Echo, printer
+      # chamber), the Nest proximity sensor and the bedroom camera (they react to sleeping people).
+      - name: Apartment Quiet
+        unique_id: apartment_quiet
+        icon: mdi:sleep
+        state: >-
+          {% set lights = floor_areas('apartment') | map('area_entities') | sum(start=[])
+             | select('match', 'light\\.') | reject('in', label_entities('not_lighting')) | list %}
+          {% set motion = ['binary_sensor.aqara_hall_motion_sensor_motion',
+                           'binary_sensor.aqara_hall_motion_sensor_occupancy',
+                           'binary_sensor.presence_sensor_fp2_detection_zone_presence',
+                           'binary_sensor.presence_sensor_fp2_kitchen',
+                           'binary_sensor.presence_sensor_fp2_hall',
+                           'binary_sensor.presence_sensor_fp2_pc',
+                           'binary_sensor.kitchen_motion_alarm'] %}
+          {{ lights | select('is_state', 'on') | list | count == 0
+             and motion | select('is_state', 'on') | list | count == 0
+             and not is_state('media_player.samsung_tv', 'on') }}
+
+###############################################
 ## SCRIPTS
 ###############################################
 script:
@@ -280,6 +305,39 @@ automation:
     actions:
       # Pick the script by the new state (templated action name)
       - action: "{{ 'script.set_silent_mode' if trigger.to_state.state == 'on' else 'script.reset_silent_mode' }}"
+
+  # Night mode was only switched on by the good-night button and was forgotten for days (18.11: not used
+  # since 11.11), so the morning report and the night settings never ran. Now it also starts by itself.
+  - id: night_mode_auto_on
+    alias: Night Mode Auto On
+    description: >-
+      Switches the night mode on (script Home Night Mode) when the whole apartment has been quiet for 10 minutes:
+      no room light on, no motion, TV off (Apartment Quiet), 22:00-05:00, someone at home.
+    mode: single
+    triggers:
+      - trigger: state
+        entity_id: binary_sensor.apartment_quiet
+        to: "on"
+        for: "00:10:00"
+      # Quiet already before 22:00: start at 22:10 if it still holds
+      - trigger: time
+        at: "22:10:00"
+    conditions:
+      - condition: state
+        entity_id: binary_sensor.apartment_quiet
+        state: "on"
+        for: "00:10:00"
+      - condition: time
+        after: "22:00:00"
+        before: "05:00:00"
+      - condition: state
+        entity_id: input_boolean.home_night_mode
+        state: "off"
+      - condition: state
+        entity_id: binary_sensor.people_home
+        state: "on"
+    actions:
+      - action: script.home_night_mode
 
   - id: night_mode_handler
     alias: Night Mode Handler
