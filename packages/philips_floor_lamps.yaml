@@ -12,6 +12,43 @@
 ######################################################################
 
 ###############################################
+## REMOTE CODES
+###############################################
+# IR remote of the Philips RGBIC Ambient Floor Lamp (24 keys, CR2032). Protocol NEC (38 kHz),
+# extended address 0xEF00 (bytes 00 EF), then the command byte and its inverse. Verified key by key
+# on the lamps on 2026-11-19. Button names as in the Signify manual (3241 662 99251).
+#
+# | Row | Key on the remote | Philips name                  | NEC command | Name below |
+# |-----|-------------------|-------------------------------|-------------|------------|
+# | 1   | sun with arrow up | Dim up (5 steps)              | 0x00        | dim_up |
+# | 1   | sun with arrow dn | Dim down                      | 0x01        | dim_down |
+# | 1   | OFF (red)         | Power off                     | 0x02        | power_off |
+# | 1   | ON (black)        | Power on                      | 0x03        | power_on |
+# | 2   | R                 | Static Red                    | 0x04        | red |
+# | 2   | G                 | Static Green                  | 0x05        | green |
+# | 2   | B                 | Static Blue                   | 0x06        | blue |
+# | 2   | W                 | Static White                  | 0x07        | white |
+# | 3   | orange            | Static Orange                 | 0x08        | orange |
+# | 3   | light green       | Static Light green            | 0x09        | light_green |
+# | 3   | light blue        | Static Light blue             | 0x0A        | light_blue |
+# | 3   | NIGHT             | Night light                   | 0x0B        | night_light |
+# | 4   | yellow            | Static Yellow                 | 0x0C        | yellow |
+# | 4   | dark green        | Static Dark green             | 0x0D        | dark_green |
+# | 4   | purple            | Static Purple                 | 0x0E        | purple |
+# | 4   | pink              | Static Pink                   | 0x0F        | pink |
+# | 5   | SPEED+            | Speed up (3 levels, dynamic)  | 0x10        | speed_up |
+# | 5   | SPEED-            | Slow down                     | 0x11        | speed_down |
+# | 5   | MODE+             | Dynamic Scene mode (7 modes)  | 0x12        | mode_next |
+# | 5   | MODE-             | Dynamic Scene mode            | 0x13        | mode_previous |
+# | 6   | note +            | Music Sync mode (6 modes)     | 0x14        | music_next |
+# | 6   | note -            | Music Sync mode               | 0x15        | music_previous |
+# | 6   | 1H                | Timer off 1 h (again: clear)  | 0x16        | (not used here) |
+# | 6   | 2H                | Timer off 2 h (again: clear)  | 0x17        | (not used here) |
+#
+# Flipper Zero: protocol NECext, address 00 EF 00 00, command <code> <inverse> 00 00 (e.g. 03 FC 00 00).
+# Broadlink packets below: the same frames with the timings of a code learned from this remote.
+
+###############################################
 ## HELPERS
 ###############################################
 # The lamps never report their state (IR only), so the light keeps it in these helpers
