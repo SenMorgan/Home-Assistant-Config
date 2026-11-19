@@ -401,31 +401,6 @@ script:
                   timeout: "00:00:05"
               until: "{{ is_state_attr('climate.nestlocal_thermostat', 'preset_mode', 'eco') or repeat.index >= 3 }}"
 
-  notify_if_some_window_is_opened_during_heating_season:
-    alias: Notify If Some Window Opened During Heating Season
-    description: During heating season, notify the phone which rooms have an open window.
-    mode: restart
-    sequence:
-      - condition: state
-        entity_id: input_boolean.heating_season
-        state: "on"
-      - condition: state
-        entity_id: binary_sensor.windows
-        state: "on"
-      - action: script.notify
-        data:
-          level: warning
-          persistent: false
-          # Russian names of the areas of the window contacts that are currently open
-          title: >-
-            {% from 'ru.jinja' import room_ru %}
-            {% set ns = namespace(rooms=[]) %}
-            {% for e in expand('binary_sensor.windows') | selectattr('state', 'eq', 'on') %}
-              {% set ns.rooms = ns.rooms + [room_ru(area_name(e.entity_id))] %}
-            {% endfor %}
-            🪟 Открыто окно: {{ ns.rooms | join(', ') }}
-          message: Отопление приостановлено, пока открыто окно
-
 ###############################################
 ## AUTOMATIONS
 ###############################################

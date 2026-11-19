@@ -113,19 +113,17 @@ template:
 ## SCRIPTS
 ###############################################
 script:
-  # I-15: bedtime check, called by script.home_night_mode
+  # I-15: bedtime check, called by script.home_night_mode (all year; replaced the heating-season-only push)
   night_window_weather_check:
     alias: Night Window Weather Check
     description: >-
-      Called when the night mode starts. Outside the heating season (in season the heating push already
-      reports open windows), if a window is open, looks at the Met.no hourly forecast until 07:00 and
-      pushes Sen a silent advice to close it when rain, a thunderstorm, hail, strong wind (40 km/h or
-      more) or a cold night (below 10 °C) is expected. Nothing is sent when the night looks fine.
+      Called when the night mode starts. If a window is open, looks at the Met.no hourly forecast until
+      07:00 and pushes Sen (no voice at night) which rooms are open, together with rain, thunderstorm,
+      hail, strong wind (40 km/h or more) or a cold night (below 10 °C). Outside the heating season the
+      push is sent only when such weather is expected; during the heating season always (heating is
+      paused while a window is open), also when the forecast is unavailable.
     mode: single
     sequence:
-      - condition: state
-        entity_id: input_boolean.heating_season
-        state: "off"
       - condition: state
         entity_id: binary_sensor.windows
         state: "on"
@@ -135,7 +133,10 @@ script:
         data:
           type: hourly
         response_variable: fc
+        # In the heating season the push must go out even without a forecast
+        continue_on_error: true
       - variables:
+          heating: "{{ is_state('input_boolean.heating_season', 'on') }}"
           # Slots from now until the next 07:00 (the night ends there)
           until: >-
             {% set t = today_at('07:00') %}
@@ -143,7 +144,8 @@ script:
           night: >-
             {% set u = until | as_datetime %}
             {% set ns = namespace(l=[]) %}
-            {% for s in fc['weather.home_assistant_blue'].forecast if s.datetime | as_datetime < u %}
+            {% set f = fc['weather.home_assistant_blue'].forecast if fc is defined and fc else [] %}
+            {% for s in f if s.datetime | as_datetime < u %}
               {% set ns.l = ns.l + [s] %}
             {% endfor %}
             {{ ns.l }}
@@ -160,16 +162,17 @@ script:
           storm_any: "{{ night | selectattr('condition', 'in', ['lightning', 'lightning-rainy', 'hail']) | list | count > 0 }}"
           t_min: "{{ night | map(attribute='temperature') | select('is_number') | min if night else none }}"
           cold: "{{ t_min is number and t_min < 10 }}"
-      - condition: "{{ bad is not none or cold }}"
+      # Outside the heating season an open window on a mild, dry night is fine
+      - condition: "{{ heating or bad is not none or cold }}"
       - variables:
-          kind: "{{ 'storm' if storm_any else (bad.kind if bad is not none else 'cold') }}"
+          kind: "{{ 'storm' if storm_any else (bad.kind if bad is not none else ('cold' if cold else 'none')) }}"
       - action: script.notify
         data:
-          level: info
+          level: "{{ 'warning' if heating else 'info' }}"
           persistent: false
           title: >-
             {{ {'storm': '⛈️ Ночью гроза', 'rain': '🌧️ Ночью дождь', 'wind': '💨 Ночью сильный ветер',
-                'cold': '🥶 Ночью холодно'}[kind] }}, окно открыто
+                'cold': '🥶 Ночью холодно'}[kind] ~ ', окно открыто' if kind != 'none' else '🪟 Окно открыто на ночь' }}
           message: >-
             {% from 'ru.jinja' import num, room_ru %}
             {% set ns = namespace(r=[]) %}
@@ -181,6 +184,7 @@ script:
               {% set facts = facts + [{'storm': 'гроза', 'rain': 'дождь', 'wind': 'ветер'}[bad.kind] ~ ' с ' ~ bad.at] %}
             {% endif %}
             {% if t_min is number %}{% set facts = facts + ['мин. ' ~ num(t_min) ~ ' °C'] %}{% endif %}
+            {% if heating %}{% set facts = facts + ['отопление на паузе'] %}{% endif %}
             {{ facts | join(' · ') }}
 
 ###############################################
