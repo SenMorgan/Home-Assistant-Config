@@ -1013,6 +1013,52 @@ automation:
             data:
               message: "Возвращение домой → отопление включено"
 
+  # Someone came home while HA was restarting: the people_home off -> on change is never seen, the Nest
+  # stays in the absence eco and the flat gets cold (user, 20.11). Re-check a few minutes after every start.
+  - id: restore_heating_after_restart
+    alias: Restore Heating After Restart
+    description: >-
+      6 minutes after Home Assistant starts, if someone is home (5 stable minutes), it is heating season,
+      heating is allowed (no manual pause), all windows are closed, no quarantine runs and the Nest is in eco,
+      restores heating like Restore Heating When Someone Home (hall heater on, default target).
+    mode: single
+    triggers:
+      - trigger: homeassistant
+        event: start
+    actions:
+      # Persons and the thermostat need a few minutes to report their real state after the start
+      - delay: "00:06:00"
+      - condition: state
+        entity_id: binary_sensor.people_home
+        state: "on"
+        for: "00:05:00"
+      - condition: state
+        entity_id: input_boolean.heating_season
+        state: "on"
+      # A manual pause turns this off; the pause timer itself may not survive the restart
+      - condition: state
+        entity_id: input_boolean.heating_allowed
+        state: "on"
+      # An open window or the quarantine after closing it are reasons to stay in eco
+      - condition: state
+        entity_id: binary_sensor.windows
+        state: "off"
+      - condition: state
+        entity_id: timer.heating_quarantine
+        state: "idle"
+      # Only the eco left by an absence; a Nest that is already heating normally needs nothing
+      - condition: state
+        entity_id: climate.nestlocal_thermostat
+        attribute: preset_mode
+        state: "eco"
+      - action: switch.turn_on
+        continue_on_error: true
+        target:
+          entity_id: switch.hall_heater
+      - action: script.thermostat_stop_heating
+        data:
+          message: "Дома кто-то есть после перезапуска HA → отопление включено"
+
   ###############################################
   ## Heat request handlers
   ###############################################
