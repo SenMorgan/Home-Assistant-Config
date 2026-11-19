@@ -1,0 +1,451 @@
+######################################################################
+# File: philips_floor_lamps.yaml                                     #
+# Author: SenMorgan https://github.com/SenMorgan                     #
+# Date: 2026-11-19                                                   #
+#                                                                    #
+# Info: two Philips RGBIC Ambient Floor Lamps (Signify 12NC          #
+#       3241 662 99251) in the living room, controlled over IR by    #
+#       the Broadlink RM Mini 3. Their 24-key remote sends NEC,      #
+#       address 0xEF00, commands 0x00-0x17 row by row.               #
+#                                                                    #
+# Copyright (c) 2026 Sen Morgan                                      #
+######################################################################
+
+###############################################
+## HELPERS
+###############################################
+# The lamps never report their state (IR only), so the light keeps it in these helpers
+input_boolean:
+  philips_floor_lamps_power:
+    name: Philips Floor Lamps Power
+    icon: mdi:floor-lamp
+
+input_number:
+  # The remote changes brightness in 5 steps (Dim Up / Dim Down)
+  philips_floor_lamps_level:
+    name: Philips Floor Lamps Brightness Level
+    min: 1
+    max: 5
+    step: 1
+    mode: box
+    icon: mdi:brightness-6
+  # Last brightness step chosen: the lamps take it back after a power-up (they come up at step 5)
+  philips_floor_lamps_last_level:
+    name: Philips Floor Lamps Last Brightness Level
+    min: 1
+    max: 5
+    step: 1
+    mode: box
+    icon: mdi:brightness-auto
+
+input_select:
+  # Static colours of the remote (Philips names) plus the night light and the two dynamic groups
+  philips_floor_lamps_mode:
+    name: Philips Floor Lamps Mode
+    icon: mdi:palette
+    options:
+      - White
+      - Red
+      - Orange
+      - Yellow
+      - Light green
+      - Green
+      - Dark green
+      - Light blue
+      - Blue
+      - Purple
+      - Pink
+      - Night Light
+      - Dynamic Scene
+      - Music Sync
+
+  # Last static colour chosen on the lamps or on the TV backlight: the lamps take it back after a power-up
+  philips_floor_lamps_last_colour:
+    name: Philips Floor Lamps Last Colour
+    icon: mdi:palette-swatch
+    options:
+      - White
+      - Red
+      - Orange
+      - Yellow
+      - Light green
+      - Green
+      - Dark green
+      - Light blue
+      - Blue
+      - Purple
+      - Pink
+
+###############################################
+## SCRIPTS
+###############################################
+script:
+  philips_floor_lamps_send:
+    alias: Philips Floor Lamps Send
+    description: >-
+      Sends remote buttons to both Philips floor lamps through the living room Broadlink RM Mini 3.
+      Does nothing while the Monolith speakers plug (it also powers the lamps) is off.
+    mode: queued
+    max: 10
+    fields:
+      buttons:
+        name: Buttons
+        description: List of button names, e.g. [power_on, red]
+        required: true
+        example: "[power_on, red]"
+        selector:
+          object:
+    variables:
+      # Broadlink packets generated from the NEC frames (address 0xEF00), with the timings of a code
+      # learned from the real remote; verified button by button on the lamps on 2026-11-19
+      codes:
+            dim_up: JgBYAAABIZQTEhMSExITEhMSExITEhMSEzcTNxM3EzcTEhM3EzcTNxMSExITEhMSExITEhMSExITNxM3EzcTNxM3EzcTNxM3EwAFMgABJ0oTAAxGAAEkShIADQU=  # 0x00
+            dim_down: JgBYAAABIZQTEhMSExITEhMSExITEhMSEzcTNxM3EzcTEhM3EzcTNxM3ExITEhMSExITEhMSExITEhM3EzcTNxM3EzcTNxM3EwAFMgABJ0oTAAxGAAEkShIADQU=  # 0x01
+            power_off: JgBYAAABIZQTEhMSExITEhMSExITEhMSEzcTNxM3EzcTEhM3EzcTNxMSEzcTEhMSExITEhMSExITNxMSEzcTNxM3EzcTNxM3EwAFMgABJ0oTAAxGAAEkShIADQU=  # 0x02
+            power_on: JgBYAAABIZQTEhMSExITEhMSExITEhMSEzcTNxM3EzcTEhM3EzcTNxM3EzcTEhMSExITEhMSExITEhMSEzcTNxM3EzcTNxM3EwAFMgABJ0oTAAxGAAEkShIADQU=  # 0x03
+            red: JgBYAAABIZQTEhMSExITEhMSExITEhMSEzcTNxM3EzcTEhM3EzcTNxMSExITNxMSExITEhMSExITNxM3ExITNxM3EzcTNxM3EwAFMgABJ0oTAAxGAAEkShIADQU=  # 0x04
+            green: JgBYAAABIZQTEhMSExITEhMSExITEhMSEzcTNxM3EzcTEhM3EzcTNxM3ExITNxMSExITEhMSExITEhM3ExITNxM3EzcTNxM3EwAFMgABJ0oTAAxGAAEkShIADQU=  # 0x05
+            blue: JgBYAAABIZQTEhMSExITEhMSExITEhMSEzcTNxM3EzcTEhM3EzcTNxMSEzcTNxMSExITEhMSExITNxMSExITNxM3EzcTNxM3EwAFMgABJ0oTAAxGAAEkShIADQU=  # 0x06
+            white: JgBYAAABIZQTEhMSExITEhMSExITEhMSEzcTNxM3EzcTEhM3EzcTNxM3EzcTNxMSExITEhMSExITEhMSExITNxM3EzcTNxM3EwAFMgABJ0oTAAxGAAEkShIADQU=  # 0x07
+            orange: JgBYAAABIZQTEhMSExITEhMSExITEhMSEzcTNxM3EzcTEhM3EzcTNxMSExITEhM3ExITEhMSExITNxM3EzcTEhM3EzcTNxM3EwAFMgABJ0oTAAxGAAEkShIADQU=  # 0x08
+            light_green: JgBYAAABIZQTEhMSExITEhMSExITEhMSEzcTNxM3EzcTEhM3EzcTNxM3ExITEhM3ExITEhMSExITEhM3EzcTEhM3EzcTNxM3EwAFMgABJ0oTAAxGAAEkShIADQU=  # 0x09
+            light_blue: JgBYAAABIZQTEhMSExITEhMSExITEhMSEzcTNxM3EzcTEhM3EzcTNxMSEzcTEhM3ExITEhMSExITNxMSEzcTEhM3EzcTNxM3EwAFMgABJ0oTAAxGAAEkShIADQU=  # 0x0A
+            night_light: JgBYAAABIZQTEhMSExITEhMSExITEhMSEzcTNxM3EzcTEhM3EzcTNxM3EzcTEhM3ExITEhMSExITEhMSEzcTEhM3EzcTNxM3EwAFMgABJ0oTAAxGAAEkShIADQU=  # 0x0B
+            yellow: JgBYAAABIZQTEhMSExITEhMSExITEhMSEzcTNxM3EzcTEhM3EzcTNxMSExITNxM3ExITEhMSExITNxM3ExITEhM3EzcTNxM3EwAFMgABJ0oTAAxGAAEkShIADQU=  # 0x0C
+            dark_green: JgBYAAABIZQTEhMSExITEhMSExITEhMSEzcTNxM3EzcTEhM3EzcTNxM3ExITNxM3ExITEhMSExITEhM3ExITEhM3EzcTNxM3EwAFMgABJ0oTAAxGAAEkShIADQU=  # 0x0D
+            purple: JgBYAAABIZQTEhMSExITEhMSExITEhMSEzcTNxM3EzcTEhM3EzcTNxMSEzcTNxM3ExITEhMSExITNxMSExITEhM3EzcTNxM3EwAFMgABJ0oTAAxGAAEkShIADQU=  # 0x0E
+            pink: JgBYAAABIZQTEhMSExITEhMSExITEhMSEzcTNxM3EzcTEhM3EzcTNxM3EzcTNxM3ExITEhMSExITEhMSExITEhM3EzcTNxM3EwAFMgABJ0oTAAxGAAEkShIADQU=  # 0x0F
+            speed_up: JgBYAAABIZQTEhMSExITEhMSExITEhMSEzcTNxM3EzcTEhM3EzcTNxMSExITEhMSEzcTEhMSExITNxM3EzcTNxMSEzcTNxM3EwAFMgABJ0oTAAxGAAEkShIADQU=  # 0x10
+            speed_down: JgBYAAABIZQTEhMSExITEhMSExITEhMSEzcTNxM3EzcTEhM3EzcTNxM3ExITEhMSEzcTEhMSExITEhM3EzcTNxMSEzcTNxM3EwAFMgABJ0oTAAxGAAEkShIADQU=  # 0x11
+            mode_next: JgBYAAABIZQTEhMSExITEhMSExITEhMSEzcTNxM3EzcTEhM3EzcTNxMSEzcTEhMSEzcTEhMSExITNxMSEzcTNxMSEzcTNxM3EwAFMgABJ0oTAAxGAAEkShIADQU=  # 0x12
+            mode_previous: JgBYAAABIZQTEhMSExITEhMSExITEhMSEzcTNxM3EzcTEhM3EzcTNxM3EzcTEhMSEzcTEhMSExITEhMSEzcTNxMSEzcTNxM3EwAFMgABJ0oTAAxGAAEkShIADQU=  # 0x13
+            music_next: JgBYAAABIZQTEhMSExITEhMSExITEhMSEzcTNxM3EzcTEhM3EzcTNxMSExITNxMSEzcTEhMSExITNxM3ExITNxMSEzcTNxM3EwAFMgABJ0oTAAxGAAEkShIADQU=  # 0x14
+            music_previous: JgBYAAABIZQTEhMSExITEhMSExITEhMSEzcTNxM3EzcTEhM3EzcTNxM3ExITNxMSEzcTEhMSExITEhM3ExITNxMSEzcTNxM3EwAFMgABJ0oTAAxGAAEkShIADQU=  # 0x15
+    sequence:
+      # No power, no lamps: IR sent now would only be lost
+      - condition: state
+        entity_id: switch.monolith_speakers
+        state: "on"
+      - action: remote.send_command
+        target:
+          entity_id: remote.living_room_rm_mini_3
+        data:
+          command: >-
+            {% set ns = namespace(commands=[]) %}
+            {% for button in buttons %}{% set ns.commands = ns.commands + ['b64:' ~ codes[button]] %}{% endfor %}
+            {{ ns.commands }}
+          # The lamps miss presses that follow each other too closely
+          delay_secs: 0.3
+
+  philips_floor_lamps_apply:
+    alias: Philips Floor Lamps Apply
+    description: >-
+      Puts the Philips floor lamps into the wanted state for the light entity. Without power it first
+      switches on the Monolith speakers plug (it powers the lamps too) and waits for the lamps, which
+      light up by themselves at full brightness in red; if powered but off, it sends Power on. Then it
+      sends the colour or effect, and moves the brightness by the shortest way from the current step.
+    mode: queued
+    max: 10
+    fields:
+      colour:
+        name: Colour
+        description: One of the remote's static colours (input_select option), e.g. Blue
+        example: Blue
+        selector:
+          text:
+      effect:
+        name: Effect
+        description: Night Light, Dynamic Scene or Music Sync
+        example: Dynamic Scene
+        selector:
+          text:
+      level:
+        name: Brightness step
+        description: 1-5
+        example: 3
+        selector:
+          number:
+            min: 1
+            max: 5
+    sequence:
+      # Turned on without power: the lamps come up red at step 5 by themselves, so whatever was not asked
+      # for comes from the memory (last colour unless an effect was asked, last brightness step)
+      - variables:
+          colour: >-
+            {{ colour if (colour is defined and colour)
+               else (states('input_select.philips_floor_lamps_last_colour')
+                     if is_state('switch.monolith_speakers', 'off') and not (effect is defined and effect)
+                     else '') }}
+          level: >-
+            {{ level if (level is defined and level | int(0) > 0)
+               else (states('input_number.philips_floor_lamps_last_level') | int(5)
+                     if is_state('switch.monolith_speakers', 'off') else 0) }}
+      - if:
+          - condition: state
+            entity_id: switch.monolith_speakers
+            state: "off"
+        then:
+          - action: switch.turn_on
+            target:
+              entity_id: switch.monolith_speakers
+          - wait_template: "{{ is_state('switch.monolith_speakers', 'on') }}"
+            timeout: "00:00:30"
+            continue_on_timeout: false
+          # The lamps need a moment after power-up before they accept IR (1 s; 0.5 s was too short);
+          # meanwhile the plug automation has set the helpers to the power-up state
+          - delay:
+              seconds: 1
+        else:
+          - if:
+              - condition: state
+                entity_id: input_boolean.philips_floor_lamps_power
+                state: "off"
+            then:
+              - action: script.philips_floor_lamps_send
+                data:
+                  buttons: [power_on]
+      - action: input_boolean.turn_on
+        target:
+          entity_id: input_boolean.philips_floor_lamps_power
+      - if:
+          # Conditions need a real boolean: a bare string or number counts as false
+          - "{{ colour is defined and colour | length > 0 }}"
+        then:
+          - action: script.philips_floor_lamps_send
+            data:
+              buttons: "{{ [colour | lower | replace(' ', '_')] }}"
+          - action: input_select.select_option
+            target:
+              entity_id:
+                - input_select.philips_floor_lamps_mode
+                - input_select.philips_floor_lamps_last_colour
+            data:
+              option: "{{ colour }}"
+      - if:
+          - "{{ effect is defined and effect | length > 0 }}"
+        then:
+          # Night Light is its own button; the effects start the next Dynamic Scene / Music Sync mode
+          - action: script.philips_floor_lamps_send
+            data:
+              buttons: "{{ [{'Night Light': 'night_light', 'Dynamic Scene': 'mode_next', 'Music Sync': 'music_next'}[effect]] }}"
+          - action: input_select.select_option
+            target:
+              entity_id: input_select.philips_floor_lamps_mode
+            data:
+              option: "{{ effect }}"
+      - if:
+          - "{{ level is defined and level | int(0) > 0 }}"
+        then:
+          # Read the current step only now: a power-up above has just set it to 5
+          - variables:
+              current: "{{ states('input_number.philips_floor_lamps_level') | int(5) }}"
+              target: "{{ [1, [5, level | int] | min] | max }}"
+              # Shortest way; at the ends two extra presses in the same direction re-sync the step if
+              # the physical remote was used (the lamps ignore presses beyond their range)
+              ups: "{{ (target - current) if target > current else 0 }}"
+              downs: "{{ (current - target) if target < current else 0 }}"
+              buttons: >-
+                {{ ['dim_up'] * (ups + (2 if target == 5 else 0))
+                   + ['dim_down'] * (downs + (2 if target == 1 else 0)) }}
+          - if:
+              - "{{ buttons | length > 0 }}"
+            then:
+              - action: script.philips_floor_lamps_send
+                data:
+                  buttons: "{{ buttons }}"
+          - action: input_number.set_value
+            target:
+              entity_id:
+                - input_number.philips_floor_lamps_level
+                - input_number.philips_floor_lamps_last_level
+            data:
+              value: "{{ target }}"
+
+###############################################
+## TEMPLATE ENTITIES
+###############################################
+template:
+  - light:
+      - name: Philips Floor Lamps
+        unique_id: philips_floor_lamps
+        icon: mdi:floor-lamp
+        # Never unavailable: without power (Monolith speakers plug off) the lamps simply count as off,
+        # and turning them on switches the plug on (see Philips Floor Lamps Apply)
+        state: >-
+          {{ is_state('switch.monolith_speakers', 'on')
+             and is_state('input_boolean.philips_floor_lamps_power', 'on') }}
+        level: "{{ states('input_number.philips_floor_lamps_level') | int(5) * 51 }}"
+        # The static colours as calibrated against the TV backlight (custom_templates/philips_lamps.jinja);
+        # none for the night light and the effects
+        hs: >-
+          {% from 'philips_lamps.jinja' import colours %}
+          {% set c = (colours() | from_json).get(states('input_select.philips_floor_lamps_mode')) %}
+          {{ c.hs if c else none }}
+        effect_list: "{{ ['Night Light', 'Dynamic Scene', 'Music Sync'] }}"
+        effect: >-
+          {% set mode = states('input_select.philips_floor_lamps_mode') %}
+          {{ mode if mode in ['Night Light', 'Dynamic Scene', 'Music Sync'] else none }}
+        supports_transition: false
+        # The light calls only set_level / set_hs / set_effect when turn_on carries those, so all of
+        # them go through the apply script, which also powers the lamps up when needed
+        turn_on:
+          - action: script.philips_floor_lamps_apply
+        turn_off:
+          # Only the lamps: the speakers on the same plug stay on
+          - action: script.philips_floor_lamps_send
+            data:
+              buttons: [power_off]
+          - action: input_boolean.turn_off
+            target:
+              entity_id: input_boolean.philips_floor_lamps_power
+        set_level:
+          - action: script.philips_floor_lamps_apply
+            data:
+              level: "{{ [1, [5, (brightness / 51) | round(0, 'ceil') | int] | min] | max }}"
+        # Nearest of the remote's colours (custom_templates/philips_lamps.jinja)
+        set_hs:
+          - action: script.philips_floor_lamps_apply
+            data:
+              colour: "{% from 'philips_lamps.jinja' import nearest_colour %}{{ nearest_colour(h, s) }}"
+        set_effect:
+          - action: script.philips_floor_lamps_apply
+            data:
+              effect: "{{ effect }}"
+
+  # Remote buttons without a light equivalent (the 1H/2H timers are left out on purpose)
+  - button:
+      - name: Philips Floor Lamps Mode Next
+        unique_id: philips_floor_lamps_mode_next
+        icon: mdi:skip-next
+        availability: "{{ is_state('switch.monolith_speakers', 'on') }}"
+        press:
+          - action: script.philips_floor_lamps_send
+            data:
+              buttons: [mode_next]
+          - action: input_select.select_option
+            target:
+              entity_id: input_select.philips_floor_lamps_mode
+            data:
+              option: Dynamic Scene
+      - name: Philips Floor Lamps Mode Previous
+        unique_id: philips_floor_lamps_mode_previous
+        icon: mdi:skip-previous
+        availability: "{{ is_state('switch.monolith_speakers', 'on') }}"
+        press:
+          - action: script.philips_floor_lamps_send
+            data:
+              buttons: [mode_previous]
+          - action: input_select.select_option
+            target:
+              entity_id: input_select.philips_floor_lamps_mode
+            data:
+              option: Dynamic Scene
+      # Speed has 3 levels and works only in the dynamic modes
+      - name: Philips Floor Lamps Speed Up
+        unique_id: philips_floor_lamps_speed_up
+        icon: mdi:fast-forward
+        availability: "{{ is_state('switch.monolith_speakers', 'on') }}"
+        press:
+          - action: script.philips_floor_lamps_send
+            data:
+              buttons: [speed_up]
+      - name: Philips Floor Lamps Speed Down
+        unique_id: philips_floor_lamps_speed_down
+        icon: mdi:rewind
+        availability: "{{ is_state('switch.monolith_speakers', 'on') }}"
+        press:
+          - action: script.philips_floor_lamps_send
+            data:
+              buttons: [speed_down]
+      - name: Philips Floor Lamps Music Next
+        unique_id: philips_floor_lamps_music_next
+        icon: mdi:music-note-plus
+        availability: "{{ is_state('switch.monolith_speakers', 'on') }}"
+        press:
+          - action: script.philips_floor_lamps_send
+            data:
+              buttons: [music_next]
+          - action: input_select.select_option
+            target:
+              entity_id: input_select.philips_floor_lamps_mode
+            data:
+              option: Music Sync
+      - name: Philips Floor Lamps Music Previous
+        unique_id: philips_floor_lamps_music_previous
+        icon: mdi:music-note-minus
+        availability: "{{ is_state('switch.monolith_speakers', 'on') }}"
+        press:
+          - action: script.philips_floor_lamps_send
+            data:
+              buttons: [music_previous]
+          - action: input_select.select_option
+            target:
+              entity_id: input_select.philips_floor_lamps_mode
+            data:
+              option: Music Sync
+
+###############################################
+## AUTOMATIONS
+###############################################
+automation:
+  - id: philips_floor_lamps_power_lost
+    alias: Philips Floor Lamps Power Follows Plug
+    description: >-
+      Keeps the Philips floor lamps light in sync with their power, the Monolith speakers plug:
+      without power the lamps are dark; when the plug comes on they light up by themselves at full
+      brightness in red (checked 2026-11-19), and a second later they get the last colour and brightness.
+    mode: queued
+    triggers:
+      # Only real switching: the Matter plug also goes unavailable for ~1 min while Matter Server
+      # reconnects, and the lamps keep their power (and state) meanwhile
+      - trigger: state
+        entity_id: switch.monolith_speakers
+        to: "off"
+        id: power_lost
+      - trigger: state
+        entity_id: switch.monolith_speakers
+        from: "off"
+        to: "on"
+        id: power_up
+    actions:
+      - choose:
+          - conditions:
+              - condition: trigger
+                id: power_lost
+            sequence:
+              - action: input_boolean.turn_off
+                target:
+                  entity_id: input_boolean.philips_floor_lamps_power
+          - conditions:
+              - condition: trigger
+                id: power_up
+            sequence:
+              # The lamps come up on, at the brightest step, in red; a second later they get the last
+              # colour. The helpers show that colour right away: showing red would pass it to the TV
+              # backlight and overwrite the remembered colour
+              - action: input_number.set_value
+                target:
+                  entity_id: input_number.philips_floor_lamps_level
+                data:
+                  value: 5
+              - action: input_select.select_option
+                target:
+                  entity_id: input_select.philips_floor_lamps_mode
+                data:
+                  option: "{{ states('input_select.philips_floor_lamps_last_colour') }}"
+              - action: input_boolean.turn_on
+                target:
+                  entity_id: input_boolean.philips_floor_lamps_power
+              # After booting they get the last colour and brightness step, unless the apply script
+              # powered them up: it waits for them itself and sends the wanted (or last) values
+              - delay:
+                  seconds: 1
+              - if:
+                  - condition: state
+                    entity_id: script.philips_floor_lamps_apply
+                    state: "off"
+                then:
+                  - action: script.philips_floor_lamps_apply
+                    data:
+                      colour: "{{ states('input_select.philips_floor_lamps_last_colour') }}"
+                      level: "{{ states('input_number.philips_floor_lamps_last_level') | int(5) }}"

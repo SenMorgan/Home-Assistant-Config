@@ -1,0 +1,34 @@
+{# Philips RGBIC Ambient Floor Lamps helpers (used via: from 'philips_lamps.jinja' import ...) #}
+
+{# The remote's static colours with the TV backlight colour that looks the same (picked by eye on
+   2026-11-19: the lamps' Static Orange etc. against light.tv_lights). rgb = sent to the TV backlight,
+   hs = the same colour as hue/saturation, used to show the lamps' colour and to find the nearest one #}
+{% macro colours() -%}
+{"White":       {"rgb": [255, 255, 255], "hs": [0, 0]},
+ "Red":         {"rgb": [255, 0, 0],     "hs": [0, 100]},
+ "Orange":      {"rgb": [255, 59, 0],    "hs": [13.9, 100]},
+ "Yellow":      {"rgb": [255, 195, 0],   "hs": [45.9, 100]},
+ "Light green": {"rgb": [175, 255, 63],  "hs": [85, 75.3]},
+ "Green":       {"rgb": [0, 255, 0],     "hs": [120, 100]},
+ "Dark green":  {"rgb": [33, 255, 33],   "hs": [120, 87.1]},
+ "Light blue":  {"rgb": [107, 250, 255], "hs": [182, 58]},
+ "Blue":        {"rgb": [0, 0, 255],     "hs": [240, 100]},
+ "Purple":      {"rgb": [165, 0, 255],   "hs": [278.8, 100]},
+ "Pink":        {"rgb": [255, 0, 97],    "hs": [337.2, 100]}}
+{%- endmacro %}
+
+{# Nearest static colour for a hue/saturation: nearest_colour(230, 100) -> 'Blue'. Compares points on the
+   colour wheel (saturation = distance from the centre), so hue and saturation both count: Green and
+   Dark green share the hue. Empty for no colour (none), so callers can tell "no colour" from a colour #}
+{% macro nearest_colour(h, s) -%}
+{%- if h is not none and s is not none -%}
+  {%- set x, y = s | float * cos(h | float * pi / 180), s | float * sin(h | float * pi / 180) -%}
+  {%- set ns = namespace(best='White', dist=1000000) -%}
+  {%- for name, c in (colours() | from_json).items() -%}
+    {%- set cx = c.hs[1] * cos(c.hs[0] * pi / 180) -%}
+    {%- set cy = c.hs[1] * sin(c.hs[0] * pi / 180) -%}
+    {%- set d = (x - cx) ** 2 + (y - cy) ** 2 -%}
+    {%- if d < ns.dist %}{% set ns.best, ns.dist = name, d %}{% endif -%}
+  {%- endfor -%}{{ ns.best }}
+{%- endif -%}
+{%- endmacro %}
