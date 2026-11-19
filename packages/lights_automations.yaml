@@ -334,13 +334,32 @@ automation:
 
   - id: kitchen_asus_pc_background_lights_off
     alias: Kitchen Asus PC Background Lights OFF
-    description: Turns off the Gyver lamp when the Asus PC is switched off.
+    description: >-
+      Turns off the Gyver lamp when the Asus PC is switched off, also when that happened while Home Assistant
+      was restarting (checked 2 minutes after the start).
     triggers:
       - trigger: state
         entity_id: switch.asus_pc
         from: "on"
         to: "off"
+      # An on -> off change during a restart is never seen as a transition (after the start the state comes
+      # from unknown), so the lamp stayed on (20.11)
+      - trigger: homeassistant
+        event: start
+        id: start
     actions:
+      - if:
+          - condition: trigger
+            id: start
+        then:
+          # The Wake-on-LAN switch needs a ping cycle to report the real PC state after the start
+          - delay: "00:02:00"
+          - condition: state
+            entity_id: switch.asus_pc
+            state: "off"
+          - condition: state
+            entity_id: light.gyver_lamp
+            state: "on"
       - action: light.turn_off
         target:
           entity_id: light.gyver_lamp

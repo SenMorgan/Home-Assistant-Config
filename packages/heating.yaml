@@ -445,10 +445,19 @@ automation:
         from: "off"
         to: "on"
         for: "00:00:10"
+      # A window opened while HA was restarting is not a transition: re-check after the start
+      - trigger: homeassistant
+        event: start
+        id: start
     conditions:
       - condition: state
         entity_id: input_boolean.heating_season
         state: "on"
+      # After a start only if a window is really open and the thermostat is not in eco already
+      - condition: template
+        value_template: >-
+          {{ trigger.id != 'start' or (is_state('binary_sensor.windows', 'on')
+             and not is_state_attr('climate.nestlocal_thermostat', 'preset_mode', 'eco')) }}
     actions:
       # Stop "Pause Heating" timer if it is active without restoring the thermostat mode
       - action: timer.cancel
@@ -919,11 +928,25 @@ automation:
         from: "on"
         to: "off"
         for: "00:05:00"
+      # Everyone left during a restart (or the 5-minute wait was cut by it): re-check after the start
+      - trigger: homeassistant
+        event: start
+        id: start
     conditions:
       - condition: state
         entity_id: input_boolean.guest_mode
         state: "off"
     actions:
+      # After a start the persons come back with a delay: wait, then require 5 stable minutes of nobody home
+      - if:
+          - condition: trigger
+            id: start
+        then:
+          - delay: "00:06:00"
+          - condition: state
+            entity_id: binary_sensor.people_home
+            state: "off"
+            for: "00:05:00"
       # Disable hall heater regardless of the thermostat state (it may be on while a window put the Nest in eco)
       - action: switch.turn_off
         continue_on_error: true
