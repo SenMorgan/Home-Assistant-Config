@@ -449,3 +449,74 @@ automation:
                     data:
                       colour: "{{ states('input_select.philips_floor_lamps_last_colour') }}"
                       level: "{{ states('input_number.philips_floor_lamps_last_level') | int(5) }}"
+
+  - id: philips_floor_lamps_sync_tv_lights
+    alias: Philips Floor Lamps Sync TV Lights
+    description: >-
+      Lamps-to-TV half of the two-way colour sync: while the TV backlight is on, it takes the colour
+      calibrated by eye for the lamps' static colour (Night Light, Dynamic Scene and Music Sync leave it
+      alone). Colour only: no on/off, no brightness. A backlight colour that already maps to the lamps'
+      colour is kept as it is, which also stops the two halves from bouncing.
+    mode: restart
+    triggers:
+      - trigger: state
+        entity_id: light.philips_floor_lamps
+        attribute: hs_color
+    conditions:
+      - condition: state
+        entity_id: light.tv_lights
+        state: "on"
+      - "{{ trigger.to_state is not none and trigger.to_state.attributes.get('effect') in [none, ''] }}"
+      - "{{ trigger.to_state.attributes.get('hs_color') is not none }}"
+    actions:
+      - variables:
+          lamp_colour: "{{ states('input_select.philips_floor_lamps_mode') }}"
+          tv_colour: >-
+            {% from 'philips_lamps.jinja' import nearest_colour %}
+            {% set tv_hs = state_attr('light.tv_lights', 'hs_color') %}
+            {{ (nearest_colour(tv_hs[0], tv_hs[1]) if tv_hs else '') | trim }}
+      - condition: template
+        value_template: "{{ lamp_colour != tv_colour }}"
+      - action: light.turn_on
+        target:
+          entity_id: light.tv_lights
+        data:
+          rgb_color: >-
+            {% from 'philips_lamps.jinja' import colours %}
+            {{ (colours() | from_json)[lamp_colour].rgb }}
+
+  - id: philips_floor_lamps_follow_tv_lights
+    alias: Philips Floor Lamps Follow TV Lights
+    description: >-
+      TV-to-lamps half of the two-way colour sync: a colour picked on the TV backlight is remembered as the
+      lamps' last colour and, while the lamps are on, sent to them as the nearest calibrated static colour.
+      Colour only: no on/off (turning the lamps on would switch the speakers plug on), no brightness.
+    mode: restart
+    triggers:
+      - trigger: state
+        entity_id: light.tv_lights
+        attribute: hs_color
+    conditions:
+      - "{{ trigger.to_state is not none and trigger.to_state.state == 'on' }}"
+      - "{{ trigger.to_state.attributes.get('hs_color') is not none }}"
+    actions:
+      - variables:
+          colour: >-
+            {% from 'philips_lamps.jinja' import nearest_colour %}
+            {% set hs = trigger.to_state.attributes.get('hs_color') %}
+            {{ nearest_colour(hs[0], hs[1]) | trim }}
+      # Remembered even while the lamps are off: they take it at the next power-up
+      - action: input_select.select_option
+        target:
+          entity_id: input_select.philips_floor_lamps_last_colour
+        data:
+          option: "{{ colour }}"
+      - condition: state
+        entity_id: light.philips_floor_lamps
+        state: "on"
+      # Only a different colour: the lamps' own change coming back from the other half sends nothing
+      - condition: template
+        value_template: "{{ colour != states('input_select.philips_floor_lamps_mode') }}"
+      - action: script.philips_floor_lamps_apply
+        data:
+          colour: "{{ colour }}"
