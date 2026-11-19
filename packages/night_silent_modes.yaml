@@ -205,7 +205,7 @@ script:
       moving head, model railway track power, wireless charger and Yandex stations off), turns off all
       lights and the devices of Turn Off All Lights (baby monitor plug, speakers, Interactive CZ Map,
       TV), turns off the 7-segment clock, dims the Nest thermostat screen to 1 % and warns on the phone
-      if a window is open during the heating season. Home Day Mode and the *_reenable automations bring
+      if a window is open during the heating season (outside it: only if bad or cold weather is expected tonight). Home Day Mode and the *_reenable automations bring
       the clock, charger and map back; the evening track power automation in dcc_ex.yaml brings the
       model railway back.
     sequence:
@@ -243,6 +243,9 @@ script:
           value: 1
       # Phone push only (night mode is already on, so no voice): rooms with an open window while heating
       - action: script.notify_if_some_window_is_opened_during_heating_season
+        continue_on_error: true
+      # Outside the heating season: open window + rain/storm/wind/cold expected before 07:00 (I-15, windows.yaml)
+      - action: script.night_window_weather_check
         continue_on_error: true
 
   home_day_mode:

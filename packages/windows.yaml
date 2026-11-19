@@ -4,7 +4,7 @@
 # Date: 2026-11-13                                                   #
 #                                                                    #
 # Info: advice notifications about windows (catalog I-04, I-05,      #
-# I-14 in docs/notifications_catalog.md).                            #
+# I-14, I-15 in docs/notifications_catalog.md).                      #
 #                                                                    #
 # Copyright (c) 2026 Sen Morgan                                      #
 ######################################################################
@@ -108,6 +108,80 @@ template:
         delay_on: "00:15:00"
         state: >-
           {{ states('sensor.outdoor_temperature_min') | float(99) < states('sensor.indoor_temperature_average') | float(-99) - 1.5 }}
+
+###############################################
+## SCRIPTS
+###############################################
+script:
+  # I-15: bedtime check, called by script.home_night_mode
+  night_window_weather_check:
+    alias: Night Window Weather Check
+    description: >-
+      Called when the night mode starts. Outside the heating season (in season the heating push already
+      reports open windows), if a window is open, looks at the Met.no hourly forecast until 07:00 and
+      pushes Sen a silent advice to close it when rain, a thunderstorm, hail, strong wind (40 km/h or
+      more) or a cold night (below 10 °C) is expected. Nothing is sent when the night looks fine.
+    mode: single
+    sequence:
+      - condition: state
+        entity_id: input_boolean.heating_season
+        state: "off"
+      - condition: state
+        entity_id: binary_sensor.windows
+        state: "on"
+      - action: weather.get_forecasts
+        target:
+          entity_id: weather.home_assistant_blue
+        data:
+          type: hourly
+        response_variable: fc
+      - variables:
+          # Slots from now until the next 07:00 (the night ends there)
+          until: >-
+            {% set t = today_at('07:00') %}
+            {{ (t if now() < t else t + timedelta(days=1)).isoformat() }}
+          night: >-
+            {% set u = until | as_datetime %}
+            {% set ns = namespace(l=[]) %}
+            {% for s in fc['weather.home_assistant_blue'].forecast if s.datetime | as_datetime < u %}
+              {% set ns.l = ns.l + [s] %}
+            {% endfor %}
+            {{ ns.l }}
+          wet_list: ['rainy', 'pouring', 'lightning', 'lightning-rainy', 'hail', 'snowy-rainy']
+          # First bad slot and its kind: storm beats rain beats wind
+          bad: >-
+            {% set ns = namespace(r=none) %}
+            {% for s in night if ns.r is none and (s.condition in wet_list or s.wind_speed | float(0) >= 40) %}
+              {% set kind = 'storm' if s.condition in ['lightning', 'lightning-rainy', 'hail']
+                            else 'rain' if s.condition in wet_list else 'wind' %}
+              {% set ns.r = {'kind': kind, 'at': (s.datetime | as_datetime | as_local).strftime('%H:%M')} %}
+            {% endfor %}
+            {{ ns.r }}
+          storm_any: "{{ night | selectattr('condition', 'in', ['lightning', 'lightning-rainy', 'hail']) | list | count > 0 }}"
+          t_min: "{{ night | map(attribute='temperature') | select('is_number') | min if night else none }}"
+          cold: "{{ t_min is number and t_min < 10 }}"
+      - condition: "{{ bad is not none or cold }}"
+      - variables:
+          kind: "{{ 'storm' if storm_any else (bad.kind if bad is not none else 'cold') }}"
+      - action: script.notify
+        data:
+          level: info
+          persistent: false
+          title: >-
+            {{ {'storm': '⛈️ Ночью гроза', 'rain': '🌧️ Ночью дождь', 'wind': '💨 Ночью сильный ветер',
+                'cold': '🥶 Ночью холодно'}[kind] }}, окно открыто
+          message: >-
+            {% from 'ru.jinja' import num, room_ru %}
+            {% set ns = namespace(r=[]) %}
+            {% for e in expand('binary_sensor.windows') | selectattr('state', 'eq', 'on') %}
+              {% set ns.r = ns.r + [room_ru(area_name(e.entity_id))] %}
+            {% endfor %}
+            {% set facts = [ns.r | join(', ')] %}
+            {% if bad is not none %}
+              {% set facts = facts + [{'storm': 'гроза', 'rain': 'дождь', 'wind': 'ветер'}[bad.kind] ~ ' с ' ~ bad.at] %}
+            {% endif %}
+            {% if t_min is number %}{% set facts = facts + ['мин. ' ~ num(t_min) ~ ' °C'] %}{% endif %}
+            {{ facts | join(' · ') }}
 
 ###############################################
 ## AUTOMATIONS
