@@ -219,28 +219,32 @@ script:
       - action: light.turn_off
         target:
           entity_id: light.7_seg_clock
-      # Bedroom cover, moving head, model railway track power, wireless charger and Yandex stations.
-      # continue_on_error: an unavailable device must not stop the rest of the night routine
-      - action: scene.turn_on
-        continue_on_error: true
-        target:
-          entity_id: scene.good_night
-      # All lights plus the baby monitor plug, speakers, CZ map, track power and the TV; when the night
-      # mode starts by itself the apartment is already quiet, so this only catches what was left on
-      - action: script.turn_off_all_lights
-        continue_on_error: true
-      # Nest screen as dark as possible at night: auto brightness off first, otherwise it overrides the manual value.
-      # continue_on_error: the thermostat may be offline (MQTT), the rest of the night mode must not depend on it
-      - action: switch.turn_off
-        continue_on_error: true
-        target:
-          entity_id: switch.nestlocal_screen_brightness_auto
-      - action: number.set_value
-        continue_on_error: true
-        target:
-          entity_id: number.nestlocal_screen_brightness
-        data:
-          value: 1
+      # In parallel: the scene waits for its slowest device (switching off the Yandex Mini took 10 s on 20.11,
+      # through the Yandex cloud), and the lights were switched off only after it. Now the lights go first.
+      # continue_on_error everywhere: an unavailable device must not stop the rest of the night routine.
+      - parallel:
+          # All lights plus the baby monitor plug, speakers, CZ map, track power and the TV; when the night
+          # mode starts by itself the apartment is already quiet, so this only catches what was left on
+          - action: script.turn_off_all_lights
+            continue_on_error: true
+          # Bedroom cover, moving head, model railway track power, wireless charger and Yandex stations
+          - action: scene.turn_on
+            continue_on_error: true
+            target:
+              entity_id: scene.good_night
+          # Nest screen as dark as possible at night: auto brightness off first, otherwise it overrides the
+          # manual value (the thermostat may be offline over MQTT)
+          - sequence:
+              - action: switch.turn_off
+                continue_on_error: true
+                target:
+                  entity_id: switch.nestlocal_screen_brightness_auto
+              - action: number.set_value
+                continue_on_error: true
+                target:
+                  entity_id: number.nestlocal_screen_brightness
+                data:
+                  value: 1
       # Phone push only (night mode is already on, so no voice): rooms with an open window while heating
       - action: script.notify_if_some_window_is_opened_during_heating_season
         continue_on_error: true
