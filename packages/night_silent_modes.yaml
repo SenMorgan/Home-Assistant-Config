@@ -199,12 +199,17 @@ script:
   home_night_mode:
     alias: Home Night Mode
     description: >-
-      Turns on the night mode and silent mode flags (their side effects run from the handler automations)
-      and turns off the 7-segment clock, the baby monitor plug, the wireless charger and the Interactive CZ Map,
-      and dims the Nest thermostat screen to 1 % (manual brightness);
-      Home Day Mode and the *_reenable automations bring the clock, charger and map back.
+      The one night routine for every way of starting the night mode (bedroom button, dashboard
+      button, phone, Alice, the night mode switch and the automatic start when the apartment is quiet).
+      Turns on the night and silent mode flags, applies the Good Night scene (bedroom cover closed,
+      moving head, model railway track power, wireless charger and Yandex stations off), turns off all
+      lights and the devices of Turn Off All Lights (baby monitor plug, speakers, Interactive CZ Map,
+      TV), turns off the 7-segment clock, dims the Nest thermostat screen to 1 % and warns on the phone
+      if a window is open during the heating season. Home Day Mode and the *_reenable automations bring
+      the clock, charger and map back; the evening track power automation in dcc_ex.yaml brings the
+      model railway back.
     sequence:
-      # Ensure night and silent modes are enabled
+      # Flags first: in night mode Set Silent Mode keeps the baby monitor off and notifications stay silent
       - action: input_boolean.turn_on
         target:
           entity_id:
@@ -214,15 +219,16 @@ script:
       - action: light.turn_off
         target:
           entity_id: light.7_seg_clock
-      # Devices that are not needed at night; the *_reenable automations bring the charger and
-      # the map back in the morning (outside night mode, from 06:00)
-      - action: switch.turn_off
+      # Bedroom cover, moving head, model railway track power, wireless charger and Yandex stations.
+      # continue_on_error: an unavailable device must not stop the rest of the night routine
+      - action: scene.turn_on
         continue_on_error: true
         target:
-          entity_id:
-            - switch.bedroom_baby_monitor_plug
-            - switch.wireless_charger
-            - switch.interactive_cz_map_enable
+          entity_id: scene.good_night
+      # All lights plus the baby monitor plug, speakers, CZ map, track power and the TV; when the night
+      # mode starts by itself the apartment is already quiet, so this only catches what was left on
+      - action: script.turn_off_all_lights
+        continue_on_error: true
       # Nest screen as dark as possible at night: auto brightness off first, otherwise it overrides the manual value.
       # continue_on_error: the thermostat may be offline (MQTT), the rest of the night mode must not depend on it
       - action: switch.turn_off
@@ -235,6 +241,9 @@ script:
           entity_id: number.nestlocal_screen_brightness
         data:
           value: 1
+      # Phone push only (night mode is already on, so no voice): rooms with an open window while heating
+      - action: script.notify_if_some_window_is_opened_during_heating_season
+        continue_on_error: true
 
   home_day_mode:
     alias: Home Day Mode

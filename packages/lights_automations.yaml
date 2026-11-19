@@ -107,19 +107,11 @@ script:
   activate_night_mode:
     alias: Activate Night Mode
     description: >-
-      Good-night routine: applies the Good Night scene, enables night and silent
-      modes, turns off all lights and warns if a window is open during heating season.
+      Good-night entry point of the bedroom button and the dashboard button: runs Home Night Mode,
+      the one night routine shared with the night mode switch, Alice and the automatic night start.
     sequence:
-      - action: scene.turn_on
-        target:
-          entity_id: scene.good_night
-      - action: input_boolean.turn_on
-        target:
-          entity_id:
-            - input_boolean.home_night_mode
-            - input_boolean.silent_mode
-      - action: script.turn_off_all_lights
-      - action: script.notify_if_some_window_is_opened_during_heating_season
+      # Kept as its own script so the button and the dashboard keep working; all steps live in Home Night Mode
+      - action: script.home_night_mode
 
 ###############################################
 ## AUTOMATIONS
