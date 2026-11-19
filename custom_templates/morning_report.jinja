@@ -195,7 +195,7 @@
   {%- set rn = namespace(names=[]) -%}
   {%- for d in f.repairs -%}{%- set rn.names = rn.names + [INTEGRATIONS.get(d, d | replace('_', ' ') | title)] -%}{%- endfor -%}
   {%- set say.issues = say.issues + ['в разделе Ремонт ' ~ plural(f.repairs | count, 'новый пункт', 'новых пункта', 'новых пунктов')] -%}
-  {%- set text.lines = text.lines + ['🛠️ Новое в «Ремонте»: ' ~ rn.names | unique | join(', ')] -%}
+  {%- set text.lines = text.lines + ['🛠️ Новое в «Ремонте»:\n• ' ~ rn.names | unique | join('\n• ')] -%}
 {%- endif -%}
 {%- if f.restart -%}
   {%- set say.issues = say.issues + ['сервер перезапускался в ' ~ f.restart | regex_replace('^0', '')] -%}
@@ -218,8 +218,8 @@
   {%- set lines = namespace(parts=[]) -%}
   {%- for i in items | sort(attribute='name') -%}{%- set lines.parts = lines.parts + [i.name ~ ((' (' ~ room_in(i.area) ~ ')') if i.area else '')] -%}{%- endfor -%}
   {%- set shown = lines.parts[:10] -%}
-  {%- set text.lines = text.lines + ['📴 Пропали из сети' ~ ((' (' ~ items | count ~ ')') if items | count > 1 else '') ~ ': ' ~ shown | join(', ')
-      ~ ((' и ещё ' ~ (items | count - 10)) if items | count > 10 else '')] -%}
+  {%- set text.lines = text.lines + ['📴 Пропали из сети' ~ ((' (' ~ items | count ~ ')') if items | count > 1 else '') ~ ':\n• ' ~ shown | join('\n• ')
+      ~ (('\n• и ещё ' ~ (items | count - 10)) if items | count > 10 else '')] -%}
 {%- endif -%}
 {%- if f.backup_failed or f.backup_overdue -%}
   {%- set say.issues = say.issues + ['бэкап не удался' if f.backup_failed else 'бэкап не делался больше недели'] -%}
@@ -237,7 +237,7 @@
   {#- not urgent: a short phrase, names only on the phone -#}
   {%- set say.issues = say.issues + ['пора сменить батарейку в одном устройстве' if f.batteries | count == 1
       else 'пора сменить батарейки в ' ~ plural(f.batteries | count, 'устройстве', 'устройствах', 'устройствах')] -%}
-  {%- set text.lines = text.lines + ['🔋 Сменить батарейки: ' ~ f.batteries | join(', ')] -%}
+  {%- set text.lines = text.lines + ['🔋 Сменить батарейки:\n• ' ~ f.batteries | join('\n• ')] -%}
 {%- endif -%}
 
 {#- spoken summary: one issue as a sentence, 2-3 as a list, more: the first three and "подробности" -#}
@@ -263,7 +263,7 @@
   {%- set text.lines = text.lines + ['🔁 Вернулись в сеть: ' ~ plural(f.back_online, 'устройство', 'устройства', 'устройств')] -%}
 {%- endif -%}
 {%- if f.old_offline -%}
-  {%- set text.lines = text.lines + ['Недоступны ещё с вечера: ' ~ f.old_offline | join(', ')] -%}
+  {%- set text.lines = text.lines + ['Недоступны ещё с вечера:\n• ' ~ f.old_offline | join('\n• ')] -%}
 {%- endif -%}
 {%- if f.updates -%}
   {%- set text.lines = text.lines + ['⬆️ Доступно обновлений: ' ~ f.updates] -%}
