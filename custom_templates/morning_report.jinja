@@ -81,14 +81,23 @@
 {%- endfor -%}
 {%- set dev.back = before | reject('in', offline) | list | count -%}
 
-{#- integrations that failed to set up (expired token, cloud service down, ...) -#}
+{#- integrations that failed to set up (expired token, cloud service down, ...). An entry whose devices are
+    all labelled "Offline OK" is skipped: e.g. WLED of the PC backlight sits in setup_retry whenever the PC
+    (its power source) is off -#}
 {%- set failed = namespace(items=[]) -%}
+{%- set offline_ok = label_devices('offline_ok') -%}
 {%- for e in states | map(attribute='entity_id') | map('config_entry_id') | reject('none') | unique -%}
   {%- set st = config_entry_attr(e, 'state') | string | lower | replace('configentrystate.', '') -%}
   {%- if st in ['setup_error', 'setup_retry', 'migration_error', 'failed_unload'] and config_entry_attr(e, 'disabled_by') is none -%}
-    {%- set domain = config_entry_attr(e, 'domain') -%}
-    {%- set failed.items = failed.items + [{'name': INTEGRATIONS.get(domain, domain | replace('_', ' ') | title),
-                                           'title': config_entry_attr(e, 'title'), 'state': st}] -%}
+    {%- set ed = namespace(ids=[]) -%}
+    {%- for s in states if config_entry_id(s.entity_id) == e and device_id(s.entity_id) -%}
+      {%- set ed.ids = ed.ids + [device_id(s.entity_id)] -%}
+    {%- endfor -%}
+    {%- if not (ed.ids and ed.ids | reject('in', offline_ok) | list | count == 0) -%}
+      {%- set domain = config_entry_attr(e, 'domain') -%}
+      {%- set failed.items = failed.items + [{'name': INTEGRATIONS.get(domain, domain | replace('_', ' ') | title),
+                                             'title': config_entry_attr(e, 'title'), 'state': st}] -%}
+    {%- endif -%}
   {%- endif -%}
 {%- endfor -%}
 
