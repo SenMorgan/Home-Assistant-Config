@@ -175,11 +175,11 @@ script:
                       media_content_id: >-
                         Доброе утро! Тихий режим выключен.{{ window_note }}
                         {{- ' ' ~ report.speech if report is defined and report.speech is defined else '' }}
-                      # The report is long and comes right after waking up: spoken quieter (20 %, never louder
+                      # The report is long and comes right after waking up: spoken quieter (30 %, never louder
                       # than the station is set). yandex_station restores the previous volume after the speech
                       extra:
                         volume_level: >-
-                          {{ [state_attr('media_player.yandex_station_midi', 'volume_level') | float(0.3), 0.2] | min }}
+                          {{ [state_attr('media_player.yandex_station_midi', 'volume_level') | float(0.3), 0.3] | min }}
                   - if:
                       - "{{ report is defined and report.message is defined }}"
                     then:

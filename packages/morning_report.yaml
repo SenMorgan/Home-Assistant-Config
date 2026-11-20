@@ -7,7 +7,7 @@
 # today's weather and what went wrong in the house overnight         #
 # (alerts, failed integrations, offline devices, backup, restarts,   #
 # night door, disk, batteries), sunrise if still ahead, a wish at    #
-# the end. Spoken at 20 % volume. Wording in                         #
+# the end. Spoken at 30 % volume. Wording in                         #
 # custom_templates/morning_report.jinja. Plain                       #
 # templates, no AI: predictable text, no cloud, nothing invented.    #
 # Devices labelled "Offline OK" (PC-powered, fully switched off)     #
