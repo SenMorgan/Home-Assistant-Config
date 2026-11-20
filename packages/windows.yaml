@@ -262,16 +262,16 @@ automation:
         data:
           level: "{{ 'warning' if is_state('binary_sensor.people_home', 'off') else 'info' }}"
           persistent: false
+          # Short title (weather only); which windows are open goes into the message (user's wish 2026-11-20)
           title: >-
-            {{ {'storm': '⛈️ Скоро гроза', 'rain': '🌧️ Скоро дождь', 'wind': '💨 Сильный ветер'}.get(kind, '🌧️ Непогода') }},
-            окно открыто
+            {{ {'storm': '⛈️ Скоро гроза', 'rain': '🌧️ Скоро дождь', 'wind': '💨 Сильный ветер'}.get(kind, '🌧️ Непогода') }}
           message: >-
             {% from 'ru.jinja' import room_ru %}
             {% set ns = namespace(r=[]) %}
             {% for e in expand('binary_sensor.windows') | selectattr('state', 'eq', 'on') %}
               {% set ns.r = ns.r + [room_ru(area_name(e.entity_id))] %}
             {% endfor %}
-            {{ ns.r | join(', ') }} ·
+            {{ ('Открыто окно: ' if ns.r | count == 1 else 'Открыты окна: ') ~ ns.r | join(', ') }} ·
             {{ 'уже начинается' if minutes is none or minutes | int(0) < 5 else 'через ≈ ' ~ minutes ~ ' мин' }}
 
   # I-14: summer ventilation advice (outside hotter -> close, outside cooler -> open)
