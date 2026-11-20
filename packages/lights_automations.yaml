@@ -354,12 +354,19 @@ automation:
         then:
           # The Wake-on-LAN switch needs a ping cycle to report the real PC state after the start
           - delay: "00:02:00"
-          - condition: state
-            entity_id: switch.asus_pc
-            state: "off"
-          - condition: state
-            entity_id: light.gyver_lamp
-            state: "on"
+      # Top-level check: a condition inside "then" only ends that block, the lamp went off with the PC on (20.11)
+      - condition: or
+        conditions:
+          - condition: template
+            value_template: "{{ trigger.id != 'start' }}"
+          - condition: and
+            conditions:
+              - condition: state
+                entity_id: switch.asus_pc
+                state: "off"
+              - condition: state
+                entity_id: light.gyver_lamp
+                state: "on"
       - action: light.turn_off
         target:
           entity_id: light.gyver_lamp

@@ -912,12 +912,17 @@ automation:
         entity_id: input_boolean.guest_mode
         state: "off"
     actions:
-      # After a start the persons come back with a delay: wait, then require 5 stable minutes of nobody home
+      # After a start the persons come back with a delay: wait first
       - if:
           - condition: trigger
             id: start
         then:
           - delay: "00:06:00"
+      # Top-level check: a condition inside "then" would only end that block and the run would go on (20.11)
+      - condition: or
+        conditions:
+          - condition: template
+            value_template: "{{ trigger.id != 'start' }}"
           - condition: state
             entity_id: binary_sensor.people_home
             state: "off"
