@@ -87,6 +87,7 @@ automation:
               # otherwise ask to open a window
               media_content_type: text
               media_content_id: >-
+                {% from 'alice.jinja' import voice %}{{ voice() }}
                 {% from 'ru.jinja' import room_in %}
                 {% if is_state('binary_sensor.windows', 'off') %}
                   Воздух в квартире несвежий, откройте окно.
@@ -152,7 +153,8 @@ automation:
               entity_id: media_player.yandex_station_midi
             data:
               media_content_type: text
-              media_content_id: Молодец! Рада, что вы заботитесь о своём здоровье.
+              media_content_id: >-
+                {% from 'alice.jinja' import voice %}{{ voice() }}Молодец! Рада, что вы заботитесь о своём здоровье.
 
   - id: notification_air_quality_restored
     alias: Notification Air Quality Restored
@@ -183,6 +185,7 @@ automation:
                 data:
                   media_content_type: text
                   media_content_id: >-
+                    {% from 'alice.jinja' import voice %}{{ voice() }}
                     {{ 'Воздух свежий, окно можно закрыть.' if is_state('binary_sensor.windows', 'on')
                        else 'Воздух в квартире снова свежий.' }}
           - action: script.notify

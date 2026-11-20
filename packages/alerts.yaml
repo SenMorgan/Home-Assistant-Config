@@ -228,7 +228,8 @@ automation:
             target:
               entity_id: media_player.yandex_station_midi
             data:
-              media_content_id: "{{ phrase }}"
+              media_content_id: >-
+                {% from 'alice.jinja' import voice %}{{ voice() }}{{ phrase }}
               media_content_type: text
           - action: notify.mobile_app_sen_s25
             continue_on_error: true

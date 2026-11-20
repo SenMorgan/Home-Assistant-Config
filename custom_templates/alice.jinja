@@ -1,0 +1,16 @@
+{#- Alice (Yandex station) speech helpers.
+
+    voice(entity): prefix for a `media_player.play_media` text phrase that switches the station to the
+    house voice (chosen by Sen on 2026-11-20 after a test of all voices: kostya). Usage:
+      media_content_id: >-
+        {% from 'alice.jinja' import voice %}{{ voice() }}Текст фразы.
+
+    The <speaker> tag only works in yandex_station local mode. In cloud mode the integration sends the text
+    through a cloud scenario (cut to 100 characters) where the tag would be spoken or break the phrase, so the
+    prefix is added only while the station reports `alice_state` (that attribute exists only in local mode).
+    Voices that work on the stations: see the voice test notes (the newer SpeechKit voices are silent). -#}
+{%- set house_voice = 'kostya' -%}
+
+{% macro voice(entity='media_player.yandex_station_midi') -%}
+{%- if state_attr(entity, 'alice_state') is not none -%}<speaker voice="{{ house_voice }}">{%- endif -%}
+{%- endmacro %}

@@ -173,6 +173,7 @@ script:
                     data:
                       media_content_type: text
                       media_content_id: >-
+                        {% from 'alice.jinja' import voice %}{{ voice() }}
                         Доброе утро! Тихий режим выключен.{{ window_note }}
                         {{- ' ' ~ report.speech if report is defined and report.speech is defined else '' }}
                       # The report is long and comes right after waking up: spoken quieter (30 %, never louder
@@ -199,6 +200,7 @@ script:
                 data:
                   media_content_type: text
                   media_content_id: >-
+                    {% from 'alice.jinja' import voice %}{{ voice() }}
                     {{ 'Доброе утро! ' if 5 <= now().hour < 12 }}Тихий режим выключен.{{ window_note }}
 
   home_night_mode:

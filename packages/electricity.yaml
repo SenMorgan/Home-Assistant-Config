@@ -143,6 +143,7 @@ automation:
           entity_id: media_player.yandex_station_midi
         data:
           media_content_id: >-
+            {% from 'alice.jinja' import voice %}{{ voice() }}
             Внимание! Слишком большая нагрузка: {{ states('sensor.electricity_meter_power') | int(0) }} ватт.
             Срочно уменьшите потребление квартиры.
           media_content_type: text

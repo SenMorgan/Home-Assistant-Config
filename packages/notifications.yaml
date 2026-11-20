@@ -163,7 +163,8 @@ script:
             target:
               entity_id: media_player.yandex_station_midi
             data:
-              media_content_id: "{{ tts }}"
+              media_content_id: >-
+                {% from 'alice.jinja' import voice %}{{ voice() }}{{ tts }}
               media_content_type: text
       # Critical: also speak on the phones through the alarm stream (audible even in silent mode)
       - if:

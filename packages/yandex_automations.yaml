@@ -139,6 +139,7 @@ script:
           entity_id: media_player.yandex_station_midi
         data:
           media_content_id: >-
+            {% from 'alice.jinja' import voice %}{{ voice() }}
             {% set responses = [
               "Анита могла бы кушать аккуратнее.",
               "Тут очень уютно, не хотелось бы убираться.",
@@ -175,6 +176,7 @@ script:
           entity_id: media_player.yandex_station_midi
         data:
           media_content_id: >-
+            {% from 'alice.jinja' import voice %}{{ voice() }}
             {% set responses = [
               "Тут очень уютно, не хотелось бы убираться.",
               "Если бы я могла, я бы помогла Вам убраться, но только зачем оно надо?",
@@ -215,6 +217,7 @@ script:
         data:
           media_content_type: text
           media_content_id: >-
+            {% from 'alice.jinja' import voice %}{{ voice() }}
             {% set responses = [
               "Одежда постирана! Твои носки теперь могут устраивать дуэль за свежесть!",
               "Одежда постирана! Стиральная машина провела успешную операцию по спасению рубашек!",

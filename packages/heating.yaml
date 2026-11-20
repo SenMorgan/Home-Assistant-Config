@@ -471,7 +471,8 @@ automation:
             target:
               entity_id: media_player.yandex_station_midi
             data:
-              media_content_id: Окно открыто — подогрев квартиры отменён.
+              media_content_id: >-
+                {% from 'alice.jinja' import voice %}{{ voice() }}Окно открыто — подогрев квартиры отменён.
               media_content_type: text
       # Set "eco" mode on thermostat
       - action: script.thermostat_set_eco_mode
@@ -815,7 +816,8 @@ automation:
             target:
               entity_id: media_player.yandex_station_midi
             data:
-              media_content_id: Квартира уже подогревается.
+              media_content_id: >-
+                {% from 'alice.jinja' import voice %}{{ voice() }}Квартира уже подогревается.
               media_content_type: text
         else:
           # Reset all active timers that could affect heating
@@ -836,6 +838,7 @@ automation:
             data:
               # Duration from the timer itself, with the right plural form (accusative: минуту/минуты/минут)
               media_content_id: >-
+                {% from 'alice.jinja' import voice %}{{ voice() }}
                 {% from 'ru.jinja' import plural %}
                 Подогреваю квартиру
                 {{ plural((state_attr('timer.short_heating', 'duration') | as_timedelta).total_seconds() // 60,
@@ -867,6 +870,7 @@ automation:
           entity_id: media_player.yandex_station_midi
         data:
           media_content_id: >-
+            {% from 'alice.jinja' import voice %}{{ voice() }}
             {% from 'ru.jinja' import plural %}
             {% set t = state_attr('climate.nestlocal_thermostat', 'current_temperature') %}
             Подогрев закончен{% if t is number %}, температура: {{ plural(t | round(0), 'градус', 'градуса', 'градусов') }}{% endif %}.
@@ -1245,7 +1249,8 @@ automation:
             target:
               entity_id: media_player.yandex_station_midi
             data:
-              media_content_id: Подогрев остановлен.
+              media_content_id: >-
+                {% from 'alice.jinja' import voice %}{{ voice() }}Подогрев остановлен.
               media_content_type: text
       # Reset all active timers that could affect heating
       - action: timer.cancel
@@ -1294,7 +1299,8 @@ automation:
         target:
           entity_id: media_player.yandex_station_midi
         data:
-          media_content_id: Отопление снова работает.
+          media_content_id: >-
+            {% from 'alice.jinja' import voice %}{{ voice() }}Отопление снова работает.
           media_content_type: text
       # Log the message
       - action: input_text.set_value
