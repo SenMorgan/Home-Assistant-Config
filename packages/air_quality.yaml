@@ -154,7 +154,7 @@ automation:
             data:
               media_content_type: text
               media_content_id: >-
-                {% from 'alice.jinja' import voice %}{{ voice() }}Молодец! Рада, что вы заботитесь о своём здоровье.
+                {% from 'alice.jinja' import voice %}{{ voice() }}Молодец! Рад, что вы заботитесь о своём здоровье.
 
   - id: notification_air_quality_restored
     alias: Notification Air Quality Restored
