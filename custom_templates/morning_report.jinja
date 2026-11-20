@@ -2,7 +2,7 @@
    collect(daily, hourly) -> JSON facts from the live system, render(facts) -> JSON {speech, message}.
    Usage: render(collect(daily, hourly) | from_json) | from_json #}
 
-{% from 'ru.jinja' import num, plural, plural_form, room_in %}
+{% from 'ru.jinja' import num, plural, plural_form, room_in, duration_tts, duration_short %}
 {% from 'devices.jinja' import offline_devices %}
 
 {# Short Russian phrases for the alert entities (their names are English) #}
@@ -101,6 +101,10 @@
   {%- endif -%}
 {%- endfor -%}
 
+{#- sunrise still ahead today (the report can run before it in winter) -#}
+{%- set rise = state_attr('sun.sun', 'next_rising') | as_datetime(default=none) -%}
+{%- set rise = rise | as_local if rise is not none and (rise | as_local).date() == now().date() else none -%}
+
 {#- Repairs raised during the night (recorded by sensor.repairs_recent_issues) -#}
 {%- set rp = namespace(domains=[]) -%}
 {%- for i in state_attr('sensor.repairs_recent_issues', 'issues') or [] -%}
@@ -121,7 +125,11 @@
 
 {{- {
   'hour': now().hour,
+  'weekday': now().isoweekday(),
+  'yday': now().timetuple().tm_yday,
   'weather': ns.weather,
+  'sunrise': rise.strftime('%H:%M') if rise is not none else none,
+  'to_sunrise': ((rise - now()).total_seconds() // 60) | int if rise is not none else none,
   'alerts': states.alert | selectattr('state', 'eq', 'on') | map(attribute='entity_id')
               | reject('eq', 'alert.backup_overdue') | list,
   'new_offline': dev.new,
@@ -186,6 +194,13 @@
 {%- else -%}
   {%- set say.weather = 'Прогноз погоды получить не удалось.' -%}
   {%- set text.lines = text.lines + ['🌤️ Прогноз погоды недоступен'] -%}
+{%- endif -%}
+
+{#- 2a. Sunrise, only when it is still ahead (winter mornings); "через 0 минут" is not worth saying -#}
+{%- if f.sunrise and f.to_sunrise | default(0) > 0 -%}
+  {%- set rise = f.sunrise | regex_replace('^0', '') -%}
+  {%- set say.weather = say.weather ~ ' Рассвет в ' ~ rise ~ ', через ' ~ duration_tts(f.to_sunrise) ~ '.' -%}
+  {%- set text.lines = text.lines + ['🌅 Рассвет в ' ~ rise ~ ' (через ' ~ duration_short(f.to_sunrise) ~ ')'] -%}
 {%- endif -%}
 
 {#- 3. What went wrong overnight, most important first -#}
@@ -266,6 +281,21 @@
   {%- set tail = '' -%}
 {%- endif -%}
 {%- set tail = tail ~ (' Подробности в телефоне.' if n or f.alerts else '') -%}
+
+{#- a wish to close the report (spoken only); none while an alert is active. Weekend/Friday and the weather
+    first, otherwise a phrase rotating by the day of the year -#}
+{%- set wd = f.weekday | default(0) -%}
+{%- if f.alerts -%}{%- set wish = '' -%}
+{%- elif wd in [6, 7] -%}{%- set wish = 'Хороших выходных!' -%}
+{%- elif wd == 5 -%}{%- set wish = 'Хорошей пятницы!' -%}
+{%- elif w and w.now <= 0 -%}{%- set wish = 'Одевайтесь теплее, хорошего дня!' -%}
+{%- elif w and w.wet_from is not none -%}{%- set wish = 'Не промокните, хорошего дня!' -%}
+{%- else -%}
+  {%- set WISHES = ['Хорошего дня!', 'Отличного дня!', 'Пусть день будет удачным!', 'Пусть всё получится!',
+                    'Лёгкого дня!', 'Удачи сегодня!'] -%}
+  {%- set wish = WISHES[f.yday | default(0) % WISHES | count] -%}
+{%- endif -%}
+{%- set tail = tail ~ ((' ' ~ wish) if wish else '') -%}
 
 {#- phone only: background information -#}
 {%- if f.back_online -%}
