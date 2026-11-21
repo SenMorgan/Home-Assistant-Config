@@ -143,23 +143,6 @@ mqtt:
       payload_not_home: "not_home"
       source_type: router
 
-  cover:
-    - name: "Bedroom"
-      unique_id: "bedroom_cover"
-      device_class: shade
-      command_topic: "/blinds/set"
-      position_topic: "/blinds/position"
-      availability:
-        - topic: "/blinds/availability"
-      set_position_topic: "/blinds/set_position"
-      payload_open: "OPEN"
-      payload_close: "CLOSE"
-      payload_stop: "STOP"
-      position_open: 100
-      position_closed: 0
-      optimistic: false
-      position_template: "{{ value }}"
-
   light:
     - name: "Kitchen Spotlights"
       unique_id: "kitchen_spotlights"

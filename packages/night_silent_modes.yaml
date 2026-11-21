@@ -296,24 +296,6 @@ script:
             target:
               entity_id: switch.interactive_cz_map_enable
 
-  cover_correct_up:
-    alias: Cover Correct Zero Position Up
-    description: Sends CORRECT_UP over MQTT to the blinds controller to nudge its zero position up.
-    sequence:
-      - action: mqtt.publish
-        data:
-          topic: /blinds/set
-          payload: "CORRECT_UP"
-
-  cover_correct_down:
-    alias: Cover Correct Zero Position Down
-    description: Sends CORRECT_DOWN over MQTT to the blinds controller to nudge its zero position down.
-    sequence:
-      - action: mqtt.publish
-        data:
-          topic: /blinds/set
-          payload: "CORRECT_DOWN"
-
 ###############################################
 ## AUTOMATIONS
 ###############################################
