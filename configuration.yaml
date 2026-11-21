@@ -122,7 +122,6 @@ light:
             name: Moving Head Mode
 
 mqtt:
-  binary_sensor: !include mqtt/mqtt-binary-sensors.yaml
   button: !include mqtt/mqtt-buttons.yaml
   sensor: !include mqtt/mqtt-sensors.yaml
   switch: !include mqtt/mqtt-switches.yaml

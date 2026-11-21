@@ -8,8 +8,6 @@ light.floor_lamp:
     - Breathe
     - Lightning
     - Solid
-sensor.air_quality_station_pm2_5:
-  icon: mdi:blur
 switch.asus_pc:
   icon: mdi:desktop-tower-monitor
 switch.lenovo_thinkbook:
