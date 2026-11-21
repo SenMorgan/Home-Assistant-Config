@@ -25,6 +25,12 @@
 {{- {'kwh': kwh | round(1), 'so_far': so_far | round(1), 'days': days | round(2)} | to_json -}}
 {%- endmacro -%}
 
+{# Average of key over the last n recorded months that have it (history rows, oldest first); fallback when none #}
+{%- macro recent_avg(h, key, n=3, fallback=0) -%}
+{%- set v = (h | selectattr(key, 'defined') | selectattr(key, 'number') | map(attribute=key) | list)[-n:] -%}
+{{- ((v | sum / v | count) if v else fallback) | round(1) -}}
+{%- endmacro -%}
+
 {# Most recent settlement date strictly before today: 'YYYY-MM-DD' #}
 {%- macro last_settlement(md) -%}
 {%- set t = now().strftime('%Y-%m-%d') -%}
