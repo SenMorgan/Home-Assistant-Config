@@ -5,6 +5,26 @@
    the month containing the settlement day is split by days between the two periods.
    Reload with homeassistant.reload_custom_templates. #}
 
+{# Moment a reading was taken, as an ISO string in local time: date 'YYYY-MM-DD' + time 'HH:MM' (the moment the
+   save button was pressed). Older rows have no time: they count as taken at noon (error at most half a day). #}
+{%- macro reading_dt(d, t=none) -%}
+{{- ((d ~ ' ' ~ (t if t else '12:00')) | as_datetime).replace(tzinfo=now().tzinfo).isoformat() -}}
+{%- endmacro -%}
+
+{# Electricity of the running month nm ('YYYY-MM') from the Zigbee meter: kWh since the last month reading row l,
+   extrapolated to the whole month by the exact time elapsed. The first 3 days are too noisy (large loads such as
+   car charging come in bursts): then last month's kWh. Returns JSON {kwh, so_far, days} #}
+{%- macro el_projection(l, nm) -%}
+{%- set y, mo = nm[0:4] | int, nm[5:7] | int -%}
+{%- set start = ((nm ~ '-01 00:00') | as_datetime).replace(tzinfo=now().tzinfo) -%}
+{%- set end = (('%04d-%02d-01 00:00' | format(y + mo // 12, mo % 12 + 1)) | as_datetime).replace(tzinfo=now().tzinfo) -%}
+{%- set base = reading_dt(l.rd, l.rt) | as_datetime if l.rd else start -%}
+{%- set so_far = states('sensor.electricity_meter_energy') | float(0) - l.zig | float(0) -%}
+{%- set days = (now() - base).total_seconds() / 86400 -%}
+{%- set kwh = (so_far / days * (end - start).total_seconds() / 86400) if days >= 3 else (l.kwh or so_far) -%}
+{{- {'kwh': kwh | round(1), 'so_far': so_far | round(1), 'days': days | round(2)} | to_json -}}
+{%- endmacro -%}
+
 {# Most recent settlement date strictly before today: 'YYYY-MM-DD' #}
 {%- macro last_settlement(md) -%}
 {%- set t = now().strftime('%Y-%m-%d') -%}
@@ -43,8 +63,11 @@
 {# Projected balance at the end of the running period: current balance + for every month not recorded yet
    (deposit - expected cost), the months containing settlement days split by days.
    Expected consumption = the same calendar month a year ago (else the 12-month average);
-   cost = consumption * a + b (a, b already include VAT). #}
-{%- macro forecast(h, key, bal_key, md, deposit, a, b) -%}
+   cost = consumption * a + b (a, b already include VAT).
+   Optional: cur = expected consumption of the running (first unrecorded) month, e.g. from a meter projection;
+   extra = consumption added to every month whose year-ago month is before extra_from ('YYYY-MM'), for a
+   permanent new load the history does not contain yet. #}
+{%- macro forecast(h, key, bal_key, md, deposit, a, b, cur=none, extra=0, extra_from=none) -%}
 {%- set l = h[-1] -%}
 {%- set y, mo = l.m[0:4] | int, l.m[5:7] | int -%}
 {%- set s = last_settlement(md) -%}
@@ -62,8 +85,14 @@
     {%- elif reset and ym == s[0:7] -%}{%- set f = sa -%}
     {%- elif ym == end[0:7] -%}{%- set f = 1 - sa -%}
     {%- else -%}{%- set f = 1 -%}{%- endif -%}
-    {%- set same = (h | selectattr('m', 'search', '-' ~ ym[5:7] ~ '$') | map(attribute=key) | select('number') | list)[-1:] -%}
-    {%- set c = same[0] if same else ((allv | sum / allv | count) if allv else 0) -%}
+    {%- set same = (h | selectattr('m', 'search', '-' ~ ym[5:7] ~ '$') | selectattr(key, 'number') | list)[-1:] -%}
+    {%- if cur is number and ym == '%04d-%02d' | format(y + mo // 12, mo % 12 + 1) -%}
+      {%- set c = cur -%}
+    {%- elif same -%}
+      {%- set c = same[0][key] + (extra if extra_from and same[0].m < extra_from else 0) -%}
+    {%- else -%}
+      {%- set c = (allv | sum / allv | count) if allv else 0 -%}
+    {%- endif -%}
     {%- set ns.p = ns.p + f * (deposit - (c * a + b)) -%}
   {%- endif -%}
   {%- set ny = ns.y + ns.m // 12 -%}{%- set ns.m = ns.m % 12 + 1 -%}{%- set ns.y = ny -%}
