@@ -40,6 +40,22 @@ template:
         unique_id: high_power_consumption
         state: "{{ states('sensor.electricity_meter_power') | int(0) > 6000 }}"  # Threshold set to 6kW
 
+  # Power the Tesla takes from the home socket (13 A plug): charger voltage × current while it is charging at
+  # home, else 0. Integrated into sensor.tesla_home_charging_energy below; the monthly total goes to the bills
+  # sheet ("Car kWh") and the settlement forecast averages the last months. Tesla Fleet polls about once a
+  # minute while charging, so the left Riemann sum holds each reading until the next one.
+  - sensor:
+      - name: Tesla Home Charging Power
+        unique_id: tesla_home_charging_power
+        unit_of_measurement: W
+        device_class: power
+        state_class: measurement
+        icon: mdi:ev-plug-type2
+        state: >-
+          {% if is_state('sensor.hollandis_charging', 'charging') and is_state('device_tracker.hollandis_location', 'home') %}
+            {{ (states('sensor.hollandis_charger_voltage') | float(0) * states('sensor.hollandis_charger_current') | float(0)) | round(0) }}
+          {% else %}0{% endif %}
+
   - sensor:
       - name: Grid Consumed Today Cost
         unique_id: grid_consumed_today_cost
@@ -81,6 +97,13 @@ utility_meter:
     source: sensor.electricity_meter_energy
     periodically_resetting: false
     cycle: monthly
+  # Home charging of the Tesla this month (kWh from the socket); last_period = the previous month
+  tesla_home_charging_month:
+    name: Tesla Home Charging Month
+    unique_id: tesla_home_charging_month
+    source: sensor.tesla_home_charging_energy
+    periodically_resetting: false
+    cycle: monthly
   hollandis_charge_energy_added_month:
     name: Hollandis Charge Energy Added Month
     unique_id: hollandis_charge_energy_added_month
@@ -91,6 +114,19 @@ utility_meter:
 ## SENSORS
 ###############################################
 sensor:
+  # Energy taken by the Tesla from the home socket (left Riemann sum of the charging power)
+  - platform: integration
+    name: Tesla Home Charging Energy
+    unique_id: tesla_home_charging_energy
+    source: sensor.tesla_home_charging_power
+    method: left
+    unit_prefix: k
+    unit_time: h
+    round: 3
+    # Keep the total growing every 5 min while the power stays the same between polls (it drops to 0 as soon
+    # as the charging state changes, so a held value cannot run on after charging)
+    max_sub_interval:
+      minutes: 5
   - platform: history_stats
     name: High Power Today
     unique_id: high_power_today
