@@ -18,7 +18,7 @@
 {%- set y, mo = nm[0:4] | int, nm[5:7] | int -%}
 {%- set start = ((nm ~ '-01 00:00') | as_datetime).replace(tzinfo=now().tzinfo) -%}
 {%- set end = (('%04d-%02d-01 00:00' | format(y + mo // 12, mo % 12 + 1)) | as_datetime).replace(tzinfo=now().tzinfo) -%}
-{%- set base = reading_dt(l.rd, l.rt) | as_datetime if l.rd else start -%}
+{%- set base = reading_dt(l.rd, l.get('rt')) | as_datetime if l.rd else start -%}
 {%- set so_far = states('sensor.electricity_meter_energy') | float(0) - l.zig | float(0) -%}
 {%- set days = (now() - base).total_seconds() / 86400 -%}
 {%- set kwh = (so_far / days * (end - start).total_seconds() / 86400) if days >= 3 else (l.kwh or so_far) -%}
