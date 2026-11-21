@@ -123,6 +123,18 @@
       if door is not none and since < door.last_changed < until
          and (boot is none or (door.last_changed - boot) | abs > timedelta(minutes=3)) else none -%}
 
+{#- name each pending update; ones HA cannot install (no INSTALL feature, e.g. Synology DSM) are hidden in
+    Settings > Updates, so say they are installed on the device itself -#}
+{%- set upd = namespace(items=[]) -%}
+{%- for u in states.update | selectattr('state', 'eq', 'on') -%}
+  {%- set title = u.attributes.title or u.name -%}
+  {%- set ver = u.attributes.latest_version or '' -%}
+  {#- avoid "Synology DSM DSM 7.4.1": when the version repeats a word of the title, start the version there -#}
+  {%- set head = ver.split(' ')[0] -%}
+  {%- set label = (title.split(head)[0] ~ ver) if head and head in title.split(' ') else (title ~ ' ' ~ ver) -%}
+  {%- if (u.attributes.supported_features | int(0)) % 2 == 0 -%}{%- set label = label ~ ' (ставится на самом устройстве)' -%}{%- endif -%}
+  {%- set upd.items = upd.items + [label | trim] -%}
+{%- endfor -%}
 {{- {
   'hour': now().hour,
   'weekday': now().isoweekday(),
@@ -142,7 +154,7 @@
   'backup_failed': bk_failed,
   'restart': (boot | as_local).strftime('%H:%M') if boot is not none and since < boot < until else none,
   'door': door_at,
-  'updates': states.update | selectattr('state', 'eq', 'on') | list | count,
+  'updates': upd.items,
   'disk': states('sensor.disk_use_percent') | float(0) | round(0) | int
             if states('sensor.disk_use_percent') | float(0) >= 85 else none
 } | to_json -}}
@@ -305,7 +317,14 @@
   {%- set text.lines = text.lines + ['Недоступны ещё с вечера:\n• ' ~ f.old_offline | join('\n• ')] -%}
 {%- endif -%}
 {%- if f.updates -%}
-  {%- set text.lines = text.lines + ['⬆️ Доступно обновлений: ' ~ f.updates] -%}
+  {#- older callers/sim may still pass a count -#}
+  {%- if f.updates is number -%}
+    {%- set text.lines = text.lines + ['⬆️ Доступно обновлений: ' ~ f.updates] -%}
+  {%- elif f.updates | count == 1 -%}
+    {%- set text.lines = text.lines + ['⬆️ Обновление: ' ~ f.updates[0]] -%}
+  {%- else -%}
+    {%- set text.lines = text.lines + ['⬆️ Обновления:\n• ' ~ f.updates | join('\n• ')] -%}
+  {%- endif -%}
 {%- endif -%}
 
 {{- {'speech': (say.first + [say.weather, tail | trim]) | reject('eq', '') | join(' '),
