@@ -240,6 +240,11 @@
   {%- set dl = sun.d_length -%}
   {%- set change = 'как вчера' if dl | abs < 1 else ('на ' ~ shift(dl)[1:] ~ ' ' ~ ('длиннее' if dl > 0 else 'короче') ~ ' вчерашнего') -%}
   {%- set text.lines = text.lines + ['☀️ День ' ~ duration_short(sun.length) ~ ', ' ~ change] -%}
+  {#- spoken: the same in full words ("на 2 минуты", accusative); seconds under 30 s like the phone line -#}
+  {%- set a = dl | abs -%}
+  {%- set by = plural((a / 60) | round(0) | int, 'минуту', 'минуты', 'минут') if a >= 30 else plural(a | int, 'секунду', 'секунды', 'секунд') -%}
+  {%- set say.weather = say.weather ~ ' День продлится ' ~ duration_tts(sun.length)
+      ~ (', столько же, сколько вчера.' if a < 1 else (', это на ' ~ by ~ ' ' ~ ('длиннее' if dl > 0 else 'короче') ~ ', чем вчера.')) -%}
 {%- endif -%}
 
 {#- 3. What went wrong overnight, most important first -#}
