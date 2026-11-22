@@ -333,7 +333,8 @@ automation:
   - id: living_room_speakers_auto_power_down
     alias: Living Room Speakers Auto Power Down
     description: >-
-      Turns the Monolith speakers off when the TV is off, the Philips floor lamps (same plug) are off and
+      Turns the Monolith speakers off when the TV is off, the Philips floor lamps (same plug) are off or
+      lit only because the plug got power (input_boolean.philips_floor_lamps_wanted off) and
       no music has played for 5 minutes (speakers never above the 40 W "playing" threshold): checked after
       they are switched on, when the TV or the lamps turn off and when the music stops. The speakers have
       no standby of their own any more, so the plug is the only off.
@@ -374,9 +375,12 @@ automation:
           - condition: state
             entity_id: media_player.samsung_tv
             state: "off"
-          - condition: state
-            entity_id: light.philips_floor_lamps
-            state: "off"
+          # Lamps keep the plug on only if someone turned them on: lamps that lit up because the TV switched
+          # the plug on go dark with it (before 2026-11-22 they kept the speakers on forever)
+          - condition: template
+            value_template: >-
+              {{ is_state('light.philips_floor_lamps', 'off')
+                 or is_state('input_boolean.philips_floor_lamps_wanted', 'off') }}
         then:
           - alias: Power off if threshold not exceeded
             action: switch.turn_off

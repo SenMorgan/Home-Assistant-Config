@@ -56,6 +56,13 @@ input_boolean:
   philips_floor_lamps_power:
     name: Philips Floor Lamps Power
     icon: mdi:floor-lamp
+  # Lamps turned on (or changed) on purpose through the light: dashboard, Alice, remotes, scenes. Off when they
+  # light up only because the plug got power (TV switched the speakers on) or lose power. Speakers Auto Power Down
+  # keeps the plug on only for wanted lamps; before 2026-11-22 lamps lit by the TV kept the plug on forever.
+  # No initial: restored after restarts
+  philips_floor_lamps_wanted:
+    name: Philips Floor Lamps Wanted
+    icon: mdi:floor-lamp-outline
 
 input_number:
   # The remote changes brightness in 5 steps (Dim Up / Dim Down)
@@ -326,6 +333,9 @@ template:
         # The light calls only set_level / set_hs / set_effect when turn_on carries those, so all of
         # them go through the apply script, which also powers the lamps up when needed
         turn_on:
+          - action: input_boolean.turn_on
+            target:
+              entity_id: input_boolean.philips_floor_lamps_wanted
           - action: script.philips_floor_lamps_apply
         turn_off:
           # Only the lamps: the speakers on the same plug stay on
@@ -334,17 +344,28 @@ template:
               buttons: [power_off]
           - action: input_boolean.turn_off
             target:
-              entity_id: input_boolean.philips_floor_lamps_power
+              entity_id:
+                - input_boolean.philips_floor_lamps_power
+                - input_boolean.philips_floor_lamps_wanted
         set_level:
+          - action: input_boolean.turn_on
+            target:
+              entity_id: input_boolean.philips_floor_lamps_wanted
           - action: script.philips_floor_lamps_apply
             data:
               level: "{{ [1, [5, (brightness / 51) | round(0, 'ceil') | int] | min] | max }}"
         # Nearest of the remote's colours (custom_templates/philips_lamps.jinja)
         set_hs:
+          - action: input_boolean.turn_on
+            target:
+              entity_id: input_boolean.philips_floor_lamps_wanted
           - action: script.philips_floor_lamps_apply
             data:
               colour: "{% from 'philips_lamps.jinja' import nearest_colour %}{{ nearest_colour(h, s) }}"
         set_effect:
+          - action: input_boolean.turn_on
+            target:
+              entity_id: input_boolean.philips_floor_lamps_wanted
           - action: script.philips_floor_lamps_apply
             data:
               effect: "{{ effect }}"
@@ -452,7 +473,9 @@ automation:
             sequence:
               - action: input_boolean.turn_off
                 target:
-                  entity_id: input_boolean.philips_floor_lamps_power
+                  entity_id:
+                    - input_boolean.philips_floor_lamps_power
+                    - input_boolean.philips_floor_lamps_wanted
           - conditions:
               - condition: trigger
                 id: power_up
