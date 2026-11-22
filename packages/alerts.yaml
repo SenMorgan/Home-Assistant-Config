@@ -27,6 +27,30 @@ group:
       - binary_sensor.living_room_window_contact
       - sensor.ups_status_data
 
+  # Room air sensors (BTHome ATC, one per room) checked by binary_sensor.room_overheat at 40 °C
+  room_temperature_sensors:
+    name: Room Temperature Sensors
+    entities:
+      - sensor.ble_temperature_atc_bedroom
+      - sensor.ble_temperature_atc_living_room
+      - sensor.ble_temperature_atc_hall
+      - sensor.ble_temperature_atc_bathroom
+      - sensor.ble_temperature_atc_toilet
+      - sensor.ble_temperature_atc_kitchen
+
+  # Backup for the room sensors (a BLE sensor can die or drop out in a fire): chip temperatures of Zigbee
+  # devices. They read ~5 °C above the air (whole numbers), hence the higher 45 °C threshold.
+  device_temperature_sensors:
+    name: Device Temperature Sensors
+    entities:
+      - sensor.bedroom_door_contact_temperature
+      - sensor.bedroom_window_contact_temperature
+      - sensor.living_room_window_contact_temperature
+      - sensor.kitchen_window_contact_temperature
+      - sensor.wc_door_contact_temperature
+      - sensor.hall_door_contact_temperature
+      - sensor.aqara_hall_motion_sensor_device_temperature
+
 ###############################################
 ## TEMPLATE ENTITIES
 ###############################################
@@ -54,6 +78,50 @@ template:
             {% for e in state_attr('group.safety_sensors', 'entity_id') | default([], true) | reject('has_value') -%}
               {{ state_attr(e, 'friendly_name') or e }}{{ ', ' if not loop.last }}
             {%- endfor %}
+
+      # On when a room is above 40 °C (or a Zigbee device chip above 45 °C): fire, a heater left on
+      # under something, a failed radiator valve. Rooms never exceeded 24 °C (10-day check 2026-11-22),
+      # so there is no normal reason to get close. The short delay skips a single corrupt reading.
+      - name: Room Overheat
+        unique_id: room_overheat
+        device_class: heat
+        delay_on: "00:00:30"
+        state: >-
+          {% set rooms = state_attr('group.room_temperature_sensors', 'entity_id') | default([], true) %}
+          {% set chips = state_attr('group.device_temperature_sensors', 'entity_id') | default([], true) %}
+          {{ rooms | select('has_value') | map('states') | map('float', 0) | select('gt', 40) | list | count > 0
+             or chips | select('has_value') | map('states') | map('float', 0) | select('gt', 45) | list | count > 0 }}
+        attributes:
+          # "в спальне 41,2 °C, на кухне 46 °C" for the push message
+          rooms: >-
+            {% from 'ru.jinja' import num, room_in %}
+            {% set ns = namespace(out=[], seen=[]) %}
+            {% for g, limit in [('group.room_temperature_sensors', 40), ('group.device_temperature_sensors', 45)] %}
+              {% for e in state_attr(g, 'entity_id') | default([], true) | select('has_value')
+                 if states(e) | float(0) > limit %}
+                {# One value per room: the room sensor wins over a device chip in the same area #}
+                {% if area_name(e) not in ns.seen %}
+                  {% set ns.out = ns.out + [room_in(area_name(e)) ~ ' ' ~ num(states(e)) ~ ' °C'] %}
+                  {% set ns.seen = ns.seen + [area_name(e)] %}
+                {% endif %}
+              {% endfor %}
+            {% endfor %}
+            {{ ns.out | join(', ') }}
+          # "в спальне 41 градус" for the voice (no symbols or decimals in TTS)
+          rooms_tts: >-
+            {% from 'ru.jinja' import plural, room_in %}
+            {% set ns = namespace(out=[], seen=[]) %}
+            {% for g, limit in [('group.room_temperature_sensors', 40), ('group.device_temperature_sensors', 45)] %}
+              {% for e in state_attr(g, 'entity_id') | default([], true) | select('has_value')
+                 if states(e) | float(0) > limit %}
+                {# One value per room: the room sensor wins over a device chip in the same area #}
+                {% if area_name(e) not in ns.seen %}
+                  {% set ns.out = ns.out + [room_in(area_name(e)) ~ ' ' ~ plural(states(e) | float(0) | round(0), 'градус', 'градуса', 'градусов')] %}
+                  {% set ns.seen = ns.seen + [area_name(e)] %}
+                {% endif %}
+              {% endfor %}
+            {% endfor %}
+            {{ ns.out | join(', ') }}
 
 ###############################################
 ## Alerts
@@ -177,6 +245,27 @@ alert:
       channel: Тревоги
       importance: high
 
+  room_overheat:
+    name: "Room Overheat"
+    entity_id: binary_sensor.room_overheat
+    state: "on"
+    # Possible fire: remind every minute at first, then less often while it lasts
+    repeat: [1, 2, 5, 10]
+    notifiers:
+      - mobile_app_sen_s25
+      - mobile_app_sm_s931b
+    title: >-
+      {{ '🌡️ Перегрев в квартире' if is_state('binary_sensor.room_overheat', 'on')
+         else '🌡️ Температура в норме' }}
+    message: >-
+      Температура {{ state_attr('binary_sensor.room_overheat', 'rooms') }} · проверьте, нет ли возгорания
+    done_message: Во всех комнатах снова ниже 40 °C
+    data:
+      ttl: 0
+      priority: high
+      # Voice only (user's choice 2026-11-18), the spoken warning comes from Alert to TTS Handler
+      channel: Тревоги
+      importance: high
 
 ###############################################
 ## Automations
@@ -187,7 +276,7 @@ automation:
     alias: Alert to TTS Handler
     description: >-
       Speaks a TTS announcement on Yandex Station Midi and on both phones (alarm stream, max volume)
-      when a leak, gas or power overload alert starts or is resolved. Critical, so it ignores night/silent mode.
+      when a leak, gas, power overload or room overheat alert starts or is resolved. Critical, so it ignores night/silent mode.
     mode: queued
     max: 5
     variables:
@@ -208,6 +297,11 @@ automation:
         alert.high_power:
           - "Внимание! Перегрузка электросети. Выключите мощные приборы."
           - "Потребление электричества вернулось в норму."
+        alert.room_overheat:
+          - >-
+            Внимание! Очень жарко: {{ state_attr('binary_sensor.room_overheat', 'rooms_tts') }}!
+            Проверьте, нет ли возгорания.
+          - "Температура в квартире вернулась в норму."
     triggers:
       - trigger: state
         entity_id:
@@ -216,6 +310,7 @@ automation:
           - alert.carbon_monoxide_detected
           - alert.natural_gas_detected
           - alert.high_power
+          - alert.room_overheat
     actions:
       - if:
             # Notify only if the alert is true or false, ignoring "acknowledge" state
