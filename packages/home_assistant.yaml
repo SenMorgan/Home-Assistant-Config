@@ -494,7 +494,8 @@ automation:
       # Room name from the entity's area, falling back to the sensor name
       room: >-
         {% from 'ru.jinja' import room_ru %}
-        {{ room_ru(area_name(trigger.entity_id)) if area_name(trigger.entity_id) else trigger.to_state.attributes.friendly_name }}
+        {% from 'devices.jinja' import full_name %}
+        {{ room_ru(area_name(trigger.entity_id)) if area_name(trigger.entity_id) else full_name(trigger.entity_id) }}
       sensor_state: "{{ trigger.to_state.state }}"
       # The time differs from the push time (3 h earlier), so it stays in the text
       sensor_last_changed: "{{ as_timestamp(trigger.to_state.last_changed, 0) | timestamp_custom('%d.%m %H:%M') }}"
@@ -672,8 +673,8 @@ automation:
                 persistent: true
                 notification_id: "low_battery_{{ repeat.item }}"
                 title: >-
-                  🪫 {{ device_attr(repeat.item, 'name_by_user') or device_attr(repeat.item, 'name')
-                       or state_attr(repeat.item, 'friendly_name') }}: {{ states(repeat.item) | float(0) | round(0) | int }} %
+                  {% from 'devices.jinja' import full_name %}
+                  🪫 {{ device_name(repeat.item) or full_name(repeat.item) }}: {{ states(repeat.item) | float(0) | round(0) | int }} %
                 message: >-
                   {% set model = device_attr(repeat.item, 'model') %}
                   Пора заменить батарейку{% if model %} · {{ model }}{% endif %}

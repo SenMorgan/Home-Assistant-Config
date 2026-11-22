@@ -15,3 +15,16 @@
 {%- endfor -%}
 {{ ns.ids | to_json }}
 {%- endmacro %}
+
+{# Display name of an entity without the friendly_name attribute (planned for deprecation in HA templates):
+   device name + entity name, like HA builds it ("ATC Kitchen" + "Temperature"); only the device name when the
+   entity has no own name (main entity); only the entity name without a device or when it already contains the
+   device name (legacy-named entities); the entity id as the last resort.
+   Known difference: an entity renamed by hand in the UI ("Banana Light" on "Zigbee USB 3-Switch Module 1") still
+   gets the device prefix, templates cannot see that the name was overridden. Fine for the device-named sensors
+   where it is used. full_name('sensor.ble_temperature_atc_kitchen') -> 'ATC Kitchen Temperature' #}
+{% macro full_name(entity_id) -%}
+{%- set dn = device_name(entity_id) -%}
+{%- set en = entity_name(entity_id) -%}
+{{- (en if en and dn and dn in en else [dn, en] | select | join(' ')) or entity_id -}}
+{%- endmacro %}

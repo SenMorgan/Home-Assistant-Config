@@ -34,8 +34,8 @@ for sensor in moisture_sensors:
         logger.error('Moisture level is not a number: %s', plant_moisture_str)
         continue
 
-    # Get plant friendly name
-    plant_name = sensor.attributes.get('friendly_name', sensor.entity_id)
+    # Plant name built by the automation (device + entity name); the entity id as the last resort
+    plant_name = (data.get('names') or {}).get(sensor.entity_id) or sensor.entity_id
 
     # Check if the plant needs water
     if moisture_level < low_threshold and plant_name not in plants_to_water:

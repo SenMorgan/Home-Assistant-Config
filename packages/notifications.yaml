@@ -534,7 +534,8 @@ automation:
         data:
           level: info
           title: >-
-            ⭐ {{ state_attr(trigger.entity_id, 'friendly_name') | replace(' Stars', '') }}: {{ trigger.to_state.state }}
+            {% from 'devices.jinja' import full_name %}
+            ⭐ {{ full_name(trigger.entity_id) | replace(' Stars', '') }}: {{ trigger.to_state.state }}
           message: >-
             {% from 'ru.jinja' import plural_form %}
             {{ '+' if diff > 0 else '−' }}{{ diff | abs }} {{ plural_form(diff | abs, 'звезда', 'звезды', 'звёзд') }}

@@ -66,11 +66,12 @@ automation:
           # Build a list of message chunks: each starts with the header and gets rows appended
           # until the next row would exceed max_message_length, then a new chunk is started
           message_chunks: >-
+            {% from 'devices.jinja' import full_name %}
             {% set lines = states.sensor | selectattr('entity_id', 'match', entity_pattern) | map(attribute='entity_id') | list %}
             {% set ns = namespace(chunks=[], current=message_header) %}
             {% for line in lines %}
               {% set state_value = states(line) | float(0) | round(2) if (states(line) | is_number) else 'N/A' %}
-              {% set state_name = state_attr(line, 'friendly_name') | default(line) %}
+              {% set state_name = full_name(line) %}
               {% set state_time = states[line].last_updated | default('N/A') %}
               {# Real unit per sensor: Vindstyrka sensors are not all temperatures (Y-22) #}
               {% set unit = state_attr(line, 'unit_of_measurement') or '' %}

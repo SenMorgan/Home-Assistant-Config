@@ -91,6 +91,15 @@ automation:
         minutes: "/10"
     actions:
       - action: python_script.update_plants_to_water
+        data:
+          # Plant names for the list (python scripts cannot build them without the friendly_name attribute)
+          names: >-
+            {% from 'devices.jinja' import full_name %}
+            {% set ns = namespace(d={}) %}
+            {% for e in states.sensor | map(attribute='entity_id') | select('match', 'sensor\\.ble_moisture_') %}
+              {% set ns.d = dict(ns.d, **{e: full_name(e)}) %}
+            {% endfor %}
+            {{ ns.d }}
 
   - id: notify_on_plants_to_water
     alias: Notify on Plants to Water

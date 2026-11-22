@@ -73,10 +73,11 @@ template:
           {{ state_attr('group.safety_sensors', 'entity_id') | default([], true)
              | reject('has_value') | list | count > 0 }}
         attributes:
-          # Friendly names of the offline sensors (entity id if the entity is gone), for the alert message
+          # Names of the offline sensors (entity id if the entity is gone), for the alert message
           offline: >-
+            {% from 'devices.jinja' import full_name %}
             {% for e in state_attr('group.safety_sensors', 'entity_id') | default([], true) | reject('has_value') -%}
-              {{ state_attr(e, 'friendly_name') or e }}{{ ', ' if not loop.last }}
+              {{ full_name(e) }}{{ ', ' if not loop.last }}
             {%- endfor %}
 
       # On when a room is above 40 °C (or a Zigbee device chip above 45 °C): fire, a heater left on
