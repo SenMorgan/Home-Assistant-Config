@@ -24,11 +24,6 @@ recorder:
   db_url: !secret DATABASE_URL
   # Detailed history for 3 months (backup must stay under the 5 GB Nabu Casa cloud limit); long-term statistics (hourly mean/min/max) are kept forever
   purge_keep_days: 90
-  # Explicit includes win over the exclude globs below (entity filter: entity include > glob exclude)
-  include:
-    entities:
-      # Washer energy feeds the Energy dashboard; keep it despite the washing_machine_* exclusion (F2-05)
-      - sensor.washing_machine_energy
   exclude:
     # Raw Meshtastic API events: ~80% of all event rows, large payloads; automations still receive them
     event_types:
@@ -50,9 +45,6 @@ recorder:
       - sensor.ble_mac_*
       - sensor.ble_measured_power_*
       - sensor.ble_rssi_*
-      # Washer (SmartThings) flaps to unavailable ~80×/hour due to its Wi-Fi (M-15, 2026-11-12);
-      # temporary until the Wi-Fi is fixed. Automations still get the states, only history is lost.
-      - "*.washing_machine_*"
 
 # Sharing devices with Yandex Smart Home
 yandex_smart_home: !include yandex.yaml
