@@ -25,14 +25,19 @@ template:
             {{ is_state('binary_sensor.ups_on_battery', 'on') }}
           {% endif %}
   - sensor:
-      # Real power draw = load % x nominal real power of the UPS
+      # Real power draw = load % x nominal real power of the UPS (the whole server rack). Source of the
+      # Server Rack Energy integral (UI helper) on the Energy dashboard
       - name: UPS Power
+        unique_id: ups_power
         unit_of_measurement: W
         device_class: power
+        state_class: measurement
         icon: mdi:gauge
         state: >
-          {{ (states('sensor.ups_load') | int(0) * 0.01 * states('sensor.ups_nominal_real_power') | int(0)) |
-            round(2, default=none) }}
+          {{ (states('sensor.ups_load') | float * 0.01 * states('sensor.ups_nominal_real_power') | float) | round(2) }}
+        # Unavailable instead of 0 W while NUT is unreachable, so the energy integral pauses instead of adding zeros
+        availability: >
+          {{ has_value('sensor.ups_load') and has_value('sensor.ups_nominal_real_power') }}
 
 ###############################################
 ## ALERTS
