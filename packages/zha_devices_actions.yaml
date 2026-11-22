@@ -31,8 +31,9 @@ automation:
     alias: Aqara Bedroom Switch Handler
     description: >-
       Bedroom Aqara button: single press activates night mode; double press toggles the bedroom
-      nightlight (only turns it on when night mode is off); hold "wakes up" the bedroom - unlocks
-      the lights/cover safety switch, opens the cover, runs day mode and turns the floor lamp on at 50%.
+      nightlight, or in night mode runs the Bedroom Button Night Double script instead; hold "wakes up"
+      the bedroom - unlocks the lights/cover safety switch, opens the cover, runs day mode and turns the
+      floor lamp on at 50%.
     mode: restart
     triggers:
       - trigger: event
@@ -51,24 +52,31 @@ automation:
           - conditions:
               - "{{ command == 'double' }}"
             sequence:
-              # Turn on only if night mode is off and the light is off; otherwise turn it off
               - if:
                   - condition: state
                     entity_id: input_boolean.home_night_mode
-                    state: "off"
-                  - condition: state
-                    entity_id: light.bedroom_nightlight
-                    state: "off"
+                    state: "on"
                 then:
-                  - action: light.turn_on
-                    target:
-                      entity_id: light.bedroom_nightlight
-                    data:
-                      brightness: 255
+                  # Night mode: the nightlight is off anyway, so the double press gets its own action
+                  # (defined in the private package)
+                  - action: script.bedroom_button_night_double
+                    continue_on_error: true
                 else:
-                  - action: light.turn_off
-                    target:
-                      entity_id: light.bedroom_nightlight
+                  # Day: toggle the nightlight
+                  - if:
+                      - condition: state
+                        entity_id: light.bedroom_nightlight
+                        state: "off"
+                    then:
+                      - action: light.turn_on
+                        target:
+                          entity_id: light.bedroom_nightlight
+                        data:
+                          brightness: 255
+                    else:
+                      - action: light.turn_off
+                        target:
+                          entity_id: light.bedroom_nightlight
           - conditions:
               - "{{ command == 'hold' }}"
             sequence:
