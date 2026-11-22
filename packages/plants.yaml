@@ -43,6 +43,38 @@ schedule:
     sunday: *watering_schedule_weekends
 
 ###############################################
+## TEMPLATE ENTITIES
+###############################################
+template:
+  - binary_sensor:
+      # ble_monitor never marks a silent b-parasite unavailable: it keeps the last value (unknown after a
+      # restart), so the generic offline checks missed three dead sensors for over a week (14.11-22.11).
+      # On when a plant moisture sensor has no value or no report for 6 h (they report many times an hour;
+      # last_reported, not last_updated: a soaked pot keeps the same moisture value for days).
+      # The 3 h delay rides out Core restarts, after which every sensor is unknown until its next report.
+      - name: Plant Sensors Silent
+        unique_id: plant_sensors_silent
+        device_class: problem
+        delay_on: "03:00:00"
+        state: >-
+          {% set limit = now() - timedelta(hours=6) %}
+          {{ states.sensor | selectattr('entity_id', 'search', '^sensor\.ble_moisture_')
+             | rejectattr('state', 'is_number') | list | count > 0
+             or states.sensor | selectattr('entity_id', 'search', '^sensor\.ble_moisture_')
+             | selectattr('last_reported', 'lt', limit) | list | count > 0 }}
+        attributes:
+          # Plant names of the silent sensors, for the notification
+          plants: >-
+            {% set limit = now() - timedelta(hours=6) %}
+            {% set ns = namespace(out=[]) %}
+            {% for st in states.sensor | selectattr('entity_id', 'search', '^sensor\.ble_moisture_') %}
+              {% if not st.state | is_number or st.last_reported < limit %}
+                {% set ns.out = ns.out + [st.name] %}
+              {% endif %}
+            {% endfor %}
+            {{ ns.out | join(', ') }}
+
+###############################################
 ## AUTOMATIONS
 ###############################################
 automation:
@@ -103,6 +135,55 @@ automation:
           actions:
             - action: PLANTS_WATERED
               title: ✅ Полито
+
+  - id: plant_sensors_silent_notification
+    alias: Plant Sensors Silent Notification
+    description: >-
+      Silent push + HA notification listing the plant moisture sensors that stopped reporting (dead battery,
+      out of BLE range), again when the list changes and every Saturday at 10:00 as a reminder; removes both
+      once all sensors report again.
+    mode: queued
+    max: 3
+    triggers:
+      - trigger: state
+        entity_id: binary_sensor.plant_sensors_silent
+        to: ["on", "off"]
+      # Another sensor died or one came back while still on
+      - trigger: state
+        entity_id: binary_sensor.plant_sensors_silent
+        attribute: plants
+      # Weekly reminder: replacing a battery is easy to postpone
+      - trigger: time
+        at: "10:00:00"
+        weekday: sat
+    actions:
+      - if:
+          - condition: state
+            entity_id: binary_sensor.plant_sensors_silent
+            state: "on"
+        then:
+          # Status level: silent and low importance, so a night-time trigger wakes nobody; the tag and the
+          # notification id make each update replace the previous one
+          - action: script.notify
+            data:
+              level: status
+              persistent: true
+              notification_id: plant_sensors_silent
+              tag: plant_sensors_silent
+              title: 🪴 Датчики растений молчат
+              message: >-
+                {{ state_attr('binary_sensor.plant_sensors_silent', 'plants') }} · замените батарейку или поднесите ближе
+        else:
+          # All sensors report again: remove the push and the HA notification
+          - action: persistent_notification.dismiss
+            data:
+              notification_id: plant_sensors_silent
+          - action: notify.mobile_app_sen_s25
+            continue_on_error: true
+            data:
+              message: clear_notification
+              data:
+                tag: plant_sensors_silent
 
   - id: plants_watered_button
     alias: Plants Watered Button
