@@ -303,7 +303,10 @@ automation:
   - id: silent_mode_handler
     # Queued: a quick on -> off toggle must run both scripts in order
     alias: Silent Mode Handler
-    description: Runs Set Silent Mode or Reset Silent Mode whenever the Silent Mode boolean changes.
+    description: >-
+      Runs Set Silent Mode or Reset Silent Mode whenever the Silent Mode boolean changes. Leaving silent mode
+      also ends the night mode (Home Day Mode first, so Reset Silent Mode then sees the night as over and
+      says good morning with the Morning Report).
     mode: queued
     max: 5
     triggers:
@@ -311,6 +314,16 @@ automation:
         entity_id: input_boolean.silent_mode
         to: ["on", "off"]
     actions:
+      # User's rule (2026-11-22): the night mode never outlives the silent mode. Blocking call: the night
+      # boolean must be off before Reset Silent Mode checks it (Night Mode Handler skips Home Day Mode
+      # itself while this call runs it)
+      - if:
+          - "{{ trigger.to_state.state == 'off' }}"
+          - condition: state
+            entity_id: input_boolean.home_night_mode
+            state: "on"
+        then:
+          - action: script.home_day_mode
       # Pick the script by the new state (templated action name)
       - action: "{{ 'script.set_silent_mode' if trigger.to_state.state == 'on' else 'script.reset_silent_mode' }}"
 
@@ -397,7 +410,7 @@ automation:
     alias: Good Morning Handler
     description: >-
       Switches to day mode at 09:00, or when the bedroom cover has been open for
-      10 s, if silent mode is still on during the morning window (06:00-12:00).
+      10 s, if silent or night mode is still on during the morning window (06:00-12:00).
     mode: single
     triggers:
       - trigger: time
@@ -407,9 +420,16 @@ automation:
         to: "open"
         for: 00:00:10
     conditions:
-      - condition: state
-        entity_id: input_boolean.silent_mode
-        state: "on"
+      # Night mode too (user's rule 2026-11-22: night mode always ends at 09:00): it could stay on all day
+      # when the silent mode had already been switched off separately
+      - condition: or
+        conditions:
+          - condition: state
+            entity_id: input_boolean.silent_mode
+            state: "on"
+          - condition: state
+            entity_id: input_boolean.home_night_mode
+            state: "on"
       - condition: time
         after: "06:00:00"
         before: "12:00:00"
