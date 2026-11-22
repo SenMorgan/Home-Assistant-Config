@@ -4,6 +4,7 @@
 
 {% from 'ru.jinja' import num, plural, plural_form, room_in, duration_tts, duration_short %}
 {% from 'devices.jinja' import offline_devices %}
+{% from 'sun.jinja' import sun_day %}
 
 {# Short Russian phrases for the alert entities (their names are English) #}
 {% set ALERTS = {
@@ -105,6 +106,19 @@
 {%- set rise = state_attr('sun.sun', 'next_rising') | as_datetime(default=none) -%}
 {%- set rise = rise | as_local if rise is not none and (rise | as_local).date() == now().date() else none -%}
 
+{#- today's sunrise/sunset and the change since yesterday (wall-clock seconds: today's time of day minus
+    yesterday's, so a DST switch does not show up as an hour) -#}
+{%- set st = sun_day(0) | from_json -%}
+{%- set sy = sun_day(-1) | from_json -%}
+{%- set sun = none -%}
+{%- if st.rise and sy.rise -%}
+  {%- set clock = (as_timestamp(today_at()) - as_timestamp(today_at() - timedelta(days=1))) | int -%}
+  {%- set sun = {'rise': st.rise | timestamp_custom('%-H:%M'), 'set': st.set | timestamp_custom('%-H:%M'),
+                 'length': ((st.set - st.rise) / 60) | round(0) | int,
+                 'd_rise': st.rise - sy.rise - clock, 'd_set': st.set - sy.set - clock,
+                 'd_length': (st.set - st.rise) - (sy.set - sy.rise)} -%}
+{%- endif -%}
+
 {#- Repairs raised during the night (recorded by sensor.repairs_recent_issues) -#}
 {%- set rp = namespace(domains=[]) -%}
 {%- for i in state_attr('sensor.repairs_recent_issues', 'issues') or [] -%}
@@ -142,6 +156,7 @@
   'weather': ns.weather,
   'sunrise': rise.strftime('%H:%M') if rise is not none else none,
   'to_sunrise': ((rise - now()).total_seconds() // 60) | int if rise is not none else none,
+  'sun': sun,
   'alerts': states.alert | selectattr('state', 'eq', 'on') | map(attribute='entity_id')
               | reject('eq', 'alert.backup_overdue') | list,
   'new_offline': dev.new,
@@ -208,11 +223,23 @@
   {%- set text.lines = text.lines + ['🌤️ Прогноз погоды недоступен'] -%}
 {%- endif -%}
 
-{#- 2a. Sunrise, only when it is still ahead (winter mornings); "через 0 минут" is not worth saying -#}
+{#- 2a. Spoken: sunrise only when it is still ahead (winter mornings); "через 0 минут" is not worth saying -#}
 {%- if f.sunrise and f.to_sunrise | default(0) > 0 -%}
   {%- set rise = f.sunrise | regex_replace('^0', '') -%}
   {%- set say.weather = say.weather ~ ' Рассвет в ' ~ rise ~ ', через ' ~ duration_tts(f.to_sunrise) ~ '.' -%}
-  {%- set text.lines = text.lines + ['🌅 Рассвет в ' ~ rise ~ ' (через ' ~ duration_short(f.to_sunrise) ~ ')'] -%}
+{%- endif -%}
+{#- Phone: sunrise/sunset with the shift since yesterday, then the day length and its change (no "через": the
+    persistent notification is read later too). Under 30 s in seconds, so solstice weeks don't show "+0" -#}
+{%- set sun = f.sun | default(none) -%}
+{%- if sun -%}
+  {%- macro shift(sec) -%}
+    {%- set a = sec | abs -%}
+    {{- '±0' if a < 1 else (('+' if sec > 0 else '−') ~ ((a / 60) | round(0) | int ~ ' мин' if a >= 30 else a | int ~ ' с')) -}}
+  {%- endmacro -%}
+  {%- set text.lines = text.lines + ['🌅 Восход ' ~ sun.rise ~ ' (' ~ shift(sun.d_rise) ~ ') · закат ' ~ sun.set ~ ' (' ~ shift(sun.d_set) ~ ')'] -%}
+  {%- set dl = sun.d_length -%}
+  {%- set change = 'как вчера' if dl | abs < 1 else ('на ' ~ shift(dl)[1:] ~ ' ' ~ ('длиннее' if dl > 0 else 'короче') ~ ' вчерашнего') -%}
+  {%- set text.lines = text.lines + ['☀️ День ' ~ duration_short(sun.length) ~ ', ' ~ change] -%}
 {%- endif -%}
 
 {#- 3. What went wrong overnight, most important first -#}

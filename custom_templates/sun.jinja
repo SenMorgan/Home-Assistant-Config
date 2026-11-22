@@ -1,0 +1,42 @@
+{# Sunrise/sunset for any day. sun.sun only knows the NEXT events, so "yesterday" (morning report: day length
+   change) is computed here with the NOAA solar calculator algorithm. ZENITH is fitted to the sun.sun history
+   (Oct-Nov 2026: max error 28 s): 90.833° (refraction + solar disc) plus what astral adds for the configured
+   elevation. Re-fit it if Settings > General > Elevation changes. Latitude/longitude come from zone.home at
+   render time (nothing in the repo).
+   sun_day(offset) -> JSON {rise, set} as unix timestamps of that local day (offset 0 = today, -1 = yesterday);
+   null for polar day/night. #}
+
+{% set ZENITH = 91.195 %}
+
+{% macro sun_day(offset=0) -%}
+{%- set lat = state_attr('zone.home', 'latitude') | float(0) -%}
+{%- set lon = state_attr('zone.home', 'longitude') | float(0) -%}
+{%- set rad = pi / 180 -%}
+{#- 00:00 UTC of the local date; Julian century at local noon -#}
+{%- set day = (today_at('12:00') + timedelta(days=offset)).date() | string -%}
+{%- set midnight = as_timestamp(day ~ 'T00:00:00+00:00') -%}
+{%- set jd = as_timestamp(today_at('12:00') + timedelta(days=offset)) / 86400 + 2440587.5 -%}
+{%- set t = (jd - 2451545) / 36525 -%}
+{%- set l0 = (280.46646 + t * (36000.76983 + t * 0.0003032)) % 360 -%}
+{%- set m = 357.52911 + t * (35999.05029 - 0.0001537 * t) -%}
+{%- set e = 0.016708634 - t * (0.000042037 + 0.0000001267 * t) -%}
+{%- set c = sin(m * rad) * (1.914602 - t * (0.004817 + 0.000014 * t)) + sin(2 * m * rad) * (0.019993 - 0.000101 * t)
+           + sin(3 * m * rad) * 0.000289 -%}
+{%- set omega = 125.04 - 1934.136 * t -%}
+{%- set app_long = l0 + c - 0.00569 - 0.00478 * sin(omega * rad) -%}
+{%- set eps = 23 + (26 + (21.448 - t * (46.815 + t * (0.00059 - t * 0.001813))) / 60) / 60 + 0.00256 * cos(omega * rad) -%}
+{%- set decl = asin(sin(eps * rad) * sin(app_long * rad)) -%}
+{%- set y = tan(eps * rad / 2) ** 2 -%}
+{#- equation of time, minutes -#}
+{%- set eqt = 4 / rad * (y * sin(2 * l0 * rad) - 2 * e * sin(m * rad) + 4 * e * y * sin(m * rad) * cos(2 * l0 * rad)
+                         - 0.5 * y * y * sin(4 * l0 * rad) - 1.25 * e * e * sin(2 * m * rad)) -%}
+{%- set cos_h = cos(ZENITH * rad) / (cos(lat * rad) * cos(decl)) - tan(lat * rad) * tan(decl) -%}
+{%- if cos_h | abs > 1 -%}
+{{- {'rise': none, 'set': none} | to_json -}}
+{%- else -%}
+{%- set h = acos(cos_h) / rad -%}
+{%- set noon_min = 720 - 4 * lon - eqt -%}
+{{- {'rise': (midnight + (noon_min - 4 * h) * 60) | round(0) | int,
+     'set': (midnight + (noon_min + 4 * h) * 60) | round(0) | int} | to_json -}}
+{%- endif -%}
+{%- endmacro %}
