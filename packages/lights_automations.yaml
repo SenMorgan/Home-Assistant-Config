@@ -49,6 +49,27 @@ light:
       - light.tv_lights
 
 ###############################################
+## TEMPLATE ENTITIES
+###############################################
+template:
+  - binary_sensor:
+      # Someone uses the living room: any of its lights is on (except "Christmas" decorations, labelled on the
+      # device, and "Not lighting" entities), the TV is on, or a media player of the room is playing (Alice).
+      # Everything comes from the area and labels, no device list. There is no motion sensor in the room.
+      # delay_off: the tree stays lit for 15 minutes after the last activity ends
+      - name: Living Room Activity
+        unique_id: living_room_activity
+        icon: mdi:sofa
+        delay_off: "00:15:00"
+        state: >-
+          {% set ents = area_entities('living_room') %}
+          {% set skip = label_entities('not_lighting') + label_entities('christmas')
+                        + label_devices('christmas') | map('device_entities') | sum(start=[]) %}
+          {{ ents | select('match', 'light\\.') | reject('in', skip) | select('is_state', 'on') | list | count > 0
+             or is_state('media_player.samsung_tv', 'on')
+             or ents | select('match', 'media_player\\.') | select('is_state', 'playing') | list | count > 0 }}
+
+###############################################
 ## SCRIPTS
 ###############################################
 script:
@@ -573,6 +594,36 @@ automation:
         target:
           entity_id: light.cocktail_bar_neon_sign
         data: *cocktail_bar_neon_sign_brightness
+
+  - id: christmas_tree_by_living_room_activity
+    alias: Christmas Tree by Living Room Activity
+    description: >-
+      Lights the Christmas tree while the living room is in use (a living room light or the TV is on, or
+      Alice is playing)
+      and turns it off 15 minutes after the last one goes off (delay_off of the activity sensor).
+      Reacts only to changes of the activity, so turning the tree off by hand is respected until the
+      next change. Out of season the tree plug is disabled and the automation does nothing.
+    mode: restart
+    triggers:
+      - trigger: state
+        entity_id: binary_sensor.living_room_activity
+        from: "off"
+        to: "on"
+        id: "on"
+      - trigger: state
+        entity_id: binary_sensor.living_room_activity
+        from: "on"
+        to: "off"
+        id: "off"
+    conditions:
+      # The plug is enabled only in the Christmas season (notification_christmas_devices_season)
+      - "{{ has_value('light.christmas_tree') }}"
+      # Never light it up in night mode; turning off is always fine
+      - "{{ trigger.id == 'off' or is_state('input_boolean.home_night_mode', 'off') }}"
+    actions:
+      - action: light.turn_{{ trigger.id }}
+        target:
+          entity_id: light.christmas_tree
 
   - id: kitchen_christmas_lights_reenable
     alias: Kitchen Christmas Lights Reenable
