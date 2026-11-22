@@ -336,7 +336,7 @@ automation:
       Turns the Monolith speakers off when the TV is off, the Philips floor lamps (same plug) are off or
       lit only because the plug got power (input_boolean.philips_floor_lamps_wanted off) and
       no music has played for 5 minutes (speakers never above the 40 W "playing" threshold): checked after
-      they are switched on, when the TV or the lamps turn off and when the music stops. The speakers have
+      they are switched on, when the TV or the lamps turn off, when the music stops and after a Core restart. The speakers have
       no standby of their own any more, so the plug is the only off.
     mode: restart
     triggers:
@@ -356,6 +356,10 @@ automation:
       - trigger: state
         entity_id: binary_sensor.monolith_speakers_above_power_threshold
         to: "off"
+      # A Core restart kills the 5-minute wait, and the plug comes back "on" before automations load, so the
+      # "turned on" trigger is missed: the speakers then stayed on for good (2026-11-22). Re-check after start.
+      - trigger: homeassistant
+        event: start
     conditions:
       - condition: state
         entity_id: switch.monolith_speakers
