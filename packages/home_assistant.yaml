@@ -267,6 +267,50 @@ automation:
               title: ⚙️ Настройки
               uri: /config/updates
 
+  # Hik-Connect is installed from the fork SenMorgan/home-assistant-hikconnect (local camera changes on top of
+  # upstream). The store only sees the fork's releases, so an upstream release has to be noticed here and the
+  # fork rebased onto it by hand.
+  - id: hikconnect_upstream_release_notification
+    alias: Hik-Connect Upstream Release Notification
+    description: >-
+      When tomasbedrich/home-assistant-hikconnect publishes a new release (GitHub integration sensor), notifies
+      the phone and adds a rebase task for Claude: the fork has to be rebased and released before the store
+      offers the update.
+    mode: queued
+    triggers:
+      - trigger: state
+        entity_id: sensor.tomasbedrich_home_assistant_hikconnect_latest_release
+        attribute: tag
+    variables:
+      new_tag: "{{ trigger.to_state.attributes.tag }}"
+      old_tag: "{{ trigger.from_state.attributes.tag }}"
+    conditions:
+      # A real tag change: not the sensor going unavailable/coming back (attribute missing on one side)
+      - "{{ new_tag not in [none, ''] and old_tag not in [none, ''] and new_tag != old_tag }}"
+    actions:
+      - action: script.notify
+        data:
+          level: info
+          title: ⬆️ Hik-Connect {{ new_tag }}
+          message: Новый релиз автора · форк на {{ old_tag }}, нужен rebase
+          url: "{{ trigger.to_state.attributes.url }}"
+          actions:
+            - action: URI
+              title: 📋 Что нового
+              uri: "{{ trigger.to_state.attributes.url }}"
+            - action: URI
+              title: 🍴 Форк
+              uri: https://github.com/SenMorgan/home-assistant-hikconnect
+      # The rebase itself is my job: leave it in my to-do list for the next session
+      - action: todo.add_item
+        target:
+          entity_id: todo.claude_tasks
+        data:
+          item: "hikconnect: rebase форка на {{ new_tag }}"
+          description: >-
+            Rebase SenMorgan/home-assistant-hikconnect (branch local, /share/claude/home-assistant-hikconnect) onto
+            upstream {{ new_tag }}, version {{ new_tag }}+sen.1, CI green, tag + release, install from the store.
+
   # I-10: one silent daily summary instead of a push per update entity (~80 of them)
   - id: home_assistant_updates_daily_summary
     alias: Home Assistant Updates Daily Summary
