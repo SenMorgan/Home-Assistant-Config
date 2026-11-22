@@ -32,14 +32,16 @@ group:
 ###############################################
 template:
   - binary_sensor:
-      # On when any safety sensor has been unavailable/unknown for over 1 hour
-      # (the delay ignores restarts and short Zigbee/Wi-Fi dropouts).
+      # On when any safety sensor has been unavailable/unknown for over 15 minutes. Zigbee battery
+      # sensors turn unavailable only after 4 h of silence (ZHA consider_unavailable_battery), so the
+      # delay just ignores Core restarts and short Wi-Fi dropouts (2026-11-22 check: longest 3 min in 10 days;
+      # longest Zigbee last_seen gap 147 min, safety sensors 101 min).
       # Note: catches only sensors that go unavailable; a Wi-Fi device that silently stops
       # pushing (Tuya gas detector) keeps its last state and is not detected here.
       - name: Safety Sensors Offline
         unique_id: safety_sensors_offline
         device_class: problem
-        delay_on: "01:00:00"
+        delay_on: "00:15:00"
         # Iterates over the configured ids, not expand(): expand() silently skips ids that no longer exist,
         # so a deleted or renamed sensor (the C-01 failure) would stay unnoticed. has_value is false for
         # missing, unknown and unavailable entities alike (audit F2-01).
@@ -71,7 +73,7 @@ alert:
       {{ '📴 Датчики безопасности не на связи' if is_state('binary_sensor.safety_sensors_offline', 'on')
          else '📶 Датчики безопасности на связи' }}
     message: >-
-      Больше часа: {{ state_attr('binary_sensor.safety_sensors_offline', 'offline') }}
+      Нет данных: {{ state_attr('binary_sensor.safety_sensors_offline', 'offline') }}
     done_message: Все датчики безопасности снова передают данные
     data:
       channel: Предупреждения
